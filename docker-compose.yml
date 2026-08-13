@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mcp-tools:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp_tools_server
+    restart: unless-stopped
+    ports:
+      - "8005:8000"
+    volumes:
+      - /mnt/disco2/cjhirashi-data/mcp-outputs:/app/output
+    networks:
+      - infraestructura_default
+    environment:
+      - PYTHONUNBUFFERED=1
+
+networks:
+  infraestructura_default:
+    external: true

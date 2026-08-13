@@ -1,0 +1,175 @@
+@page {
+    size: letter;
+    margin: 12mm 15mm 12mm 15mm;
+}
+
+:root {
+    --primary: #0891b2;       /* Cyan-600 */
+    --primary-dark: #0e7490;  /* Cyan-700 */
+    --text-main: #1e293b;     /* Slate-800 */
+    --text-muted: #475569;    /* Slate-600 */
+    --bg-light: #f8fafc;      /* Slate-50 */
+    --border-color: #e2e8f0;  /* Slate-200 */
+}
+
+body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: var(--text-main);
+    font-size: 9pt;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header de CV */
+.header {
+    text-align: center;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 20pt;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.header .subtitle {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin: 3px 0 6px 0;
+}
+
+.header .contact {
+    font-size: 8.5pt;
+    color: var(--text-muted);
+    word-spacing: 2px;
+}
+
+/* Header de la carta de presentación */
+.header-cover {
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+}
+
+.header-cover h1 {
+    margin: 0;
+    font-size: 20pt;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.header-cover .contact {
+    font-size: 8.5pt;
+    color: var(--text-muted);
+    word-spacing: 2px;
+}
+
+.fecha {
+    text-align: right;
+    font-size: 9pt;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+/* Titulares de sección */
+.section-title {
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary-dark);
+    border-bottom: 1px solid var(--primary);
+    margin-top: 12px;
+    margin-bottom: 8px;
+    padding-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+/* Resumen Ejecutivo */
+.resumen p {
+    margin: 0 0 6px 0;
+    text-align: justify;
+    color: var(--text-main);
+}
+
+/* Listas de Competencias y Experiencia */
+ul {
+    margin: 3px 0 6px 0;
+    padding-left: 14px;
+}
+
+li {
+    margin-bottom: 3px;
+    color: var(--text-main);
+}
+
+li strong {
+    color: var(--primary-dark);
+}
+
+/* Experiencia laboral */
+.exp-item, .edu-item {
+    margin-bottom: 8px;
+}
+
+.exp-header {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-main);
+    font-size: 9.5pt;
+    border-left: 3px solid var(--primary);
+    padding-left: 6px;
+    margin-bottom: 3px;
+}
+
+.exp-header span {
+    font-weight: 700;
+}
+
+.exp-header span:last-child {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 8.5pt;
+}
+
+/* Logro Destacado */
+.logro-box {
+    background-color: var(--bg-light);
+    border-left: 3px solid var(--primary);
+    padding: 6px 10px;
+    margin-top: 6px;
+    border-radius: 0 4px 4px 0;
+}
+
+.logro-box strong {
+    color: var(--primary-dark);
+}
+
+/* Palabras clave (Pills) */
+.keywords-container {
+    margin-top: 6px;
+}
+
+.keyword-tag {
+    display: inline-block;
+    background-color: var(--bg-light);
+    color: var(--primary-dark);
+    border: 1px solid var(--border-color);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 8pt;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-bottom: 4px;
+}
+
+.keywords {
+    font-style: italic;
+}
