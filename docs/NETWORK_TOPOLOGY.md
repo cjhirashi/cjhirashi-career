@@ -5,44 +5,29 @@ _Configuración de red, puertos, volúmenes y conectividad del sistema._
 ## Diagrama de Topología General
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#9333EA',
-    'secondaryColor': '#10B981',
-    'secondaryBorderColor': '#059669',
-    'tertiaryColor': '#06B6D4',
-    'tertiaryBorderColor': '#0891B2',
-    'lineColor': '#059669',
-    'fontSize': '13px'
-  }
-}}%%
-
 graph TB
-  subgraph external["🌐 Red Externa"]
-    CLIENT["Cliente Web<br/>Navegador"]
+  subgraph external["🌐 RED EXTERNA"]
+    CLIENT["📱 Cliente Web<br/>Navegador"]
   end
 
-  subgraph host["🖥️ Host Machine"]
-    PORT8002["Puerto 8002<br/>HTTP Listening"]
-    MOUNT["Montaje Host<br/>/mnt/disco2/cjhirashi-data"]
-    DIRS["mcp-outputs/<br/>├── cvs<br/>└── cover_letters"]
+  subgraph host["🖥️ HOST MACHINE"]
+    PORT8002["🔌 Puerto 8002<br/>HTTP Listening"]
+    MOUNT["📂 Montaje<br/>/mnt/disco2/cjhirashi-data"]
+    DIRS["📁 mcp-outputs<br/>├── cvs<br/>└── cover_letters"]
   end
 
-  subgraph network["🔗 Docker Network"]
-    BRIDGE["network-cjhirashi-srv<br/>Bridge Driver"]
+  subgraph network["🔗 DOCKER NETWORK"]
+    BRIDGE["🌉 network-cjhirashi-srv<br/>Bridge Driver"]
   end
 
-  subgraph container["🐳 Contenedor Docker"]
-    CONT["mcp_tools_server<br/>Python 3.11 + FastMCP"]
-    PORT8000["Puerto 8000<br/>Uvicorn"]
-    APPDIR["App Directory<br/>/app"]
-    VOLMOUNT["Volume Mount<br/>/app/outputs"]
+  subgraph container["🐳 CONTENEDOR"]
+    CONT["⚙️ mcp_tools_server<br/>Python 3.11 + FastMCP"]
+    PORT8000["🚀 Puerto 8000<br/>Uvicorn"]
+    APPDIR["📂 Directory<br/>/app"]
+    VOLMOUNT["📦 Volume<br/>/app/outputs"]
   end
 
-  CLIENT -->|"HTTP<br/>POST /sse"| PORT8002
+  CLIENT -->|"HTTP POST /sse"| PORT8002
   PORT8002 -->|"8002→8000"| PORT8000
   PORT8000 -->|"Escucha"| CONT
   CONT -->|"Red"| BRIDGE
@@ -51,23 +36,22 @@ graph TB
   VOLMOUNT -->|"Escribe"| DIRS
   CONT -->|"Lee"| APPDIR
 
-  classDef externalBg fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
-  classDef externalNode fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
-  classDef hostBg fill:#E5E7EB,stroke:#9CA3AF,stroke-width:2px,color:#333
-  classDef hostNode fill:#D1D5DB,stroke:#6B7280,stroke-width:2px,color:#333
-  classDef networkBg fill:#A7E8A7,stroke:#10B981,stroke-width:2px,color:#fff
-  classDef networkNode fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  classDef containerBg fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
-  classDef containerNode fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-
-  class external externalBg
-  class CLIENT externalNode
-  class host hostBg
-  class PORT8002,MOUNT,DIRS hostNode
-  class network networkBg
-  class BRIDGE networkNode
-  class container containerBg
-  class CONT,PORT8000,APPDIR,VOLMOUNT containerNode
+  %% Estilos - Morado (Externo)
+  style CLIENT fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
+  
+  %% Estilos - Gris (Host)
+  style PORT8002 fill:#9CA3AF,stroke:#6B7280,stroke-width:3px,color:#fff
+  style MOUNT fill:#D1D5DB,stroke:#9CA3AF,stroke-width:3px,color:#333
+  style DIRS fill:#D1D5DB,stroke:#9CA3AF,stroke-width:3px,color:#333
+  
+  %% Estilos - Verde (Docker Network)
+  style BRIDGE fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  
+  %% Estilos - Cyan (Contenedor)
+  style CONT fill:#06B6D4,stroke:#0891B2,stroke-width:3px,color:#fff
+  style PORT8000 fill:#0891B2,stroke:#0369A1,stroke-width:3px,color:#fff
+  style APPDIR fill:#06B6D4,stroke:#0891B2,stroke-width:3px,color:#fff
+  style VOLMOUNT fill:#0369A1,stroke:#024960,stroke-width:3px,color:#fff
 ```
 
 ## Configuración de Puertos
@@ -114,31 +98,28 @@ FastMCP Handler
 ### Bind Volume: Host ↔ Contenedor
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#06B6D4',
-    'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
-    'lineColor': '#059669'
-  }
-}}%%
-
 graph LR
-  HOST["Host<br/>/mnt/disco2<br/>cjhirashi-data<br/>mcp-outputs"]
-  BIND["Bind Volume<br/>Sincronizado"]
-  CONT["Contenedor<br/>/app/outputs"]
-  PDF["pdf_file.pdf<br/>Persistente"]
+  HOST["🖥️ Host<br/>/mnt/disco2<br/>mcp-outputs"]
+  BIND["📦 Bind Volume<br/>Sincronizado"]
+  CONT["🐳 Contenedor<br/>/app/outputs"]
+  PDF["📄 pdf_file.pdf<br/>Persistente"]
   
   HOST <-->|"Lectura/Escritura"| BIND
-  BIND <-->|"Montado en"| CONT
+  BIND <-->|"Montado"| CONT
   CONT -->|"Escribe"| PDF
   PDF -->|"Accesible"| HOST
   
-  style HOST fill:#E5E7EB,stroke:#9CA3AF,stroke-width:2px,color:#333
-  style BIND fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style CONT fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-  style PDF fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
+  %% Gris (Host)
+  style HOST fill:#9CA3AF,stroke:#6B7280,stroke-width:3px,color:#fff
+  
+  %% Verde (Bind)
+  style BIND fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  
+  %% Cyan (Contenedor)
+  style CONT fill:#06B6D4,stroke:#0891B2,stroke-width:3px,color:#fff
+  
+  %% Morado (PDF)
+  style PDF fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
 ```
 
 ### Configuración en docker-compose.yml
@@ -224,17 +205,6 @@ Dentro de la red bridge:
 ## Flujo de Solicitud HTTP
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'primaryTextColor': '#ffffff',
-    'secondaryColor': '#10B981',
-    'tertiaryColor': '#06B6D4',
-    'lineColor': '#059669'
-  }
-}}%%
-
 sequenceDiagram
   participant BROWSER as 📱 Navegador
   participant HOSTNET as 🖥️ Host Network
@@ -245,7 +215,7 @@ sequenceDiagram
   BROWSER->>HOSTNET: TCP → :8002
   HOSTNET->>DOCKER: Forward 8002→8000
   DOCKER->>UVICORN: Conectar
-  UVICORN->>APP: Request
+  UVICORN->>APP: New Request
   BROWSER->>APP: POST /sse crear_cv_pdf
   APP->>APP: Parsear JSON
   APP->>APP: Render Jinja2

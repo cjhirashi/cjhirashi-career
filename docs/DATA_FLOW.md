@@ -7,21 +7,6 @@ _Análisis detallado del flujo de datos en cada operación del servidor._
 Proceso completo desde solicitud del cliente hasta PDF guardado:
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#9333EA',
-    'secondaryColor': '#10B981',
-    'secondaryBorderColor': '#059669',
-    'tertiaryColor': '#06B6D4',
-    'tertiaryBorderColor': '#0891B2',
-    'lineColor': '#059669',
-    'fontSize': '13px'
-  }
-}}%%
-
 graph TD
   A["📋 Cliente Prepara Datos<br/>JSON: nombre, email, experiencia"] -->|"JSON String"| B["🔄 Cliente Envía Solicitud<br/>HTTP POST /sse<br/>crear_cv_pdf"]
   B -->|"SSE"| C["📩 FastMCP Recibe<br/>Parámetros"]
@@ -34,17 +19,28 @@ graph TD
   I -->|"Éxito"| J["✨ Retorna Mensaje<br/>Éxito"]
   J -->|"SSE Response"| K["📥 Cliente Recibe<br/>Descarga PDF"]
 
-  style A fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
-  style B fill:#C879E8,stroke:#A855F7,stroke-width:2px,color:#fff
-  style C fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style D fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
-  style E fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
-  style F fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
-  style G fill:#7FD0D0,stroke:#0891B2,stroke-width:2px,color:#fff
-  style H fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
-  style I fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style J fill:#0FB981,stroke:#065F46,stroke-width:2px,color:#fff
-  style K fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
+  %% MORADO (Cliente/Entrada)
+  style A fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
+  style B fill:#9333EA,stroke:#7C1FA1,stroke-width:3px,color:#fff
+  
+  %% VERDE CLARO (FastMCP)
+  style C fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style D fill:#0FB981,stroke:#059669,stroke-width:3px,color:#fff
+  
+  %% VERDE OSCURO (Procesamiento)
+  style E fill:#059669,stroke:#047857,stroke-width:3px,color:#fff
+  
+  %% CYAN CLARO (Plantillas)
+  style F fill:#06D9FF,stroke:#0891B2,stroke-width:3px,color:#000
+  style G fill:#06B6D4,stroke:#0891B2,stroke-width:3px,color:#fff
+  
+  %% CYAN OSCURO (PDF)
+  style H fill:#0891B2,stroke:#0369A1,stroke-width:3px,color:#fff
+  style I fill:#0369A1,stroke:#024960,stroke-width:3px,color:#fff
+  
+  %% VERDE (Respuesta)
+  style J fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style K fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
 ```
 
 ### Puntos Críticos del Flujo
@@ -66,20 +62,6 @@ graph TD
 Similar al CV, con plantilla específica:
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#9333EA',
-    'secondaryColor': '#10B981',
-    'secondaryBorderColor': '#059669',
-    'tertiaryColor': '#06B6D4',
-    'tertiaryBorderColor': '#0891B2',
-    'lineColor': '#059669'
-  }
-}}%%
-
 graph TD
   A["👥 Cliente Prepara Datos<br/>nombre, empresa, puesto"] -->|"JSON"| B["📨 Solicitud MCP<br/>crear_cover_letter_pdf"]
   B -->|"Parámetros"| C["🟢 FastMCP Route<br/>Recibe solicitud"]
@@ -91,16 +73,25 @@ graph TD
   H -->|"Success"| I["✅ Retorna Ruta<br/>cover_johndoe.pdf"]
   I -->|"Download"| J["📥 Cliente Descarga"]
 
-  style A fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
-  style B fill:#C879E8,stroke:#A855F7,stroke-width:2px,color:#fff
-  style C fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style D fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
-  style E fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
-  style F fill:#7FD0D0,stroke:#0891B2,stroke-width:2px,color:#fff
-  style G fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
-  style H fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style I fill:#0FB981,stroke:#065F46,stroke-width:2px,color:#fff
-  style J fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
+  %% MORADO (Cliente/Entrada)
+  style A fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
+  style B fill:#9333EA,stroke:#7C1FA1,stroke-width:3px,color:#fff
+  
+  %% VERDE (FastMCP/Procesamiento)
+  style C fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style D fill:#059669,stroke:#047857,stroke-width:3px,color:#fff
+  
+  %% CYAN (Plantillas)
+  style E fill:#06D9FF,stroke:#0891B2,stroke-width:3px,color:#000
+  style F fill:#06B6D4,stroke:#0891B2,stroke-width:3px,color:#fff
+  
+  %% CYAN OSCURO (PDF)
+  style G fill:#0891B2,stroke:#0369A1,stroke-width:3px,color:#fff
+  style H fill:#0369A1,stroke:#024960,stroke-width:3px,color:#fff
+  
+  %% VERDE (Respuesta)
+  style I fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style J fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
 ```
 
 ---
@@ -177,26 +168,17 @@ pdf = weasyprint.HTML(
 ### Cadena de Transformación: JSON → HTML → PDF
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'secondaryColor': '#10B981',
-    'tertiaryColor': '#06B6D4',
-    'lineColor': '#059669'
-  }
-}}%%
-
 graph LR
-  JSON["<b>JSON</b><br/>String entrada<br/>Cliente"] -->|"json.loads()"| DICT["<b>Dict Python</b><br/>Datos parseados<br/>Variables"]
-  DICT -->|"template.render"| HTML["<b>HTML String</b><br/>HTML + CSS<br/>Estructura visual"]
-  HTML -->|"WeasyPrint"| PDF["<b>PDF Bytes</b><br/>Documento PDF<br/>Renderizado"]
-  PDF -->|"File Write"| FILE["<b>Archivo PDF</b><br/>En disco<br/>Persistente"]
+  JSON["<b>JSON</b><br/>String<br/>Cliente"] -->|"json.loads()"| DICT["<b>Dict</b><br/>Datos<br/>Variables"]
+  DICT -->|"template.render"| HTML["<b>HTML</b><br/>HTML+CSS<br/>Visual"]
+  HTML -->|"WeasyPrint"| PDF["<b>PDF</b><br/>Bytes<br/>Renderizado"]
+  PDF -->|"File Write"| FILE["<b>Archivo</b><br/>En disco<br/>Persistente"]
 
-  style JSON fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  %% Progresión Morado → Verde → Cyan
+  style JSON fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
   style DICT fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style HTML fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
-  style PDF fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+  style HTML fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+  style PDF fill:#0891B2,stroke:#0369A1,stroke-width:2px,color:#fff
   style FILE fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
 ```
 
@@ -230,16 +212,6 @@ WeasyPrint aplica las siguientes transformaciones:
 ### Posibles Excepciones y Recuperación
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'secondaryColor': '#10B981',
-    'tertiaryColor': '#06B6D4',
-    'lineColor': '#059669'
-  }
-}}%%
-
 graph TD
   START["Solicitud<br/>crear_cv_pdf"] -->|"Try"| JSON_PARSE["json.loads"]
   JSON_PARSE -->|"JSONDecodeError"| ERR1["❌ JSON inválido"]
@@ -260,33 +232,42 @@ graph TD
   ERR5 -->|"except"| RETURN5["return Error"]
   SUCCESS -->|"return"| SUCCESS_MSG["return Success"]
 
-  RETURN1 --> CLI["🔴 Cliente recibe error"]
+  RETURN1 --> CLI["🔴 Error al cliente"]
   RETURN2 --> CLI
   RETURN3 --> CLI
   RETURN4 --> CLI
   RETURN5 --> CLI
   SUCCESS_MSG --> LOG["✅ Cliente descarga"]
 
-  style START fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
-  style JSON_PARSE fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
-  style LOAD fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style RENDER fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
-  style WEASY fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
-  style WRITE fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style SUCCESS fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
-  style ERR1 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
-  style ERR2 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
-  style ERR3 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
-  style ERR4 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
-  style ERR5 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  %% Entrada - Morado
+  style START fill:#A855F7,stroke:#9333EA,stroke-width:3px,color:#fff
+  
+  %% Procesamiento - Verde
+  style JSON_PARSE fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style LOAD fill:#0FB981,stroke:#059669,stroke-width:3px,color:#fff
+  style RENDER fill:#059669,stroke:#047857,stroke-width:3px,color:#fff
+  style WEASY fill:#047857,stroke:#065F46,stroke-width:3px,color:#fff
+  style WRITE fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style SUCCESS fill:#047857,stroke:#065F46,stroke-width:3px,color:#fff
+  
+  %% Errores - Rojo
+  style ERR1 fill:#EF4444,stroke:#DC2626,stroke-width:3px,color:#fff
+  style ERR2 fill:#EF4444,stroke:#DC2626,stroke-width:3px,color:#fff
+  style ERR3 fill:#EF4444,stroke:#DC2626,stroke-width:3px,color:#fff
+  style ERR4 fill:#EF4444,stroke:#DC2626,stroke-width:3px,color:#fff
+  style ERR5 fill:#EF4444,stroke:#DC2626,stroke-width:3px,color:#fff
+  
+  %% Recuperación - Naranja
   style RETURN1 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
   style RETURN2 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
   style RETURN3 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
   style RETURN4 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
   style RETURN5 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
-  style CLI fill:#DC2626,stroke:#991B1B,stroke-width:2px,color:#fff
-  style SUCCESS_MSG fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  style LOG fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
+  
+  %% Resultados
+  style CLI fill:#DC2626,stroke:#991B1B,stroke-width:3px,color:#fff
+  style SUCCESS_MSG fill:#10B981,stroke:#059669,stroke-width:3px,color:#fff
+  style LOG fill:#047857,stroke:#065F46,stroke-width:3px,color:#fff
 ```
 
 ### Códigos de Error Comunes

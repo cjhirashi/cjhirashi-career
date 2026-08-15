@@ -5,75 +5,59 @@ _Diagramas y descripción de la arquitectura completa del sistema MCP Tools Serv
 ## Diagrama de Arquitectura General
 
 ```mermaid
-%%{init: {
-  'theme': 'base',
-  'themeVariables': {
-    'primaryColor': '#A855F7',
-    'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#9333EA',
-    'secondaryColor': '#10B981',
-    'secondaryBorderColor': '#059669',
-    'tertiaryColor': '#06B6D4',
-    'tertiaryBorderColor': '#0891B2',
-    'lineColor': '#059669',
-    'fontSize': '14px',
-    'fontFamily': 'Inter, sans-serif'
-  }
-}}%%
-
 graph TB
-  subgraph client["👤 Cliente"]
-    UI["Frontend UI<br/>React + TypeScript"]
+  subgraph client["👤 CLIENTE"]
+    UI["🎨 Frontend UI<br/>React + TypeScript"]
   end
 
-  subgraph server["🟢 Servidor MCP"]
-    FASTMCP["FastMCP Server<br/>server.py"]
-    CV_GEN["CV Generator<br/>cv_generator.py"]
-    COVER_GEN["Cover Generator<br/>cover_generator.py"]
-    TEMPLATES["Plantillas Jinja2<br/>+ CSS"]
+  subgraph server["🟢 SERVIDOR MCP"]
+    FASTMCP["⚡ FastMCP Server<br/>server.py"]
+    CV_GEN["📄 CV Generator<br/>cv_generator.py"]
+    COVER_GEN["📧 Cover Generator<br/>cover_generator.py"]
+    TEMPLATES["🎯 Plantillas Jinja2<br/>+ CSS Styles"]
   end
 
-  subgraph storage["💾 Almacenamiento"]
-    PDF_OUTPUT["Volumen Persistente<br/>/mcp-outputs/"]
-    CV_DIR["CVs/"]
-    COVER_DIR["Cover Letters/"]
+  subgraph storage["💾 ALMACENAMIENTO"]
+    PDF_OUTPUT["📦 Volumen Persistente<br/>/mcp-outputs/"]
+    CV_DIR["📁 CVs/"]
+    COVER_DIR["📁 Cover Letters/"]
   end
 
-  subgraph external["🔗 Renderizado"]
-    WEASYPRINT["WeasyPrint<br/>HTML→PDF"]
-    JINJA["Jinja2<br/>Plantillas"]
+  subgraph external["🔗 RENDERIZADO"]
+    WEASYPRINT["🖨️ WeasyPrint<br/>HTML → PDF"]
+    JINJA["🧩 Jinja2<br/>Template Engine"]
   end
 
-  UI -->|"HTTP/SSE : 8002"| FASTMCP
-  FASTMCP -->|"crear_cv_pdf"| CV_GEN
-  FASTMCP -->|"crear_cover"| COVER_GEN
-  CV_GEN -->|"load"| TEMPLATES
-  COVER_GEN -->|"load"| TEMPLATES
-  CV_GEN -->|"render"| WEASYPRINT
-  COVER_GEN -->|"render"| WEASYPRINT
-  WEASYPRINT -->|"write"| PDF_OUTPUT
+  UI -->|HTTP/SSE<br/>:8002| FASTMCP
+  FASTMCP -->|crear_cv_pdf| CV_GEN
+  FASTMCP -->|crear_cover_letter| COVER_GEN
+  CV_GEN -->|load| TEMPLATES
+  COVER_GEN -->|load| TEMPLATES
+  CV_GEN -->|render| WEASYPRINT
+  COVER_GEN -->|render| WEASYPRINT
+  WEASYPRINT -->|write| PDF_OUTPUT
   PDF_OUTPUT --> CV_DIR
   PDF_OUTPUT --> COVER_DIR
-  CV_GEN -->|"use"| JINJA
-  COVER_GEN -->|"use"| JINJA
+  CV_GEN -->|use| JINJA
+  COVER_GEN -->|use| JINJA
 
-  classDef clientBg fill:#E0A5F7,stroke:#A855F7,stroke-width:3px,color:#fff
-  classDef clientNode fill:#A855F7,stroke:#7C1FA1,stroke-width:2px,color:#fff
-  classDef serverBg fill:#A7E8A7,stroke:#10B981,stroke-width:3px,color:#fff
-  classDef serverNode fill:#10B981,stroke:#065F46,stroke-width:2px,color:#fff
-  classDef storageBg fill:#A5DEDA,stroke:#06B6D4,stroke-width:3px,color:#fff
-  classDef storageNode fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
-  classDef externalBg fill:#D9D9D9,stroke:#6B7280,stroke-width:3px,color:#333
-  classDef externalNode fill:#9CA3AF,stroke:#4B5563,stroke-width:2px,color:#fff
+  %% Estilos - Morado (Cliente)
+  style UI fill:#A855F7,stroke:#7C1FA1,stroke-width:3px,color:#fff
 
-  class client clientBg
-  class UI clientNode
-  class server serverBg
-  class FASTMCP,CV_GEN,COVER_GEN,TEMPLATES serverNode
-  class storage storageBg
-  class PDF_OUTPUT,CV_DIR,COVER_DIR storageNode
-  class external externalBg
-  class WEASYPRINT,JINJA externalNode
+  %% Estilos - Verde (Servidor - gradiente oscuro)
+  style FASTMCP fill:#10B981,stroke:#065F46,stroke-width:3px,color:#fff
+  style CV_GEN fill:#059669,stroke:#047857,stroke-width:3px,color:#fff
+  style COVER_GEN fill:#0B8A5E,stroke:#065F46,stroke-width:3px,color:#fff
+  style TEMPLATES fill:#107569,stroke:#065F46,stroke-width:3px,color:#fff
+
+  %% Estilos - Cyan (Almacenamiento)
+  style PDF_OUTPUT fill:#06B6D4,stroke:#0369A1,stroke-width:3px,color:#fff
+  style CV_DIR fill:#0891B2,stroke:#0369A1,stroke-width:3px,color:#fff
+  style COVER_DIR fill:#0891B2,stroke:#0369A1,stroke-width:3px,color:#fff
+
+  %% Estilos - Gris (Dependencias)
+  style WEASYPRINT fill:#9CA3AF,stroke:#4B5563,stroke-width:3px,color:#fff
+  style JINJA fill:#9CA3AF,stroke:#4B5563,stroke-width:3px,color:#fff
 ```
 
 ## Descripción de Componentes
