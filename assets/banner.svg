@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
   <defs>
     <linearGradient id="gradient-cyan-main" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
@@ -7,10 +7,10 @@
   </defs>
 
   <!-- Background gradient -->
-  <rect width="1200" height="360" fill="url(#gradient-cyan-main)"/>
+  <rect width="1200" height="260" fill="url(#gradient-cyan-main)"/>
 
   <!-- Footer background -->
-  <rect x="0" y="360" width="1200" height="40" fill="#FF6B35"/>
+  <rect x="0" y="260" width="1200" height="40" fill="#FF8C42"/>
 
   <!-- Subtle top accent line -->
   <line x1="0" y1="1" x2="1200" y2="1" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
@@ -52,10 +52,10 @@
   </text>
 
   <!-- Footer divider line (subtle separation) -->
-  <line x1="0" y1="358" x2="1200" y2="358" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="0" y1="258" x2="1200" y2="258" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
 
   <!-- Footer technologies -->
-  <text x="600" y="383" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="rgba(255,255,255,0.95)" letter-spacing="0.3" text-anchor="middle">
+  <text x="600" y="283" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="rgba(255,255,255,0.95)" letter-spacing="0.3" text-anchor="middle">
     FastMCP • WeasyPrint • Jinja2 • Python 3.11 • Docker • SSE
   </text>
 </svg>
