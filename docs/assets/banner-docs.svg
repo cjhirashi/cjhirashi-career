@@ -1,29 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
   <defs>
-    <linearGradient id="gradient-cyan-teal-docs" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="gradient-cyan-docs" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
     </linearGradient>
   </defs>
 
   <!-- Sección Azul (Gradiente Cyan → Teal) -->
-  <rect width="1200" height="260" fill="url(#gradient-cyan-teal-docs)" />
+  <rect width="1200" height="360" fill="url(#gradient-cyan-docs)" />
 
-  <!-- Sección Naranja (Tecnologías) -->
-  <rect y="260" width="1200" height="40" fill="#FF8C42" />
+  <!-- Sección Naranja (Tecnologías - Footer) -->
+  <rect y="360" width="1200" height="40" fill="#FF8C42" />
 
-  <!-- Título Principal -->
-  <text x="600" y="100" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
+  <!-- ============================================ -->
+  <!-- ICONO DOCUMENTACIÓN (Páginas Apiladas - Izquierda) -->
+  <!-- ============================================ -->
+
+  <!-- Página inferior (rotada ligeramente) -->
+  <rect x="50" y="145" width="35" height="45" rx="2" fill="white" fill-opacity="0.7" />
+  <line x1="56" y1="155" x2="79" y2="155" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="56" y1="163" x2="79" y2="163" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="56" y1="171" x2="79" y2="171" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+
+  <!-- Página intermedia -->
+  <rect x="62" y="135" width="35" height="45" rx="2" fill="white" fill-opacity="0.85" />
+  <line x1="68" y1="145" x2="91" y2="145" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="68" y1="153" x2="91" y2="153" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="68" y1="161" x2="91" y2="161" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+
+  <!-- Página superior (más opaca) -->
+  <rect x="74" y="125" width="35" height="45" rx="2" fill="white" />
+  <line x1="80" y1="135" x2="103" y2="135" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="80" y1="143" x2="103" y2="143" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+  <line x1="80" y1="151" x2="103" y2="151" stroke="white" stroke-width="1.5" stroke-opacity="0.6" />
+
+  <!-- ============================================ -->
+  <!-- TEXTO CENTRADO (Derecha) -->
+  <!-- ============================================ -->
+
+  <!-- Línea 1: Título "Documentación" -->
+  <text x="600" y="120" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
     Documentación
   </text>
 
-  <!-- Descripción -->
-  <text x="600" y="165" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
+  <!-- Línea 2: Descripción "MCP Tools Server" -->
+  <text x="600" y="180" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
     MCP Tools Server
   </text>
 
-  <!-- Tecnologías (Footer) -->
-  <text x="600" y="288" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
-    Guías • Ejemplos • Configuración • Troubleshooting
+  <!-- Línea 3: Tipo de documento "Documentación" -->
+  <text x="600" y="230" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="300" fill="white" fill-opacity="0.75" text-anchor="middle">
+    Documentación
+  </text>
+
+  <!-- ============================================ -->
+  <!-- FOOTER (Naranja) - Tecnologías de Docs -->
+  <!-- ============================================ -->
+  <text x="600" y="388" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
+    Markdown • HTML/CSS • Mermaid • SVG • Git
   </text>
 </svg>
