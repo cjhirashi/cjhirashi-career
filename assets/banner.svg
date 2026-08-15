@@ -1,0 +1,53 @@
+<svg viewBox="0 0 1200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E293B;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="200" fill="url(#grad1)"/>
+
+  <!-- Accent bar -->
+  <rect width="1200" height="8" y="0" fill="#3B82F6"/>
+
+  <!-- Icon area -->
+  <g filter="url(#shadow)">
+    <!-- PDF document icon -->
+    <rect x="40" y="40" width="60" height="80" rx="4" fill="#EF4444" opacity="0.9"/>
+    <text x="70" y="105" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white" text-anchor="middle">PDF</text>
+
+    <!-- Plus sign -->
+    <text x="130" y="90" font-family="Arial, sans-serif" font-size="48" fill="#3B82F6" text-anchor="middle">+</text>
+
+    <!-- MCP/API icon -->
+    <circle cx="200" cy="80" r="25" fill="#10B981" opacity="0.9"/>
+    <text x="200" y="92" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">MCP</text>
+  </g>
+
+  <!-- Text content -->
+  <g>
+    <text x="270" y="70" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#FFFFFF">
+      MCP Tools Server
+    </text>
+    <text x="270" y="110" font-family="Arial, sans-serif" font-size="16" fill="#CBD5E1">
+      FastMCP server for generating professional PDFs (CVs &amp; Cover Letters)
+    </text>
+    <text x="270" y="135" font-family="Arial, sans-serif" font-size="14" fill="#94A3B8">
+      Powered by WeasyPrint • Jinja2 Templates • Docker • SSE Transport
+    </text>
+  </g>
+
+  <!-- Status badge -->
+  <g>
+    <rect x="1000" y="30" width="150" height="40" rx="4" fill="#10B981" opacity="0.15"/>
+    <circle cx="1020" cy="50" r="4" fill="#10B981"/>
+    <text x="1035" y="55" font-family="Arial, sans-serif" font-size="12" fill="#10B981" font-weight="bold">
+      Production Ready
+    </text>
+  </g>
+</svg>
