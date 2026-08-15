@@ -1,6 +1,9 @@
 # Claude Code local configuration
-.claude/
+# .claude/ es commiteable - contiene agents/ y memory/
+# Solo ignorar archivos personales dentro de .claude/
 CLAUDE.md
+.claude/settings.json
+.claude/hooks.json
 
 # Python
 __pycache__/
