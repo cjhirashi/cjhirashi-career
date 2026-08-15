@@ -1,59 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
   <defs>
     <linearGradient id="gradient-cyan-main" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a5f75;stop-opacity:1" />
     </linearGradient>
   </defs>
 
-  <!-- Sección Azul (Gradiente Cyan → Teal) -->
-  <rect width="1200" height="360" fill="url(#gradient-cyan-main)" />
+  <!-- Sección Azul Degradada (Cyan → Teal) -->
+  <rect width="1200" height="260" fill="url(#gradient-cyan-main)" />
 
-  <!-- Sección Naranja (Tecnologías - Footer) -->
-  <rect y="360" width="1200" height="40" fill="#FF8C42" />
+  <!-- Sección Gris (Footer) -->
+  <rect y="260" width="1200" height="40" fill="#4A4A4A" />
 
   <!-- ============================================ -->
-  <!-- ICONO MCP NODE (Izquierda) -->
+  <!-- ICONO MCP NODE MINIMALISTA (Izquierda) -->
   <!-- ============================================ -->
+  <!-- Icono simple: 3 puntos conectados en forma de triángulo (40x40px) -->
 
-  <!-- Círculo central del nodo MCP -->
-  <circle cx="80" cy="130" r="15" fill="white" />
+  <!-- Punto superior -->
+  <circle cx="120" cy="90" r="4" fill="white" fill-opacity="0.9" />
 
-  <!-- 4 círculos periféricos (arriba, derecha, abajo, izquierda) -->
-  <circle cx="80" cy="80" r="8" fill="white" />
-  <circle cx="130" cy="130" r="8" fill="white" />
-  <circle cx="80" cy="180" r="8" fill="white" />
-  <circle cx="30" cy="130" r="8" fill="white" />
+  <!-- Punto inferior izquierdo -->
+  <circle cx="100" cy="110" r="4" fill="white" fill-opacity="0.9" />
 
-  <!-- Líneas de conexión (desde círculo central a periféricos) -->
-  <line x1="80" y1="115" x2="80" y2="88" stroke="white" stroke-width="2" stroke-linecap="round" />
-  <line x1="95" y1="130" x2="122" y2="130" stroke="white" stroke-width="2" stroke-linecap="round" />
-  <line x1="80" y1="145" x2="80" y2="172" stroke="white" stroke-width="2" stroke-linecap="round" />
-  <line x1="65" y1="130" x2="38" y2="130" stroke="white" stroke-width="2" stroke-linecap="round" />
+  <!-- Punto inferior derecho -->
+  <circle cx="140" cy="110" r="4" fill="white" fill-opacity="0.9" />
+
+  <!-- Línea: superior a inferior izquierdo -->
+  <line x1="118" y1="93" x2="102" y2="107" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
+
+  <!-- Línea: superior a inferior derecho -->
+  <line x1="122" y1="93" x2="138" y2="107" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
+
+  <!-- Línea: inferior izquierdo a inferior derecho -->
+  <line x1="100" y1="110" x2="140" y2="110" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
 
   <!-- ============================================ -->
   <!-- TEXTO CENTRADO (Derecha) -->
   <!-- ============================================ -->
 
   <!-- Línea 1: Título "MCP Tools Server" -->
-  <text x="600" y="120" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
+  <text x="600" y="110" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
     MCP Tools Server
   </text>
 
   <!-- Línea 2: Descripción "Servidor de Herramientas Extensible" -->
-  <text x="600" y="180" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
+  <text x="600" y="160" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
     Servidor de Herramientas Extensible
   </text>
 
-  <!-- Línea 3: Tipo de documento "README" -->
-  <text x="600" y="230" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="300" fill="white" fill-opacity="0.75" text-anchor="middle">
+  <!-- Línea 3: Tipo de documento "README" (40px BOLD) -->
+  <text x="600" y="220" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="white" text-anchor="middle">
     README
   </text>
 
   <!-- ============================================ -->
-  <!-- FOOTER (Naranja) - Tecnologías -->
+  <!-- FOOTER (Gris) - Tecnologías -->
   <!-- ============================================ -->
-  <text x="600" y="388" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
+  <text x="600" y="286" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
     FastMCP • WeasyPrint • Jinja2 • Python • Docker
   </text>
 </svg>
