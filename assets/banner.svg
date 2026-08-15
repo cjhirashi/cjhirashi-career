@@ -13,30 +13,7 @@
   <rect y="260" width="1200" height="40" fill="#4A4A4A" />
 
   <!-- ============================================ -->
-  <!-- ICONO MCP NODE MINIMALISTA (Izquierda) -->
-  <!-- ============================================ -->
-  <!-- Icono simple: 3 puntos conectados en forma de triángulo (40x40px) -->
-
-  <!-- Punto superior -->
-  <circle cx="120" cy="90" r="4" fill="white" fill-opacity="0.9" />
-
-  <!-- Punto inferior izquierdo -->
-  <circle cx="100" cy="110" r="4" fill="white" fill-opacity="0.9" />
-
-  <!-- Punto inferior derecho -->
-  <circle cx="140" cy="110" r="4" fill="white" fill-opacity="0.9" />
-
-  <!-- Línea: superior a inferior izquierdo -->
-  <line x1="118" y1="93" x2="102" y2="107" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
-
-  <!-- Línea: superior a inferior derecho -->
-  <line x1="122" y1="93" x2="138" y2="107" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
-
-  <!-- Línea: inferior izquierdo a inferior derecho -->
-  <line x1="100" y1="110" x2="140" y2="110" stroke="white" stroke-width="1.5" stroke-opacity="0.9" stroke-linecap="round" />
-
-  <!-- ============================================ -->
-  <!-- TEXTO CENTRADO (Derecha) -->
+  <!-- TEXTO CENTRADO -->
   <!-- ============================================ -->
 
   <!-- Línea 1: Título "MCP Tools Server" -->
