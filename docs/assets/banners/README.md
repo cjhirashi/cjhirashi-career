@@ -1,16 +1,18 @@
 # Banners Dinámicos de Documentación
 
-_Sistema modular de banners personalizados por documento. Cada sección de documentación tiene su propio banner con título, descripción y tipo específicos._
+_Sistema modular de banners personalizados por documento con paleta armónica de colores. Cada sección de documentación tiene su propio banner con título, descripción, tipo y color distintivo._
 
 ---
 
 ## Descripción General
 
-Este directorio contiene banners SVG dinámicos para cada sección de la documentación de **MCP Tools Server**. Cada banner es personalizable manteniendo una estructura visual y estilo consistente.
+Este directorio contiene banners SVG dinámicos para cada sección de la documentación de **MCP Tools Server**. Cada banner es personalizable manteniendo una estructura visual consistente con una paleta armónica de colores.
 
 ### Características
 
-- **Gradiente Cyan Consistente**: Color de marca #06B6D4 → #0a5f75
+- **Paleta Armónica**: Tres familias de colores (Cyan, Verde, Morado) coordinadas entre sí
+- **Colores Distintivos**: Cada sección tiene su color primario para identificación rápida
+- **Elementos Visuales Mejorados**: Formas decorativas sutiles, líneas divisoras, badges con opacidad
 - **Footer Fijo**: Nombre del proyecto "MCP Tools Server" en todos los banners
 - **Contenido Personalizable**: Título, descripción y tipo por documento
 - **Formato SVG Puro**: Sin dependencias externas, se renderiza en cualquier cliente
@@ -20,54 +22,96 @@ Este directorio contiene banners SVG dinámicos para cada sección de la documen
 
 ## Estructura de un Banner
 
-Cada banner tiene dimensiones **1200x400px** y está dividido en dos zonas:
+Cada banner tiene dimensiones **1200x400px** y está dividido en zonas:
 
-### 1. Zona Azul Degradada (0-360px)
+### 1. Zona de Gradiente Colorido (0-360px)
 
-Contiene tres líneas de texto centradas:
+**Fondo**: Gradiente lineal vertical con paleta armónica según sección:
+- Inicio (superior): Color primario (600) — más claro
+- Fin (inferior): Color secundario (700) — más oscuro
 
-| Línea | Elemento | Tamaño | Peso | Ejemplo |
-|-------|----------|--------|------|---------|
-| 1 | **Título del Documento** | 72px | Bold | "Getting Started" |
-| 2 | **Descripción Breve** | 28px | Light (300) | "Guía rápida para comenzar..." |
-| 3 | **Tipo/Categoría** | 40px | Bold | "QUICK START" |
+| Sección | Color Primario | Color Secundario | Ejemplo |
+|---------|---|---|---|
+| **Getting Started** | Cyan-600 #06B6D4 | Cyan-700 #0891B2 | Inicio rápido |
+| **API Reference** | Verde-600 #10B981 | Verde-700 #059669 | Herramientas activas |
+| **Troubleshooting** | Morado-600 #A855F7 | Morado-700 #9333EA | Resolución creativa |
+| **Configuration** | Cyan-600 #06B6D4 | Cyan-800 #0E7490 | Setup profundo |
 
-Entre línea 2 y 3 hay un divisor sutil blanco (1px, opacity 0.2).
+**Elementos decorativos** (opacidad baja 0.10-0.15):
+- Círculos sutiles en esquinas (radio 40-80px)
+- Rectángulos verticales en bordes
+- Línea divisor inferior en color primario (opacity 0.4)
+
+**Contenido textual** (alineación izquierda):
+
+| Elemento | Tamaño | Peso | Posición X | Posición Y |
+|----------|--------|------|-----------|-----------|
+| **Título del Documento** | 72px | Bold | 60 | 120 |
+| **Descripción Breve** (Línea 1) | 28px | Light (300) | 60 | 195 |
+| **Descripción Breve** (Línea 2) | 28px | Light (300) | 60 | 235 |
+| **Línea decorativa** | 2px stroke | N/A | 60-320 | 260 |
+| **Badge "tipo"** (esquina superior derecha) | 40px | Bold | 1140 | 70 |
 
 ### 2. Zona Gris (360-400px)
 
 Footer con:
 - **Nombre del Proyecto**: "MCP Tools Server" (FIJO en todos)
-- **Tamaño**: 16px
+- **Tamaño**: 14px
 - **Color**: Blanco sobre fondo #4A4A4A
+- **Información**: Categorías y ruta del documento
+  - Ejemplo: "Instalación • Configuración • Primeros Pasos  |  docs/getting-started/"
 
 ---
 
 ## Banners Disponibles
 
-### 1. `getting-started.svg`
-- **Título**: Getting Started
-- **Descripción**: Guía rápida para comenzar con MCP Tools Server
-- **Tipo**: QUICK START
-- **Uso**: `docs/getting-started/README.md`
+### 1. `getting-started.svg` — CYAN (Confianza, Inicio)
 
-### 2. `api-reference.svg`
-- **Título**: API Reference
-- **Descripción**: Documentación completa de herramientas y endpoints MCP
-- **Tipo**: TOOLS & ENDPOINTS
-- **Uso**: `docs/api/README.md` o documentación de herramientas
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Getting Started |
+| **Descripción** | Comienza en minutos con una guía paso a paso para configurar tu entorno |
+| **Color Primario** | Cyan-600 (#06B6D4) → Cyan-700 (#0891B2) |
+| **Badge** | START |
+| **Tipo** | QUICK START |
+| **Uso** | `docs/getting-started/README.md` |
+| **Propósito** | Guía de inicio rápido para nuevos usuarios |
 
-### 3. `troubleshooting.svg`
-- **Título**: Troubleshooting
-- **Descripción**: Soluciones a problemas comunes y diagnóstico de errores
-- **Tipo**: PROBLEM SOLVING
-- **Uso**: `docs/troubleshooting/README.md`
+### 2. `api-reference.svg` — VERDE (Actividad, Herramientas)
 
-### 4. `configuration.svg`
-- **Título**: Configuration
-- **Descripción**: Setup y configuración paso a paso de MCP Tools Server
-- **Tipo**: SETUP & CUSTOMIZATION
-- **Uso**: `docs/configuration/README.md`
+| Atributo | Valor |
+|----------|-------|
+| **Título** | API Reference |
+| **Descripción** | Documentación completa de herramientas y endpoints MCP disponibles |
+| **Color Primario** | Verde-600 (#10B981) → Verde-700 (#059669) |
+| **Badge** | API |
+| **Tipo** | TOOLS & ENDPOINTS |
+| **Uso** | `docs/api/README.md` o documentación de herramientas |
+| **Propósito** | Referencia técnica de componentes activos |
+
+### 3. `troubleshooting.svg` — MORADO (Resolución, Distincción)
+
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Troubleshooting |
+| **Descripción** | Soluciones a problemas comunes y diagnóstico de errores |
+| **Color Primario** | Morado-600 (#A855F7) → Morado-700 (#9333EA) |
+| **Badge** | DEBUG |
+| **Tipo** | PROBLEM SOLVING |
+| **Uso** | `docs/troubleshooting/README.md` |
+| **Propósito** | Solución de problemas y FAQ |
+
+### 4. `configuration.svg` — CYAN OSCURO (Setup Profundo)
+
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Configuration |
+| **Descripción** | Setup y configuración paso a paso de MCP Tools Server |
+| **Color Primario** | Cyan-600 (#06B6D4) → Cyan-800 (#0E7490) |
+| **Badge** | SETUP |
+| **Tipo** | SETUP & CUSTOMIZATION |
+| **Uso** | `docs/configuration/README.md` |
+| **Propósito** | Configuración detallada y personalización |
 
 ---
 
@@ -223,10 +267,20 @@ Antes de usar un nuevo banner, verifica:
 
 ### Zona Degradada
 - **Alto**: 360px
-- **Gradiente**: Linear, de arriba a abajo (y1="0%" → y2="100%")
-- **Colores**:
-  - Inicio: `#06B6D4` (Cyan-600)
-  - Fin: `#0a5f75` (Teal-700 personalizado)
+- **Gradiente**: Linear, vertical de arriba a abajo (y1="0%" → y2="100%")
+- **Colores** (por sección):
+  
+  | Sección | Inicio (600) | Fin (700/800) |
+  |---------|-------------|-------------|
+  | Getting Started | `#06B6D4` (Cyan) | `#0891B2` (Cyan) |
+  | API Reference | `#10B981` (Verde) | `#059669` (Verde) |
+  | Troubleshooting | `#A855F7` (Morado) | `#9333EA` (Morado) |
+  | Configuration | `#06B6D4` (Cyan) | `#0E7490` (Cyan oscuro) |
+
+- **Elementos decorativos**:
+  - Círculos blancos (opacity 0.10-0.12)
+  - Rectángulos blancos (opacity 0.12-0.15)
+  - Línea divisor en color primario (opacity 0.4)
 
 ### Zona Footer
 - **Alto**: 40px (y="360" a y="400")
@@ -257,22 +311,29 @@ Antes de usar un nuevo banner, verifica:
 ### DO ✓
 
 - ✓ Mantener el footer "MCP Tools Server" en todos los banners
-- ✓ Usar el gradiente cyan consistente (#06B6D4 → #0a5f75)
-- ✓ Escribir títulos breves y descriptivos
-- ✓ Mantener descripciones en 1 línea si es posible
+- ✓ Usar los colores correctos según sección (ver tabla en "Banners Disponibles")
+- ✓ Aplicar gradientes con opacidad consistente (0.10-0.15 para decoraciones)
+- ✓ Incluir línea divisor en color primario (opacity 0.4)
+- ✓ Escribir títulos breves y descriptivos (máximo 30-35 caracteres)
+- ✓ Mantener descripciones en 1-2 líneas máximo
 - ✓ Usar MAYÚSCULAS para el tipo de documento
+- ✓ Agregar badge de tipo en esquina superior derecha
 - ✓ Copiar desde `banner-template.svg` para nuevos banners
 - ✓ Probar visualización en GitHub antes de usar
+- ✓ Verificar que elementos decorativos no compitan con el texto
 
 ### DON'T ✗
 
 - ✗ Cambiar el nombre del proyecto en el footer
-- ✗ Usar colores diferentes al gradiente cyan
+- ✗ Usar colores fuera de la paleta armónica (Cyan, Verde, Morado)
+- ✗ Mezclar colores de secciones diferentes en un mismo banner
+- ✗ Remover elementos decorativos (círculos, líneas, badges)
 - ✗ Agregar logos o imágenes dentro del SVG
 - ✗ Hacer títulos demasiado largos (>35 caracteres)
-- ✗ Usar fuentes personalizadas (fallback a Arial/Helvetica)
+- ✗ Usar fuentes personalizadas (fallback a Arial/Helvetica/Inter)
 - ✗ Modificar las dimensiones (1200x400)
-- ✗ Remover el divisor sutil entre descripción y tipo
+- ✗ Cambiar la opacidad de elementos decorativos (usar 0.10-0.15)
+- ✗ Usar opacidad demasiado alta en decoraciones (compite con contenido)
 
 ---
 
@@ -366,9 +427,25 @@ docs/assets/banners/
 
 ---
 
+## Referencia de Paleta de Colores
+
+Para más detalles sobre la paleta armónica, tokens de color y uso en diagramas Mermaid:
+
+- [COLOR_PALETTE.md](../../COLOR_PALETTE.md) — Paleta completa (Cyan, Verde, Morado)
+- Código Hex, RGB, armonía y principios de accesibilidad
+
+## Diagramas de Arquitectura
+
+Consulta los diagramas Mermaid que usan la misma paleta de colores:
+
+- [ARCHITECTURE.md](../ARCHITECTURE.md) — Componentes del sistema con colores
+- [DATA_FLOW.md](../DATA_FLOW.md) — Flujo de datos con paleta
+- [NETWORK_TOPOLOGY.md](../NETWORK_TOPOLOGY.md) — Topología de red
+
 ## Relacionado
 
 - [Documentación Principal](../README.md) — Índice de docs
+- [Banners de README](../../assets/readme-banners/README.md) — Banners principales
 - [Banner de Proyecto](../../assets/banner.svg) — Banner principal (raíz)
 - [CLAUDE.md](../../CLAUDE.md) — Guía para agentes y desarrolladores
 - [README Principal](../../README.md) — Información del proyecto
@@ -377,4 +454,5 @@ docs/assets/banners/
 
 **Última actualización**: 2026-08-15  
 **Responsable**: Especialista en Documentación Técnica  
-**Proyecto**: MCP Tools Server
+**Proyecto**: MCP Tools Server  
+**Versión**: 2.0 (Paleta Armónica)
