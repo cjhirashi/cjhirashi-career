@@ -310,8 +310,6 @@ See `Dockerfile` for exact dependency versions.
 
 Este proyecto integra con los siguientes agentes especializados del ecosistema **cjhirashi**.
 
-**⚠️ IMPORTANTE:** Leer `.claude/agents-config.md` para instrucciones personalizadas antes de usar cualquier agente.
-
 ---
 
 ### Agentes Disponibles
@@ -326,8 +324,6 @@ Este proyecto integra con los siguientes agentes especializados del ecosistema *
 - Cambios de puerto o configuración de servicio
 
 **NO:** Código Python de la aplicación
-
-**Config personalizada:** Ver `.claude/agents-config.md`
 
 ---
 
