@@ -308,7 +308,13 @@ See `Dockerfile` for exact dependency versions.
 
 ## Agentes Globales del Ecosistema
 
-Este proyecto integra con los siguientes agentes especializados del ecosistema **cjhirashi**:
+Este proyecto integra con los siguientes agentes especializados del ecosistema **cjhirashi**.
+
+**⚠️ IMPORTANTE:** Leer `.claude/agents-config.md` para instrucciones personalizadas antes de usar cualquier agente.
+
+---
+
+### Agentes Disponibles
 
 ### 🐳 [docker](~/.claude/agents/docker.md)
 **Cuándo usar:** Cambios a Dockerfile, docker-compose.yml, imágenes, volúmenes, redes
@@ -320,6 +326,8 @@ Este proyecto integra con los siguientes agentes especializados del ecosistema *
 - Cambios de puerto o configuración de servicio
 
 **NO:** Código Python de la aplicación
+
+**Config personalizada:** Ver `.claude/agents-config.md`
 
 ---
 
