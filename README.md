@@ -1,312 +1,125 @@
 ![MCP Tools Server](assets/banner.svg)
 
-# MCP Tools Server
+# MCP Tools Server — Proyecto
 
-A FastMCP server that generates professional PDFs (CVs and Cover Letters) from JSON structures using WeasyPrint and Jinja2 templates, deployed in Docker with SSE transport.
+Plataforma de generación de documentos profesionales (CVs, Cartas de Presentación y futuras herramientas) basada en el [Model Context Protocol (MCP)](https://modelcontextprotocol.io). El proyecto tiene una **arquitectura dual** con dos contenedores independientes orquestados desde este `docker-compose.yml`:
 
-## 🔧 Tecnologías
-
-- **Python 3.11** — Runtime environment
-- **FastMCP** — Model Context Protocol framework (SSE transport)
-- **WeasyPrint** — PDF rendering engine
-- **Jinja2** — Template engine
-- **Uvicorn** — ASGI server
-- **Docker & Docker Compose** — Container orchestration
+- **`server/`** — Servidor MCP (FastMCP + WeasyPrint + Jinja2), expone herramientas vía SSE. Ver [server/README.md](./server/README.md).
+- **`frontend/`** — Interfaz web para usuarios (en desarrollo). Ver [frontend/README.md](./frontend/README.md).
 
 ---
 
-## 📋 Descripción
-
-MCP Tools Server es un servidor especializado en la generación automatizada de documentos profesionales en PDF. Expone dos herramientas MCP (`crear_cv_pdf` y `crear_cover_letter_pdf`) que:
-
-- **Aceptan JSON estructurado** como entrada
-- **Renderizan plantillas Jinja2** con datos personalizados
-- **Aplican estilos CSS paged media** optimizados para impresión
-- **Generan PDFs profesionales** almacenados en volúmenes persistentes
-- **Comunican vía SSE** a través del protocolo MCP
-
-**Ideal para:** Agentes MCP, sistemas de recursos humanos, plataformas de empleo, herramientas de generación de documentos.
-
----
-
-## 🏗️ Arquitectura
-
-El sistema se compone de un servidor FastMCP que expone herramientas para generar documentos PDF. Las solicitudes de clientes MCP se procesan a través de generadores específicos que renderizan templates y retornan rutas de archivo.
+## Arquitectura
 
 ```mermaid
 graph TD
-    A["MCP Client<br/>(HTTP/SSE)"] -->|8002| B["FastMCP Server<br/>(server.py)"]
-    B -->|@mcp.tool| C["Tool Router"]
-    C -->|crear_cv_pdf| D["CV Generator<br/>(cv_generator.py)"]
-    C -->|crear_cover_letter_pdf| E["Cover Generator<br/>(cover_generator.py)"]
-    D -->|Jinja2| F["CV Template<br/>(cv_template.html)"]
-    E -->|Jinja2| G["Cover Template<br/>(cover_template.html)"]
-    F -->|CSS Paged Media| H["WeasyPrint"]
-    G -->|CSS Paged Media| H
-    H -->|PDF| I["Persistent Storage<br/>(/mcp-outputs/)")
-    I -->|File Path| B
-    B -->|Result String| A
+    subgraph Host["Docker Host"]
+        subgraph S["server/ — mcp_tools_server (8002→8000)"]
+            B["FastMCP Server<br/>(server.py)"]
+        end
+        subgraph F["frontend/ — mcp_frontend (8003→8000, planeado)"]
+            UI["Interfaz Web"]
+        end
+    end
+    Client["MCP Client / Usuario"] -->|SSE 8002| B
+    Client -->|HTTP 8003| UI
+    UI -->|SSE interno| B
+    B -->|PDF| Vol["/mnt/disco2/cjhirashi-data/mcp-outputs<br/>(volumen persistente)"]
 ```
 
-### Flujo Principal
-
-1. **Cliente MCP** → Conecta vía SSE a puerto 8002
-2. **FastMCP Server** → Recibe herramienta + parámetros JSON
-3. **Tool Generator** → Parsea JSON, carga template, aplica estilos
-4. **WeasyPrint** → Renderiza HTML → PDF
-5. **Storage** → Almacena en `/mnt/disco2/cjhirashi-data/mcp-outputs/`
-6. **Response** → Retorna ruta de archivo al cliente
-
-### Decisiones de Diseño
-
-- **CSS Paged Media:** Optimiza layout para impresión (márgenes, saltos de página)
-- **Jinja2 Templates:** Flexible para múltiples formatos sin cambiar código
-- **SSE Transport:** Comunicación unidireccional eficiente para MCP
-- **Volúmenes Persistentes:** Los PDFs persisten después de reiniciar contenedor
+Cada contenedor tiene su propio `Dockerfile` y se desarrolla en aislamiento; `docker-compose.yml` en la raíz los orquesta en conjunto y los conecta a la red externa `network-cjhirashi-srv`.
 
 ---
 
-## 🚀 Quick Start
+## Estructura del Proyecto
 
-### 1. Iniciar el servidor
-
-```bash
-docker build --network=host --no-cache -t mcp-server-mcp-tools:latest . && \
-docker compose up -d --force-recreate
+```
+mcp-server/
+├── docker-compose.yml          # Orquesta server + frontend
+├── README.md                   # Este archivo (overview del proyecto)
+├── CLAUDE.md                   # Guía de desarrollo para agentes/Claude Code
+├── .gitignore
+├── .claude/
+│   └── agents/                 # Definiciones de agentes especializados
+├── assets/
+│   └── banner.svg
+├── docs/
+│   └── assets/
+│
+├── server/                     # Servidor MCP (contenedor mcp_tools_server)
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── Pipfile / Pipfile.lock
+│   ├── server.py
+│   ├── tools/
+│   │   ├── __init__.py
+│   │   ├── cv_generator.py
+│   │   └── cover_generator.py
+│   ├── templates/
+│   │   ├── cv_template.html
+│   │   ├── cover_template.html
+│   │   └── css/style_1.css
+│   ├── test_cv.py
+│   ├── test_cover.py
+│   ├── mcp_tools_server.md     # Guía operacional
+│   ├── Guia PDF WeasyPrint y CSS paged media.md
+│   └── README.md               # Documentación técnica del servidor
+│
+└── frontend/                   # Interfaz web (contenedor mcp_frontend, en desarrollo)
+    ├── Dockerfile               # Template/placeholder
+    ├── package.json             # Template/placeholder
+    └── README.md
 ```
 
-### 2. Verificar estado
+---
+
+## Quick Start
+
+### Levantar el servidor MCP
+
+```bash
+docker compose build --no-cache mcp-tools
+docker compose up -d --force-recreate mcp-tools
+```
 
 ```bash
 docker logs mcp_tools_server --tail 20 -f
 ```
 
-Espera ver:
-```
-INFO:     Starting MCP server 'MCP-Tools-Server' with transport 'sse' on http://0.0.0.0:8000/sse
-INFO:     Application startup complete.
-```
+El servidor queda disponible en `http://<IP_SERVIDOR>:8002/sse`.
 
-### 3. Conectar cliente MCP
+### Frontend
 
-```
-http://<IP_SERVIDOR>:8002/sse
-```
-
-### 4. Verificar outputs
-
-```bash
-ls /mnt/disco2/cjhirashi-data/mcp-outputs/cvs/
-ls /mnt/disco2/cjhirashi-data/mcp-outputs/cover_letters/
-```
+El servicio `mcp-frontend` está definido (comentado) en `docker-compose.yml` como placeholder, pendiente de implementación. Ver [frontend/README.md](./frontend/README.md) para el estado y próximos pasos.
 
 ---
 
-## 📋 Herramientas Expuestas
+## Documentación
 
-| Herramienta | Parámetros | Descripción |
-|:---|:---|:---|
-| `crear_cv_pdf` | `datos_cv_json` (str), `nombre_archivo` (str) | Genera CV profesional en PDF y lo almacena en `/mcp-outputs/cvs/` |
-| `crear_cover_letter_pdf` | `datos_cover_json` (str), `nombre_archivo` (str) | Genera Carta de Presentación en PDF y la almacena en `/mcp-outputs/cover_letters/` |
-
----
-
-## 📖 Ejemplos de Uso
-
-### Generar un CV
-
-**Solicitud:**
-```json
-{
-  "tool": "crear_cv_pdf",
-  "arguments": {
-    "datos_cv_json": "{\"nombre\":\"Juan García\",\"email\":\"juan@example.com\",\"telefono\":\"+34 600 123 456\",\"titulo_profesional\":\"Senior Software Engineer\",\"resumen\":\"Ingeniero de software con 10 años de experiencia...\",\"experiencia\":[{\"empresa\":\"Tech Corp\",\"puesto\":\"Senior Developer\",\"fechas\":\"2020-2024\",\"descripcion\":\"Desarrollo de aplicaciones backend en Python\"}],\"educacion\":[{\"institucion\":\"Universidad de Madrid\",\"titulo\":\"Grado en Informática\",\"año\":\"2014\"}],\"habilidades\":[\"Python\",\"JavaScript\",\"React\",\"PostgreSQL\",\"Docker\",\"AWS\"]}",
-    "nombre_archivo": "CV_JuanGarcia_2024.pdf"
-  }
-}
-```
-
-**Respuesta Exitosa:**
-```json
-{
-  "result": "Éxito: PDF generado correctamente en '/mnt/disco2/cjhirashi-data/mcp-outputs/cvs/CV_JuanGarcia_2024.pdf'"
-}
-```
-
-### Generar una Carta de Presentación
-
-**Solicitud:**
-```json
-{
-  "tool": "crear_cover_letter_pdf",
-  "arguments": {
-    "datos_cover_json": "{\"nombre\":\"Juan García\",\"email\":\"juan@example.com\",\"telefono\":\"+34 600 123 456\",\"empresa_destino\":\"TechCorp Solutions\",\"puesto\":\"Senior Software Architect\",\"persona_contacto\":\"María López\",\"fecha\":\"15 de Agosto de 2024\",\"introduccion\":\"Le escribo para expresar mi interés en la posición...\",\"cuerpo\":\"Con más de 10 años de experiencia...\",\"cierre\":\"Agradezco su consideración...\"}",
-    "nombre_archivo": "CoverLetter_JuanGarcia_TechCorp.pdf"
-  }
-}
-```
-
-**Respuesta Exitosa:**
-```json
-{
-  "result": "Éxito: PDF generado correctamente en '/mnt/disco2/cjhirashi-data/mcp-outputs/cover_letters/CoverLetter_JuanGarcia_TechCorp.pdf'"
-}
-```
+| Documento | Contenido |
+|---|---|
+| [CLAUDE.md](./CLAUDE.md) | Guía de desarrollo para agentes/Claude Code: arquitectura, patrones, debugging |
+| [server/README.md](./server/README.md) | Documentación técnica completa del servidor MCP: herramientas, schemas JSON, ejemplos |
+| [server/mcp_tools_server.md](./server/mcp_tools_server.md) | Procedimientos operacionales: logs, monitoreo, health checks |
+| [server/Guia PDF WeasyPrint y CSS paged media.md](./server/Guia%20PDF%20WeasyPrint%20y%20CSS%20paged%20media.md) | Referencia técnica de estilos CSS paged media para PDFs |
+| [frontend/README.md](./frontend/README.md) | Estado y plan del frontend web |
 
 ---
 
-## 📝 Esquema de Datos Esperado
-
-### CV (`crear_cv_pdf`)
-
-```json
-{
-  "nombre": "Nombre Completo",
-  "email": "email@example.com",
-  "telefono": "+34 600 123 456",
-  "ubicacion": "Ciudad, País",
-  "titulo_profesional": "Especialidad / Puesto Actual",
-  "resumen": "Resumen profesional o perfil personal",
-  "experiencia": [
-    {
-      "empresa": "Nombre Empresa",
-      "puesto": "Título del Puesto",
-      "fechas": "2020-2024",
-      "descripcion": "Responsabilidades y logros"
-    }
-  ],
-  "educacion": [
-    {
-      "institucion": "Nombre Universidad/Instituto",
-      "titulo": "Grado o Certificación",
-      "año": "2014"
-    }
-  ],
-  "habilidades": ["Habilidad1", "Habilidad2", "Habilidad3"],
-  "certificaciones": [
-    {
-      "nombre": "Nombre Certificación",
-      "institución": "Institución",
-      "año": "2023"
-    }
-  ],
-  "idiomas": [
-    {
-      "idioma": "Español",
-      "nivel": "Nativo"
-    }
-  ]
-}
-```
-
-### Carta de Presentación (`crear_cover_letter_pdf`)
-
-```json
-{
-  "nombre": "Nombre Completo",
-  "email": "email@example.com",
-  "telefono": "+34 600 123 456",
-  "empresa_destino": "Nombre de la Empresa",
-  "puesto": "Título del Puesto Solicitado",
-  "persona_contacto": "Nombre del Contacto",
-  "fecha": "15 de Agosto de 2024",
-  "introduccion": "Párrafo inicial expresando interés en la posición",
-  "cuerpo": "Párrafo principal con competencias y experiencia relevante",
-  "cierre": "Párrafo final con llamada a la acción"
-}
-```
-
----
-
-## 🧪 Testing
-
-Para probar localmente sin Docker:
-
-```bash
-# Instalar dependencias
-pip install -r requirements.txt
-# o
-pipenv install
-
-# Ejecutar tests
-python test_cv.py
-python test_cover.py
-```
-
-Los tests generan PDFs de ejemplo en `/mnt/disco2/cjhirashi-data/mcp-outputs/`.
-
----
-
-## 🐛 Troubleshooting
-
-| Problema | Causa | Solución |
-|:---|:---|:---|
-| El contenedor no inicia | Dependencias faltantes o error de sintaxis | `docker logs mcp_tools_server` + Reconstruir: `docker build --no-cache -t mcp-server-mcp-tools:latest .` |
-| PDFs no se generan | Permisos en volumen o JSON malformado | Verificar `/mnt/disco2/cjhirashi-data/mcp-outputs` existe + Validar JSON |
-| Errores de CSS o fuentes | Rutas relativas incorrectas | Revisar `templates/css/style_1.css` + Ver guía CSS paged media |
-| "Module not found" | sys.path incorrecto en contenedor | Reconstruir imagen Docker |
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-mcp-server/
-├── assets/
-│   └── banner.svg                   # Banner visual
-├── templates/
-│   ├── css/
-│   │   └── style_1.css              # Estilos CSS paged media
-│   ├── cover_template.html          # Template Jinja2 - Carta
-│   └── cv_template.html             # Template Jinja2 - CV
-├── tools/
-│   ├── __init__.py
-│   ├── cv_generator.py              # Lógica de generación CV
-│   └── cover_generator.py           # Lógica de generación Cover Letter
-├── docker-compose.yml               # Orquestación Docker
-├── Dockerfile                       # Definición imagen
-├── server.py                        # Servidor FastMCP
-├── test_cv.py                       # Test unitario CV
-├── test_cover.py                    # Test unitario Cover Letter
-├── CLAUDE.md                        # Guía para desarrolladores
-├── mcp_tools_server.md              # Guía operacional
-├── Guia PDF WeasyPrint y CSS paged media.md  # Referencia CSS
-└── README.md                        # Este archivo
-```
-
----
-
-## 📚 Documentación
-
-- **[CLAUDE.md](./CLAUDE.md)** — Guía completa para desarrolladores: arquitectura interna, patrones de desarrollo, debugging
-- **[mcp_tools_server.md](./mcp_tools_server.md)** — Procedimientos operacionales: logs, monitoreo, health checks, restart policies
-- **[Guia PDF WeasyPrint y CSS paged media.md](./Guia%20PDF%20WeasyPrint%20y%20CSS%20paged%20media.md)** — Referencia técnica de estilos CSS y CSS paged media para PDFs
-
----
-
-## ⚙️ Configuración Avanzada
-
-Para cambiar puertos, directorios o configuración de red:
-
-- **docker-compose.yml** — Puertos expuestos (8002), volúmenes, red (network-cjhirashi-srv)
-- **Dockerfile** — Versión Python (3.11), dependencias del sistema
-- **server.py** — Host/puerto del servidor MCP (0.0.0.0:8000)
-- **tools/\*.py** — Rutas de salida (`/mnt/disco2/cjhirashi-data/mcp-outputs/...`)
-
----
-
-## 🔌 Configuración del Entorno
+## Configuración del Entorno
 
 | Parámetro | Valor |
 |:---|:---|
-| **Puerto Interno (Contenedor)** | 8000 |
-| **Puerto Expuesto (Host)** | 8002 |
+| **Servidor MCP — Puerto Interno** | 8000 |
+| **Servidor MCP — Puerto Expuesto** | 8002 |
+| **Frontend — Puerto Interno (planeado)** | 8000 |
+| **Frontend — Puerto Expuesto (planeado)** | 8003 |
 | **Transporte MCP** | SSE (Server-Sent Events) |
 | **Volumen Persistente** | `/mnt/disco2/cjhirashi-data/mcp-outputs` |
-| **Red Docker** | `network-cjhirashi-srv` |
+| **Red Docker** | `network-cjhirashi-srv` (externa) |
 
 ---
 
-**Última actualización:** 2026-08-15  
-**Contacto:** Carlos (cjhirashi@gmail.com)  
+**Última actualización:** 2026-08-15
+**Contacto:** Carlos (cjhirashi@gmail.com)
 **Licencia:** [Especificar licencia]

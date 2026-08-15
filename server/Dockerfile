@@ -18,12 +18,12 @@ RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80retries && \
 
 WORKDIR /app
 
+# Copia del código fuente (incluyendo la carpeta tools/) y requirements
+COPY . /app
+
 # Instalación de las librerías de Python requeridas
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir mcp fastmcp jinja2 weasyprint
-
-# Copia del código fuente (incluyendo la carpeta tools/)
-COPY . /app
+    pip install --no-cache-dir -r requirements.txt
 
 # Creación de carpetas de salida
 RUN mkdir -p /mnt/disco2/cjhirashi-data/mcp-outputs/cvs /mnt/disco2/cjhirashi-data/mcp-outputs/cover_letters

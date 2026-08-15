@@ -1,7 +1,7 @@
 services:
   mcp-tools:
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile
     container_name: mcp_tools_server
     restart: unless-stopped
@@ -15,6 +15,21 @@ services:
       - PYTHONUNBUFFERED=1
       - FASTMCP_HOST=0.0.0.0
       - FASTMCP_PORT=8000
+
+  # mcp-frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: mcp_frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8003:8000"
+  #   networks:
+  #     - network-cjhirashi-srv
+  #   environment:
+  #     - MCP_SERVER_URL=http://mcp_tools_server:8000/sse
+  #   depends_on:
+  #     - mcp-tools
 
 networks:
   network-cjhirashi-srv:

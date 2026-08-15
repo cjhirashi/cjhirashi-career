@@ -77,10 +77,19 @@ docker compose down
 
 ### 🔄 Reconstrucción Limpia (Despliegue de Cambios)
 
-Cuando se modifique el `Dockerfile`, `server.py`, plantillas en `templates/` o herramientas en `tools/`, se debe forzar la recompilación sin caché y la recreación del contenedor:
+Cuando se modifique el `Dockerfile`, `server.py`, plantillas en `templates/` o herramientas en `tools/`, se debe forzar la recompilación sin caché y la recreación del contenedor.
+
+Desde la raíz del proyecto (donde vive `docker-compose.yml`, que apunta al contexto `./server`):
 
 ```bash
-docker build --network=host --no-cache -t mcp-server-mcp-tools:latest . && docker compose up -d --force-recreate
+docker compose build --no-cache mcp-tools && docker compose up -d --force-recreate
+```
+
+O, de forma equivalente, construyendo directamente la imagen desde `server/`:
+
+```bash
+cd server && docker build --network=host --no-cache -t mcp-server-mcp-tools:latest . && cd ..
+docker compose up -d --force-recreate
 ```
 
 ---
