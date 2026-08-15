@@ -1,63 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
   <defs>
-    <linearGradient id="gradient-cyan-docs" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="gradient-cyan-teal-docs" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0a5f75;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
     </linearGradient>
   </defs>
 
-  <!-- Background gradient -->
-  <rect width="1200" height="260" fill="url(#gradient-cyan-docs)"/>
+  <!-- Sección Azul (Gradiente Cyan → Teal) -->
+  <rect width="1200" height="260" fill="url(#gradient-cyan-teal-docs)" />
 
-  <!-- Footer background -->
-  <rect x="0" y="260" width="1200" height="40" fill="#FF8C42"/>
+  <!-- Sección Naranja (Tecnologías) -->
+  <rect y="260" width="1200" height="40" fill="#FF8C42" />
 
-  <!-- Subtle top accent line -->
-  <line x1="0" y1="1" x2="1200" y2="1" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-
-  <!-- Documentation Icon - Stacked Pages -->
-  <g transform="translate(85, 110)">
-    <!-- Bottom page -->
-    <rect x="0" y="50" width="90" height="110" rx="2" fill="white" opacity="0.5" stroke="white" stroke-width="1.2" opacity="0.6"/>
-
-    <!-- Middle page -->
-    <rect x="10" y="35" width="90" height="110" rx="2" fill="white" opacity="0.75" stroke="white" stroke-width="1.2" opacity="0.7"/>
-
-    <!-- Top page -->
-    <rect x="20" y="20" width="90" height="110" rx="2" fill="white" stroke="white" stroke-width="1.5" opacity="0.9"/>
-
-    <!-- Text lines on top page -->
-    <line x1="30" y1="40" x2="100" y2="40" stroke="rgba(6, 182, 212, 0.4)" stroke-width="2"/>
-    <line x1="30" y1="55" x2="95" y2="55" stroke="rgba(6, 182, 212, 0.4)" stroke-width="1.5"/>
-    <line x1="30" y1="68" x2="90" y2="68" stroke="rgba(6, 182, 212, 0.3)" stroke-width="1.5"/>
-    <line x1="30" y1="81" x2="85" y2="81" stroke="rgba(6, 182, 212, 0.3)" stroke-width="1.5"/>
-    <line x1="30" y1="94" x2="100" y2="94" stroke="rgba(6, 182, 212, 0.3)" stroke-width="1.5"/>
-    <line x1="30" y1="107" x2="90" y2="107" stroke="rgba(6, 182, 212, 0.25)" stroke-width="1.5"/>
-  </g>
-
-  <!-- Main Title -->
-  <text x="320" y="145" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="bold" fill="white" letter-spacing="-1">
+  <!-- Título Principal -->
+  <text x="600" y="100" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
     Documentación
   </text>
 
-  <!-- Subtitle -->
-  <text x="320" y="210" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="300" fill="rgba(255,255,255,0.92)" letter-spacing="0.2">
+  <!-- Descripción -->
+  <text x="600" y="165" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
     MCP Tools Server
   </text>
 
-  <!-- Divider line -->
-  <line x1="320" y1="230" x2="800" y2="230" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-
-  <!-- Description text -->
-  <text x="320" y="270" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="rgba(255,255,255,0.8)" letter-spacing="0.1">
-    Guías de instalación, configuración y uso
-  </text>
-
-  <!-- Footer divider line (subtle separation) -->
-  <line x1="0" y1="258" x2="1200" y2="258" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-
-  <!-- Footer technologies -->
-  <text x="600" y="283" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="rgba(255,255,255,0.95)" letter-spacing="0.3" text-anchor="middle">
-    Markdown • HTML/CSS • Mermaid • SVG • Git
+  <!-- Tecnologías (Footer) -->
+  <text x="600" y="288" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
+    Guías • Ejemplos • Configuración • Troubleshooting
   </text>
 </svg>

@@ -1,61 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
   <defs>
-    <linearGradient id="gradient-cyan-main" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="gradient-cyan-teal" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0a5f75;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
     </linearGradient>
   </defs>
 
-  <!-- Background gradient -->
-  <rect width="1200" height="260" fill="url(#gradient-cyan-main)"/>
+  <!-- Sección Azul (Gradiente Cyan → Teal) -->
+  <rect width="1200" height="260" fill="url(#gradient-cyan-teal)" />
 
-  <!-- Footer background -->
-  <rect x="0" y="260" width="1200" height="40" fill="#FF8C42"/>
+  <!-- Sección Naranja (Tecnologías) -->
+  <rect y="260" width="1200" height="40" fill="#FF8C42" />
 
-  <!-- Subtle top accent line -->
-  <line x1="0" y1="1" x2="1200" y2="1" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-
-  <!-- MCP Server Icon - Minimalist Design -->
-  <g transform="translate(100, 120)">
-    <!-- Central node -->
-    <circle cx="60" cy="60" r="12" fill="white" opacity="0.95"/>
-
-    <!-- Connected nodes -->
-    <circle cx="20" cy="30" r="8" fill="white" opacity="0.7"/>
-    <circle cx="100" cy="30" r="8" fill="white" opacity="0.7"/>
-    <circle cx="20" cy="90" r="8" fill="white" opacity="0.7"/>
-    <circle cx="100" cy="90" r="8" fill="white" opacity="0.7"/>
-
-    <!-- Connection lines -->
-    <line x1="60" y1="60" x2="20" y2="30" stroke="white" stroke-width="1.5" opacity="0.6"/>
-    <line x1="60" y1="60" x2="100" y2="30" stroke="white" stroke-width="1.5" opacity="0.6"/>
-    <line x1="60" y1="60" x2="20" y2="90" stroke="white" stroke-width="1.5" opacity="0.6"/>
-    <line x1="60" y1="60" x2="100" y2="90" stroke="white" stroke-width="1.5" opacity="0.6"/>
-  </g>
-
-  <!-- Main Title -->
-  <text x="320" y="145" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="bold" fill="white" letter-spacing="-1">
+  <!-- Título Principal -->
+  <text x="600" y="100" font-family="Arial, Helvetica, sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle">
     MCP Tools Server
   </text>
 
-  <!-- Subtitle -->
-  <text x="320" y="210" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" fill="rgba(255,255,255,0.92)" letter-spacing="0.3">
+  <!-- Descripción -->
+  <text x="600" y="165" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
     Servidor de Herramientas Extensible
   </text>
 
-  <!-- Divider line -->
-  <line x1="320" y1="230" x2="850" y2="230" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-
-  <!-- Description text -->
-  <text x="320" y="270" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="400" fill="rgba(255,255,255,0.8)" letter-spacing="0.2">
-    FastMCP • WeasyPrint • Jinja2
-  </text>
-
-  <!-- Footer divider line (subtle separation) -->
-  <line x1="0" y1="258" x2="1200" y2="258" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-
-  <!-- Footer technologies -->
-  <text x="600" y="283" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="400" fill="rgba(255,255,255,0.95)" letter-spacing="0.3" text-anchor="middle">
-    FastMCP • WeasyPrint • Jinja2 • Python 3.11 • Docker • SSE
+  <!-- Tecnologías (Footer) -->
+  <text x="600" y="288" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
+    FastMCP • WeasyPrint • Jinja2 • Python • Docker
   </text>
 </svg>
