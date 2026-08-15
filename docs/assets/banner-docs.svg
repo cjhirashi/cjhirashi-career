@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <defs>
+    <linearGradient id="gradient-cyan-docs" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow-docs" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#gradient-cyan-docs)"/>
+
+  <!-- Decorative elements -->
+  <circle cx="150" cy="70" r="50" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="1050" cy="330" r="70" fill="rgba(255,255,255,0.08)"/>
+  <path d="M 950 20 L 1000 50 L 950 80 Z" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Documentation Icon - Book -->
+  <g transform="translate(90, 110)">
+    <!-- Book spine -->
+    <rect x="15" y="10" width="12" height="130" rx="2" fill="rgba(255,255,255,0.2)" filter="url(#shadow-docs)"/>
+
+    <!-- Book cover left -->
+    <path d="M 27 10 L 90 10 Q 95 10 95 15 L 95 135 Q 95 140 90 140 L 27 140 Z"
+          fill="white" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" filter="url(#shadow-docs)"/>
+
+    <!-- Book cover right -->
+    <path d="M 27 140 L 90 140 Q 95 140 95 135 L 95 10 Q 95 15 90 15 L 27 10 Z"
+          fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" filter="url(#shadow-docs)"/>
+
+    <!-- Pages/lines on book -->
+    <line x1="45" y1="35" x2="80" y2="35" stroke="rgba(6, 182, 212, 0.3)" stroke-width="2"/>
+    <line x1="45" y1="50" x2="75" y2="50" stroke="rgba(6, 182, 212, 0.3)" stroke-width="2"/>
+    <line x1="45" y1="65" x2="80" y2="65" stroke="rgba(6, 182, 212, 0.25)" stroke-width="2"/>
+    <line x1="45" y1="80" x2="70" y2="80" stroke="rgba(6, 182, 212, 0.25)" stroke-width="2"/>
+    <line x1="45" y1="95" x2="80" y2="95" stroke="rgba(6, 182, 212, 0.25)" stroke-width="2"/>
+    <line x1="45" y1="110" x2="75" y2="110" stroke="rgba(6, 182, 212, 0.25)" stroke-width="2"/>
+
+    <!-- Bookmark ribbon -->
+    <rect x="82" y="5" width="6" height="75" rx="1" fill="rgba(255,255,255,0.6)" filter="url(#shadow-docs)"/>
+  </g>
+
+  <!-- Title -->
+  <text x="320" y="110" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" letter-spacing="-0.3">
+    Documentación
+  </text>
+
+  <!-- Subtitle -->
+  <text x="320" y="165" font-family="Arial, sans-serif" font-size="38" font-weight="300" fill="rgba(255,255,255,0.95)" letter-spacing="0.2">
+    MCP Tools Server
+  </text>
+
+  <!-- Description line -->
+  <text x="320" y="215" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.85)" font-weight="300">
+    Guías de instalación, configuración y uso del servidor MCP
+  </text>
+
+  <!-- Accent elements -->
+  <line x1="320" y1="235" x2="680" y2="235" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+
+  <!-- Bottom decorative dots -->
+  <circle cx="320" cy="280" r="3" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="340" cy="280" r="3" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="360" cy="280" r="3" fill="rgba(255,255,255,0.3)"/>
+</svg>
