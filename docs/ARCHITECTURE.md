@@ -8,11 +8,13 @@ _Diagramas y descripción de la arquitectura completa del sistema MCP Tools Serv
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#0891B2',
+    'primaryBorderColor': '#9333EA',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
+    'secondaryBorderColor': '#059669',
+    'tertiaryColor': '#06B6D4',
+    'tertiaryBorderColor': '#0891B2',
     'lineColor': '#059669',
     'fontSize': '14px',
     'fontFamily': 'Inter, sans-serif'
@@ -20,15 +22,15 @@ _Diagramas y descripción de la arquitectura completa del sistema MCP Tools Serv
 }}%%
 
 graph TB
-  subgraph client["👤 Cliente (Aplicación)"]
+  subgraph client["👤 Cliente"]
     UI["Frontend UI<br/>React + TypeScript"]
   end
 
-  subgraph server["🟢 Servidor MCP (Núcleo)"]
+  subgraph server["🟢 Servidor MCP"]
     FASTMCP["FastMCP Server<br/>server.py"]
     CV_GEN["CV Generator<br/>cv_generator.py"]
     COVER_GEN["Cover Generator<br/>cover_generator.py"]
-    TEMPLATES["Plantillas Jinja2<br/>+ CSS Styles"]
+    TEMPLATES["Plantillas Jinja2<br/>+ CSS"]
   end
 
   subgraph storage["💾 Almacenamiento"]
@@ -37,14 +39,14 @@ graph TB
     COVER_DIR["Cover Letters/"]
   end
 
-  subgraph external["🔗 Dependencias Externas"]
-    WEASYPRINT["WeasyPrint<br/>(PDF Rendering)"]
-    JINJA["Jinja2<br/>(Template Engine)"]
+  subgraph external["🔗 Renderizado"]
+    WEASYPRINT["WeasyPrint<br/>HTML→PDF"]
+    JINJA["Jinja2<br/>Plantillas"]
   end
 
-  UI -->|"HTTP/SSE<br/>Port 8002"| FASTMCP
-  FASTMCP -->|"crear_cv_pdf<br/>crear_cover_letter_pdf"| CV_GEN
-  FASTMCP -->|"crear_cover_letter_pdf"| COVER_GEN
+  UI -->|"HTTP/SSE : 8002"| FASTMCP
+  FASTMCP -->|"crear_cv_pdf"| CV_GEN
+  FASTMCP -->|"crear_cover"| COVER_GEN
   CV_GEN -->|"load"| TEMPLATES
   COVER_GEN -->|"load"| TEMPLATES
   CV_GEN -->|"render"| WEASYPRINT
@@ -55,14 +57,22 @@ graph TB
   CV_GEN -->|"use"| JINJA
   COVER_GEN -->|"use"| JINJA
 
-  classDef clientNode fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
-  classDef serverNode fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  classDef storageNode fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-  classDef externalNode fill:#f0f9fc,stroke:#059669,stroke-width:2px,color:#333
+  classDef clientBg fill:#E0A5F7,stroke:#A855F7,stroke-width:3px,color:#fff
+  classDef clientNode fill:#A855F7,stroke:#7C1FA1,stroke-width:2px,color:#fff
+  classDef serverBg fill:#A7E8A7,stroke:#10B981,stroke-width:3px,color:#fff
+  classDef serverNode fill:#10B981,stroke:#065F46,stroke-width:2px,color:#fff
+  classDef storageBg fill:#A5DEDA,stroke:#06B6D4,stroke-width:3px,color:#fff
+  classDef storageNode fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
+  classDef externalBg fill:#D9D9D9,stroke:#6B7280,stroke-width:3px,color:#333
+  classDef externalNode fill:#9CA3AF,stroke:#4B5563,stroke-width:2px,color:#fff
 
+  class client clientBg
   class UI clientNode
+  class server serverBg
   class FASTMCP,CV_GEN,COVER_GEN,TEMPLATES serverNode
+  class storage storageBg
   class PDF_OUTPUT,CV_DIR,COVER_DIR storageNode
+  class external externalBg
   class WEASYPRINT,JINJA externalNode
 ```
 

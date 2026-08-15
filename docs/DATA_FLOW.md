@@ -10,39 +10,41 @@ Proceso completo desde solicitud del cliente hasta PDF guardado:
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#0891B2',
+    'primaryBorderColor': '#9333EA',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
+    'secondaryBorderColor': '#059669',
+    'tertiaryColor': '#06B6D4',
+    'tertiaryBorderColor': '#0891B2',
     'lineColor': '#059669',
     'fontSize': '13px'
   }
 }}%%
 
 graph TD
-  A["📋 Cliente Prepara Datos<br/>JSON: nombre, email, experiencia, etc."] -->|"JSON String"| B["🔄 Cliente Envía Solicitud<br/>HTTP POST /sse<br/>crear_cv_pdf"]
-  B -->|"SSE"| C["📩 FastMCP Recibe<br/>Parámetros:<br/>datos_cv_json, nombre_archivo"]
-  C -->|"Parsea"| D["✅ Validación JSON<br/>Convierte string a dict"]
-  D -->|"dict datos"| E["🔧 cv_generator.generar_cv"]
+  A["📋 Cliente Prepara Datos<br/>JSON: nombre, email, experiencia"] -->|"JSON String"| B["🔄 Cliente Envía Solicitud<br/>HTTP POST /sse<br/>crear_cv_pdf"]
+  B -->|"SSE"| C["📩 FastMCP Recibe<br/>Parámetros"]
+  C -->|"Parsea"| D["✅ Validación JSON<br/>string → dict"]
+  D -->|"dict datos"| E["🔧 cv_generator.generar_cv<br/>Procesa datos"]
   E -->|"Acceso"| F["📄 Carga Plantilla<br/>cv_template.html"]
-  F -->|"Template Object"| G["🎨 Jinja2.render<br/>Inserta variables en HTML"]
-  G -->|"HTML String"| H["🖨️ WeasyPrint.write_pdf<br/>CSS Paged Media<br/>Renderiza a PDF"]
-  H -->|"PDF Bytes"| I["💾 Escribe Archivo<br/>/mcp-outputs/cvs/<br/>nombre_archivo.pdf"]
-  I -->|"Éxito"| J["✨ Retorna Mensaje<br/>Éxito: PDF en /path"]
+  F -->|"Template"| G["🎨 Jinja2.render<br/>Variables en HTML"]
+  G -->|"HTML"| H["🖨️ WeasyPrint.write_pdf<br/>CSS → PDF"]
+  H -->|"PDF Bytes"| I["💾 Escribe Archivo<br/>/mcp-outputs/cvs/"]
+  I -->|"Éxito"| J["✨ Retorna Mensaje<br/>Éxito"]
   J -->|"SSE Response"| K["📥 Cliente Recibe<br/>Descarga PDF"]
 
-  style A fill:#A855F7,stroke:#9333EA,color:#fff
-  style B fill:#A855F7,stroke:#9333EA,color:#fff
-  style C fill:#10B981,stroke:#059669,color:#fff
-  style D fill:#10B981,stroke:#059669,color:#fff
-  style E fill:#10B981,stroke:#059669,color:#fff
-  style F fill:#f0f9fc,stroke:#059669,color:#333
-  style G fill:#f0f9fc,stroke:#059669,color:#333
-  style H fill:#f0f9fc,stroke:#059669,color:#333
-  style I fill:#06B6D4,stroke:#0891B2,color:#fff
-  style J fill:#10B981,stroke:#059669,color:#fff
-  style K fill:#A855F7,stroke:#9333EA,color:#fff
+  style A fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  style B fill:#C879E8,stroke:#A855F7,stroke-width:2px,color:#fff
+  style C fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style D fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
+  style E fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
+  style F fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
+  style G fill:#7FD0D0,stroke:#0891B2,stroke-width:2px,color:#fff
+  style H fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
+  style I fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style J fill:#0FB981,stroke:#065F46,stroke-width:2px,color:#fff
+  style K fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
 ```
 
 ### Puntos Críticos del Flujo
@@ -67,36 +69,38 @@ Similar al CV, con plantilla específica:
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#0891B2',
+    'primaryBorderColor': '#9333EA',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
+    'secondaryBorderColor': '#059669',
+    'tertiaryColor': '#06B6D4',
+    'tertiaryBorderColor': '#0891B2',
     'lineColor': '#059669'
   }
 }}%%
 
 graph TD
-  A["👥 Cliente Prepara Datos<br/>nombre, empresa, puesto,<br/>fecha, carta personalizada"] -->|"JSON"| B["📨 Solicitud MCP<br/>crear_cover_letter_pdf"]
-  B -->|"Parámetros"| C["🟢 FastMCP Route"]
-  C -->|"Llama"| D["🔧 cover_generator.generar_cover"]
-  D -->|"Lee"| E["📄 cover_template.html"]
-  E -->|"Jinja2"| F["📝 Renderiza Plantilla<br/>Inserta datos de carta"]
-  F -->|"HTML+CSS"| G["📄 WeasyPrint Process<br/>Lee CSS desde style_1.css"]
+  A["👥 Cliente Prepara Datos<br/>nombre, empresa, puesto"] -->|"JSON"| B["📨 Solicitud MCP<br/>crear_cover_letter_pdf"]
+  B -->|"Parámetros"| C["🟢 FastMCP Route<br/>Recibe solicitud"]
+  C -->|"Llama"| D["🔧 cover_generator<br/>Procesa datos"]
+  D -->|"Lee"| E["📄 cover_template.html<br/>Carga plantilla"]
+  E -->|"Jinja2"| F["📝 Renderiza Plantilla<br/>Variables en HTML"]
+  F -->|"HTML+CSS"| G["🖨️ WeasyPrint<br/>CSS → PDF"]
   G -->|"PDF Bytes"| H["💾 Guarda PDF<br/>/mcp-outputs/cover_letters/"]
-  H -->|"Success"| I["✅ Retorna Ruta<br/>cover_johndoe_2026.pdf"]
+  H -->|"Success"| I["✅ Retorna Ruta<br/>cover_johndoe.pdf"]
   I -->|"Download"| J["📥 Cliente Descarga"]
 
-  style A fill:#A855F7,stroke:#9333EA,color:#fff
-  style B fill:#A855F7,stroke:#9333EA,color:#fff
-  style C fill:#10B981,stroke:#059669,color:#fff
-  style D fill:#10B981,stroke:#059669,color:#fff
-  style E fill:#f0f9fc,stroke:#059669,color:#333
-  style F fill:#f0f9fc,stroke:#059669,color:#333
-  style G fill:#f0f9fc,stroke:#059669,color:#333
-  style H fill:#06B6D4,stroke:#0891B2,color:#fff
-  style I fill:#10B981,stroke:#059669,color:#fff
-  style J fill:#A855F7,stroke:#9333EA,color:#fff
+  style A fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  style B fill:#C879E8,stroke:#A855F7,stroke-width:2px,color:#fff
+  style C fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style D fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
+  style E fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
+  style F fill:#7FD0D0,stroke:#0891B2,stroke-width:2px,color:#fff
+  style G fill:#06B6D4,stroke:#0369A1,stroke-width:2px,color:#fff
+  style H fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style I fill:#0FB981,stroke:#065F46,stroke-width:2px,color:#fff
+  style J fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -176,23 +180,24 @@ pdf = weasyprint.HTML(
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7'
+    'tertiaryColor': '#06B6D4',
+    'lineColor': '#059669'
   }
 }}%%
 
 graph LR
-  JSON["<b>Formato JSON</b><br/>String (cliente)<br/>Data de entrada"] -->|"json.loads()"| DICT["<b>Dict Python</b><br/>Estructura de datos<br/>Variables"]
-  DICT -->|"template.render(**dict)"| HTML["<b>HTML String</b><br/>HTML + CSS<br/>Estructura visual"]
-  HTML -->|"WeasyPrint.write_pdf()"| PDF["<b>PDF Bytes</b><br/>Documento PDF<br/>Formato final"]
-  PDF -->|"File Write"| FILE["<b>Archivo PDF</b><br/>En disco<br/>Descargable"]
+  JSON["<b>JSON</b><br/>String entrada<br/>Cliente"] -->|"json.loads()"| DICT["<b>Dict Python</b><br/>Datos parseados<br/>Variables"]
+  DICT -->|"template.render"| HTML["<b>HTML String</b><br/>HTML + CSS<br/>Estructura visual"]
+  HTML -->|"WeasyPrint"| PDF["<b>PDF Bytes</b><br/>Documento PDF<br/>Renderizado"]
+  PDF -->|"File Write"| FILE["<b>Archivo PDF</b><br/>En disco<br/>Persistente"]
 
-  style JSON fill:#A855F7,stroke:#9333EA,color:#fff
-  style DICT fill:#10B981,stroke:#059669,color:#fff
-  style HTML fill:#f0f9fc,stroke:#059669,color:#333
-  style PDF fill:#06B6D4,stroke:#0891B2,color:#fff
-  style FILE fill:#06B6D4,stroke:#0891B2,color:#fff
+  style JSON fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  style DICT fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style HTML fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
+  style PDF fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+  style FILE fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
 ```
 
 ### Detalle de Transformación HTML → PDF
@@ -228,31 +233,32 @@ WeasyPrint aplica las siguientes transformaciones:
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7'
+    'tertiaryColor': '#06B6D4',
+    'lineColor': '#059669'
   }
 }}%%
 
 graph TD
   START["Solicitud<br/>crear_cv_pdf"] -->|"Try"| JSON_PARSE["json.loads"]
-  JSON_PARSE -->|"JSONDecodeError"| ERR1["❌ Error: JSON inválido"]
+  JSON_PARSE -->|"JSONDecodeError"| ERR1["❌ JSON inválido"]
   JSON_PARSE -->|"OK"| LOAD["Carga plantilla"]
-  LOAD -->|"FileNotFoundError"| ERR2["❌ Error: Plantilla no existe"]
+  LOAD -->|"FileNotFoundError"| ERR2["❌ Plantilla no existe"]
   LOAD -->|"OK"| RENDER["Jinja2.render"]
-  RENDER -->|"UndefinedError"| ERR3["❌ Error: Variable faltante"]
+  RENDER -->|"UndefinedError"| ERR3["❌ Variable faltante"]
   RENDER -->|"OK"| WEASY["WeasyPrint.write_pdf"]
-  WEASY -->|"WeasyPrintError"| ERR4["❌ Error: CSS inválido"]
+  WEASY -->|"WeasyPrintError"| ERR4["❌ CSS inválido"]
   WEASY -->|"OK"| WRITE["File write"]
-  WRITE -->|"IOError"| ERR5["❌ Error: Permisos/Espacio"]
+  WRITE -->|"IOError"| ERR5["❌ Permisos/Espacio"]
   WRITE -->|"OK"| SUCCESS["✅ PDF Guardado"]
 
-  ERR1 -->|"except"| RETURN1["return Error message"]
-  ERR2 -->|"except"| RETURN2["return Error message"]
-  ERR3 -->|"except"| RETURN3["return Error message"]
-  ERR4 -->|"except"| RETURN4["return Error message"]
-  ERR5 -->|"except"| RETURN5["return Error message"]
-  SUCCESS -->|"return"| SUCCESS_MSG["return Success message"]
+  ERR1 -->|"except"| RETURN1["return Error"]
+  ERR2 -->|"except"| RETURN2["return Error"]
+  ERR3 -->|"except"| RETURN3["return Error"]
+  ERR4 -->|"except"| RETURN4["return Error"]
+  ERR5 -->|"except"| RETURN5["return Error"]
+  SUCCESS -->|"return"| SUCCESS_MSG["return Success"]
 
   RETURN1 --> CLI["🔴 Cliente recibe error"]
   RETURN2 --> CLI
@@ -261,13 +267,26 @@ graph TD
   RETURN5 --> CLI
   SUCCESS_MSG --> LOG["✅ Cliente descarga"]
 
-  style ERR1 fill:#fca5a5,color:#fff
-  style ERR2 fill:#fca5a5,color:#fff
-  style ERR3 fill:#fca5a5,color:#fff
-  style ERR4 fill:#fca5a5,color:#fff
-  style ERR5 fill:#fca5a5,color:#fff
-  style SUCCESS fill:#10B981,stroke:#059669,color:#fff
-  style SUCCESS_MSG fill:#10B981,stroke:#059669,color:#fff
+  style START fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
+  style JSON_PARSE fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  style LOAD fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style RENDER fill:#0FB981,stroke:#059669,stroke-width:2px,color:#fff
+  style WEASY fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
+  style WRITE fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style SUCCESS fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
+  style ERR1 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  style ERR2 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  style ERR3 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  style ERR4 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  style ERR5 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+  style RETURN1 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
+  style RETURN2 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
+  style RETURN3 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
+  style RETURN4 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
+  style RETURN5 fill:#D97706,stroke:#B45309,stroke-width:2px,color:#fff
+  style CLI fill:#DC2626,stroke:#991B1B,stroke-width:2px,color:#fff
+  style SUCCESS_MSG fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style LOG fill:#047857,stroke:#065F46,stroke-width:2px,color:#fff
 ```
 
 ### Códigos de Error Comunes

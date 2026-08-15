@@ -8,11 +8,13 @@ _Configuración de red, puertos, volúmenes y conectividad del sistema._
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
     'primaryTextColor': '#ffffff',
-    'primaryBorderColor': '#0891B2',
+    'primaryBorderColor': '#9333EA',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
+    'secondaryBorderColor': '#059669',
+    'tertiaryColor': '#06B6D4',
+    'tertiaryBorderColor': '#0891B2',
     'lineColor': '#059669',
     'fontSize': '13px'
   }
@@ -23,48 +25,49 @@ graph TB
     CLIENT["Cliente Web<br/>Navegador"]
   end
 
-  subgraph host["🖥️ Host Machine (Linux)"]
-    PORT8002["Puerto 8002<br/>(HTTP Listening)"]
-    MOUNT["Punto de Montaje<br/>/mnt/disco2/cjhirashi-data/"]
-    DIRS["<br/>mcp-outputs/<br/>├── cvs/<br/>└── cover_letters/"]
+  subgraph host["🖥️ Host Machine"]
+    PORT8002["Puerto 8002<br/>HTTP Listening"]
+    MOUNT["Montaje Host<br/>/mnt/disco2/cjhirashi-data"]
+    DIRS["mcp-outputs/<br/>├── cvs<br/>└── cover_letters"]
   end
 
   subgraph network["🔗 Docker Network"]
-    BRIDGE["network-cjhirashi-srv<br/>(Docker Bridge)"]
+    BRIDGE["network-cjhirashi-srv<br/>Bridge Driver"]
   end
 
   subgraph container["🐳 Contenedor Docker"]
     CONT["mcp_tools_server<br/>Python 3.11 + FastMCP"]
-    PORT8000["Puerto 8000<br/>(Uvicorn Server)"]
-    APPDIR["Directorio App<br/>/app"]
+    PORT8000["Puerto 8000<br/>Uvicorn"]
+    APPDIR["App Directory<br/>/app"]
     VOLMOUNT["Volume Mount<br/>/app/outputs"]
   end
 
-  CLIENT -->|"HTTP Request<br/>POST /sse"| PORT8002
-  PORT8002 -->|"Port Mapping<br/>8002→8000"| PORT8000
-  PORT8000 -->|"Escucha en"| CONT
-  CONT -->|"Pertenece a"| BRIDGE
-  BRIDGE -->|"Conecta a"| network
+  CLIENT -->|"HTTP<br/>POST /sse"| PORT8002
+  PORT8002 -->|"8002→8000"| PORT8000
+  PORT8000 -->|"Escucha"| CONT
+  CONT -->|"Red"| BRIDGE
 
   MOUNT <-->|"Bind Volume"| VOLMOUNT
-  VOLMOUNT -->|"Escribe PDFs"| DIRS
-  VOLMOUNT <-->|"Lectura/Escritura"| CONT
+  VOLMOUNT -->|"Escribe"| DIRS
+  CONT -->|"Lee"| APPDIR
 
-  CONT -->|"Read"| APPDIR
+  classDef externalBg fill:#E0A5F7,stroke:#A855F7,stroke-width:2px,color:#fff
+  classDef externalNode fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
+  classDef hostBg fill:#E5E7EB,stroke:#9CA3AF,stroke-width:2px,color:#333
+  classDef hostNode fill:#D1D5DB,stroke:#6B7280,stroke-width:2px,color:#333
+  classDef networkBg fill:#A7E8A7,stroke:#10B981,stroke-width:2px,color:#fff
+  classDef networkNode fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  classDef containerBg fill:#A5DEDA,stroke:#06B6D4,stroke-width:2px,color:#fff
+  classDef containerNode fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
 
-  classDef externalStyle fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
-  classDef hostStyle fill:#f0f9fc,stroke:#059669,stroke-width:2px,color:#333
-  classDef networkStyle fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-  classDef containerStyle fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-  classDef portStyle fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
-
-  class CLIENT externalStyle
-  class external externalStyle
-  class PORT8002,MOUNT,DIRS hostStyle
-  class host hostStyle
-  class BRIDGE,network networkStyle
-  class CONT,PORT8000,APPDIR,VOLMOUNT containerStyle
-  class container containerStyle
+  class external externalBg
+  class CLIENT externalNode
+  class host hostBg
+  class PORT8002,MOUNT,DIRS hostNode
+  class network networkBg
+  class BRIDGE networkNode
+  class container containerBg
+  class CONT,PORT8000,APPDIR,VOLMOUNT containerNode
 ```
 
 ## Configuración de Puertos
@@ -116,25 +119,26 @@ FastMCP Handler
   'themeVariables': {
     'primaryColor': '#06B6D4',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7'
+    'tertiaryColor': '#A855F7',
+    'lineColor': '#059669'
   }
 }}%%
 
 graph LR
-  HOST["Host<br/>/mnt/disco2/<br/>cjhirashi-data/<br/>mcp-outputs/"]
-  BIND["Bind Volume<br/>(Lectura/Escritura)"]
-  CONT["Contenedor<br/>/app/outputs/"]
+  HOST["Host<br/>/mnt/disco2<br/>cjhirashi-data<br/>mcp-outputs"]
+  BIND["Bind Volume<br/>Sincronizado"]
+  CONT["Contenedor<br/>/app/outputs"]
+  PDF["pdf_file.pdf<br/>Persistente"]
   
-  HOST <-->|"Sincronizado"| BIND
+  HOST <-->|"Lectura/Escritura"| BIND
   BIND <-->|"Montado en"| CONT
+  CONT -->|"Escribe"| PDF
+  PDF -->|"Accesible"| HOST
   
-  CONT -->|"Escribe"| PDF["pdf_file.pdf"]
-  PDF -->|"Accesible desde"| HOST
-  
-  style HOST fill:#f0f9fc,stroke:#059669,color:#333
-  style BIND fill:#10B981,stroke:#059669,color:#fff
-  style CONT fill:#06B6D4,stroke:#0891B2,color:#fff
-  style PDF fill:#A855F7,stroke:#9333EA,color:#fff
+  style HOST fill:#E5E7EB,stroke:#9CA3AF,stroke-width:2px,color:#333
+  style BIND fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+  style CONT fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+  style PDF fill:#A855F7,stroke:#9333EA,stroke-width:2px,color:#fff
 ```
 
 ### Configuración en docker-compose.yml
@@ -223,33 +227,34 @@ Dentro de la red bridge:
 %%{init: {
   'theme': 'base',
   'themeVariables': {
-    'primaryColor': '#06B6D4',
+    'primaryColor': '#A855F7',
+    'primaryTextColor': '#ffffff',
     'secondaryColor': '#10B981',
-    'tertiaryColor': '#A855F7',
+    'tertiaryColor': '#06B6D4',
     'lineColor': '#059669'
   }
 }}%%
 
 sequenceDiagram
-  participant BROWSER as Navegador (Cliente)
-  participant HOSTNET as Host Network
-  participant DOCKER as Docker Daemon
-  participant UVICORN as Uvicorn Server
-  participant APP as FastMCP App
+  participant BROWSER as 📱 Navegador
+  participant HOSTNET as 🖥️ Host Network
+  participant DOCKER as 🐳 Docker
+  participant UVICORN as 🚀 Uvicorn
+  participant APP as ⚙️ FastMCP
 
-  BROWSER->>HOSTNET: TCP SYN → localhost:8002
-  HOSTNET->>DOCKER: Port Forward 8002→8000
-  DOCKER->>UVICORN: Conexión establecida
-  UVICORN->>APP: Nuevo Request
-  BROWSER->>UVICORN: HTTP POST /sse<br/>crear_cv_pdf(datos, archivo)
-  UVICORN->>APP: Procesa solicitud
-  APP->>APP: Genera PDF
-  APP->>HOSTNET: Escribe a /mnt/.../mcp-outputs/
-  APP->>UVICORN: Respuesta SSE
-  UVICORN->>BROWSER: SSE Event: "PDF Generado"
-  BROWSER->>HOSTNET: GET /download/archivo.pdf
-  HOSTNET->>HOSTNET: Lee archivo de volumen
-  HOSTNET->>BROWSER: PDF File (descarga)
+  BROWSER->>HOSTNET: TCP → :8002
+  HOSTNET->>DOCKER: Forward 8002→8000
+  DOCKER->>UVICORN: Conectar
+  UVICORN->>APP: Request
+  BROWSER->>APP: POST /sse crear_cv_pdf
+  APP->>APP: Parsear JSON
+  APP->>APP: Render Jinja2
+  APP->>APP: WeasyPrint
+  APP->>HOSTNET: Escribe /mcp-outputs/
+  APP->>UVICORN: SSE Response
+  UVICORN->>BROWSER: PDF Generado ✅
+  BROWSER->>HOSTNET: GET archivo.pdf
+  HOSTNET->>BROWSER: PDF (descarga)
 ```
 
 ---
