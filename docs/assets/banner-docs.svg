@@ -54,7 +54,7 @@
 
   <!-- Description line -->
   <text x="320" y="215" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.85)" font-weight="300">
-    Guías de instalación, configuración y uso del servidor MCP
+    Guías de instalación, configuración y uso del servidor de herramientas
   </text>
 
   <!-- Accent elements -->
