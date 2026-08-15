@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="MCP Tools Server - Genera, gestiona y descarga CVs y Cartas de Presentacion en PDF."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>MCP Tools Server</title>
+
+    <!--
+      Script de tema anti-flash: aplica la clase `dark` antes de que React monte,
+      leyendo la preferencia guardada en localStorage o la del sistema operativo.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("mcp-frontend:theme");
+          var isDark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", isDark);
+        } catch (e) {
+          /* localStorage no disponible: se ignora, tema por defecto = claro */
+        }
+      })();
+    </script>
+
+    <!--
+      Configuracion en tiempo de ejecucion (inyectada por docker-entrypoint.sh en
+      produccion a partir de variables de entorno del contenedor). En desarrollo
+      este archivo estatico define valores vacios y la app calcula defaults.
+    -->
+    <script src="/config.js"></script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

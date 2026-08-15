@@ -1,38 +1,57 @@
-# Frontend Dockerfile (template)
+# syntax=docker/dockerfile:1
 #
-# Este Dockerfile es un placeholder. Sera reemplazado cuando el especialista
-# mcp-frontend-ui implemente la interfaz web (React/Vue/Svelte).
+# Frontend de MCP Tools Server (React + TypeScript + Vite + Tailwind).
 #
-# Convenciones esperadas:
-#   - WORKDIR /app
-#   - COPY . /app
-#   - Puerto interno expuesto: 8000 (mapeado a 8003 en docker-compose.yml raiz)
-#   - Variable de entorno MCP_SERVER_URL apuntando a http://mcp_tools_server:8000/sse
-#
-# Ejemplo (Node.js + Vite, ajustar segun stack elegido):
-#
-# FROM node:20-alpine AS build
-# WORKDIR /app
-# COPY package*.json ./
-# RUN npm install
-# COPY . .
-# RUN npm run build
-#
-# FROM node:20-alpine
-# WORKDIR /app
-# COPY --from=build /app/dist ./dist
-# COPY --from=build /app/package*.json ./
-# RUN npm install --omit=dev
-# EXPOSE 8000
-# CMD ["npm", "run", "start"]
+# Build multi-stage:
+#   1. "build"   -> instala dependencias y genera el bundle estatico (dist/)
+#   2. "runtime" -> sirve el bundle con nginx, actuando ademas como reverse
+#                   proxy mismo-origen hacia el servidor MCP (SSE/JSON-RPC)
+#                   y como servidor de solo lectura para los PDFs generados
+#                   (ver nginx.conf.template para el detalle de rutas).
 
-FROM node:20-alpine
-
+# ---------------------------------------------------------------------------
+# Etapa 1: build
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# TODO: Implementar build real del frontend
-COPY . /app
+COPY package.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# ---------------------------------------------------------------------------
+# Etapa 2: runtime
+# ---------------------------------------------------------------------------
+FROM nginx:1.27-alpine AS runtime
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Plantilla de configuracion de nginx: la imagen base ejecuta `envsubst`
+# automaticamente sobre /etc/nginx/templates/*.template al arrancar,
+# generando /etc/nginx/conf.d/default.conf con las variables de entorno
+# (MCP_UPSTREAM, etc.) ya sustituidas.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Hook de arranque (mecanismo oficial /docker-entrypoint.d/ de la imagen
+# nginx:alpine): genera config.js con la configuracion en tiempo de
+# ejecucion antes de iniciar nginx.
+COPY docker-entrypoint.d/40-generate-config-js.sh /docker-entrypoint.d/40-generate-config-js.sh
+RUN chmod +x /docker-entrypoint.d/40-generate-config-js.sh
+
+# Valores por defecto; sobreescribibles en docker-compose.yml (raiz) sin
+# reconstruir la imagen.
+ENV APP_NAME="MCP Tools Server" \
+    MCP_UPSTREAM="mcp_tools_server:8000" \
+    MCP_SSE_PATH="/sse" \
+    MCP_FILES_BASE_PATH="/files"
 
 EXPOSE 8000
 
-CMD ["echo", "Frontend no implementado todavia. Ver frontend/README.md"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8000/ >/dev/null 2>&1 || exit 1
+
+# ENTRYPOINT/CMD heredados de la imagen base nginx:alpine
+# (/docker-entrypoint.sh -> procesa templates y /docker-entrypoint.d/ ->
+# nginx -g 'daemon off;').
