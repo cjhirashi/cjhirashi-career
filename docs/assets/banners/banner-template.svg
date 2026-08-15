@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400">
+  <defs>
+    <linearGradient id="gradient-cyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a5f75;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sección Azul Degradada (Cyan → Teal) -->
+  <rect width="1200" height="360" fill="url(#gradient-cyan)" />
+
+  <!-- Sección Gris (Footer) -->
+  <rect y="360" width="1200" height="40" fill="#4A4A4A" />
+
+  <!-- ============================================ -->
+  <!-- CONTENIDO EDITABLE POR DOCUMENTO -->
+  <!-- ============================================ -->
+
+  <!-- Línea 1: Título del Documento (PERSONALIZABLE) -->
+  <!-- Cambiar "Document Title" por el título real -->
+  <text x="600" y="130" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">
+    Document Title
+  </text>
+
+  <!-- Línea 2: Descripción del Documento (PERSONALIZABLE) -->
+  <!-- Cambiar por descripción breve del documento -->
+  <text x="600" y="190" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" fill="white" fill-opacity="0.9" text-anchor="middle">
+    Brief description of this document section
+  </text>
+
+  <!-- Línea divisor sutil (FIJO) -->
+  <line x1="24" y1="230" x2="1176" y2="230" stroke="white" stroke-width="1" stroke-opacity="0.2" stroke-linecap="round" />
+
+  <!-- Línea 3: Tipo de Documento (PERSONALIZABLE) -->
+  <!-- Cambiar "DOCUMENT TYPE" por la categoría real -->
+  <text x="600" y="290" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="white" text-anchor="middle">
+    DOCUMENT TYPE
+  </text>
+
+  <!-- ============================================ -->
+  <!-- FOOTER (FIJO - Nombre del Proyecto) -->
+  <!-- ============================================ -->
+  <text x="600" y="385" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="white" text-anchor="middle">
+    MCP Tools Server
+  </text>
+</svg>
