@@ -1,20 +1,23 @@
 # Sistema de Banners para READMEs
 
-_Sistema dinámico de banners SVG personalizados para cada sección del proyecto MCP Server._
+_Sistema dinámico de banners SVG personalizados para cada sección del proyecto con paleta armónica de colores._
 
 ## Descripción
 
 Este sistema proporciona banners visuales consistentes y reutilizables para los READMEs de cada sección del proyecto:
 
-- **server/** — MCP server implementation
-- **frontend/** — Web UI para interactuar con el servidor
-- **docs/** — Documentación completa
+- **server/** — MCP server implementation (Verde)
+- **frontend/** — Web UI para interactuar con el servidor (Morado)
+- **docs/** — Documentación completa (Cyan)
 
 Cada banner está diseñado con:
-- Gradiente profesional (Cyan → Teal)
+- **Paleta armónica**: Tres colores coordinados (Cyan, Verde, Morado)
+- Gradientes profesionales específicos por sección
+- Elementos visuales mejorados (círculos, rectángulos decorativos)
 - Título y descripción personalizados
-- Tipo de sección (badge)
+- Tipo de sección (badge en esquina superior derecha)
 - Footer con tecnologías y ruta del README
+- Línea divisora en color primario
 - Dimensiones estándar: **1200×400px**
 
 ## Estructura
@@ -31,38 +34,50 @@ assets/readme-banners/
 
 ## Banners Disponibles
 
-### 1. Server Banner
+### 1. Server Banner — VERDE (Actividad, Servidores Activos)
+
 **Archivo:** `server-readme.svg`
 
-```
-Título:      Server
-Descripción: MCP server implementation with FastMCP and WeasyPrint PDF generation
-Tipo:        SERVER
-Tecnologías: FastMCP • WeasyPrint • Jinja2 • Python • Docker
-Ruta:        server/README.md
-```
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Server |
+| **Descripción** | MCP server implementation with FastMCP and WeasyPrint PDF generation |
+| **Color Primario** | Verde-600 (#10B981) → Verde-700 (#059669) |
+| **Badge** | SERVER |
+| **Tipo de Sección** | Servidor MCP (núcleo del sistema) |
+| **Tecnologías** | FastMCP • WeasyPrint • Jinja2 • Python • Docker |
+| **Ruta** | server/README.md |
+| **Propósito** | Documentación del servidor MCP y herramientas de generación PDF |
 
-### 2. Frontend Banner
+### 2. Frontend Banner — MORADO (Interacción, Interfaz de Usuario)
+
 **Archivo:** `frontend-readme.svg`
 
-```
-Título:      Frontend
-Descripción: Web UI for interacting with MCP server and downloading generated documents
-Tipo:        FRONTEND
-Tecnologías: React • TypeScript • Tailwind CSS • shadcn/ui
-Ruta:        frontend/README.md
-```
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Frontend |
+| **Descripción** | Web UI for interacting with MCP server and downloading generated documents |
+| **Color Primario** | Morado-600 (#A855F7) → Morado-700 (#9333EA) |
+| **Badge** | FRONTEND |
+| **Tipo de Sección** | Interfaz de usuario (cliente) |
+| **Tecnologías** | React • TypeScript • Tailwind CSS • shadcn/ui |
+| **Ruta** | frontend/README.md |
+| **Propósito** | Documentación de la aplicación web y componentes UI |
 
-### 3. Documentation Banner
+### 3. Documentation Banner — CYAN (Confianza, Información)
+
 **Archivo:** `docs-readme.svg`
 
-```
-Título:      Documentation
-Descripción: Complete guides, API reference, and troubleshooting for all components
-Tipo:        DOCS
-Tecnologías: Markdown • Mermaid • HTML • CSS • Guides
-Ruta:        docs/README.md
-```
+| Atributo | Valor |
+|----------|-------|
+| **Título** | Documentation |
+| **Descripción** | Complete guides, API reference, and troubleshooting for all components |
+| **Color Primario** | Cyan-600 (#06B6D4) → Cyan-700 (#0891B2) |
+| **Badge** | DOCS |
+| **Tipo de Sección** | Documentación técnica (guías y referencias) |
+| **Tecnologías** | Markdown • Mermaid • HTML • CSS • Guides |
+| **Ruta** | docs/README.md |
+| **Propósito** | Índice principal de documentación, guías y arquitectura |
 
 ## Uso en Markdown
 
@@ -222,15 +237,44 @@ Ver archivo `EXAMPLES.md` para:
 - **Responsividad:** Los banners son de tamaño fijo (1200×400px) — no son responsive
 - **Versionado:** Los cambios de diseño deben incrementar el número de versión en los nombres de archivos si se necesita compatibilidad hacia atrás
 
+## Paleta de Colores
+
+Esta galería de banners usa la **paleta armónica de colores** del proyecto. Todos los colores están coordinados y definidos en:
+
+- **[../COLOR_PALETTE.md](../COLOR_PALETTE.md)** — Especificación completa de colores, gradientes, tokens CSS y uso en Mermaid
+  - Cyan (#06B6D4) para documentación
+  - Verde (#10B981) para servidor y procesamiento
+  - Morado (#A855F7) para interfaces y usuario
+
+Los diagramas de arquitectura en [../../docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md) usan el mismo color-coding para coherencia visual.
+
+---
+
+## Relación con Documentación
+
+### Banners de Documentación (docs/)
+- **[../../docs/assets/banners/README.md](../../docs/assets/banners/README.md)** — Banners para secciones de documentación técnica
+  - Getting Started, API Reference, Troubleshooting, Configuration
+  - Misma paleta armónica
+
+### Diagramas Mermaid
+- **[../../docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md)** — Diagramas con color-coding
+- **[../../docs/DATA_FLOW.md](../../docs/DATA_FLOW.md)** — Flujos con paleta
+- **[../../docs/NETWORK_TOPOLOGY.md](../../docs/NETWORK_TOPOLOGY.md)** — Topología de red
+
+---
+
 ## Referencias
 
 - **Ubicación:** `/mnt/disco2/cjhirashi-data/proyectos/mcp-server/assets/readme-banners/`
 - **Servidor README:** `../../server/README.md`
 - **Frontend README:** `../../frontend/README.md`
-- **Docs README:** `../../docs/README.md`
+- **Docs README:** `../../docs/README.md` o `../../docs/INDEX.md`
+- **Documentación Técnica:** [../../docs/INDEX.md](../../docs/INDEX.md)
+- **Paleta de Colores:** [../COLOR_PALETTE.md](../COLOR_PALETTE.md)
 
 ---
 
 **Última actualización:** 2026-08-15  
 **Diseño:** Sistema de banners dinámicos para documentación técnica  
-**Estándar:** Ecosystem cjhirashi — Banners con gradiente Cyan-600
+**Estándar:** Ecosystem cjhirashi — Paleta armónica (Cyan, Verde, Morado)

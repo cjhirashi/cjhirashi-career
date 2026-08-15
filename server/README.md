@@ -31,6 +31,14 @@ MCP Tools Server es un servidor especializado en la generación automatizada de 
 
 ## Arquitectura
 
+Para ver diagramas detallados, consulta **[../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)** que incluye:
+- Diagrama general de componentes (con color-coding: Morado cliente, Verde servidor, Cyan almacenamiento)
+- Flujo de datos completo con secuencias
+- Topología de red Docker
+- Decisiones de diseño clave
+
+Diagrama simplificado del servidor:
+
 ```mermaid
 graph TD
     A["MCP Client<br/>(HTTP/SSE)"] -->|8002| B["FastMCP Server<br/>(server.py)"]
@@ -61,6 +69,8 @@ graph TD
 - **Jinja2 Templates:** Flexible para múltiples formatos sin cambiar código
 - **SSE Transport:** Comunicación unidireccional eficiente para MCP
 - **Volúmenes Persistentes:** Los PDFs persisten después de reiniciar contenedor
+
+Ver [COLOR_PALETTE.md](../COLOR_PALETTE.md) para entender el color-coding usado en todos los diagramas Mermaid del proyecto.
 
 ---
 
@@ -300,5 +310,17 @@ Para cambiar puertos, directorios o configuración de red:
 
 ---
 
-**Última actualización:** 2026-08-15
+---
+
+## Referencias y Documentación Relacionada
+
+- **[../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md)** — Diagramas de arquitectura completos y decisiones de diseño
+- **[../docs/DATA_FLOW.md](../docs/DATA_FLOW.md)** — Flujos de datos detallados con manejo de errores
+- **[../docs/NETWORK_TOPOLOGY.md](../docs/NETWORK_TOPOLOGY.md)** — Configuración de red, puertos y volúmenes
+- **[../COLOR_PALETTE.md](../COLOR_PALETTE.md)** — Paleta de colores armónica para diagramas
+- **[../CLAUDE.md](../CLAUDE.md)** — Guía de desarrollo para agentes y equipos
+
+---
+
+**Última actualización:** 2026-08-15  
 **Contacto:** Carlos (cjhirashi@gmail.com)

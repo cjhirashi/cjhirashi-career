@@ -11,6 +11,14 @@ Plataforma de generación de documentos profesionales (CVs, Cartas de Presentaci
 
 ## Arquitectura
 
+Para una visión completa de la arquitectura del sistema, consulta **[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)**, que incluye diagramas detallados de:
+- Componentes del sistema (color-coded por función)
+- Flujo de datos con secuencias de operación
+- Topología de red Docker
+- Decisiones de diseño clave
+
+Diagrama simplificado:
+
 ```mermaid
 graph TD
     subgraph Host["Docker Host"]
@@ -96,13 +104,31 @@ El servicio `mcp-frontend` está definido (comentado) en `docker-compose.yml` co
 
 ## Documentación
 
+### Guías Principales
+
 | Documento | Contenido |
 |---|---|
 | [CLAUDE.md](./CLAUDE.md) | Guía de desarrollo para agentes/Claude Code: arquitectura, patrones, debugging |
 | [server/README.md](./server/README.md) | Documentación técnica completa del servidor MCP: herramientas, schemas JSON, ejemplos |
+| [frontend/README.md](./frontend/README.md) | Estado y plan del frontend web |
+
+### Diagramas Interactivos y Técnicos
+
+**Acceso centralizado:** [docs/INDEX.md](./docs/INDEX.md) — Índice completo de documentación con guía de lectura por rol.
+
+| Documento | Contenido |
+|---|---|
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | Diagramas completos de arquitectura con color-coding semántico (Morado cliente, Verde servidor, Cyan almacenamiento) |
+| [docs/DATA_FLOW.md](./docs/DATA_FLOW.md) | Flujos de generación de CV y cover letters con secuencias detalladas |
+| [docs/NETWORK_TOPOLOGY.md](./docs/NETWORK_TOPOLOGY.md) | Configuración de red Docker, puertos, volúmenes y monitoreo |
+| [COLOR_PALETTE.md](./COLOR_PALETTE.md) | Paleta armónica de colores para diagramas (Cyan, Verde, Morado) con uso en Mermaid |
+
+### Referencia Técnica
+
+| Documento | Contenido |
+|---|---|
 | [server/mcp_tools_server.md](./server/mcp_tools_server.md) | Procedimientos operacionales: logs, monitoreo, health checks |
 | [server/Guia PDF WeasyPrint y CSS paged media.md](./server/Guia%20PDF%20WeasyPrint%20y%20CSS%20paged%20media.md) | Referencia técnica de estilos CSS paged media para PDFs |
-| [frontend/README.md](./frontend/README.md) | Estado y plan del frontend web |
 
 ---
 
@@ -120,6 +146,14 @@ El servicio `mcp-frontend` está definido (comentado) en `docker-compose.yml` co
 
 ---
 
-**Última actualización:** 2026-08-15
-**Contacto:** Carlos (cjhirashi@gmail.com)
+## Estado de la Documentación
+
+Para una visión completa de la infraestructura de documentación, diagramas y estado de completitud:
+
+**[DOCUMENTATION_STATUS.md](./DOCUMENTATION_STATUS.md)** — Resumen de cambios realizados, checklist de completitud, estadísticas y guía de mantenimiento.
+
+---
+
+**Última actualización:** 2026-08-15  
+**Contacto:** Carlos (cjhirashi@gmail.com)  
 **Licencia:** [Especificar licencia]
