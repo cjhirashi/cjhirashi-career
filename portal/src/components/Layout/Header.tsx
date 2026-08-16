@@ -1,0 +1,117 @@
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import clsx from 'clsx'
+import { useTrackClick } from '@/hooks/useTracking'
+
+interface NavLink {
+  label: string
+  href: string
+}
+
+const navLinks: NavLink[] = [
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/about' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contact', href: '/contact' },
+]
+
+export const Header = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const location = useLocation()
+  const { trackClick } = useTrackClick()
+
+  const handleNavClick = (label: string) => {
+    trackClick(`nav-${label.toLowerCase()}`)
+    setMobileMenuOpen(false)
+  }
+
+  const isActive = (href: string) => location.pathname === href
+
+  return (
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link
+            to="/"
+            className="flex items-center space-x-2"
+            onClick={() => handleNavClick('logo')}
+          >
+            <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">CJ</span>
+            </div>
+            <span className="hidden sm:inline text-slate-900 font-bold text-lg">
+              Carlos Jiménez
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map(link => (
+              <Link
+                key={link.href}
+                to={link.href}
+                onClick={() => handleNavClick(link.label)}
+                className={clsx(
+                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  isActive(link.href)
+                    ? 'text-cyan-600 bg-cyan-50'
+                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-md text-slate-600 hover:text-cyan-600 hover:bg-slate-50"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden pb-4">
+            {navLinks.map(link => (
+              <Link
+                key={link.href}
+                to={link.href}
+                onClick={() => handleNavClick(link.label)}
+                className={clsx(
+                  'block px-3 py-2 rounded-md text-base font-medium transition-colors',
+                  isActive(link.href)
+                    ? 'text-cyan-600 bg-cyan-50'
+                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        )}
+      </nav>
+    </header>
+  )
+}

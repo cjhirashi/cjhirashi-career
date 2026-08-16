@@ -53,24 +53,27 @@ services:
   # =========================================================================
   # Responsabilidad: Lectura de datos públicos
   #
-  # ESTADO: Pendiente de implementación (placeholder comentado)
-  # portal_publico:
-  #   build:
-  #     context: ./portal
-  #     dockerfile: Dockerfile
-  #   container_name: portal_publico
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8003:8000"
-  #   networks:
-  #     - network-cjhirashi-srv
-  #   depends_on:
-  #     - api_rest
-  #   healthcheck:
-  #     test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
-  #     interval: 30s
-  #     timeout: 5s
-  #     retries: 3
+  # ESTADO: ✅ Implementado (React SPA con Vite)
+  portal_publico:
+    build:
+      context: ./portal
+      dockerfile: Dockerfile
+    container_name: portal_publico
+    restart: unless-stopped
+    ports:
+      - "8003:8000"
+    networks:
+      - network-cjhirashi-srv
+    environment:
+      - VITE_API_URL=http://api:8001/api/v1
+      - VITE_TRACKING_ENABLED=true
+    depends_on:
+      - api_rest
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   # =========================================================================
   # MCP Server — Interface MCP para Agentes IA Externos (Claude, etc)
