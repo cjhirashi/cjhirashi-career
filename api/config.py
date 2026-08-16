@@ -17,12 +17,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
 
-    # CORS
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:8003",
-        "http://mcp_frontend:8000",
-        "http://localhost:3000"
-    ]
+    # CORS (como string, parseado manualmente)
+    CORS_ORIGINS_STR: str = "http://localhost:8003 http://mcp_frontend:8000 http://localhost:3000"
 
     # App
     APP_NAME: str = "MCP Tools API"
@@ -32,6 +28,11 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        """Parsea CORS_ORIGINS_STR a lista."""
+        return [url.strip() for url in self.CORS_ORIGINS_STR.replace(",", " ").split() if url.strip()]
 
 
 # Instancia global de configuración
