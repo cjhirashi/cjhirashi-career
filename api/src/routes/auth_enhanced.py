@@ -14,6 +14,7 @@ from schemas.user import (
 from models.user import User
 from services.auth_service import AuthService
 from repositories.user_repository import UserRepository
+from middleware.auth import get_current_user
 from database import get_db
 from config import settings
 import logging
@@ -209,41 +210,44 @@ async def logout():
 @router.post("/change-password")
 async def change_password(
     request: PasswordChangeRequest,
-    user_id: int = Depends(lambda: None),  # Would be replaced with proper auth dependency
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Change user password.
 
     Args:
-        request: Password change request
-        user_id: Current user ID (from auth)
+        request: Password change request with current and new password
+        current_user: Currently authenticated user
         db: Database session
 
     Returns:
         Success message
 
     Raises:
-        HTTPException 401: If current password is wrong
+        HTTPException 400: If new password equals current password or current password is wrong
+        HTTPException 401: If user is not authenticated
     """
-    if not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    repo = UserRepository(db)
-    user = await repo.get_by_id(user_id)
-
-    if not user or not AuthService.verify_password(request.current_password, user.password_hash):
-        logger.warning(f"Password change failed - wrong password: {user_id}")
+    # Validar que nueva contraseña es diferente de la actual
+    if request.current_password == request.new_password:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from current password"
+        )
+
+    # Verificar contraseña actual
+    if not AuthService.verify_password(request.current_password, current_user.password_hash):
+        logger.warning(f"Password change failed - wrong current password: {current_user.id}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Current password is incorrect"
         )
 
-    # Update password
-    user.password_hash = AuthService.hash_password(request.new_password)
-    await repo.db.flush()
-    await repo.commit()
+    # Actualizar contraseña
+    current_user.password_hash = AuthService.hash_password(request.new_password)
+    db.add(current_user)
+    await db.commit()
 
-    logger.info(f"Password changed for user: {user_id}")
+    logger.info(f"Password changed for user: {current_user.id}")
 
     return {"message": "Password changed successfully"}

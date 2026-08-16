@@ -2,7 +2,7 @@
 Pydantic schemas for User and Authentication.
 Request/Response validation and serialization.
 """
-from pydantic import BaseModel, EmailStr, Field, constr
+from pydantic import BaseModel, EmailStr, Field, constr, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -101,7 +101,15 @@ class LogoutResponse(BaseModel):
 class PasswordChangeRequest(BaseModel):
     """Request to change password."""
     current_password: str = Field(..., description="Current password")
-    new_password: constr(min_length=8, max_length=255) = Field(..., description="New password")
+    new_password: constr(min_length=8, max_length=255) = Field(..., description="New password (must be different from current)")
+
+    @field_validator('new_password')
+    @classmethod
+    def new_password_must_differ(cls, v, info):
+        """Ensure new password is different from current password."""
+        if info.data.get('current_password') == v:
+            raise ValueError('New password must be different from current password')
+        return v
 
 
 class PasswordResetRequest(BaseModel):

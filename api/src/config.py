@@ -3,6 +3,7 @@ Portafolio-cjhirashi API - Application Configuration
 Loads environment variables and defines global configuration.
 """
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import List
 from pathlib import Path
 
@@ -10,14 +11,30 @@ from pathlib import Path
 class Settings(BaseSettings):
     """Application configuration via environment variables."""
 
-    # Database
-    DATABASE_URL: str = "postgresql+asyncpg://mcpuser:mcppass123@postgres:5432/mcp_db"
+    # Database (REQUIRED - no defaults for production safety)
+    DATABASE_URL: str = Field(
+        ...,
+        description="PostgreSQL connection string (required)"
+    )
 
-    # JWT & Security
-    SECRET_KEY: str = "portafolio-cjhirashi-secret-key-change-in-production-min-32-chars"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_DAYS: int = 7
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    # JWT & Security (REQUIRED - no defaults for production safety)
+    SECRET_KEY: str = Field(
+        ...,
+        min_length=32,
+        description="JWT secret key (minimum 32 characters, required)"
+    )
+    ALGORITHM: str = Field(
+        default="HS256",
+        description="JWT algorithm"
+    )
+    ACCESS_TOKEN_EXPIRE_DAYS: int = Field(
+        default=7,
+        description="Access token expiration in days"
+    )
+    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
+        default=30,
+        description="Refresh token expiration in days"
+    )
 
     # CORS Origins (as string, parsed to list)
     CORS_ORIGINS_STR: str = "http://localhost:8002,http://localhost:8003,http://localhost:8004"

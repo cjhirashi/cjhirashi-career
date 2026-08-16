@@ -48,6 +48,63 @@ class AuthService:
         return pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
+    def _create_token(
+        data: dict,
+        token_type: str = "access",
+        expires_delta: Optional[timedelta] = None
+    ) -> tuple[str, int]:
+        """
+        Internal method to create JWT tokens (access or refresh).
+
+        Implements DRY principle - centraliza la lógica común de creación de tokens.
+
+        Args:
+            data: Dictionary with data to encode in token
+            token_type: Type of token ("access" or "refresh")
+            expires_delta: Optional timedelta for token expiration
+
+        Returns:
+            Tuple of (token_string, expires_in_seconds)
+
+        Raises:
+            ValueError: If token creation fails
+        """
+        to_encode = data.copy()
+
+        # Determine expiration based on token type
+        if token_type == "refresh":
+            expire_days = settings.REFRESH_TOKEN_EXPIRE_DAYS
+        else:
+            expire_days = settings.ACCESS_TOKEN_EXPIRE_DAYS
+
+        # Calculate expiration time
+        if expires_delta:
+            expire = datetime.now(timezone.utc) + expires_delta
+        else:
+            expire = datetime.now(timezone.utc) + timedelta(days=expire_days)
+
+        # Add expiration and type to token
+        to_encode.update({"exp": expire})
+        if token_type == "refresh":
+            to_encode["type"] = "refresh"
+
+        try:
+            encoded_jwt = jwt.encode(
+                to_encode,
+                settings.SECRET_KEY,
+                algorithm=settings.ALGORITHM
+            )
+            expires_in = (
+                int(expires_delta.total_seconds())
+                if expires_delta
+                else (expire_days * 86400)
+            )
+            return encoded_jwt, expires_in
+        except Exception as e:
+            logger.error(f"Token creation failed ({token_type}): {e}")
+            raise ValueError(f"Failed to create {token_type} token")
+
+    @staticmethod
     def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> tuple[str, int]:
         """
         Create a JWT access token.
@@ -62,22 +119,7 @@ class AuthService:
         Raises:
             ValueError: If token creation fails
         """
-        to_encode = data.copy()
-
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
-
-        to_encode.update({"exp": expire})
-
-        try:
-            encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-            expires_in = int(expires_delta.total_seconds()) if expires_delta else (settings.ACCESS_TOKEN_EXPIRE_DAYS * 86400)
-            return encoded_jwt, expires_in
-        except Exception as e:
-            logger.error(f"Token creation failed: {e}")
-            raise ValueError("Failed to create access token")
+        return AuthService._create_token(data, "access", expires_delta)
 
     @staticmethod
     def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> tuple[str, int]:
@@ -90,23 +132,11 @@ class AuthService:
 
         Returns:
             Tuple of (token_string, expires_in_seconds)
+
+        Raises:
+            ValueError: If token creation fails
         """
-        to_encode = data.copy()
-
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-
-        to_encode.update({"exp": expire, "type": "refresh"})
-
-        try:
-            encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-            expires_in = int(expires_delta.total_seconds()) if expires_delta else (settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400)
-            return encoded_jwt, expires_in
-        except Exception as e:
-            logger.error(f"Refresh token creation failed: {e}")
-            raise ValueError("Failed to create refresh token")
+        return AuthService._create_token(data, "refresh", expires_delta)
 
     @staticmethod
     def decode_token(token: str) -> dict:

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional
 from models.user import User
-from utils.security import decode_access_token
+from services.auth_service import AuthService
 from database import get_db
 import logging
 
@@ -36,34 +36,44 @@ async def get_current_user(
     """
     token = credentials.credentials
 
-    # Decodificar token
-    payload = decode_access_token(token)
-    if payload is None:
+    # Decodificar y validar token
+    try:
+        payload = AuthService.decode_access_token(token)
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido o expirado",
+            detail=str(e),
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    # Obtener username del payload
-    username: Optional[str] = payload.get("sub")
-    if username is None:
+    # Obtener user_id del payload (sub contiene el ID del usuario)
+    user_id_str: Optional[str] = payload.get("sub")
+    if user_id_str is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido: falta información de usuario",
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    # Buscar usuario en base de datos
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido: ID de usuario malformado",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Buscar usuario por ID (búsqueda por primary key es más eficiente)
     result = await db.execute(
-        select(User).where(User.username == username)
+        select(User).where(User.id == user_id)
     )
     user = result.scalar_one_or_none()
 
-    if user is None:
+    if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario no encontrado",
+            detail="Usuario no encontrado o inactivo",
             headers={"WWW-Authenticate": "Bearer"}
         )
 
