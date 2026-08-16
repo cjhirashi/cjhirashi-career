@@ -1,48 +1,208 @@
-services:
-  mcp-tools:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: mcp_tools_server
-    restart: unless-stopped
-    ports:
-      - "8002:8000"
-    networks:
-      - network-cjhirashi-srv
-    environment:
-      - PYTHONUNBUFFERED=1
-      - FASTMCP_HOST=0.0.0.0
-      - FASTMCP_PORT=8000
+# ============================================================================
+# Portafolio-cjhirashi — Docker Compose Orchestration
+# ============================================================================
+#
+# Arquitectura: 7 servicios (algunos en fase de implementación)
+# Network: network-cjhirashi-srv (externa, compartida con cjhirashi-srv)
+# Volúmenes: /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/
+#
+# Servicios Expuestos (via reverse proxy Caddy):
+#   - Admin Panel (8002:8000) - Interface privada para Carlos
+#   - Portal Público (8003:8000) - Portafolio público
+#   - MCP Server (8004:8000) - Interface MCP para agentes IA
+#
+# Servicios Internos (red Docker):
+#   - API REST (8001) - Orquestación central
+#   - PDF Generator (8080) - Generación de documentos
+#   - Agent Bedrock (interno) - Asistente IA
+#   - PostgreSQL (5432) - Base de datos
 
-  mcp-frontend:
+version: '3.9'
+
+services:
+  # =========================================================================
+  # Admin Panel — Interface Privada para Carlos Jiménez Hirashi
+  # =========================================================================
+  # Responsabilidad: Gestión manual de identidad, competencias, evidencia
+  #                  Asistencia IA (Bedrock)
+  #                  Generación de documentos (PDF)
+  #
+  # ESTADO: Pendiente de implementación (placeholder comentado)
+  # admin_panel:
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: admin_panel
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8002:8000"
+  #   networks:
+  #     - network-cjhirashi-srv
+  #   env_file: .env.local
+  #   depends_on:
+  #     - api_rest
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+
+  # =========================================================================
+  # Portal Público — Portafolio (About, Proyectos, Blog, Contacto)
+  # =========================================================================
+  # Responsabilidad: Lectura de datos públicos
+  #
+  # ESTADO: Pendiente de implementación (placeholder comentado)
+  # portal_publico:
+  #   build:
+  #     context: ./portal
+  #     dockerfile: Dockerfile
+  #   container_name: portal_publico
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8003:8000"
+  #   networks:
+  #     - network-cjhirashi-srv
+  #   depends_on:
+  #     - api_rest
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+
+  # =========================================================================
+  # MCP Server — Interface MCP para Agentes IA Externos (Claude, etc)
+  # =========================================================================
+  # Responsabilidad: Servir herramientas MCP para agentes IA externos
+  # Comunica con API REST para lógica de negocio
+  mcp_server:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: mcp_frontend
+    container_name: mcp_server
     restart: unless-stopped
     ports:
-      - "8003:8000"
+      - "8004:8000"
     networks:
       - network-cjhirashi-srv
-    environment:
-      - APP_NAME=MCP Tools Server
-      - API_UPSTREAM=mcp_api:8001
-      - PDF_GENERATOR_URL=http://pdf-generator:8080
     depends_on:
-      - mcp-api
+      - api_rest
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
+  # =========================================================================
+  # API REST — Orquestación Central
+  # =========================================================================
+  # Responsabilidad: CRUD de datos
+  #                  Autenticación y autorización
+  #                  Validación de negocio
+  #                  Único escritor en PostgreSQL
+  #
+  # INTERNO: No expuesto (accesible solo desde red Docker)
+  api_rest:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api_rest
+    restart: unless-stopped
+    networks:
+      - network-cjhirashi-srv
+    volumes:
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/uploads:/app/uploads:rw
+    env_file: .env.local
+    environment:
+      # Base de datos
+      DATABASE_URL: ${DATABASE_URL}
+      # Autenticación
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_DAYS: ${ACCESS_TOKEN_EXPIRE_DAYS}
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      # Aplicación
+      APP_NAME: ${APP_NAME}
+      APP_VERSION: ${APP_VERSION}
+      DEBUG: ${DEBUG}
+      UPLOADS_DIR: ${UPLOADS_DIR}
+      # AWS Bedrock (para Agent Bedrock)
+      BEDROCK_REGION: ${BEDROCK_REGION}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+  # =========================================================================
+  # PDF Generator — Generación de CVs y Cartas de Presentación
+  # =========================================================================
+  # Responsabilidad: Generar PDFs (CVs, Cover Letters)
+  #
+  # ESTADO: Pendiente de implementación (placeholder comentado)
+  # pdf_generator:
+  #   build:
+  #     context: ./pdf-generator
+  #     dockerfile: Dockerfile
+  #   container_name: pdf_generator
+  #   restart: unless-stopped
+  #   networks:
+  #     - network-cjhirashi-srv
+  #   depends_on:
+  #     - api_rest
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+
+  # =========================================================================
+  # Agent Bedrock — Asistente IA (AWS Bedrock)
+  # =========================================================================
+  # Responsabilidad: Asistencia IA dentro de Admin Panel
+  #
+  # ESTADO: Pendiente de implementación (placeholder comentado)
+  # bedrock_agent:
+  #   build:
+  #     context: ./agents/bedrock
+  #     dockerfile: Dockerfile
+  #   container_name: bedrock_agent
+  #   restart: unless-stopped
+  #   networks:
+  #     - network-cjhirashi-srv
+  #   env_file: .env.local
+  #   environment:
+  #     AWS_REGION: ${BEDROCK_REGION}
+  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  #   depends_on:
+  #     - api_rest
+
+  # =========================================================================
+  # PostgreSQL — Base de Datos Centralizada (única fuente de verdad)
+  # =========================================================================
+  # Responsabilidad: Persistencia de todos los datos del sistema
   postgres:
     image: postgres:15-alpine
-    container_name: mcp_postgres
+    container_name: postgres_db
     restart: unless-stopped
     env_file: .env.local
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
+      # Script de inicialización
       - ./api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/postgres:/var/lib/postgresql/data
+      # Persistencia de datos
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/postgres:/var/lib/postgresql/data:rw
     networks:
       - network-cjhirashi-srv
     healthcheck:
@@ -50,37 +210,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
-  mcp-api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: mcp_api
-    restart: unless-stopped
-    ports:
-      - "8004:8001"
-    volumes:
-      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/uploads:/app/uploads:rw
-    networks:
-      - network-cjhirashi-srv
-    env_file: .env.local
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      SECRET_KEY: ${SECRET_KEY}
-      ALGORITHM: ${ALGORITHM}
-      ACCESS_TOKEN_EXPIRE_DAYS: ${ACCESS_TOKEN_EXPIRE_DAYS}
-      CORS_ORIGINS: ${CORS_ORIGINS}
-      APP_NAME: ${APP_NAME}
-      APP_VERSION: ${APP_VERSION}
-      DEBUG: ${DEBUG}
-      UPLOADS_DIR: ${UPLOADS_DIR}
-      BEDROCK_REGION: ${BEDROCK_REGION}
-      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID}
-    depends_on:
-      postgres:
-        condition: service_healthy
+# ============================================================================
+# Volúmenes
+# ============================================================================
+# Nota: Volúmenes de base de datos y uploads están en ruta absoluta
+#       por coherencia con cjhirashi-srv y para persistencia en disco compartido
 
-volumes:
+volumes: {}
+
+# ============================================================================
+# Redes
+# ============================================================================
+# network-cjhirashi-srv: Red Docker bridge EXTERNA
+#   - Compartida con cjhirashi-srv (Caddy + Cloudflare)
+#   - Permite acceso desde reverse proxy
+#   - Aislada de internet directa (solo via Caddy)
 
 networks:
   network-cjhirashi-srv:
