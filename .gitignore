@@ -44,9 +44,12 @@ env/
 .DS_Store
 Thumbs.db
 
-# Environment variables
+# Environment variables - SECURITY CRITICAL
+# Never commit .env files - they contain secrets
 .env
 .env.local
+.env.*.local
+!.env.example
 
 # Outputs
 /mnt/disco2/cjhirashi-data/mcp-outputs/
