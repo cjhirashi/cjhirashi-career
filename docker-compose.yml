@@ -40,8 +40,8 @@ services:
       - POSTGRES_PASSWORD=mcppass123
       - POSTGRES_DB=mcp_db
     volumes:
-      - ./api/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - postgres_data:/var/lib/postgresql/data
+      - ./api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/postgres:/var/lib/postgresql/data
     networks:
       - network-cjhirashi-srv
     healthcheck:
@@ -58,6 +58,8 @@ services:
     restart: unless-stopped
     ports:
       - "8004:8001"
+    volumes:
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/uploads:/app/uploads:rw
     networks:
       - network-cjhirashi-srv
     environment:
@@ -69,12 +71,12 @@ services:
       APP_NAME: MCP Tools API
       APP_VERSION: "1.0.0"
       DEBUG: "false"
+      UPLOADS_DIR: /app/uploads
     depends_on:
       postgres:
         condition: service_healthy
 
 volumes:
-  postgres_data:
 
 networks:
   network-cjhirashi-srv:

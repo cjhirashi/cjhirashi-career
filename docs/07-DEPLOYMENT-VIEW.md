@@ -216,12 +216,18 @@ volumes:
 
 ## 💾 Volúmenes
 
-| Volumen | Tipo | Usado por | Propósito |
-|---|---|---|---|
-| `postgres_data` | Volumen Docker con nombre | `postgres` | Persistencia de los tres dominios de datos (carrera, observabilidad, auditoría) entre reinicios/recreaciones del contenedor |
-| `./api/init.sql` (bind mount de solo lectura) | Bind mount | `postgres` | Script de inicialización del esquema en el primer arranque del volumen |
+| Volumen | Tipo | Ruta en Host | Usado por | Propósito |
+|---|---|---|---|---|
+| **postgres_data** | Bind mount | `/mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/postgres` | `postgres` | Persistencia de los tres dominios de datos (carrera, observabilidad, auditoría) entre reinicios/recreaciones del contenedor |
+| **uploads** | Bind mount (lectura/escritura) | `/mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/uploads` | `api` | Bucket de archivos: imágenes del portal, avatar de usuario, documentos necesarios para Admin Panel y Portal Público |
+| **init.sql** | Bind mount (solo lectura) | `./api/init.sql` → `/docker-entrypoint-initdb.d/init.sql` | `postgres` | Script de inicialización del esquema en el primer arranque |
 
-**Nota de diseño (opcional, a validar)**: si el Admin Panel incorpora carga de archivos (por ejemplo, un avatar de perfil en `identity`) o si se decide persistir en disco copias de los PDF generados en lugar de servirlos solo en el momento de la solicitud, deberá evaluarse un volumen adicional (`uploads_data` o `pdf_outputs`) — no se declara aquí porque no hay una necesidad confirmada en el alcance actual; queda como pregunta abierta para cuando se detalle el contrato del PDF Generator (ver [01-INTRODUCTION.md — Preguntas de Validación Abiertas](./01-INTRODUCTION.md#-preguntas-de-validación-abiertas)).
+**Carpeta base de volúmenes**: `/mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/`
+- **postgres/** — Base de datos persistente
+- **uploads/** — Bucket de archivos (imágenes, documentos)
+- **backups/** — Directorio para respaldos futuros de volúmenes
+
+**Nota sobre PDFs**: Los PDFs se generan bajo demanda en memoria y se descargan directamente al usuario — **no se almacenan en disco del servidor**. El volumen `uploads` es solo para imágenes y archivos del sistema, no para PDFs.
 
 ## 🔍 Health Checks
 
