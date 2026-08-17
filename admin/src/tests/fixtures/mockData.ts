@@ -13,6 +13,19 @@ export const mockUser: User = {
   updated_at: new Date().toISOString(),
 }
 
+export const mockUser2: User = {
+  id: 2,
+  username: 'testuser',
+  email: 'test@example.com',
+  full_name: 'Test User',
+  phone: '9876543210',
+  country: 'UK',
+  professional_title: 'Product Manager',
+  is_active: true,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}
+
 export const mockLoginResponse: LoginResponse = {
   access_token: 'mock_access_token_123',
   refresh_token: 'mock_refresh_token_456',
@@ -69,3 +82,18 @@ export const mockCompetencies: Competency[] = [
     level: 'intermediate',
   },
 ]
+
+// Additional mock data for comprehensive testing
+export const mockEmptyIdentity: Identity = {
+  id: 1,
+  user_id: 1,
+  ikigai_what_do_i_do: '',
+  ikigai_what_do_i_love: '',
+  ikigai_what_am_i_good_at: '',
+  ikigai_what_pays: '',
+  differentiators: [],
+  professional_narrative: '',
+  value_proposition: '',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}
