@@ -4,6 +4,7 @@ Tests para Identity, Competency, Evidence, JobStrategy, Vacancy, etc.
 """
 import pytest
 from datetime import date, datetime
+from sqlalchemy import select
 from models import (
     Identity, Competency, Evidence, JobStrategy, Vacancy,
     NetworkingContact, Interview, RefreshToken, FileUpload,
@@ -19,19 +20,19 @@ class TestIdentityModel:
         """Crear una identidad completa con todos los campos."""
         identity = Identity(
             user_id=test_user.id,
-            ikigai_passion="Crear impacto con tecnología",
-            ikigai_profession="Arquitecto de software",
-            ikigai_vocation="Mentorizar a otros desarrolladores",
-            ikigai_mission="Revolucionar la industria tech",
-            key_differentiators="Experiencia en patrones SOLID",
-            unique_value_proposition="Soluciones escalables y mantenibles"
+            passion="Crear impacto con tecnología",
+            profession="Arquitecto de software",
+            vocation="Mentorizar a otros desarrolladores",
+            mission="Revolucionar la industria tech",
+            key_strengths="Experiencia en patrones SOLID",
+            unique_value_prop="Soluciones escalables y mantenibles"
         )
         db_session.add(identity)
         await db_session.flush()
         await db_session.refresh(identity)
 
         assert identity.id is not None
-        assert identity.ikigai_mission == "Revolucionar la industria tech"
+        assert identity.mission == "Revolucionar la industria tech"
         assert identity.user_id == test_user.id
 
 
@@ -41,42 +42,44 @@ class TestCompetencyExtended:
     @pytest.mark.asyncio
     async def test_competency_with_all_fields(self, db_session, test_user):
         """Crear competencia con todos los campos."""
+        from models.competencies import CompetencyType, CompetencyLevel
         comp = Competency(
             user_id=test_user.id,
             name="FastAPI",
             description="Backend framework development",
-            type="técnica",
-            level="Expert",
+            competency_type=CompetencyType.TECHNICAL,
+            proficiency_level=CompetencyLevel.EXPERT,
             proficiency_score=95,
             years_of_experience=4,
-            endorsements=25,
-            is_highlighted=True
+            endorsement_count=25,
+            is_featured=True
         )
         db_session.add(comp)
         await db_session.flush()
         await db_session.refresh(comp)
 
         assert comp.proficiency_score == 95
-        assert comp.endorsements == 25
-        assert comp.is_highlighted is True
+        assert comp.endorsement_count == 25
+        assert comp.is_featured is True
 
     @pytest.mark.asyncio
     async def test_competency_types(self, db_session, test_user):
         """Verificar que se pueden crear competencias de diferentes tipos."""
-        types = ["técnica", "transferible", "negocio"]
+        from models.competencies import CompetencyType
+        types = [CompetencyType.TECHNICAL, CompetencyType.TRANSFERABLE, CompetencyType.BUSINESS]
 
         for comp_type in types:
             comp = Competency(
                 user_id=test_user.id,
-                name=f"Skill_{comp_type}",
-                type=comp_type
+                name=f"Skill_{comp_type.value}",
+                competency_type=comp_type
             )
             db_session.add(comp)
 
         await db_session.flush()
 
         result = await db_session.execute(
-            db.select(Competency).where(Competency.user_id == test_user.id)
+            select(Competency).where(Competency.user_id == test_user.id)
         )
         competencies = result.scalars().all()
         assert len(competencies) == 3

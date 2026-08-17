@@ -10,10 +10,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from httpx import AsyncClient, ASGITransport
 from database import Base, get_db
 from config import settings
 from models import User, Identity, Competency, Evidence
 from services.auth_service import AuthService
+from app import app
 
 
 # ============================================================================
@@ -112,12 +114,12 @@ async def test_identity(db_session: AsyncSession, test_user: User):
     """Crear una identidad de prueba."""
     identity = Identity(
         user_id=test_user.id,
-        ikigai_passion="Escribir código",
-        ikigai_profession="Desarrollo de software",
-        ikigai_vocation="Crear soluciones innovadoras",
-        ikigai_mission="Impactar positivamente a través de la tecnología",
-        key_differentiators="Experiencia en arquitectura",
-        unique_value_proposition="Soluciones escalables y mantenibles"
+        passion="Escribir código",
+        profession="Desarrollo de software",
+        vocation="Crear soluciones innovadoras",
+        mission="Impactar positivamente a través de la tecnología",
+        key_strengths="Experiencia en arquitectura",
+        unique_value_prop="Soluciones escalables y mantenibles"
     )
     db_session.add(identity)
     await db_session.flush()
@@ -132,15 +134,16 @@ async def test_identity(db_session: AsyncSession, test_user: User):
 @pytest.fixture
 async def test_competency(db_session: AsyncSession, test_user: User):
     """Crear una competencia de prueba."""
+    from models.competencies import CompetencyType, CompetencyLevel
     competency = Competency(
         user_id=test_user.id,
         name="Python",
         description="Desarrollo backend con Python",
-        type="técnica",
-        level="Expert",
+        competency_type=CompetencyType.TECHNICAL,
+        proficiency_level=CompetencyLevel.EXPERT,
         proficiency_score=95,
         years_of_experience=5,
-        is_highlighted=True
+        is_featured=True
     )
     db_session.add(competency)
     await db_session.flush()
@@ -155,23 +158,24 @@ async def test_competency(db_session: AsyncSession, test_user: User):
 @pytest.fixture
 async def test_evidence(db_session: AsyncSession, test_user: User):
     """Crear una evidencia de prueba."""
-    from datetime import date
+    from datetime import datetime, timezone
+    from models.evidence import EvidenceType
 
     evidence = Evidence(
         user_id=test_user.id,
-        type="project",
+        evidence_type=EvidenceType.PROJECT,
         title="API REST con FastAPI",
         description="Desarrollo de API REST escalable",
-        company="Tech Corp",
-        position="Senior Developer",
-        start_date=date(2022, 1, 1),
-        end_date=date(2023, 12, 31),
-        url="https://github.com/example/project",
-        is_featured=True,
-        star_situation="Necesidad de refactorizar API legacy",
-        star_task="Diseñar nueva arquitectura",
-        star_action="Implementé FastAPI con SQLAlchemy",
-        star_result="Mejora 40% en performance"
+        organization="Tech Corp",
+        position_title="Senior Developer",
+        start_date=datetime(2022, 1, 1, tzinfo=timezone.utc),
+        end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
+        project_url="https://github.com/example/project",
+        is_current=False,
+        situation="Necesidad de refactorizar API legacy",
+        task="Diseñar nueva arquitectura",
+        action="Implementé FastAPI con SQLAlchemy",
+        result="Mejora 40% en performance"
     )
     db_session.add(evidence)
     await db_session.flush()
@@ -208,3 +212,17 @@ def valid_jwt_token(test_user: User):
         data={"sub": str(test_user.id)}
     )
     return token
+
+
+# ============================================================================
+# HTTP CLIENT FIXTURES
+# ============================================================================
+
+@pytest.fixture
+async def async_client():
+    """Fixture para cliente HTTP async para testing de endpoints."""
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as client:
+        yield client

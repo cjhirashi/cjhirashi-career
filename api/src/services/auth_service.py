@@ -6,13 +6,10 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
-from passlib.context import CryptContext
+import bcrypt
 from config import settings
 
 logger = logging.getLogger(__name__)
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class AuthService:
@@ -26,12 +23,19 @@ class AuthService:
         Hash a password using bcrypt.
 
         Args:
-            password: Plain text password to hash
+            password: Plain text password to hash (max 72 bytes)
 
         Returns:
             Hashed password string
         """
-        return pwd_context.hash(password)
+        # Ensure password doesn't exceed bcrypt limit of 72 bytes
+        if len(password.encode()) > 72:
+            password = password[:72]
+
+        # Hash password with bcrypt
+        salt = bcrypt.gensalt(rounds=12)
+        hashed = bcrypt.hashpw(password.encode(), salt)
+        return hashed.decode()
 
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -39,13 +43,21 @@ class AuthService:
         Verify a plain password against its hash.
 
         Args:
-            plain_password: Plain text password to verify
+            plain_password: Plain text password to verify (max 72 bytes)
             hashed_password: Previously hashed password to compare against
 
         Returns:
             True if password matches, False otherwise
         """
-        return pwd_context.verify(plain_password, hashed_password)
+        try:
+            # Ensure password doesn't exceed bcrypt limit of 72 bytes
+            if len(plain_password.encode()) > 72:
+                plain_password = plain_password[:72]
+
+            return bcrypt.checkpw(plain_password.encode(), hashed_password.encode())
+        except Exception as e:
+            logger.warning(f"Password verification failed: {e}")
+            return False
 
     @staticmethod
     def _create_token(

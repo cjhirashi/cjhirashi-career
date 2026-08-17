@@ -65,7 +65,7 @@ class TestIdentityModel:
         """Verificar que se puede crear una identidad."""
         assert test_identity.id is not None
         assert test_identity.user_id is not None
-        assert test_identity.ikigai_passion == "Escribir código"
+        assert test_identity.passion == "Escribir código"
 
     @pytest.mark.asyncio
     async def test_identity_user_relationship(self, db_session, test_identity: Identity):
@@ -81,7 +81,7 @@ class TestIdentityModel:
         # Intentar crear otra debería fallar o sobrescribir
         identity2 = Identity(
             user_id=test_user.id,
-            ikigai_passion="Otra pasión"
+            passion="Otra pasión"
         )
         db_session.add(identity2)
         # SQLAlchemy debería permitir esto, pero la BD lo evitaría con UNIQUE constraint
@@ -94,9 +94,10 @@ class TestCompetencyModel:
     @pytest.mark.asyncio
     async def test_competency_creation(self, db_session, test_competency: Competency):
         """Verificar que se puede crear una competencia."""
+        from models.competencies import CompetencyType
         assert test_competency.id is not None
         assert test_competency.name == "Python"
-        assert test_competency.type == "técnica"
+        assert test_competency.competency_type == CompetencyType.TECHNICAL
         assert test_competency.proficiency_score == 95
 
     @pytest.mark.asyncio
@@ -109,15 +110,16 @@ class TestCompetencyModel:
     @pytest.mark.asyncio
     async def test_competency_multiple_per_user(self, db_session, test_user: User):
         """Verificar que un usuario puede tener múltiples competencias."""
+        from models.competencies import CompetencyType
         comp1 = Competency(
             user_id=test_user.id,
             name="Python",
-            type="técnica"
+            competency_type=CompetencyType.TECHNICAL
         )
         comp2 = Competency(
             user_id=test_user.id,
             name="Liderazgo",
-            type="transferible"
+            competency_type=CompetencyType.TRANSFERABLE
         )
         db_session.add(comp1)
         db_session.add(comp2)
@@ -130,17 +132,18 @@ class TestCompetencyModel:
     @pytest.mark.asyncio
     async def test_competency_default_values(self, db_session, test_user: User):
         """Verificar que los valores por defecto se asignan correctamente."""
+        from models.competencies import CompetencyType
         comp = Competency(
             user_id=test_user.id,
             name="JavaScript",
-            type="técnica"
+            competency_type=CompetencyType.TECHNICAL
         )
         db_session.add(comp)
         await db_session.flush()
         await db_session.refresh(comp)
 
-        assert comp.is_highlighted is False
-        assert comp.endorsements == 0
+        assert comp.is_featured is False
+        assert comp.endorsement_count == 0
 
 
 class TestEvidenceModel:
@@ -149,18 +152,19 @@ class TestEvidenceModel:
     @pytest.mark.asyncio
     async def test_evidence_creation(self, db_session, test_evidence: Evidence):
         """Verificar que se puede crear una evidencia."""
+        from models.evidence import EvidenceType
         assert test_evidence.id is not None
         assert test_evidence.title == "API REST con FastAPI"
-        assert test_evidence.type == "project"
-        assert test_evidence.is_featured is True
+        assert test_evidence.evidence_type == EvidenceType.PROJECT
+        assert test_evidence.is_current is False
 
     @pytest.mark.asyncio
     async def test_evidence_star_method(self, db_session, test_evidence: Evidence):
         """Verificar que los campos STAR se almacenan correctamente."""
-        assert test_evidence.star_situation is not None
-        assert test_evidence.star_task is not None
-        assert test_evidence.star_action is not None
-        assert test_evidence.star_result is not None
+        assert test_evidence.situation is not None
+        assert test_evidence.task is not None
+        assert test_evidence.action is not None
+        assert test_evidence.result is not None
 
     @pytest.mark.asyncio
     async def test_evidence_user_relationship(self, db_session, test_evidence: Evidence):
@@ -172,12 +176,14 @@ class TestEvidenceModel:
     @pytest.mark.asyncio
     async def test_evidence_dates(self, db_session, test_user: User):
         """Verificar que los dates se almacenan correctamente."""
-        start_date = date(2023, 1, 1)
-        end_date = date(2023, 12, 31)
+        from datetime import datetime, timezone
+        from models.evidence import EvidenceType
+        start_date = datetime(2023, 1, 1, tzinfo=timezone.utc)
+        end_date = datetime(2023, 12, 31, tzinfo=timezone.utc)
 
         evidence = Evidence(
             user_id=test_user.id,
-            type="job",
+            evidence_type=EvidenceType.POSITION,
             title="Software Engineer",
             start_date=start_date,
             end_date=end_date
@@ -186,15 +192,17 @@ class TestEvidenceModel:
         await db_session.flush()
         await db_session.refresh(evidence)
 
-        assert evidence.start_date == start_date
-        assert evidence.end_date == end_date
+        # Compare just the date/time without timezone (SQLite may not preserve TZ info)
+        assert evidence.start_date.replace(tzinfo=None) == start_date.replace(tzinfo=None)
+        assert evidence.end_date.replace(tzinfo=None) == end_date.replace(tzinfo=None)
 
     @pytest.mark.asyncio
     async def test_evidence_default_values(self, db_session, test_user: User):
         """Verificar que los valores por defecto se asignan correctamente."""
+        from models.evidence import EvidenceType
         evidence = Evidence(
             user_id=test_user.id,
-            type="project",
+            evidence_type=EvidenceType.PROJECT,
             title="Test Project"
         )
         db_session.add(evidence)

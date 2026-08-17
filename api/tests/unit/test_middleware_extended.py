@@ -1,9 +1,9 @@
 """Extended tests for API middleware - covering JWT, auth, and error handling"""
 import pytest
 from datetime import datetime, timedelta
-from src.services.auth_service import AuthService
+from services.auth_service import AuthService
 try:
-    from src.exceptions import InvalidCredentialsException, UnauthorizedException
+    from utils.exceptions import InvalidCredentialsException, UnauthorizedException
 except ImportError:
     # Define mock exceptions if they don't exist
     class InvalidCredentialsException(Exception):
