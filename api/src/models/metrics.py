@@ -84,7 +84,7 @@ class Metrics(Base):
     engagement_trend = Column(Float, nullable=True)  # Change percentage
 
     # Additional Context
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

@@ -70,7 +70,7 @@ class AuditLog(Base):
     # Additional Context
     reason = Column(Text, nullable=True)  # Reason for the action
     admin_id = Column(Integer, nullable=True)  # Admin who triggered if not user
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
     # Timestamp
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)

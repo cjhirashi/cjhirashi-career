@@ -95,7 +95,7 @@ class NetworkingContact(Base):
     tags = Column(String(500), nullable=True)  # Comma-separated tags for organization
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)

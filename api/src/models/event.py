@@ -64,7 +64,7 @@ class Event(Base):
     user_agent = Column(String(500), nullable=True)
 
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    extra_metadata = Column(JSON, nullable=True)
 
     # Timestamp
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
