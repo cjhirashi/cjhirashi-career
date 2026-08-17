@@ -62,18 +62,47 @@ Interfaz para agentes IA externos (Claude, etc.) — operan el sistema de forma 
 - Docker y Docker Compose
 - Acceso a red `network-cjhirashi-srv`
 
+### Configurar Variables de Entorno
+
+**IMPORTANTE**: Las variables de entorno se configuran en `.env.local` (NO versionado en git)
+
+```bash
+# Copiar plantilla de configuración
+cp .env.example .env.local
+
+# Editar valores en .env.local (cambiar contraseñas, claves, etc.)
+nano .env.local  # o tu editor favorito
+
+# Variables críticas a actualizar:
+# - POSTGRES_PASSWORD (contraseña segura)
+# - SECRET_KEY (mínimo 32 caracteres aleatorios)
+# - CORS_ORIGINS (hosts permitidos - comma-separated sin espacios)
+# - BEDROCK_REGION / BEDROCK_MODEL_ID (si usas AWS Bedrock)
+```
+
 ### Levantar el sistema
 
 ```bash
-cd mcp-server
+# Docker Compose carga automáticamente .env.local
 docker compose up -d
+
+# O especificar explícitamente (opcional)
+docker compose --env-file .env.local up -d
+```
+
+### Verificar que está en línea
+
+```bash
+docker compose ps
+docker compose logs -f api_rest
 ```
 
 ### Acceso
 
 - **Portal Público**: http://localhost:8003
-- **Admin Panel**: http://localhost:8002 (autenticación requerida)
+- **Admin Panel**: http://localhost:8002 (credenciales: ver setup inicial)
 - **MCP Server**: http://localhost:8004/sse (protocolo MCP)
+- **API REST**: http://localhost:8001/docs (Swagger)
 
 ---
 

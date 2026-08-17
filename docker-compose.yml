@@ -117,7 +117,7 @@ services:
       - network-cjhirashi-srv
     volumes:
       - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/uploads:/app/uploads:rw
-    env_file: .env.local
+    env_file: .env
     environment:
       # Base de datos
       DATABASE_URL: ${DATABASE_URL}
@@ -181,7 +181,7 @@ services:
   #   restart: unless-stopped
   #   networks:
   #     - network-cjhirashi-srv
-  #   env_file: .env.local
+  #   env_file: .env
   #   environment:
   #     AWS_REGION: ${BEDROCK_REGION}
   #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -197,7 +197,7 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     restart: unless-stopped
-    env_file: .env.local
+    env_file: .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
