@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import * as trackingApi from '@/api/tracking'
+import { trackingApi } from '@/api/tracking'
 import { ContactPage } from '@/pages/ContactPage'
 import { mockContactMessage } from '../fixtures/mockData'
 

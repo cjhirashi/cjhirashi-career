@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import * as identityApi from '@/api/identity'
-import * as projectsApi from '@/api/projects'
-import * as trackingApi from '@/api/tracking'
+import { identityApi } from '@/api/identity'
+import { projectsApi } from '@/api/projects'
+import { trackingApi } from '@/api/tracking'
 import { HomePage } from '@/pages/HomePage'
 import { mockIdentity, mockCompetencies, mockFeaturedProjects } from '../fixtures/mockData'
 

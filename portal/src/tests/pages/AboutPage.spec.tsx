@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
-import * as identityApi from '@/api/identity'
+import { identityApi } from '@/api/identity'
 import { AboutPage } from '@/pages/AboutPage'
 import { mockIdentity, mockCompetencies } from '../fixtures/mockData'
 

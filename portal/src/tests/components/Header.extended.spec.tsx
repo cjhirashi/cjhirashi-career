@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import * as trackingApi from '@/api/tracking'
+import { trackingApi } from '@/api/tracking'
 import { Header } from '@/components/Layout/Header'
 
 vi.mock('@/api/tracking')
@@ -67,7 +67,10 @@ describe('Header - Extended Tests', () => {
     render(<Header />, { initialRoute: '/' })
 
     const menuButton = screen.getByLabelText(/Toggle menu/i)
-    expect(screen.queryByText('Home').closest('a')?.className).toContain('md:hidden') === false
+    const homeLink = screen.queryByText('Home')?.closest('a')
+    if (homeLink) {
+      expect(homeLink.className).not.toContain('md:hidden')
+    }
 
     await user.click(menuButton)
 

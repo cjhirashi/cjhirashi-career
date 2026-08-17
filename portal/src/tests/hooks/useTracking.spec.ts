@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import * as trackingApi from '@/api/tracking'
+import { trackingApi } from '@/api/tracking'
 import { useTrackClick, useTrackDownload } from '@/hooks/useTracking'
 
 vi.mock('@/api/tracking')

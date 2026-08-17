@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import * as trackingApi from '@/api/tracking'
+import { trackingApi } from '@/api/tracking'
 import { Footer } from '@/components/Layout/Footer'
 
 vi.mock('@/api/tracking')

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import * as blogApi from '@/api/blog'
-import * as trackingApi from '@/api/tracking'
+import { blogApi } from '@/api/blog'
+import { trackingApi } from '@/api/tracking'
 import { BlogPage } from '@/pages/BlogPage'
 import { mockBlogPosts } from '../fixtures/mockData'
 
@@ -15,7 +15,7 @@ describe('BlogPage', () => {
   })
 
   it('renders page heading', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -25,7 +25,7 @@ describe('BlogPage', () => {
   })
 
   it('renders page description', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -35,7 +35,7 @@ describe('BlogPage', () => {
   })
 
   it('renders all blog posts', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -47,7 +47,7 @@ describe('BlogPage', () => {
   })
 
   it('renders search input field', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -59,7 +59,7 @@ describe('BlogPage', () => {
 
   it('filters blog posts by search term', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -77,7 +77,7 @@ describe('BlogPage', () => {
 
   it('searches by post title', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -96,7 +96,7 @@ describe('BlogPage', () => {
 
   it('searches by post excerpt', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -115,7 +115,7 @@ describe('BlogPage', () => {
 
   it('tracks search queries', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -134,7 +134,7 @@ describe('BlogPage', () => {
   })
 
   it('renders tag filter buttons', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -146,7 +146,7 @@ describe('BlogPage', () => {
 
   it('filters posts by selected tag', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -164,7 +164,7 @@ describe('BlogPage', () => {
 
   it('removes tag filter when same tag is clicked again', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -188,7 +188,7 @@ describe('BlogPage', () => {
 
   it('tracks tag filter clicks', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -208,7 +208,7 @@ describe('BlogPage', () => {
 
   it('combines search and tag filters', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -230,7 +230,7 @@ describe('BlogPage', () => {
   })
 
   it('shows loading spinner initially', () => {
-    vi.mocked(blogApi.getBlogPosts).mockImplementation(
+    vi.mocked(blogApi.getPosts).mockImplementation(
       () => new Promise(() => {})
     )
 
@@ -240,7 +240,7 @@ describe('BlogPage', () => {
   })
 
   it('shows error message when posts fail to load', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockRejectedValue(new Error('Failed'))
+    vi.mocked(blogApi.getPosts).mockRejectedValue(new Error('Failed'))
 
     render(<BlogPage />)
 
@@ -251,7 +251,7 @@ describe('BlogPage', () => {
 
   it('shows no articles message when no results', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -268,7 +268,7 @@ describe('BlogPage', () => {
   })
 
   it('renders posts in grid layout', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     const { container } = render(<BlogPage />)
 
@@ -280,7 +280,7 @@ describe('BlogPage', () => {
   })
 
   it('extracts unique tags from all posts', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
@@ -293,7 +293,7 @@ describe('BlogPage', () => {
   })
 
   it('handles empty blog posts array', async () => {
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue([])
+    vi.mocked(blogApi.getPosts).mockResolvedValue([])
 
     render(<BlogPage />)
 
@@ -304,7 +304,7 @@ describe('BlogPage', () => {
 
   it('maintains search state when typing', async () => {
     const user = userEvent.setup()
-    vi.mocked(blogApi.getBlogPosts).mockResolvedValue(mockBlogPosts)
+    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
