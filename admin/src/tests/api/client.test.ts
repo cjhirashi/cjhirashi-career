@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import axios from 'axios'
 import { apiClient, axiosInstance } from '@/api/client'
 import { useAuthStore } from '@/stores/authStore'
-import { mockLoginResponse } from '../fixtures/mockData'
+import { mockLoginResponse, mockUser } from '../fixtures/mockData'
 
 vi.mock('axios')
 const mockedAxios = axios as any
@@ -95,7 +95,7 @@ describe('API Client', () => {
       useAuthStore.setState({
         accessToken: 'token',
         refreshToken: 'refresh_token',
-        user: { id: 1, username: 'test', email: 'test@example.com' },
+        user: mockUser,
         isAuthenticated: true,
       })
 

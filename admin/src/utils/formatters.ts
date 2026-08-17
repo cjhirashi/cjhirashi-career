@@ -83,7 +83,7 @@ export const formatDuration = (months: number): string => {
   const years = Math.floor(months / 12)
   const remainingMonths = months % 12
 
-  const parts = []
+  const parts: string[] = []
   if (years > 0) {
     parts.push(`${years} year${years > 1 ? 's' : ''}`)
   }

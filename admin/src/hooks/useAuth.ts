@@ -146,7 +146,7 @@ export const useAuth = () => {
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,
-    refreshToken: handleRefreshToken,
+    refreshAccessToken: handleRefreshToken,
     changePassword: handleChangePassword,
     clearError,
     isTokenExpired,

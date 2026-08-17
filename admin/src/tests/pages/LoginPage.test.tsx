@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { LoginPage } from '@/pages/LoginPage'
-import * as authApi from '@/api/auth'
+import { authApi } from '@/api/auth'
 import { useAuthStore } from '@/stores/authStore'
 
 vi.mock('@/api/auth')

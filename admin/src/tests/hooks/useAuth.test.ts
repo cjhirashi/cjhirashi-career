@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/stores/authStore'
-import * as authApi from '@/api/auth'
+import { authApi } from '@/api/auth'
 import { mockLoginResponse, mockUser } from '../fixtures/mockData'
 
 vi.mock('@/api/auth')
@@ -300,7 +300,7 @@ describe('useAuth', () => {
       const { result } = renderHook(() => useAuth())
 
       await act(async () => {
-        await result.current.refreshToken()
+        await result.current.refreshAccessToken()
       })
 
       expect(useAuthStore.getState().accessToken).toBe('new_token')
@@ -319,7 +319,7 @@ describe('useAuth', () => {
       const { result } = renderHook(() => useAuth())
 
       await act(async () => {
-        await result.current.refreshToken()
+        await result.current.refreshAccessToken()
       })
 
       expect(useAuthStore.getState().isAuthenticated).toBe(false)

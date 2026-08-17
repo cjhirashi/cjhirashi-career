@@ -49,7 +49,7 @@ export const getErrorMessage = (error: unknown): string => {
     if (error.response?.status === 422) {
       return 'Validation error. Please check your input.'
     }
-    if (error.response?.status >= 500) {
+    if ((error.response?.status ?? 0) >= 500) {
       return 'Server error. Please try again later.'
     }
   }
