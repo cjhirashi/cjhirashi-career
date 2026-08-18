@@ -1,0 +1,34 @@
+"""
+CareerReview Model - Periodic gap analysis / transition decisions / quarterly reviews.
+Career domain (v2) - Identity.
+"""
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql import func
+from database import Base
+
+
+class CareerReview(Base):
+    """A career review entry: gap analysis, transition decision or quarterly review."""
+
+    __tablename__ = "career_reviews"
+    __table_args__ = (
+        CheckConstraint("review_type IN ('gap_analysis', 'transition_decision', 'quarterly_review')"),
+        CheckConstraint("tracking_status IN ('active', 'completed', 'paused')"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    review_date = Column(Date, nullable=True)
+    review_type = Column(String(50), nullable=True)
+    context = Column(Text, nullable=True)
+    decision_or_finding = Column(Text, nullable=True)
+    result_or_learning = Column(Text, nullable=True)
+    action_items = Column(JSONB, nullable=True)
+    tracking_status = Column(String(30), default="active", nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    def __repr__(self):
+        return f"<CareerReview(id={self.id}, review_type='{self.review_type}')>"

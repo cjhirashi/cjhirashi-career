@@ -1,0 +1,39 @@
+"""
+Achievement Model - Concrete accomplishments (challenge/solution/impact).
+Career domain (v2) - Identity.
+"""
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql import func
+from database import Base
+
+
+class Achievement(Base):
+    """A quantifiable achievement, optionally tied to a work history entry."""
+
+    __tablename__ = "achievements"
+    __table_args__ = (
+        CheckConstraint("evidence_type IN ('direct_account', 'public_backed')"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    title = Column(String(255), nullable=False)
+    work_history_id = Column(Integer, ForeignKey("work_history.id", ondelete="SET NULL"), nullable=True, index=True)
+    context = Column(JSONB, nullable=True)
+    challenge = Column(Text, nullable=True)
+    solution = Column(Text, nullable=True)
+    impact_metrics = Column(JSONB, nullable=True)
+    evidence_type = Column(String(30), nullable=True)
+    documentation_urls = Column(JSONB, nullable=True)
+    executive_storytelling = Column(Text, nullable=True)
+    demonstrated_competency_ids = Column(JSONB, nullable=True)
+    visible_on_cv = Column(Boolean, default=True, nullable=True)
+    visible_in_interview = Column(Boolean, default=True, nullable=True)
+    visible_on_portal = Column(Boolean, default=False, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    def __repr__(self):
+        return f"<Achievement(id={self.id}, title='{self.title}')>"

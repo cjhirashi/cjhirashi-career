@@ -1,97 +1,42 @@
 """
-Vacancy Model - Job opportunities tracking.
+Vacancy Model - Job vacancies tracked during the search.
+Career domain (v2) - Búsqueda.
+
+NOTE: Replaces the legacy `models/vacancy.py` (deleted), whose columns did
+not match the real `vacancies` table (it had already caused a table
+collision; the table was dropped and recreated with this schema).
 """
-from sqlalchemy import Column, Integer, ForeignKey, String, Text, DateTime, Boolean, Float, JSON, Enum
+from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 from database import Base
-import enum
-
-
-class VacancyStatus(str, enum.Enum):
-    """Status of vacancy tracking."""
-    INTERESTED = "interested"
-    APPLIED = "applied"
-    REJECTED = "rejected"
-    ACCEPTED = "accepted"
-    ARCHIVED = "archived"
 
 
 class Vacancy(Base):
-    """
-    Job vacancy tracking for career planning.
-
-    Supports:
-    - Job opportunities of interest
-    - Application tracking
-    - Match scoring against skills/experience
-    """
+    """A job vacancy found during the search, with fit scoring and evaluation."""
 
     __tablename__ = "vacancies"
+    __table_args__ = (
+        CheckConstraint("fit_percentage BETWEEN 0 AND 100"),
+        CheckConstraint("evaluation IN ('apply', 'do_not_apply', 'pending_review')"),
+    )
 
-    # Primary Key
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-
-    # Foreign Key
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    # Vacancy Details
-    job_title = Column(String(255), nullable=False, index=True)
-    company_name = Column(String(255), nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    job_url = Column(String(500), nullable=True)
+    order_number = Column(Integer, nullable=True)
+    company = Column(String(255), nullable=False)
+    exact_role = Column(String(255), nullable=False)
+    vacancy_url = Column(String(500), unique=True, nullable=True)
+    source = Column(String(50), nullable=True)
+    found_date = Column(Date, nullable=True)
+    fit_percentage = Column(Integer, nullable=True, index=True)
+    track_category = Column(String(50), nullable=True)
+    recommended_cv_version = Column(String(100), nullable=True)
+    analysis_notes = Column(Text, nullable=True)
+    evaluation = Column(String(30), default="pending_review", nullable=True, index=True)
+    is_active = Column(Boolean, default=True, nullable=True)
 
-    # Position Details
-    industry = Column(String(100), nullable=True)
-    role_level = Column(String(100), nullable=True)
-    employment_type = Column(String(100), nullable=True)  # full-time, part-time, contract, etc.
-
-    # Compensation
-    salary_min = Column(Float, nullable=True)
-    salary_max = Column(Float, nullable=True)
-    currency = Column(String(10), nullable=True)
-    benefits = Column(Text, nullable=True)
-
-    # Location
-    location = Column(String(255), nullable=True)
-    remote_option = Column(String(100), nullable=True)
-
-    # Timeline
-    posting_date = Column(DateTime(timezone=True), nullable=True)
-    deadline_date = Column(DateTime(timezone=True), nullable=True)
-
-    # Application Tracking
-    status = Column(Enum(VacancyStatus), default=VacancyStatus.INTERESTED, nullable=False, index=True)
-    application_date = Column(DateTime(timezone=True), nullable=True)
-    application_url = Column(String(500), nullable=True)
-
-    # Matching & Scoring
-    match_score = Column(Float, nullable=True)  # 0-100 based on skills match
-    match_analysis = Column(JSON, nullable=True)  # Detailed matching analysis
-    required_skills = Column(String(1000), nullable=True)
-    matched_skills = Column(String(1000), nullable=True)
-    missing_skills = Column(String(1000), nullable=True)
-
-    # Contact & Notes
-    contact_person = Column(String(255), nullable=True)
-    contact_email = Column(String(255), nullable=True)
-    contact_phone = Column(String(20), nullable=True)
-    internal_contact = Column(String(255), nullable=True)  # Internal referral contact
-
-    # Notes & Feedback
-    notes = Column(Text, nullable=True)
-    feedback = Column(Text, nullable=True)
-    reason_for_rejection = Column(Text, nullable=True)
-
-    # Metadata
-    extra_metadata = Column(JSON, nullable=True)
-
-    # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
-    # Relationships
-    user = relationship("User", back_populates="vacancies")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self):
-        return f"<Vacancy(id={self.id}, job_title='{self.job_title}', company='{self.company_name}')>"
+        return f"<Vacancy(id={self.id}, company='{self.company}', exact_role='{self.exact_role}')>"

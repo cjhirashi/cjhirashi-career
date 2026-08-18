@@ -1,0 +1,40 @@
+"""
+SearchPlan Model - Weekly/periodic job-search plans and targets.
+Career domain (v2) - Búsqueda.
+"""
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql import func
+from database import Base
+
+
+class SearchPlan(Base):
+    """A job-search plan for a given period, with weekly targets and status."""
+
+    __tablename__ = "search_plans"
+    __table_args__ = (
+        CheckConstraint(
+            "plan_status IN ('not_started', 'in_progress', 'paused', 'completed', 'cancelled')"
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_role_id = Column(Integer, ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
+
+    period_start = Column(Date, nullable=True)
+    period_end = Column(Date, nullable=True)
+    weekly_targets = Column(JSONB, nullable=True)
+    primary_channels = Column(JSONB, nullable=True)
+    target_cvs_sent = Column(Integer, nullable=True)
+    target_interviews = Column(Integer, nullable=True)
+    target_offers = Column(Integer, nullable=True)
+    plan_status = Column(String(30), default="not_started", nullable=True)
+    completion_percentage = Column(Integer, default=0, nullable=True)
+    lessons_learned = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    def __repr__(self):
+        return f"<SearchPlan(id={self.id}, period_start={self.period_start})>"

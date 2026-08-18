@@ -5,6 +5,8 @@ CLAUDE.md
 .claude/settings.json
 .claude/hooks.json
 
+Bóveda/
+
 # Python
 __pycache__/
 *.py[cod]

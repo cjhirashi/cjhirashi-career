@@ -13,6 +13,7 @@ import sys
 from config import settings
 from database import init_db, close_db
 from routes import auth_enhanced
+from routes import career_identity, career_search, career_digital, career_support, career_metrics
 
 # Configurar logging
 logging.basicConfig(
@@ -122,6 +123,11 @@ async def root():
 
 # Incluir routers
 app.include_router(auth_enhanced.router)
+app.include_router(career_identity.router)
+app.include_router(career_search.router)
+app.include_router(career_digital.router)
+app.include_router(career_support.router)
+app.include_router(career_metrics.router)
 
 
 # Log de startup

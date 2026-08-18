@@ -119,6 +119,7 @@ async def login(
     # Update last login
     await repo.update_last_login(user.id)
     await repo.commit()
+    await db.refresh(user)
 
     # Create tokens
     access_token, access_expires = AuthService.create_access_token(

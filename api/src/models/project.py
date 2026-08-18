@@ -1,0 +1,45 @@
+"""
+Project Model - Portfolio projects (public-facing and internal detail).
+Career domain (v2) - Identity.
+"""
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql import func
+from database import Base
+
+
+class Project(Base):
+    """A project shown on the CV / portal, with technical detail and results."""
+
+    __tablename__ = "projects"
+    __table_args__ = (CheckConstraint("status IN ('active', 'in_development', 'archived')"),)
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    title = Column(String(255), nullable=False)
+    category = Column(String(50), nullable=True)
+    industry = Column(String(100), nullable=True)
+    year = Column(Integer, nullable=True)
+    card_summary = Column(String(500), nullable=True)
+    detailed_summary = Column(Text, nullable=True)
+    problem = Column(Text, nullable=True)
+    solution = Column(Text, nullable=True)
+    architecture = Column(Text, nullable=True)
+    tech_stack = Column(JSONB, nullable=True)
+    metrics = Column(JSONB, nullable=True)
+    approach_steps = Column(JSONB, nullable=True)
+    results = Column(JSONB, nullable=True)
+    github_url = Column(String(500), nullable=True)
+    demo_url = Column(String(500), nullable=True)
+    repo_structure = Column(Text, nullable=True)
+    evidence_sources = Column(JSONB, nullable=True)
+    releases = Column(JSONB, nullable=True)
+    status = Column(String(30), default="active", nullable=True, index=True)
+    is_featured = Column(Boolean, default=False, nullable=True, index=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    def __repr__(self):
+        return f"<Project(id={self.id}, title='{self.title}')>"

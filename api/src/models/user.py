@@ -42,13 +42,15 @@ class User(Base):
     last_login = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    identity = relationship("Identity", uselist=False, back_populates="user", cascade="all, delete-orphan")
-    competencies = relationship("Competency", back_populates="user", cascade="all, delete-orphan")
-    evidence_list = relationship("Evidence", back_populates="user", cascade="all, delete-orphan")
-    job_strategies = relationship("JobStrategy", back_populates="user", cascade="all, delete-orphan")
-    vacancies = relationship("Vacancy", back_populates="user", cascade="all, delete-orphan")
-    networking_contacts = relationship("NetworkingContact", back_populates="user", cascade="all, delete-orphan")
-    interviews = relationship("Interview", back_populates="user", cascade="all, delete-orphan")
+    #
+    # NOTE: The career-domain (v2) models (Identity, Competency, Vacancy,
+    # NetworkingContact, Interview, etc.) intentionally do NOT declare
+    # SQLAlchemy relationship()/back_populates pairs with User. With 30
+    # related tables, per-entity relationship wiring here would be high
+    # maintenance and high risk (a single mismatch breaks mapper
+    # configuration for the whole app on startup). Career-domain data is
+    # queried directly by user_id via the dedicated routes/services
+    # instead. Only base-system relationships remain wired below.
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     file_uploads = relationship("FileUpload", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
