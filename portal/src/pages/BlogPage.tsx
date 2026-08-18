@@ -47,8 +47,8 @@ export const BlogPage = () => {
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Blog</h1>
-          <p className="text-lg text-slate-600">
+          <h1 className="text-4xl font-bold text-text mb-4">Blog</h1>
+          <p className="text-lg text-text-secondary">
             Technical articles, insights, and learnings from my professional journey.
           </p>
         </div>
@@ -57,7 +57,7 @@ export const BlogPage = () => {
         <div className="mb-12">
           <div className="relative">
             <svg
-              className="absolute left-3 top-3 w-5 h-5 text-slate-400"
+              className="absolute left-3 top-3 w-5 h-5 text-text-secondary"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -74,7 +74,7 @@ export const BlogPage = () => {
               placeholder="Search articles..."
               value={searchTerm}
               onChange={e => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
+              className="w-full pl-10 pr-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
             />
           </div>
         </div>
@@ -82,7 +82,7 @@ export const BlogPage = () => {
         {/* Tags Filter */}
         {allTags.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">
+            <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
               Filter by Tag
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -92,8 +92,8 @@ export const BlogPage = () => {
                   onClick={() => handleTagFilter(tag)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                     selectedTag === tag
-                      ? 'bg-cyan-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-cyan-600 text-white dark:bg-cyan-500'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                   }`}
                 >
                   {tag}
@@ -112,7 +112,7 @@ export const BlogPage = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No articles found.</p>
+            <p className="text-text-secondary text-lg">No articles found.</p>
           </div>
         )}
       </div>

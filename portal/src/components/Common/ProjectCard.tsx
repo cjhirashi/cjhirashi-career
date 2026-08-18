@@ -19,12 +19,12 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
 
   return (
     <div
-      className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+      className="bg-surface-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
       onClick={handleProjectClick}
     >
       {/* Thumbnail */}
       {project.thumbnail && (
-        <div className="relative w-full h-48 bg-gradient-to-br from-cyan-100 to-slate-100 overflow-hidden">
+        <div className="relative w-full h-48 bg-gradient-to-br from-cyan-100 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
           <img
             src={project.thumbnail}
             alt={project.title}
@@ -32,7 +32,7 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
             loading="lazy"
           />
           {featured && (
-            <div className="absolute top-2 right-2 bg-cyan-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+            <div className="absolute top-2 right-2 bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-semibold">
               Featured
             </div>
           )}
@@ -41,8 +41,8 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-bold text-lg text-slate-900 mb-2">{project.title}</h3>
-        <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+        <h3 className="font-bold text-lg text-text mb-2">{project.title}</h3>
+        <p className="text-text-secondary text-sm mb-3 line-clamp-2">
           {project.shortDescription || project.description}
         </p>
 
@@ -52,13 +52,13 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
             {project.technologies.slice(0, 3).map(tech => (
               <span
                 key={tech}
-                className="inline-block bg-cyan-50 text-cyan-700 text-xs px-2 py-1 rounded"
+                className="inline-block bg-primary-container text-primary text-xs px-2 py-1 rounded"
               >
                 {tech}
               </span>
             ))}
             {project.technologies.length > 3 && (
-              <span className="inline-block bg-slate-100 text-slate-600 text-xs px-2 py-1 rounded">
+              <span className="inline-block bg-surface text-text-secondary text-xs px-2 py-1 rounded">
                 +{project.technologies.length - 3}
               </span>
             )}
@@ -73,7 +73,7 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleViewProject}
-              className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-3 rounded text-center text-sm font-medium transition"
+              className="flex-1 bg-primary hover:opacity-90 text-on-primary py-2 px-3 rounded text-center text-sm font-medium transition"
             >
               View Project
             </a>
@@ -83,7 +83,7 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
               href={project.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-900 py-2 px-3 rounded text-center text-sm font-medium transition"
+              className="flex-1 bg-surface hover:bg-border text-text py-2 px-3 rounded text-center text-sm font-medium transition"
             >
               GitHub
             </a>

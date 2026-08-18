@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import { afterEach, vi } from 'vitest'
+import { useUIStore } from '@/stores/uiStore'
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -26,3 +27,10 @@ global.IntersectionObserver = class IntersectionObserver {
   }
   unobserve() {}
 } as any
+
+// The UI store (theme, mobile menu) is a module-level singleton shared
+// across tests within the same file - reset the transient bits after every
+// test so one test's interactions can't leak into the next.
+afterEach(() => {
+  useUIStore.setState({ mobileMenuOpen: false })
+})

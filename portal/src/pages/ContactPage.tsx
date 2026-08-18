@@ -58,21 +58,21 @@ export const ContactPage = () => {
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Get in Touch</h1>
-          <p className="text-lg text-slate-600">
+          <h1 className="text-4xl font-bold text-text mb-4">Get in Touch</h1>
+          <p className="text-lg text-text-secondary">
             Have a question or want to work together? I'd love to hear from you.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 content:grid-cols-3 gap-8 mb-12">
           {/* Contact Info */}
-          <div className="md:col-span-1 space-y-6">
+          <div className="content:col-span-1 space-y-6">
             {/* Email */}
             <div>
-              <h3 className="font-bold text-slate-900 mb-2">Email</h3>
+              <h3 className="font-bold text-text mb-2">Email</h3>
               <a
                 href="mailto:cjhirashi@gmail.com"
-                className="text-cyan-600 hover:text-cyan-700 break-all"
+                className="text-primary hover:opacity-80 break-all"
               >
                 cjhirashi@gmail.com
               </a>
@@ -80,34 +80,36 @@ export const ContactPage = () => {
 
             {/* Social */}
             <div>
-              <h3 className="font-bold text-slate-900 mb-2">Follow</h3>
+              <h3 className="font-bold text-text mb-2">Follow</h3>
               <div className="space-y-2">
-                <a href="#" className="block text-cyan-600 hover:text-cyan-700">
+                <a href="#" className="block text-primary hover:opacity-80">
                   GitHub
                 </a>
-                <a href="#" className="block text-cyan-600 hover:text-cyan-700">
+                <a href="#" className="block text-primary hover:opacity-80">
                   LinkedIn
                 </a>
-                <a href="#" className="block text-cyan-600 hover:text-cyan-700">
+                <a href="#" className="block text-primary hover:opacity-80">
                   Twitter
                 </a>
               </div>
             </div>
 
             {/* Response Time */}
-            <div className="bg-cyan-50 p-4 rounded-lg">
-              <p className="text-xs uppercase font-bold text-cyan-700 mb-1">Response Time</p>
-              <p className="text-slate-700">Usually within 24 hours</p>
+            <div className="bg-primary-container p-4 rounded-lg">
+              <p className="text-xs uppercase font-bold text-primary mb-1">Response Time</p>
+              <p className="text-text">Usually within 24 hours</p>
             </div>
           </div>
 
           {/* Contact Form */}
-          <div className="md:col-span-2">
+          <div className="content:col-span-2">
             {submitted ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
+              <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg p-8 text-center">
                 <div className="text-4xl mb-4">✓</div>
-                <h3 className="text-xl font-bold text-green-900 mb-2">Message Sent!</h3>
-                <p className="text-green-700">
+                <h3 className="text-xl font-bold text-green-900 dark:text-green-200 mb-2">
+                  Message Sent!
+                </h3>
+                <p className="text-green-700 dark:text-green-300">
                   Thank you for reaching out. I'll get back to you soon.
                 </p>
               </div>
@@ -115,7 +117,7 @@ export const ContactPage = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-slate-900 mb-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-text mb-2">
                     Name
                   </label>
                   <input
@@ -125,14 +127,14 @@ export const ContactPage = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="Your name"
                   />
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-900 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
                     Email
                   </label>
                   <input
@@ -142,14 +144,14 @@ export const ContactPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="your@email.com"
                   />
                 </div>
 
                 {/* Subject */}
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-slate-900 mb-2">
+                  <label htmlFor="subject" className="block text-sm font-medium text-text mb-2">
                     Subject
                   </label>
                   <input
@@ -158,14 +160,14 @@ export const ContactPage = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="What's this about?"
                   />
                 </div>
 
                 {/* Message */}
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-slate-900 mb-2">
+                  <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
                     Message
                   </label>
                   <textarea
@@ -175,7 +177,7 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
+                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="Your message..."
                   />
                 </div>
@@ -185,7 +187,7 @@ export const ContactPage = () => {
                   type="submit"
                   disabled={loading}
                   onClick={() => trackClick('contact-submit')}
-                  className="w-full bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition"
+                  className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-on-primary font-semibold py-3 rounded-lg transition"
                 >
                   {loading ? 'Sending...' : 'Send Message'}
                 </button>

@@ -2,17 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Theme tokens (light/dark) - mirrors the mechanism used on cjhirashi.com.
+ * The active theme is exposed via [data-theme="dark"|"light"] on <html>,
+ * set synchronously in index.html (pre-paint) and kept in sync by
+ * src/stores/uiStore.ts + src/utils/theme.ts.
+ *
+ * Tailwind's `dark:` variant (class strategy) is also enabled and toggled
+ * alongside the attribute, for components that prefer that convention.
+ */
+:root {
+  --bg: #f8fafc;
+  --primary: #0e7490;
+  --on-primary: #fff;
+  --primary-container: #cffafe;
+  --secondary: #f97316;
+  --secondary-container: #ffedd5;
+  --surface: #eef1f6;
+  --surface-card: #ffffff;
+  --border: #dbe1ea;
+  --text: #0f172a;
+  --text-secondary: #475569;
+}
+
+[data-theme='dark'] {
+  --bg: #1b1b1e;
+  --primary: #0891b2;
+  --on-primary: #0a0e17;
+  --primary-container: #1b3237;
+  --secondary: #fdba74;
+  --secondary-container: #3d2b1b;
+  --surface: #242427;
+  --surface-card: #2d2d31;
+  --border: #46464c;
+  --text: #f1f5f9;
+  --text-secondary: #a3acbc;
+}
+
 /* Global Styles */
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 body {
-  @apply bg-white text-slate-900;
+  @apply bg-bg text-text transition-colors duration-200;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Typography */
@@ -36,15 +79,15 @@ a {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100;
+  @apply bg-surface;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-400 rounded-full;
+  @apply bg-border rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-600;
+  @apply bg-text-secondary;
 }
 
 /* Focus Styles */
@@ -52,16 +95,92 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible {
-  @apply outline-2 outline-offset-2 outline-cyan-600;
+  @apply outline-2 outline-offset-2 outline-cyan-600 dark:outline-primary;
 }
 
 /* Print Styles */
 @media print {
   body {
-    @apply bg-white;
+    @apply bg-white text-black;
   }
 
   a {
     @apply text-black;
+  }
+}
+
+/*
+ * Theme toggle pill widget (3-way light/system/dark switch).
+ * Structure/behavior mirrors cjhirashi.com's .theme-pill component.
+ * See src/components/Common/ThemeToggle.tsx.
+ */
+.theme-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.theme-pill-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.theme-pill-btn:hover {
+  color: var(--text);
+}
+
+.theme-pill-btn[aria-pressed='true'] {
+  color: var(--on-primary);
+}
+
+.theme-pill-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.theme-pill-indicator {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 30px;
+  height: 30px;
+  border-radius: 100px;
+  background: var(--primary);
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.theme-pill-indicator[data-pos='0'] {
+  transform: translateX(0);
+}
+
+.theme-pill-indicator[data-pos='1'] {
+  transform: translateX(30px);
+}
+
+.theme-pill-indicator[data-pos='2'] {
+  transform: translateX(60px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-pill-indicator {
+    transition: none;
   }
 }

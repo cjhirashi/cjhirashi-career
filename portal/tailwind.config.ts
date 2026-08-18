@@ -1,9 +1,15 @@
 import type { Config } from 'tailwindcss'
 
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      // Custom breakpoint matching cjhirashi.com's content layout breakpoint,
+      // used where project/content grids collapse from multi-column to stacked.
+      screens: {
+        content: '860px',
+      },
       colors: {
         cyan: {
           50: '#ecf8fb',
@@ -29,6 +35,20 @@ export default {
           800: '#1e293b',
           900: '#0f172a',
         },
+        // Semantic tokens sourced from CSS custom properties (see src/index.css).
+        // These automatically adapt to the active theme (light/dark) because
+        // the underlying --variable values change on [data-theme="dark"].
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        'surface-card': 'var(--surface-card)',
+        border: 'var(--border)',
+        text: 'var(--text)',
+        'text-secondary': 'var(--text-secondary)',
+        primary: 'var(--primary)',
+        'on-primary': 'var(--on-primary)',
+        'primary-container': 'var(--primary-container)',
+        secondary: 'var(--secondary)',
+        'secondary-container': 'var(--secondary-container)',
       },
     },
   },

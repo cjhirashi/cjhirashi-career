@@ -103,14 +103,23 @@ export interface ApiError {
   code?: string
 }
 
+// Theme Types
+// 'light' | 'dark' are explicit user choices, 'system' follows the OS preference.
+export type ThemeMode = 'light' | 'system' | 'dark'
+export type ResolvedTheme = 'light' | 'dark'
+
 // UI State Types
 export interface UIState {
-  theme: 'light' | 'dark'
+  /** User's theme preference, persisted to localStorage. */
+  theme: ThemeMode
+  /** 'system' resolved to an actual 'light' | 'dark' value, applied to the DOM. */
+  resolvedTheme: ResolvedTheme
   mobileMenuOpen: boolean
   loading: boolean
   error: string | null
-  toggleTheme: () => void
+  setTheme: (theme: ThemeMode) => void
   toggleMobileMenu: () => void
+  setMobileMenuOpen: (open: boolean) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
 }

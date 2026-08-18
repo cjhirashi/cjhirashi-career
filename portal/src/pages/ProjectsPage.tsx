@@ -31,8 +31,8 @@ export const ProjectsPage = () => {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">My Projects</h1>
-          <p className="text-lg text-slate-600">
+          <h1 className="text-4xl font-bold text-text mb-4">My Projects</h1>
+          <p className="text-lg text-text-secondary">
             A selection of projects that showcase my skills and expertise.
           </p>
         </div>
@@ -40,7 +40,7 @@ export const ProjectsPage = () => {
         {/* Filter */}
         {allTechs.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">
+            <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
               Filter by Technology
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -51,8 +51,8 @@ export const ProjectsPage = () => {
                 }}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                   selectedTech === null
-                    ? 'bg-cyan-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-cyan-600 text-white dark:bg-cyan-500'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                 }`}
               >
                 All Projects
@@ -63,8 +63,8 @@ export const ProjectsPage = () => {
                   onClick={() => handleTechFilter(tech)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                     selectedTech === tech
-                      ? 'bg-cyan-600 text-white'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      ? 'bg-cyan-600 text-white dark:bg-cyan-500'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                   }`}
                 >
                   {tech}
@@ -83,16 +83,16 @@ export const ProjectsPage = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-slate-600 text-lg">No projects found for this filter.</p>
+            <p className="text-text-secondary text-lg">No projects found for this filter.</p>
           </div>
         )}
 
         {/* Download CV */}
         <div className="mt-16 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">Want to know more?</h2>
+          <h2 className="text-2xl font-bold text-text mb-6">Want to know more?</h2>
           <button
             onClick={() => trackClick('download-cv')}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+            className="bg-primary hover:opacity-90 text-on-primary px-8 py-3 rounded-lg font-semibold transition"
           >
             Download Full CV
           </button>

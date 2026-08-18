@@ -1,7 +1,8 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import clsx from 'clsx'
 import { useTrackClick } from '@/hooks/useTracking'
+import { useUIStore } from '@/stores/uiStore'
+import { ThemeToggle } from '@/components/Common/ThemeToggle'
 
 interface NavLink {
   label: string
@@ -17,7 +18,9 @@ const navLinks: NavLink[] = [
 ]
 
 export const Header = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const mobileMenuOpen = useUIStore(state => state.mobileMenuOpen)
+  const toggleMobileMenu = useUIStore(state => state.toggleMobileMenu)
+  const setMobileMenuOpen = useUIStore(state => state.setMobileMenuOpen)
   const location = useLocation()
   const { trackClick } = useTrackClick()
 
@@ -29,21 +32,19 @@ export const Header = () => {
   const isActive = (href: string) => location.pathname === href
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-surface-card border-b border-border shadow-sm">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 gap-2">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 flex-shrink-0"
             onClick={() => handleNavClick('logo')}
           >
-            <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CJ</span>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-on-primary font-bold text-sm">CJ</span>
             </div>
-            <span className="hidden sm:inline text-slate-900 font-bold text-lg">
-              Carlos Jiménez
-            </span>
+            <span className="hidden sm:inline text-text font-bold text-lg">Carlos Jiménez</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -56,8 +57,8 @@ export const Header = () => {
                 className={clsx(
                   'px-3 py-2 rounded-md text-sm font-medium transition-colors',
                   isActive(link.href)
-                    ? 'text-cyan-600 bg-cyan-50'
-                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50'
+                    ? 'text-cyan-600 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-950/40'
+                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60'
                 )}
               >
                 {link.label}
@@ -65,30 +66,36 @@ export const Header = () => {
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-md text-slate-600 hover:text-cyan-600 hover:bg-slate-50"
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
+          {/* Theme Toggle - always visible, desktop and mobile */}
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={toggleMobileMenu}
+              className="md:hidden p-2 rounded-md text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60"
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -102,8 +109,8 @@ export const Header = () => {
                 className={clsx(
                   'block px-3 py-2 rounded-md text-base font-medium transition-colors',
                   isActive(link.href)
-                    ? 'text-cyan-600 bg-cyan-50'
-                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50'
+                    ? 'text-cyan-600 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-950/40'
+                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60'
                 )}
               >
                 {link.label}

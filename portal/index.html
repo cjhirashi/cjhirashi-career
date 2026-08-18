@@ -7,6 +7,28 @@
     <meta name="description" content="Portfolio of Carlos Jiménez Hirashi - Solutions Architect" />
     <meta name="theme-color" content="#065f73" />
     <title>Carlos Jiménez Hirashi - Solutions Architect</title>
+    <!--
+      Blocking theme-init script: applies the persisted/system theme to <html>
+      BEFORE the first paint, to avoid a flash of incorrect theme (FOUC).
+      Must stay in sync with the logic in src/utils/theme.ts.
+    -->
+    <script>
+      (function () {
+        try {
+          var STORAGE_KEY = 'theme';
+          var stored = localStorage.getItem(STORAGE_KEY);
+          var mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+          var systemIsDark =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var resolved = mode === 'system' ? (systemIsDark ? 'dark' : 'light') : mode;
+          var root = document.documentElement;
+          root.setAttribute('data-theme', resolved);
+          root.classList.toggle('dark', resolved === 'dark');
+        } catch (e) {
+          /* localStorage/matchMedia unavailable - fall back to light theme */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
