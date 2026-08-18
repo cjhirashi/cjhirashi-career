@@ -6,7 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Admin Panel for Portfolio Career Management" />
     <meta name="theme-color" content="#16a3b8" />
+    <meta name="color-scheme" content="light dark" />
     <title>Admin Panel - Career Management</title>
+    <!--
+      Blocking theme script — must run before first paint to avoid a flash
+      of incorrect theme (FOUC). It mirrors the persisted state managed by
+      src/stores/themeStore.ts (zustand `persist` middleware, storage key
+      "admin-theme-store"), so the value it reads/writes here MUST stay in
+      sync with that store's storage key and shape.
+    -->
+    <script>
+      (function () {
+        var STORAGE_KEY = 'admin-theme-store';
+        var MODES = ['light', 'system', 'dark'];
+        function systemIsDark() {
+          return (
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+          );
+        }
+        function readMode() {
+          try {
+            var raw = window.localStorage.getItem(STORAGE_KEY);
+            if (!raw) return 'system';
+            var parsed = JSON.parse(raw);
+            var mode = parsed && parsed.state && parsed.state.theme;
+            return MODES.indexOf(mode) !== -1 ? mode : 'system';
+          } catch (e) {
+            return 'system';
+          }
+        }
+        function applyTheme(mode) {
+          var resolved = mode === 'system' ? (systemIsDark() ? 'dark' : 'light') : mode;
+          document.documentElement.setAttribute('data-theme', resolved);
+        }
+        applyTheme(readMode());
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,6 +1,12 @@
 import type { Config } from 'tailwindcss'
 
 export default {
+  // Dark mode is toggled via a `data-theme="dark"` attribute on <html>,
+  // set by src/stores/themeStore.ts (and pre-applied by an inline script in
+  // index.html to avoid a flash of incorrect theme). This uses Tailwind's
+  // "selector" darkMode strategy (available since Tailwind 3.4.1) instead of
+  // the default `.dark` class strategy.
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
@@ -8,6 +14,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Semantic tokens backed by CSS variables (see src/index.css).
+        // These automatically switch value when `data-theme` changes, so
+        // components using them (e.g. `bg-surface-card`, `text-text`) don't
+        // need explicit `dark:` variants. Values match the verified palette
+        // from cjhirashi.com (light + dark).
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        'surface-card': 'var(--surface-card)',
+        border: 'var(--border)',
+        text: 'var(--text)',
+        'text-secondary': 'var(--text-secondary)',
+        primary: 'var(--primary)',
+        'on-primary': 'var(--on-primary)',
+        'primary-container': 'var(--primary-container)',
+        secondary: 'var(--secondary)',
+        'secondary-container': 'var(--secondary-container)',
         cyan: {
           50: '#ecf9fd',
           100: '#d4f1fa',

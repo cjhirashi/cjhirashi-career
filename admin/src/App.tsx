@@ -16,6 +16,8 @@ import { JobStrategiesPage } from '@/pages/JobStrategiesPage'
 import { NetworkingPage } from '@/pages/NetworkingPage'
 import { InterviewsPage } from '@/pages/InterviewsPage'
 import { MetricsPage } from '@/pages/MetricsPage'
+import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
+import { CareerResourcePage } from '@/pages/CareerResourcePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,6 +120,30 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <MetricsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/change-password"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <ChangePasswordPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          {/* Career domain (v2) - generic route shared by all 30 resources,
+              see src/config/careerResources.ts for the registry. */}
+          <Route
+            path="/career/:resourceKey"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <CareerResourcePage />
                 </Layout>
               </PrivateRoute>
             }

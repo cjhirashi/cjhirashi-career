@@ -24,16 +24,16 @@ export const IdentityPage: React.FC = () => {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Professional Identity</h1>
-        <p className="text-slate-600 mt-2">Define your professional identity and unique value</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Professional Identity</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-2">Define your professional identity and unique value</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* IKIGAI Section */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-lg font-semibold text-slate-900">Your IKIGAI</h2>
-            <p className="text-slate-600 text-sm mt-1">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Your IKIGAI</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               Define what you do, love, are good at, and what pays
             </p>
           </div>
@@ -95,8 +95,8 @@ export const IdentityPage: React.FC = () => {
         {/* Differentiators Section */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-lg font-semibold text-slate-900">Key Differentiators</h2>
-            <p className="text-slate-600 text-sm mt-1">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Key Differentiators</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               What sets you apart from other professionals in your field?
             </p>
           </div>
@@ -120,7 +120,7 @@ export const IdentityPage: React.FC = () => {
                 className="input-field h-24"
                 placeholder="Enter one differentiator per line&#10;Example: Deep expertise in cloud architecture&#10;Strong track record in scaling startups"
               />
-              <p className="text-slate-500 text-xs mt-2">Enter one per line</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-2">Enter one per line</p>
             </div>
           </div>
         </div>
@@ -128,8 +128,8 @@ export const IdentityPage: React.FC = () => {
         {/* Professional Narrative Section */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-lg font-semibold text-slate-900">Professional Narrative</h2>
-            <p className="text-slate-600 text-sm mt-1">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Professional Narrative</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               Your elevator pitch - a compelling 2-3 minute introduction
             </p>
           </div>
@@ -145,7 +145,7 @@ export const IdentityPage: React.FC = () => {
                 className="input-field h-32"
                 placeholder="Tell your professional story in a compelling way. Include your journey, key achievements, and what drives you."
               />
-              <p className="text-slate-500 text-xs mt-2">
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-2">
                 {(formData.professional_narrative || '').length} characters
               </p>
             </div>
@@ -155,8 +155,8 @@ export const IdentityPage: React.FC = () => {
         {/* Value Proposition Section */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-lg font-semibold text-slate-900">Value Proposition</h2>
-            <p className="text-slate-600 text-sm mt-1">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Value Proposition</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               What unique value do you bring to employers or clients?
             </p>
           </div>

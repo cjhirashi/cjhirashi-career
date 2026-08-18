@@ -1,7 +1,10 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '../utils'
+import { MemoryRouter } from 'react-router-dom'
+import { render as baseRender, screen, fireEvent, waitFor } from '../utils'
 import { Navbar } from '@/components/Navbar'
 import { useAuthStore } from '@/stores/authStore'
+import { useThemeStore } from '@/stores/themeStore'
 import { mockUser } from '../fixtures/mockData'
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -10,11 +13,17 @@ vi.mock('@/hooks/useAuth', () => ({
   }),
 }))
 
+// Navbar renders a react-router <Link>, so it needs a Router in the tree.
+const render = (ui: React.ReactElement) => baseRender(<MemoryRouter>{ui}</MemoryRouter>)
+
+const getUserMenuButton = () => screen.getByRole('button', { name: 'User menu' })
+
 describe('Navbar', () => {
   const mockLogout = vi.fn()
 
   beforeEach(() => {
     useAuthStore.setState({ user: mockUser })
+    useThemeStore.setState({ theme: 'system', resolvedTheme: 'light' })
     mockLogout.mockClear()
   })
 
@@ -42,7 +51,7 @@ describe('Navbar', () => {
 
     it('should display user email', () => {
       render(<Navbar onLogout={mockLogout} />)
-      expect(screen.getByText('demo@example.com')).toBeInTheDocument()
+      expect(screen.getAllByText('demo@example.com').length).toBeGreaterThan(0)
     })
   })
 
@@ -65,46 +74,77 @@ describe('Navbar', () => {
     })
   })
 
+  describe('theme toggle', () => {
+    it('should always render the theme toggle (not hidden in dropdown)', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      expect(screen.getByRole('group', { name: 'Tema' })).toBeInTheDocument()
+    })
+
+    it('should render the three theme options', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      expect(screen.getByRole('button', { name: 'Tema claro' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Tema del sistema' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Tema oscuro' })).toBeInTheDocument()
+    })
+
+    it('should switch theme when a theme option is clicked', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Tema oscuro' }))
+      expect(useThemeStore.getState().theme).toBe('dark')
+    })
+  })
+
+  describe('mobile menu toggle', () => {
+    it('should not render a hamburger button when onMenuToggle is not provided', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      expect(screen.queryByRole('button', { name: /abrir menú/i })).not.toBeInTheDocument()
+    })
+
+    it('should render a hamburger button when onMenuToggle is provided', () => {
+      const onMenuToggle = vi.fn()
+      render(<Navbar onLogout={mockLogout} onMenuToggle={onMenuToggle} />)
+      const button = screen.getByRole('button', { name: /abrir menú/i })
+      fireEvent.click(button)
+      expect(onMenuToggle).toHaveBeenCalled()
+    })
+  })
+
   describe('dropdown menu', () => {
     it('should not show dropdown by default', () => {
       render(<Navbar onLogout={mockLogout} />)
-      expect(screen.queryByText('Profile Settings')).not.toBeInTheDocument()
+      expect(screen.queryByText('Change Password')).not.toBeInTheDocument()
     })
 
     it('should open dropdown when user menu clicked', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
-      expect(screen.getByText('Profile Settings')).toBeInTheDocument()
+      fireEvent.click(getUserMenuButton())
+      expect(screen.getByText('Change Password')).toBeInTheDocument()
     })
 
     it('should close dropdown when clicked again', async () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
+      const menuButton = getUserMenuButton()
 
       fireEvent.click(menuButton)
-      expect(screen.getByText('Profile Settings')).toBeInTheDocument()
+      expect(screen.getByText('Change Password')).toBeInTheDocument()
 
       fireEvent.click(menuButton)
       await waitFor(() => {
-        expect(screen.queryByText('Profile Settings')).not.toBeInTheDocument()
+        expect(screen.queryByText('Change Password')).not.toBeInTheDocument()
       })
     })
 
     it('should display dropdown menu items', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
-      expect(screen.getByText('Profile Settings')).toBeInTheDocument()
       expect(screen.getByText('Change Password')).toBeInTheDocument()
       expect(screen.getByText('Logout')).toBeInTheDocument()
     })
 
     it('should show user info in dropdown header', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
       // The dropdown should have user info duplicated
       const userEmails = screen.getAllByText('demo@example.com')
@@ -113,19 +153,9 @@ describe('Navbar', () => {
   })
 
   describe('dropdown links', () => {
-    it('should have profile settings link', () => {
-      render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
-
-      const profileLink = screen.getByRole('link', { name: /Profile Settings/i })
-      expect(profileLink).toHaveAttribute('href', '/profile')
-    })
-
     it('should have change password link', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
       const passwordLink = screen.getByRole('link', { name: /Change Password/i })
       expect(passwordLink).toHaveAttribute('href', '/change-password')
@@ -135,8 +165,7 @@ describe('Navbar', () => {
   describe('logout functionality', () => {
     it('should call logout callback when logout button clicked', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
       const logoutButton = screen.getByRole('button', { name: /Logout/i })
       fireEvent.click(logoutButton)
@@ -146,16 +175,15 @@ describe('Navbar', () => {
 
     it('should close dropdown after logout', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
-      expect(screen.getByText('Profile Settings')).toBeInTheDocument()
+      expect(screen.getByText('Change Password')).toBeInTheDocument()
 
       const logoutButton = screen.getByRole('button', { name: /Logout/i })
       fireEvent.click(logoutButton)
 
       // The dropdown menu items should be hidden
-      expect(screen.queryByText('Profile Settings')).not.toBeInTheDocument()
+      expect(screen.queryByText('Change Password')).not.toBeInTheDocument()
     })
   })
 
@@ -181,19 +209,17 @@ describe('Navbar', () => {
 
     it('should have hover effects on dropdown items', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
-      const profileLink = screen.getByRole('link', { name: /Profile Settings/i })
-      expect(profileLink?.className).toContain('hover:bg-slate-100')
+      const passwordLink = screen.getByRole('link', { name: /Change Password/i })
+      expect(passwordLink?.className).toContain('hover:bg-slate-100')
     })
   })
 
   describe('responsive behavior', () => {
     it('should display dropdown on right side', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
       const dropdown = container.querySelector('.absolute.right-0')
       expect(dropdown).toBeInTheDocument()
@@ -201,8 +227,7 @@ describe('Navbar', () => {
 
     it('should have z-index for dropdown visibility', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)
-      const menuButton = screen.getByRole('button')
-      fireEvent.click(menuButton)
+      fireEvent.click(getUserMenuButton())
 
       const dropdown = container.querySelector('.z-50')
       expect(dropdown).toBeInTheDocument()

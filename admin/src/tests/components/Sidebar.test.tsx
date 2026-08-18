@@ -77,25 +77,25 @@ describe('Sidebar', () => {
   describe('toggle button', () => {
     it('should render toggle button', () => {
       renderSidebar(true, mockOnToggle)
-      expect(screen.getByRole('button')).toBeInTheDocument()
+      expect(screen.getByTitle('Collapse')).toBeInTheDocument()
     })
 
     it('should call onToggle when button clicked', () => {
       renderSidebar(true, mockOnToggle)
-      const toggleButton = screen.getByRole('button')
+      const toggleButton = screen.getByTitle('Collapse')
       fireEvent.click(toggleButton)
       expect(mockOnToggle).toHaveBeenCalled()
     })
 
     it('should have correct title when open', () => {
       renderSidebar(true, mockOnToggle)
-      const toggleButton = screen.getByRole('button')
+      const toggleButton = screen.getByTitle('Collapse')
       expect(toggleButton).toHaveAttribute('title', 'Collapse')
     })
 
     it('should have correct title when closed', () => {
       renderSidebar(false, mockOnToggle)
-      const toggleButton = screen.getByRole('button')
+      const toggleButton = screen.getByTitle('Expand')
       expect(toggleButton).toHaveAttribute('title', 'Expand')
     })
   })
@@ -218,13 +218,13 @@ describe('Sidebar', () => {
   describe('accessibility', () => {
     it('should have proper title for toggle button when open', () => {
       renderSidebar(true, mockOnToggle)
-      const button = screen.getByRole('button')
+      const button = screen.getByTitle('Collapse')
       expect(button.getAttribute('title')).toBe('Collapse')
     })
 
     it('should have proper title for toggle button when closed', () => {
       renderSidebar(false, mockOnToggle)
-      const button = screen.getByRole('button')
+      const button = screen.getByTitle('Expand')
       expect(button.getAttribute('title')).toBe('Expand')
     })
 
@@ -257,6 +257,44 @@ describe('Sidebar', () => {
     it('should have footer section with version', () => {
       renderSidebar(true, mockOnToggle)
       expect(screen.getByText('v0.1.0')).toBeInTheDocument()
+    })
+  })
+
+  describe('career navigation section', () => {
+    it('should render a collapsed "Carrera" toggle without exposing resource links by default', () => {
+      renderSidebar(true, mockOnToggle)
+      expect(screen.getByText('Carrera')).toBeInTheDocument()
+      expect(screen.queryByText('Vacantes')).not.toBeInTheDocument()
+      // Still only the 8 static menu links until the section is expanded.
+      expect(screen.getAllByRole('link').length).toBe(8)
+    })
+
+    it('should expand to show the 5 domain groups when clicked', () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('Carrera'))
+      expect(screen.getByText('Identidad Profesional')).toBeInTheDocument()
+      expect(screen.getByText('Operativa de Búsqueda')).toBeInTheDocument()
+      expect(screen.getByText('Presencia Digital')).toBeInTheDocument()
+      // "Networking" is ambiguous with the static top-level menu link, so we
+      // disambiguate the domain group header via its button role.
+      expect(screen.getByRole('button', { name: /Networking/i })).toBeInTheDocument()
+      expect(screen.getByText('Soporte')).toBeInTheDocument()
+    })
+
+    it('should expand a domain to reveal its resource links pointing at /career/:resourceKey', () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('Carrera'))
+      fireEvent.click(screen.getByText('Operativa de Búsqueda'))
+
+      const vacanciesLink = screen.getByRole('link', { name: 'Vacantes' })
+      expect(vacanciesLink).toHaveAttribute('href', '/career/vacancies')
+    })
+
+    it('should expand the sidebar itself when the "Carrera" icon is clicked while collapsed', () => {
+      renderSidebar(false, mockOnToggle)
+      const careerToggle = screen.getByTitle('Carrera')
+      fireEvent.click(careerToggle)
+      expect(mockOnToggle).toHaveBeenCalled()
     })
   })
 })

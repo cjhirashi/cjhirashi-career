@@ -39,23 +39,23 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-bg px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">👤</span>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900">Admin Panel</h1>
-          <p className="text-slate-600 mt-2">Career Management Portal</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Admin Panel</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">Career Management Portal</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-md border border-slate-200 p-8">
+        <div className="bg-surface-card rounded-lg shadow-md border border-border p-6 sm:p-8">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm font-medium">{error}</p>
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
+              <p className="text-red-800 dark:text-red-300 text-sm font-medium">{error}</p>
             </div>
           )}
 
@@ -77,7 +77,7 @@ export const LoginPage: React.FC = () => {
                 placeholder="Enter your username"
               />
               {formErrors.username && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.username}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">{formErrors.username}</p>
               )}
             </div>
 
@@ -97,7 +97,7 @@ export const LoginPage: React.FC = () => {
                 placeholder="Enter your password"
               />
               {formErrors.password && (
-                <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm mt-1">{formErrors.password}</p>
               )}
             </div>
 
@@ -110,20 +110,6 @@ export const LoginPage: React.FC = () => {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-slate-600 text-sm">
-              Demo credentials available for testing
-            </p>
-          </div>
-        </div>
-
-        {/* Demo Info */}
-        <div className="mt-6 p-4 bg-cyan-50 border border-cyan-200 rounded-lg text-sm text-cyan-900">
-          <p className="font-semibold mb-2">Demo Credentials:</p>
-          <p>Username: demo</p>
-          <p>Password: password123</p>
         </div>
       </div>
     </div>

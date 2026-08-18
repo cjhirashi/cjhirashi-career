@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://api:8001/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 class ApiClient {
   private client: AxiosInstance
@@ -34,8 +34,11 @@ class ApiClient {
       (response) => response,
       async (error: AxiosError) => {
         const originalRequest = error.config
+        const isAuthEndpoint =
+          originalRequest?.url?.includes('/auth/login') ||
+          originalRequest?.url?.includes('/auth/register')
 
-        if (error.response?.status === 401 && originalRequest) {
+        if (error.response?.status === 401 && originalRequest && !isAuthEndpoint) {
           const authState = useAuthStore.getState()
 
           if (authState.refreshToken) {
