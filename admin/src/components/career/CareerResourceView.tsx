@@ -276,6 +276,10 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   const [viewState, setViewState] = useState<ViewState>('list')
   const [activeItem, setActiveItem] = useState<CareerEntity | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  // Singleton mode (e.g. `identity`) has no table to come back to - it's
+  // just "showing the one record" vs "editing it", not the 4-way
+  // list/view/edit/create state the rest of this component uses.
+  const [isEditingSingleton, setIsEditingSingleton] = useState(false)
 
   const backToList = () => {
     setViewState('list')
@@ -349,18 +353,56 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   }
 
   // ---------------------------------------------------------------------
-  // Singleton mode (e.g. `identity`): a single record with an inline form,
-  // no table, no pagination, no delete. Already renders in place (no
-  // modal), so it needs no changes for the view/edit-in-place behavior.
+  // Singleton mode (e.g. `identity`): at most one record, no table to come
+  // back to. Defaults to a read-only view (same RecordView as everything
+  // else) with its own Editar/Eliminar, exactly like a record you opened
+  // from a list - only the form (create/edit) replaces it in place.
+  // Straight to the form only when there's nothing to view yet (first-time
+  // setup, nothing to look at read-only).
   // ---------------------------------------------------------------------
   if (isSingleton) {
     const existing = items[0]
     if (isLoading) return <LoadingSpinner fullScreen={false} message={`Cargando ${config.label.toLowerCase()}...`} />
+
+    const showForm = !existing || isEditingSingleton
+
+    const handleDeleteSingleton = () => {
+      if (!existing) return
+      const demonstrative = config.genderFeminine ? 'esta' : 'este'
+      if (
+        !window.confirm(`¿Eliminar ${demonstrative} ${config.labelSingular.toLowerCase()}? Esta acción no se puede deshacer.`)
+      ) {
+        return
+      }
+      deleteMutation.mutate(existing.id)
+    }
+
     return (
       <div className="card">
         {!hideTitle && (
-          <div className="card-header">
+          <div className="card-header flex items-center justify-between gap-3">
             <h2 className="font-semibold text-text">{title || config.label}</h2>
+            {!showForm && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormError(null)
+                    setIsEditingSingleton(true)
+                  }}
+                  className="btn-secondary btn-small flex items-center gap-1"
+                >
+                  <Pencil size={14} /> Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteSingleton}
+                  className="btn-secondary btn-small flex items-center gap-1 text-red-600 dark:text-red-400"
+                >
+                  <Trash2 size={14} /> Eliminar
+                </button>
+              </div>
+            )}
           </div>
         )}
         <div className="card-body">
@@ -370,23 +412,32 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
           {formError && (
             <p className="text-red-600 dark:text-red-400 text-sm mb-4">{formError}</p>
           )}
-          <ResourceForm
-            config={config}
-            initialValues={existing}
-            onSubmit={(payload) => {
-              setFormError(null)
-              if (existing) {
-                updateMutation.mutate(
-                  { id: existing.id, payload },
-                  { onError: (err) => setFormError(getErrorMessage(err)) }
-                )
-              } else {
-                createMutation.mutate(payload, { onError: (err) => setFormError(getErrorMessage(err)) })
-              }
-            }}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-            submitLabel={existing ? 'Actualizar' : 'Crear'}
-          />
+
+          {showForm ? (
+            <ResourceForm
+              config={config}
+              initialValues={existing}
+              onSubmit={(payload) => {
+                setFormError(null)
+                if (existing) {
+                  updateMutation.mutate(
+                    { id: existing.id, payload },
+                    {
+                      onSuccess: () => setIsEditingSingleton(false),
+                      onError: (err) => setFormError(getErrorMessage(err)),
+                    }
+                  )
+                } else {
+                  createMutation.mutate(payload, { onError: (err) => setFormError(getErrorMessage(err)) })
+                }
+              }}
+              onCancel={existing ? () => setIsEditingSingleton(false) : undefined}
+              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              submitLabel={existing ? 'Actualizar' : 'Crear'}
+            />
+          ) : (
+            <RecordView item={existing} fields={config.fields} />
+          )}
         </div>
       </div>
     )

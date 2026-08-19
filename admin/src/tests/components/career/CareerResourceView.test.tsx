@@ -131,6 +131,65 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(screen.queryByRole('form')).not.toBeInTheDocument()
   })
 
+  describe('singleton resource (identity)', () => {
+    const identityConfig = CAREER_RESOURCES.identity
+    const identityRecord = {
+      id: 1,
+      user_id: 1,
+      professional_tagline: 'AI Solutions Architect',
+      bio_summary: 'Bio de prueba',
+      unique_value_proposition: 'Propuesta de prueba',
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-02-01T00:00:00Z',
+    }
+
+    it('shows a read-only view (not the form) when a record already exists', async () => {
+      mockedCareerApi.list.mockResolvedValue([identityRecord] as never)
+      render(<CareerResourceView config={identityConfig} />)
+
+      await waitFor(() => expect(screen.getByText('AI Solutions Architect')).toBeInTheDocument())
+      expect(screen.queryByRole('form')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /editar/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /eliminar/i })).toBeInTheDocument()
+    })
+
+    it('goes straight to the create form when there is no record yet', async () => {
+      mockedCareerApi.list.mockResolvedValue([] as never)
+      render(<CareerResourceView config={identityConfig} />)
+
+      await waitFor(() => expect(screen.getByRole('form')).toBeInTheDocument())
+      expect(screen.queryByRole('button', { name: /editar/i })).not.toBeInTheDocument()
+    })
+
+    it('switches to the edit form from the view, and cancelling returns to the view', async () => {
+      mockedCareerApi.list.mockResolvedValue([identityRecord] as never)
+      render(<CareerResourceView config={identityConfig} />)
+
+      await waitFor(() => expect(screen.getByText('AI Solutions Architect')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: /editar/i }))
+
+      expect(screen.getByDisplayValue('AI Solutions Architect')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+      expect(screen.queryByRole('form')).not.toBeInTheDocument()
+      expect(screen.getByText('AI Solutions Architect')).toBeInTheDocument()
+    })
+
+    it('asks for confirmation and deletes from the view', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      mockedCareerApi.list.mockResolvedValue([identityRecord] as never)
+      mockedCareerApi.remove.mockResolvedValue(undefined)
+      render(<CareerResourceView config={identityConfig} />)
+
+      await waitFor(() => expect(screen.getByText('AI Solutions Architect')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: /eliminar/i }))
+
+      expect(confirmSpy).toHaveBeenCalled()
+      await waitFor(() => expect(mockedCareerApi.remove).toHaveBeenCalledWith('identity', 1))
+      confirmSpy.mockRestore()
+    })
+  })
+
   it('still asks for confirmation before deleting from the table row', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
     render(<CareerResourceView config={config} />)
