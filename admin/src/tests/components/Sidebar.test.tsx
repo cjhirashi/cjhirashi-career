@@ -39,7 +39,6 @@ describe('Sidebar', () => {
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText('Métricas')).toBeInTheDocument()
       expect(screen.getByText('Archivos')).toBeInTheDocument()
-      expect(screen.getByText('LinkedIn')).toBeInTheDocument()
     })
 
     it('should not render legacy (pre-career-domain) menu items anymore', () => {
@@ -180,6 +179,14 @@ describe('Sidebar', () => {
 
       const vacanciesLink = screen.getByRole('link', { name: 'Vacantes' })
       expect(vacanciesLink).toHaveAttribute('href', '/career/vacancies')
+    })
+
+    it('should include LinkedIn inside the "Presencia Digital" domain, not as a top-level item', () => {
+      renderSidebar(true, mockOnToggle)
+      expect(screen.queryByRole('link', { name: /LinkedIn/i })).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('Presencia Digital'))
+      expect(screen.getByRole('link', { name: /LinkedIn/i })).toHaveAttribute('href', '/linkedin')
     })
 
     it('should collapse the previously expanded domain when a different one is opened (at most one at a time)', () => {

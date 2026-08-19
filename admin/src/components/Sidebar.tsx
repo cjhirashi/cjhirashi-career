@@ -18,8 +18,13 @@ const menuItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Métricas', path: '/metrics', icon: BarChart3 },
   { label: 'Archivos', path: '/files', icon: FolderOpen },
-  { label: 'LinkedIn', path: '/linkedin', icon: Linkedin },
 ]
+
+// LinkedIn isn't a generic career resource (no /career/:resourceKey page -
+// it's the standalone OAuth/posting page at /linkedin), so it can't just be
+// added to a domain's `resourceKeys` like the other 30 - it's spliced into
+// the "Presencia Digital" accordion's rendering below instead, by key.
+const LINKEDIN_DOMAIN_KEY = 'digital'
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
@@ -145,6 +150,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                         </Link>
                       )
                     })}
+                    {domain.key === LINKEDIN_DOMAIN_KEY && (
+                      <Link
+                        to="/linkedin"
+                        onClick={closeMobileDrawer}
+                        aria-current={isActive('/linkedin') ? 'page' : undefined}
+                        className={clsx(
+                          'flex items-center gap-1.5 pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                          isActive('/linkedin')
+                            ? 'text-primary bg-primary-light'
+                            : 'text-text-secondary hover:bg-glass hover:text-text'
+                        )}
+                      >
+                        <Linkedin size={13} className="flex-shrink-0" aria-hidden="true" />
+                        LinkedIn
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
