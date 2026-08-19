@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react'
-import { ArrowLeft, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import React, { useMemo, useRef, useState } from 'react'
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
+import rehypeHighlight from 'rehype-highlight'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
@@ -30,7 +31,46 @@ const markdownSanitizeSchema = {
   attributes: {
     ...defaultSchema.attributes,
     '*': [...(defaultSchema.attributes?.['*'] ?? []), 'style'],
+    // rehype-highlight tags code/span with `className="hljs-*"` for syntax
+    // coloring - keep those explicit so a sanitize-schema change elsewhere
+    // can't silently strip them.
+    code: [...(defaultSchema.attributes?.code ?? []), 'className'],
+    span: [...(defaultSchema.attributes?.span ?? []), 'className'],
   },
+}
+
+/** Wraps a fenced code block's `<pre>` with a copy-to-clipboard button,
+ * shown on hover. Used as ReactMarkdown's `pre` component override, so
+ * `children` is already the syntax-highlighted `<code>` from
+ * rehype-highlight. */
+const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children, ...props }) => {
+  const [copied, setCopied] = useState(false)
+  const preRef = useRef<HTMLPreElement>(null)
+
+  const handleCopy = () => {
+    const text = preRef.current?.textContent ?? ''
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
+  return (
+    <div className="relative group/code">
+      <pre ref={preRef} {...props}>
+        {children}
+      </pre>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? 'Copiado' : 'Copiar código'}
+        title={copied ? 'Copiado' : 'Copiar código'}
+        className="absolute top-2 right-2 p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass opacity-0 group-hover/code:opacity-100 focus:opacity-100 transition-opacity"
+      >
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </button>
+    </div>
+  )
 }
 
 interface CareerResourceViewProps {
@@ -90,7 +130,8 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
         <div className="markdown-body">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema]]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema], rehypeHighlight]}
+            components={{ pre: CodeBlockPre }}
           >
             {String(value)}
           </ReactMarkdown>

@@ -126,6 +126,27 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(markdownBody?.textContent).toContain('Texto seguro')
   })
 
+  it('syntax-highlights fenced code blocks and offers a copy button', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.assign(navigator, { clipboard: { writeText } })
+
+    mockedCareerApi.list.mockResolvedValue([
+      { ...sampleItem, depth_description: '```js\nconst x = 1;\n```' },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    expect(container.querySelector('.markdown-body pre code.hljs')).toBeInTheDocument()
+    expect(container.querySelector('.hljs-keyword')?.textContent).toBe('const')
+
+    const copyButton = screen.getByRole('button', { name: /copiar código/i })
+    fireEvent.click(copyButton)
+    expect(writeText).toHaveBeenCalledWith('const x = 1;\n')
+    await waitFor(() => expect(screen.getByRole('button', { name: /^copiado$/i })).toBeInTheDocument())
+  })
+
   it('goes back to the table when "Volver" is clicked from the view', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())

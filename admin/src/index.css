@@ -156,6 +156,34 @@
     background-attachment: fixed;
     min-height: 100vh;
   }
+
+  /* Themed scrollbars - the `color-scheme` above already nudges the browser's
+     own default scrollbar palette, but doesn't match our exact cyan/steel
+     tokens, so style it explicitly for every scrollable element. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-glass-hover) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border-glass-hover);
+    border-radius: 100px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary-color);
+  }
 }
 
 @layer components {
@@ -282,12 +310,73 @@
   }
 
   .markdown-body pre {
-    @apply text-xs p-3 rounded-lg overflow-x-auto mb-3;
+    @apply text-xs p-3 pr-10 rounded-lg overflow-x-auto mb-3;
     background-color: var(--bg-glass);
   }
 
   .markdown-body pre code {
     @apply p-0 bg-transparent;
+  }
+
+  /* Syntax highlighting (rehype-highlight / highlight.js token classes),
+     mapped onto the app's own semantic color tokens instead of pulling in
+     a prebuilt highlight.js theme stylesheet - keeps it consistent with
+     the rest of Glass Steel and adapts automatically to light/dark. */
+  .markdown-body .hljs-comment,
+  .markdown-body .hljs-quote {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .markdown-body .hljs-keyword,
+  .markdown-body .hljs-selector-tag,
+  .markdown-body .hljs-tag,
+  .markdown-body .hljs-operator {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  .markdown-body .hljs-string,
+  .markdown-body .hljs-attr,
+  .markdown-body .hljs-addition,
+  .markdown-body .hljs-regexp {
+    color: var(--success-text);
+  }
+
+  .markdown-body .hljs-number,
+  .markdown-body .hljs-literal {
+    color: var(--warning-text);
+  }
+
+  .markdown-body .hljs-title,
+  .markdown-body .hljs-function,
+  .markdown-body .hljs-name,
+  .markdown-body .hljs-section {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .markdown-body .hljs-variable,
+  .markdown-body .hljs-params,
+  .markdown-body .hljs-property {
+    color: var(--text-secondary);
+  }
+
+  .markdown-body .hljs-built_in,
+  .markdown-body .hljs-type {
+    color: var(--primary-hover);
+  }
+
+  .markdown-body .hljs-deletion {
+    color: var(--error-text);
+  }
+
+  .markdown-body .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .markdown-body .hljs-strong {
+    font-weight: 700;
   }
 
   .markdown-body img {
