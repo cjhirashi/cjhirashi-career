@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
@@ -14,6 +16,21 @@ import { formatDate, formatDateTime } from '@/utils/formatters'
 export interface ParentFilter {
   field: string
   value: number
+}
+
+/**
+ * Sanitize schema for raw HTML inside Markdown fields (centering an image,
+ * flex columns, etc. - things Markdown syntax alone can't express). Starts
+ * from rehype-sanitize's default (already blocks <script>, event handler
+ * attributes like onclick, and javascript: URLs) and only adds `style` as
+ * an allowed attribute on every tag, since that's what layout tricks need.
+ */
+const markdownSanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes?.['*'] ?? []), 'style'],
+  },
 }
 
 interface CareerResourceViewProps {
@@ -71,7 +88,12 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
       // fine as ordinary paragraphs.
       return (
         <div className="markdown-body">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{String(value)}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema]]}
+          >
+            {String(value)}
+          </ReactMarkdown>
         </div>
       )
     default:

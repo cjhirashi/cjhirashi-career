@@ -94,6 +94,38 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(img).toHaveAttribute('alt', 'Diagrama de arquitectura')
   })
 
+  it('allows raw HTML with inline style (e.g. centering) for extra formatting', async () => {
+    mockedCareerApi.list.mockResolvedValue([
+      { ...sampleItem, depth_description: '<div style="text-align:center">Contenido centrado</div>' },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    const centered = container.querySelector('.markdown-body div[style]')
+    expect(centered?.textContent).toBe('Contenido centrado')
+    expect(centered).toHaveStyle({ textAlign: 'center' })
+  })
+
+  it('strips <script> tags and event-handler attributes from raw HTML', async () => {
+    mockedCareerApi.list.mockResolvedValue([
+      {
+        ...sampleItem,
+        depth_description: '<script>alert(1)</script><div onclick="alert(2)">Texto seguro</div>',
+      },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    const markdownBody = container.querySelector('.markdown-body')
+    expect(markdownBody?.querySelector('script')).not.toBeInTheDocument()
+    expect(markdownBody?.querySelector('[onclick]')).not.toBeInTheDocument()
+    expect(markdownBody?.textContent).toContain('Texto seguro')
+  })
+
   it('goes back to the table when "Volver" is clicked from the view', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
