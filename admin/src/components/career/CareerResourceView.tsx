@@ -174,9 +174,9 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
   }
 
   return (
-    <div className="relative group/mermaid mb-3">
+    <div className="relative mb-3">
       <div ref={containerRef} className="mermaid-diagram" dangerouslySetInnerHTML={{ __html: svg }} />
-      <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/mermaid:opacity-100 focus-within:opacity-100 transition-opacity">
+      <div className="absolute bottom-2 right-2 flex items-center gap-1">
         <button
           type="button"
           onClick={() => panZoomRef.current?.zoomIn()}
@@ -240,7 +240,7 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
   }
 
   return (
-    <div className="relative group/code">
+    <div className="relative">
       <pre ref={preRef} {...props} className={language ? 'has-code-lang' : props.className}>
         {children}
       </pre>
@@ -254,7 +254,7 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
         onClick={handleCopy}
         aria-label={copied ? 'Copiado' : 'Copiar código'}
         title={copied ? 'Copiado' : 'Copiar código'}
-        className="absolute top-2 right-2 p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass opacity-0 group-hover/code:opacity-100 focus:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass"
       >
         {copied ? <Check size={14} /> : <Copy size={14} />}
       </button>
