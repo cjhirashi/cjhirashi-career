@@ -21,6 +21,11 @@ export const Header = () => {
   const mobileMenuOpen = useUIStore(state => state.mobileMenuOpen)
   const toggleMobileMenu = useUIStore(state => state.toggleMobileMenu)
   const setMobileMenuOpen = useUIStore(state => state.setMobileMenuOpen)
+  // The wordmark's text color is baked into the SVG itself (dark text for
+  // light backgrounds, light text for dark ones), so swap the whole file
+  // instead of trying to theme it via CSS.
+  const resolvedTheme = useUIStore(state => state.resolvedTheme)
+  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
   const location = useLocation()
   const { trackClick } = useTrackClick()
 
@@ -38,13 +43,10 @@ export const Header = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-2 flex-shrink-0"
+            className="flex items-center flex-shrink-0"
             onClick={() => handleNavClick('logo')}
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-[10px] shadow-glow flex items-center justify-center">
-              <span className="text-on-primary font-bold text-sm">CJ</span>
-            </div>
-            <span className="hidden sm:inline text-text font-bold text-lg">Carlos Jiménez</span>
+            <img src={logoSrc} alt="cjhirashi" className="h-7 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}

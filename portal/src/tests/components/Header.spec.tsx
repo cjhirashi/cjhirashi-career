@@ -23,7 +23,7 @@ describe('Header Component', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('CJ')).toBeInTheDocument()
+    expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
   })
 
   it('has navigation links with correct href attributes', () => {

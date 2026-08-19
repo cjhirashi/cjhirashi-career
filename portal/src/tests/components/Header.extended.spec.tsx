@@ -20,16 +20,10 @@ describe('Header - Extended Tests', () => {
     expect(header).toHaveClass('z-50')
   })
 
-  it('renders logo with initials CJ', () => {
+  it('renders the logo', () => {
     render(<Header />, { initialRoute: '/' })
 
-    expect(screen.getByText('CJ')).toBeInTheDocument()
-  })
-
-  it('renders logo name text', () => {
-    render(<Header />, { initialRoute: '/' })
-
-    expect(screen.getByText('Carlos Jiménez')).toBeInTheDocument()
+    expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
   })
 
   it('renders all navigation links', () => {
@@ -112,7 +106,7 @@ describe('Header - Extended Tests', () => {
     const user = userEvent.setup()
     render(<Header />, { initialRoute: '/about' })
 
-    const logoLink = screen.getByRole('link', { name: /CJ/i })
+    const logoLink = screen.getByRole('link', { name: /cjhirashi/i })
     await user.click(logoLink)
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(

@@ -50,9 +50,9 @@ describe('Sidebar', () => {
       expect(screen.queryByText('Interviews')).not.toBeInTheDocument()
     })
 
-    it('should render portfolio title when open', () => {
+    it('should render the logo when open', () => {
       renderSidebar(true, mockOnToggle)
-      expect(screen.getByText('Portfolio')).toBeInTheDocument()
+      expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
     })
 
     it('should not show menu labels when closed', () => {
@@ -60,9 +60,9 @@ describe('Sidebar', () => {
       expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
     })
 
-    it('should not show portfolio title when closed', () => {
+    it('should not show the logo when closed', () => {
       renderSidebar(false, mockOnToggle)
-      expect(screen.queryByText('Portfolio')).not.toBeInTheDocument()
+      expect(screen.queryByAltText('cjhirashi')).not.toBeInTheDocument()
     })
 
     it('should show version number when open', () => {
@@ -158,9 +158,10 @@ describe('Sidebar', () => {
       expect(sidebar?.className).toMatch(/backdrop-blur/)
     })
 
-    it('should have primary (cyan) title color when open', () => {
+    it('should swap logo file based on the resolved theme (color is baked into the SVG)', () => {
       renderSidebar(true, mockOnToggle)
-      expect(screen.getByText('Portfolio').className).toContain('text-primary')
+      const src = screen.getByAltText('cjhirashi').getAttribute('src')
+      expect(src).toMatch(/^\/logo-(light|dark)\.svg$/)
     })
   })
 
