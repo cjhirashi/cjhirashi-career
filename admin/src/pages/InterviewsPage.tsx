@@ -1,4 +1,5 @@
 import React from 'react'
+import { MessageCircle, Laptop, BookOpen } from 'lucide-react'
 
 export const InterviewsPage: React.FC = () => {
   return (
@@ -16,7 +17,7 @@ export const InterviewsPage: React.FC = () => {
             <h2 className="font-semibold text-slate-900 dark:text-slate-100">Behavioral</h2>
           </div>
           <div className="card-body text-center py-8">
-            <p className="text-3xl mb-2">💭</p>
+            <MessageCircle size={28} className="mx-auto mb-2 text-primary" aria-hidden="true" />
             <p className="text-slate-600 dark:text-slate-400">Coming soon</p>
           </div>
         </div>
@@ -26,7 +27,7 @@ export const InterviewsPage: React.FC = () => {
             <h2 className="font-semibold text-slate-900 dark:text-slate-100">Technical</h2>
           </div>
           <div className="card-body text-center py-8">
-            <p className="text-3xl mb-2">💻</p>
+            <Laptop size={28} className="mx-auto mb-2 text-primary" aria-hidden="true" />
             <p className="text-slate-600 dark:text-slate-400">Coming soon</p>
           </div>
         </div>
@@ -36,7 +37,7 @@ export const InterviewsPage: React.FC = () => {
             <h2 className="font-semibold text-slate-900 dark:text-slate-100">Domain</h2>
           </div>
           <div className="card-body text-center py-8">
-            <p className="text-3xl mb-2">📚</p>
+            <BookOpen size={28} className="mx-auto mb-2 text-primary" aria-hidden="true" />
             <p className="text-slate-600 dark:text-slate-400">Coming soon</p>
           </div>
         </div>

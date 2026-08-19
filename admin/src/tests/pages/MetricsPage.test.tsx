@@ -45,12 +45,12 @@ describe('MetricsPage', () => {
       expect(screen.getByText('0%')).toBeInTheDocument()
     })
 
-    it('should have emoji icons for metrics', () => {
+    it('should have Lucide icon for each metric stat card', () => {
       const { container } = render(<MetricsPage />)
-      expect(container.textContent).toContain('📊')
-      expect(container.textContent).toContain('👁️')
-      expect(container.textContent).toContain('🔗')
-      expect(container.textContent).toContain('🤖')
+      const statCards = container.querySelectorAll('.stat-card')
+      statCards.forEach((card) => {
+        expect(card.querySelector('svg')).toBeInTheDocument()
+      })
     })
   })
 

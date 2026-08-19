@@ -1,4 +1,5 @@
 import React from 'react'
+import { BarChart3, Eye, Link2, Bot } from 'lucide-react'
 
 export const MetricsPage: React.FC = () => {
   return (
@@ -15,7 +16,7 @@ export const MetricsPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Profile Completeness</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0%</p>
             </div>
-            <div className="text-3xl">📊</div>
+            <BarChart3 size={28} className="text-primary" aria-hidden="true" />
           </div>
         </div>
 
@@ -25,7 +26,7 @@ export const MetricsPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Portal Views</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">👁️</div>
+            <Eye size={28} className="text-primary" aria-hidden="true" />
           </div>
         </div>
 
@@ -35,7 +36,7 @@ export const MetricsPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Interactions</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">🔗</div>
+            <Link2 size={28} className="text-primary" aria-hidden="true" />
           </div>
         </div>
 
@@ -45,7 +46,7 @@ export const MetricsPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Agent Activity</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">🤖</div>
+            <Bot size={28} className="text-primary" aria-hidden="true" />
           </div>
         </div>
       </div>

@@ -64,12 +64,13 @@ describe('DashboardPage', () => {
       expect(screen.getByText('Build your network')).toBeInTheDocument()
     })
 
-    it('should have emoji icons for each stat', () => {
+    it('should have a Lucide icon for each quick-stat card', () => {
       const { container } = render(<DashboardPage />)
-      expect(container.textContent).toContain('🎯')
-      expect(container.textContent).toContain('📁')
-      expect(container.textContent).toContain('💼')
-      expect(container.textContent).toContain('🤝')
+      const statCards = container.querySelectorAll('.stat-card')
+      expect(statCards.length).toBeGreaterThanOrEqual(4)
+      statCards.forEach((card) => {
+        expect(card.querySelector('svg')).toBeInTheDocument()
+      })
     })
   })
 

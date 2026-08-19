@@ -8,6 +8,8 @@
 // component (see src/components/career/CareerResourceView.tsx).
 // ============================================================================
 
+import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-react'
+
 export type FieldType =
   | 'text'
   | 'textarea'
@@ -1114,7 +1116,7 @@ export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' |
 export interface CareerDomainGroup {
   key: CareerDomainKey
   label: string
-  icon: string
+  icon: LucideIcon
   resourceKeys: string[]
 }
 
@@ -1122,7 +1124,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
   {
     key: 'identity',
     label: 'Identidad Profesional',
-    icon: '🧭',
+    icon: Compass,
     resourceKeys: [
       'differentiators',
       'identity',
@@ -1141,7 +1143,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
   {
     key: 'search',
     label: 'Operativa de Búsqueda',
-    icon: '🔍',
+    icon: Search,
     resourceKeys: [
       'fit-scoring-factors',
       'market-segments',
@@ -1160,13 +1162,13 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
   {
     key: 'digital',
     label: 'Presencia Digital',
-    icon: '🌐',
+    icon: Globe,
     resourceKeys: ['digital-platforms', 'content-pieces', 'publications'],
   },
   {
     key: 'networking',
     label: 'Networking',
-    icon: '🤝',
+    icon: Handshake,
     // `networking-contacts` intentionally lives under "Operativa de Búsqueda"
     // above (matches the approved schema grouping) - not duplicated here.
     resourceKeys: ['contact-interactions', 'networking-activities'],
@@ -1174,7 +1176,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
   {
     key: 'support',
     label: 'Soporte',
-    icon: '🏷️',
+    icon: Tag,
     resourceKeys: ['tags'],
   },
 ]

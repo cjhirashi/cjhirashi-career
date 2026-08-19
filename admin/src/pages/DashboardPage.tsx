@@ -1,4 +1,5 @@
 import React from 'react'
+import { Target, FolderOpen, Briefcase, Handshake } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useWeeklyMetrics } from '@/hooks/useCareerResource'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -32,7 +33,7 @@ export const DashboardPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Skills</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">🎯</div>
+            <Target size={28} className="text-primary" aria-hidden="true" />
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Add your competencies</p>
         </div>
@@ -43,7 +44,7 @@ export const DashboardPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Projects</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">📁</div>
+            <FolderOpen size={28} className="text-primary" aria-hidden="true" />
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Showcase your work</p>
         </div>
@@ -54,7 +55,7 @@ export const DashboardPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Positions</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">💼</div>
+            <Briefcase size={28} className="text-primary" aria-hidden="true" />
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Document your experience</p>
         </div>
@@ -65,7 +66,7 @@ export const DashboardPage: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Contacts</p>
               <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
-            <div className="text-3xl">🤝</div>
+            <Handshake size={28} className="text-primary" aria-hidden="true" />
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Build your network</p>
         </div>

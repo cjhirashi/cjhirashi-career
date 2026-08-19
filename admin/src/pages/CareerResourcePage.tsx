@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { SearchX } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { CareerResourceView } from '@/components/career/CareerResourceView'
 
@@ -16,7 +17,7 @@ export const CareerResourcePage: React.FC = () => {
     return (
       <div className="card">
         <div className="card-body text-center py-12">
-          <p className="text-3xl mb-3">🔎</p>
+          <SearchX size={32} className="mx-auto mb-3 text-text-muted" aria-hidden="true" />
           <h1 className="text-lg font-semibold text-text">Recurso no encontrado</h1>
           <p className="text-text-secondary text-sm mt-2">
             No existe ningún recurso de carrera con la clave &quot;{resourceKey}&quot;.

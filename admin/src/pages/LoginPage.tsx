@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { UserCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 export const LoginPage: React.FC = () => {
@@ -46,7 +47,7 @@ export const LoginPage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow">
-            <span className="text-2xl">👤</span>
+            <UserCircle size={28} className="text-white" aria-hidden="true" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Admin Panel</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">Career Management Portal</p>

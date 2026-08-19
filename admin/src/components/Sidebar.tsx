@@ -1,7 +1,19 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { ChevronDown } from 'lucide-react'
+import {
+  ChevronDown,
+  Menu,
+  Rocket,
+  LayoutDashboard,
+  UserCircle,
+  Target,
+  FolderOpen,
+  Search,
+  Handshake,
+  Briefcase,
+  TrendingUp,
+} from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
@@ -11,14 +23,14 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: '📊' },
-  { label: 'Identity', path: '/identity', icon: '👤' },
-  { label: 'Competencies', path: '/competencies', icon: '🎯' },
-  { label: 'Evidence', path: '/evidence', icon: '📁' },
-  { label: 'Job Strategies', path: '/job-strategies', icon: '🔍' },
-  { label: 'Networking', path: '/networking', icon: '🤝' },
-  { label: 'Interviews', path: '/interviews', icon: '💼' },
-  { label: 'Metrics', path: '/metrics', icon: '📈' },
+  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { label: 'Identity', path: '/identity', icon: UserCircle },
+  { label: 'Competencies', path: '/competencies', icon: Target },
+  { label: 'Evidence', path: '/evidence', icon: FolderOpen },
+  { label: 'Job Strategies', path: '/job-strategies', icon: Search },
+  { label: 'Networking', path: '/networking', icon: Handshake },
+  { label: 'Interviews', path: '/interviews', icon: Briefcase },
+  { label: 'Metrics', path: '/metrics', icon: TrendingUp },
 ]
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
@@ -73,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           className="p-2 hover:bg-glass rounded-xl transition-colors"
           title={isOpen ? 'Collapse' : 'Expand'}
         >
-          ☰
+          <Menu size={20} aria-hidden="true" />
         </button>
       </div>
 
@@ -91,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             className={clsx('sidebar-item', isActive(item.path) && 'is-active')}
             title={isOpen ? undefined : item.label}
           >
-            <span className="text-xl flex-shrink-0">{item.icon}</span>
+            <item.icon size={20} className="flex-shrink-0" aria-hidden="true" />
             {isOpen && <span className="text-sm font-medium truncate">{item.label}</span>}
           </Link>
         ))}
@@ -108,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             aria-expanded={careerSectionOpen}
           >
             <span className="flex items-center gap-3 min-w-0">
-              <span className="text-xl flex-shrink-0">🚀</span>
+              <Rocket size={20} className="flex-shrink-0" aria-hidden="true" />
               {isOpen && <span className="text-sm font-medium truncate">Carrera</span>}
             </span>
             {isOpen && (
@@ -132,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                       aria-expanded={isDomainExpanded}
                     >
                       <span className="flex items-center gap-2 truncate">
-                        <span aria-hidden="true">{domain.icon}</span>
+                        <domain.icon size={14} className="flex-shrink-0" aria-hidden="true" />
                         <span className="truncate">{domain.label}</span>
                       </span>
                       <ChevronDown
