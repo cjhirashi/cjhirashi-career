@@ -17,7 +17,7 @@ from datetime import date, datetime
 class DifferentiatorBase(BaseModel):
     pillar_name: str = Field(..., max_length=255)
     pillar_description: Optional[str] = None
-    strengths: Optional[List[Any]] = None
+    strengths: Optional[str] = None
     evidence: Optional[str] = None
     is_active: bool = True
 
@@ -29,7 +29,7 @@ class DifferentiatorCreate(DifferentiatorBase):
 class DifferentiatorUpdate(BaseModel):
     pillar_name: Optional[str] = Field(None, max_length=255)
     pillar_description: Optional[str] = None
-    strengths: Optional[List[Any]] = None
+    strengths: Optional[str] = None
     evidence: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -82,7 +82,7 @@ DimensionLiteral = Literal["passion", "profession", "vocation", "mission"]
 class IdentityReflectionBase(BaseModel):
     dimension: DimensionLiteral
     content: Optional[str] = None
-    tags: Optional[List[Any]] = None
+    tags: Optional[str] = None
 
 
 class IdentityReflectionCreate(IdentityReflectionBase):
@@ -91,7 +91,7 @@ class IdentityReflectionCreate(IdentityReflectionBase):
 
 class IdentityReflectionUpdate(BaseModel):
     content: Optional[str] = None
-    tags: Optional[List[Any]] = None
+    tags: Optional[str] = None
 
 
 class IdentityReflectionResponse(IdentityReflectionBase):
@@ -207,7 +207,7 @@ class TargetRoleBase(BaseModel):
     market_validated_at: Optional[date] = None
     market_sources: Optional[List[Any]] = None
     current_accessibility: Optional[str] = Field(None, max_length=100)
-    key_requirements: Optional[List[Any]] = None
+    key_requirements: Optional[str] = None
     is_active: bool = True
 
 
@@ -227,7 +227,7 @@ class TargetRoleUpdate(BaseModel):
     market_validated_at: Optional[date] = None
     market_sources: Optional[List[Any]] = None
     current_accessibility: Optional[str] = None
-    key_requirements: Optional[List[Any]] = None
+    key_requirements: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -253,7 +253,7 @@ class WorkHistoryBase(BaseModel):
     people_managed: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
     narrative: Optional[str] = None
-    achievements: Optional[List[Any]] = None
+    achievements: Optional[str] = None
     key_metrics: Optional[Dict[str, Any]] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = Field(None, max_length=50)
@@ -272,7 +272,7 @@ class WorkHistoryUpdate(BaseModel):
     people_managed: Optional[str] = None
     description: Optional[str] = None
     narrative: Optional[str] = None
-    achievements: Optional[List[Any]] = None
+    achievements: Optional[str] = None
     key_metrics: Optional[Dict[str, Any]] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = None
@@ -304,7 +304,7 @@ class AchievementBase(BaseModel):
     solution: Optional[str] = None
     impact_metrics: Optional[Dict[str, Any]] = None
     evidence_type: Optional[EvidenceTypeLiteral] = None
-    documentation_urls: Optional[List[Any]] = None
+    documentation_urls: Optional[str] = None
     executive_storytelling: Optional[str] = None
     demonstrated_competency_ids: Optional[List[int]] = None
     visible_on_cv: bool = True
@@ -324,7 +324,7 @@ class AchievementUpdate(BaseModel):
     solution: Optional[str] = None
     impact_metrics: Optional[Dict[str, Any]] = None
     evidence_type: Optional[EvidenceTypeLiteral] = None
-    documentation_urls: Optional[List[Any]] = None
+    documentation_urls: Optional[str] = None
     executive_storytelling: Optional[str] = None
     demonstrated_competency_ids: Optional[List[int]] = None
     visible_on_cv: Optional[bool] = None
@@ -350,7 +350,7 @@ class StarStoryBase(BaseModel):
     title: str = Field(..., max_length=255)
     duration_seconds: Optional[int] = Field(None, ge=60, le=90)
     narrative: Optional[str] = None
-    key_points: Optional[List[Any]] = None
+    key_points: Optional[str] = None
     achievement_id: Optional[int] = None
     cross_pattern: Optional[str] = Field(None, max_length=255)
     role_application: Optional[str] = None
@@ -366,7 +366,7 @@ class StarStoryUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
     duration_seconds: Optional[int] = Field(None, ge=60, le=90)
     narrative: Optional[str] = None
-    key_points: Optional[List[Any]] = None
+    key_points: Optional[str] = None
     achievement_id: Optional[int] = None
     cross_pattern: Optional[str] = None
     role_application: Optional[str] = None
@@ -398,7 +398,7 @@ class CareerReviewBase(BaseModel):
     context: Optional[str] = None
     decision_or_finding: Optional[str] = None
     result_or_learning: Optional[str] = None
-    action_items: Optional[List[Any]] = None
+    action_items: Optional[str] = None
     tracking_status: TrackingStatusLiteral = "active"
 
 
@@ -412,7 +412,7 @@ class CareerReviewUpdate(BaseModel):
     context: Optional[str] = None
     decision_or_finding: Optional[str] = None
     result_or_learning: Optional[str] = None
-    action_items: Optional[List[Any]] = None
+    action_items: Optional[str] = None
     tracking_status: Optional[TrackingStatusLiteral] = None
 
 
@@ -486,14 +486,14 @@ class ProjectBase(BaseModel):
     problem: Optional[str] = None
     solution: Optional[str] = None
     architecture: Optional[str] = None
-    tech_stack: Optional[List[Any]] = None
+    tech_stack: Optional[str] = None
     metrics: Optional[Union[List[Any], Dict[str, Any]]] = None
-    approach_steps: Optional[List[Any]] = None
+    approach_steps: Optional[str] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = Field(None, max_length=500)
     demo_url: Optional[str] = Field(None, max_length=500)
     repo_structure: Optional[str] = None
-    evidence_sources: Optional[List[Any]] = None
+    evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None
     status: ProjectStatusLiteral = "active"
     is_featured: bool = False
@@ -513,14 +513,14 @@ class ProjectUpdate(BaseModel):
     problem: Optional[str] = None
     solution: Optional[str] = None
     architecture: Optional[str] = None
-    tech_stack: Optional[List[Any]] = None
+    tech_stack: Optional[str] = None
     metrics: Optional[Union[List[Any], Dict[str, Any]]] = None
-    approach_steps: Optional[List[Any]] = None
+    approach_steps: Optional[str] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
     repo_structure: Optional[str] = None
-    evidence_sources: Optional[List[Any]] = None
+    evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None
     status: Optional[ProjectStatusLiteral] = None
     is_featured: Optional[bool] = None

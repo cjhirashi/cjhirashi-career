@@ -26,7 +26,7 @@ class Achievement(Base):
     solution = Column(Text, nullable=True)
     impact_metrics = Column(JSONB, nullable=True)
     evidence_type = Column(String(30), nullable=True)
-    documentation_urls = Column(JSONB, nullable=True)
+    documentation_urls = Column(Text, nullable=True)
     executive_storytelling = Column(Text, nullable=True)
     demonstrated_competency_ids = Column(JSONB, nullable=True)
     visible_on_cv = Column(Boolean, default=True, nullable=True)

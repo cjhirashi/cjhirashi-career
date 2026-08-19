@@ -63,7 +63,7 @@ class ContentPieceBase(BaseModel):
     body_content: Optional[str] = None
     content_type: Optional[str] = Field(None, max_length=50)
     thematic_pillar: Optional[str] = Field(None, max_length=100)
-    tags: Optional[List[Any]] = None
+    tags: Optional[str] = None
     status: ContentStatusLiteral = "draft"
     reading_minutes: Optional[int] = None
     featured_on_home: bool = False
@@ -84,7 +84,7 @@ class ContentPieceUpdate(BaseModel):
     body_content: Optional[str] = None
     content_type: Optional[str] = None
     thematic_pillar: Optional[str] = None
-    tags: Optional[List[Any]] = None
+    tags: Optional[str] = None
     status: Optional[ContentStatusLiteral] = None
     reading_minutes: Optional[int] = None
     featured_on_home: Optional[bool] = None
@@ -116,7 +116,7 @@ class PublicationBase(BaseModel):
     published_at: Optional[datetime] = None
     full_content: Optional[str] = None
     char_length: Optional[int] = None
-    hashtags_used: Optional[List[Any]] = None
+    hashtags_used: Optional[str] = None
     views: Optional[int] = None
     likes_reactions: Optional[int] = None
     comments: Optional[int] = None
@@ -134,7 +134,7 @@ class PublicationUpdate(BaseModel):
     published_at: Optional[datetime] = None
     full_content: Optional[str] = None
     char_length: Optional[int] = None
-    hashtags_used: Optional[List[Any]] = None
+    hashtags_used: Optional[str] = None
     views: Optional[int] = None
     likes_reactions: Optional[int] = None
     comments: Optional[int] = None

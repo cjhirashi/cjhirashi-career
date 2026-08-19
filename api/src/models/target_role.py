@@ -28,7 +28,7 @@ class TargetRole(Base):
     market_validated_at = Column(Date, nullable=True)
     market_sources = Column(JSONB, nullable=True)
     current_accessibility = Column(String(100), nullable=True)
-    key_requirements = Column(JSONB, nullable=True)
+    key_requirements = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

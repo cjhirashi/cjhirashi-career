@@ -106,7 +106,7 @@ export const differentiatorsConfig: ResourceConfig = {
   fields: [
     { name: 'pillar_name', label: 'Nombre del pilar', type: 'text', required: true },
     { name: 'pillar_description', label: 'Descripción', type: 'textarea', fullWidth: true },
-    { name: 'strengths', label: 'Fortalezas (una por línea)', type: 'string-array', fullWidth: true },
+    { name: 'strengths', label: 'Fortalezas', type: 'textarea', fullWidth: true },
     { name: 'evidence', label: 'Evidencia', type: 'textarea', fullWidth: true },
     { name: 'is_active', label: 'Activo', type: 'boolean' },
   ],
@@ -154,7 +154,7 @@ export const identityReflectionsConfig: ResourceConfig = {
       ],
     },
     { name: 'content', label: 'Contenido', type: 'textarea', fullWidth: true },
-    { name: 'tags', label: 'Tags (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'tags', label: 'Tags', type: 'textarea', fullWidth: true },
   ],
 }
 
@@ -255,8 +255,8 @@ export const targetRolesConfig: ResourceConfig = {
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
     {
       name: 'key_requirements',
-      label: 'Requisitos clave (uno por línea)',
-      type: 'string-array',
+      label: 'Requisitos clave',
+      type: 'textarea',
       fullWidth: true,
     },
     { name: 'market_sources', label: 'Fuentes de mercado (JSON)', type: 'json', fullWidth: true },
@@ -289,8 +289,8 @@ export const workHistoryConfig: ResourceConfig = {
     { name: 'learnings', label: 'Aprendizajes', type: 'textarea', fullWidth: true },
     {
       name: 'achievements',
-      label: 'Logros (uno por línea)',
-      type: 'string-array',
+      label: 'Logros',
+      type: 'textarea',
       fullWidth: true,
     },
     { name: 'key_metrics', label: 'Métricas clave (JSON)', type: 'json', fullWidth: true },
@@ -328,8 +328,8 @@ export const achievementsConfig: ResourceConfig = {
     { name: 'executive_storytelling', label: 'Narrativa ejecutiva', type: 'textarea', fullWidth: true },
     {
       name: 'documentation_urls',
-      label: 'URLs de documentación (una por línea)',
-      type: 'string-array',
+      label: 'URLs de documentación',
+      type: 'textarea',
       fullWidth: true,
     },
     {
@@ -363,7 +363,7 @@ export const starStoriesConfig: ResourceConfig = {
     { name: 'active_in_interviews', label: 'Activa en entrevistas', type: 'boolean' },
     { name: 'narrative', label: 'Narrativa', type: 'textarea', fullWidth: true },
     { name: 'role_application', label: 'Aplicación al rol', type: 'textarea', fullWidth: true },
-    { name: 'key_points', label: 'Puntos clave (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'key_points', label: 'Puntos clave', type: 'textarea', fullWidth: true },
   ],
 }
 
@@ -404,8 +404,8 @@ export const careerReviewsConfig: ResourceConfig = {
     { name: 'result_or_learning', label: 'Resultado / aprendizaje', type: 'textarea', fullWidth: true },
     {
       name: 'action_items',
-      label: 'Acciones a tomar (una por línea)',
-      type: 'string-array',
+      label: 'Acciones a tomar',
+      type: 'textarea',
       fullWidth: true,
     },
   ],
@@ -499,17 +499,17 @@ export const projectsConfig: ResourceConfig = {
     { name: 'solution', label: 'Solución', type: 'textarea', fullWidth: true },
     { name: 'architecture', label: 'Arquitectura', type: 'textarea', fullWidth: true },
     { name: 'repo_structure', label: 'Estructura del repositorio', type: 'textarea', fullWidth: true },
-    { name: 'tech_stack', label: 'Stack tecnológico (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'tech_stack', label: 'Stack tecnológico', type: 'textarea', fullWidth: true },
     {
       name: 'approach_steps',
-      label: 'Pasos del enfoque (uno por línea)',
-      type: 'string-array',
+      label: 'Pasos del enfoque',
+      type: 'textarea',
       fullWidth: true,
     },
     {
       name: 'evidence_sources',
-      label: 'Fuentes de evidencia (una por línea)',
-      type: 'string-array',
+      label: 'Fuentes de evidencia',
+      type: 'textarea',
       fullWidth: true,
     },
     { name: 'metrics', label: 'Métricas (JSON)', type: 'json', fullWidth: true },
@@ -589,7 +589,7 @@ export const roleNarrativesConfig: ResourceConfig = {
     { name: 'usage_context', label: 'Contexto de uso', type: 'text' },
     { name: 'is_active', label: 'Activa', type: 'boolean' },
     { name: 'full_narrative', label: 'Narrativa completa', type: 'textarea', fullWidth: true },
-    { name: 'key_points', label: 'Puntos clave (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'key_points', label: 'Puntos clave', type: 'textarea', fullWidth: true },
   ],
 }
 
@@ -627,8 +627,8 @@ export const searchPlansConfig: ResourceConfig = {
     { name: 'lessons_learned', label: 'Aprendizajes', type: 'textarea', fullWidth: true },
     {
       name: 'primary_channels',
-      label: 'Canales primarios (uno por línea)',
-      type: 'string-array',
+      label: 'Canales primarios',
+      type: 'textarea',
       fullWidth: true,
     },
     { name: 'weekly_targets', label: 'Objetivos semanales (JSON)', type: 'json', fullWidth: true },
@@ -773,8 +773,8 @@ export const cvVersionsConfig: ResourceConfig = {
     { name: 'executive_summary', label: 'Resumen ejecutivo', type: 'textarea', fullWidth: true },
     {
       name: 'key_competencies',
-      label: 'Competencias clave (una por línea)',
-      type: 'string-array',
+      label: 'Competencias clave',
+      type: 'textarea',
       fullWidth: true,
     },
     {
@@ -924,20 +924,20 @@ export const interviewsConfig: ResourceConfig = {
     { name: 'feedback_received', label: 'Feedback recibido', type: 'textarea', fullWidth: true },
     {
       name: 'interviewers',
-      label: 'Entrevistadores (uno por línea)',
-      type: 'string-array',
+      label: 'Entrevistadores',
+      type: 'textarea',
       fullWidth: true,
     },
     {
       name: 'questions_asked',
-      label: 'Preguntas realizadas (una por línea)',
-      type: 'string-array',
+      label: 'Preguntas realizadas',
+      type: 'textarea',
       fullWidth: true,
     },
     {
       name: 'answers_given',
-      label: 'Respuestas dadas (una por línea)',
-      type: 'string-array',
+      label: 'Respuestas dadas',
+      type: 'textarea',
       fullWidth: true,
     },
   ],
@@ -1069,7 +1069,7 @@ export const contentPiecesConfig: ResourceConfig = {
     { name: 'related_competency_id', label: 'ID de competencia relacionada', type: 'number' },
     { name: 'excerpt', label: 'Extracto', type: 'textarea', fullWidth: true },
     { name: 'body_content', label: 'Contenido completo', type: 'textarea', fullWidth: true },
-    { name: 'tags', label: 'Tags (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'tags', label: 'Tags', type: 'textarea', fullWidth: true },
   ],
 }
 
@@ -1106,7 +1106,7 @@ export const publicationsConfig: ResourceConfig = {
       ],
     },
     { name: 'full_content', label: 'Contenido completo', type: 'textarea', fullWidth: true },
-    { name: 'hashtags_used', label: 'Hashtags (uno por línea)', type: 'string-array', fullWidth: true },
+    { name: 'hashtags_used', label: 'Hashtags', type: 'textarea', fullWidth: true },
   ],
 }
 

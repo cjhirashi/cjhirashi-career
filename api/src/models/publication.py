@@ -3,7 +3,6 @@ Publication Model - A content piece published on a specific platform, with metri
 Career domain (v2) - Presencia Digital.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -28,7 +27,7 @@ class Publication(Base):
     published_at = Column(DateTime(timezone=True), nullable=True)
     full_content = Column(Text, nullable=True)
     char_length = Column(Integer, nullable=True)
-    hashtags_used = Column(JSONB, nullable=True)
+    hashtags_used = Column(Text, nullable=True)
     views = Column(Integer, nullable=True)
     likes_reactions = Column(Integer, nullable=True)
     comments = Column(Integer, nullable=True)

@@ -7,7 +7,6 @@ did not match the real `interviews` table (it had already caused a table
 collision; the table was dropped and recreated with this schema).
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -36,9 +35,9 @@ class Interview(Base):
 
     interview_type = Column(String(50), nullable=True)
     scheduled_at = Column(DateTime(timezone=True), nullable=True)
-    interviewers = Column(JSONB, nullable=True)
-    questions_asked = Column(JSONB, nullable=True)
-    answers_given = Column(JSONB, nullable=True)
+    interviewers = Column(Text, nullable=True)
+    questions_asked = Column(Text, nullable=True)
+    answers_given = Column(Text, nullable=True)
     feedback_received = Column(Text, nullable=True)
     overall_impression = Column(String(20), nullable=True)
     interview_result = Column(String(30), nullable=True)

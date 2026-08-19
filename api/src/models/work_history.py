@@ -23,7 +23,7 @@ class WorkHistory(Base):
     people_managed = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     narrative = Column(Text, nullable=True)
-    achievements = Column(JSONB, nullable=True)
+    achievements = Column(Text, nullable=True)
     key_metrics = Column(JSONB, nullable=True)
     learnings = Column(Text, nullable=True)
     contract_type = Column(String(50), nullable=True)

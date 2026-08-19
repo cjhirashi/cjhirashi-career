@@ -30,7 +30,7 @@ class CVVersion(Base):
     length_pages = Column(Integer, nullable=True)
     status = Column(String(30), default="draft", nullable=True, index=True)
     executive_summary = Column(Text, nullable=True)
-    key_competencies = Column(JSONB, nullable=True)
+    key_competencies = Column(Text, nullable=True)
     key_experience = Column(JSONB, nullable=True)
     featured_achievement = Column(Text, nullable=True)
     target_vacancy_ids = Column(JSONB, nullable=True)

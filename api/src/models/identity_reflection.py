@@ -3,7 +3,6 @@ IdentityReflection Model - IKIGAI-style reflections (passion, profession, vocati
 Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -19,7 +18,7 @@ class IdentityReflection(Base):
 
     dimension = Column(String(50), nullable=False)  # passion | profession | vocation | mission
     content = Column(Text, nullable=True)
-    tags = Column(JSONB, nullable=True)
+    tags = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

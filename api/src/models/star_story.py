@@ -3,7 +3,6 @@ StarStory Model - 60-90 second STAR-format interview stories.
 Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -20,7 +19,7 @@ class StarStory(Base):
     title = Column(String(255), nullable=False)
     duration_seconds = Column(Integer, nullable=True)
     narrative = Column(Text, nullable=True)
-    key_points = Column(JSONB, nullable=True)
+    key_points = Column(Text, nullable=True)
     achievement_id = Column(Integer, ForeignKey("achievements.id", ondelete="SET NULL"), nullable=True)
     cross_pattern = Column(String(255), nullable=True)
     role_application = Column(Text, nullable=True)

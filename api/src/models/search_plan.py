@@ -25,7 +25,7 @@ class SearchPlan(Base):
     period_start = Column(Date, nullable=True)
     period_end = Column(Date, nullable=True)
     weekly_targets = Column(JSONB, nullable=True)
-    primary_channels = Column(JSONB, nullable=True)
+    primary_channels = Column(Text, nullable=True)
     target_cvs_sent = Column(Integer, nullable=True)
     target_interviews = Column(Integer, nullable=True)
     target_offers = Column(Integer, nullable=True)

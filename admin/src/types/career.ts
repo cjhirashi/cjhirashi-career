@@ -19,7 +19,7 @@ export interface Differentiator {
   user_id: number
   pillar_name: string
   pillar_description?: string | null
-  strengths?: string[] | null
+  strengths?: string | null
   evidence?: string | null
   is_active: boolean
   created_at: ISODateTime
@@ -43,7 +43,7 @@ export interface IdentityReflection {
   user_id: number
   dimension: IdentityDimension
   content?: string | null
-  tags?: string[] | null
+  tags?: string | null
   updated_at: ISODateTime
 }
 
@@ -94,7 +94,7 @@ export interface TargetRole {
   market_validated_at?: ISODate | null
   market_sources?: unknown[] | null
   current_accessibility?: string | null
-  key_requirements?: string[] | null
+  key_requirements?: string | null
   is_active: boolean
   created_at: ISODateTime
   updated_at: ISODateTime
@@ -110,7 +110,7 @@ export interface WorkHistory {
   people_managed?: string | null
   description?: string | null
   narrative?: string | null
-  achievements?: string[] | null
+  achievements?: string | null
   key_metrics?: Record<string, unknown> | null
   learnings?: string | null
   contract_type?: string | null
@@ -130,7 +130,7 @@ export interface Achievement {
   solution?: string | null
   impact_metrics?: Record<string, unknown> | null
   evidence_type?: EvidenceType | null
-  documentation_urls?: string[] | null
+  documentation_urls?: string | null
   executive_storytelling?: string | null
   demonstrated_competency_ids?: number[] | null
   visible_on_cv: boolean
@@ -145,7 +145,7 @@ export interface StarStory {
   title: string
   duration_seconds?: number | null
   narrative?: string | null
-  key_points?: string[] | null
+  key_points?: string | null
   achievement_id?: number | null
   cross_pattern?: string | null
   role_application?: string | null
@@ -165,7 +165,7 @@ export interface CareerReview {
   context?: string | null
   decision_or_finding?: string | null
   result_or_learning?: string | null
-  action_items?: string[] | null
+  action_items?: string | null
   tracking_status: TrackingStatus
   created_at: ISODateTime
 }
@@ -201,14 +201,14 @@ export interface Project {
   problem?: string | null
   solution?: string | null
   architecture?: string | null
-  tech_stack?: string[] | null
+  tech_stack?: string | null
   metrics?: Record<string, unknown> | null
-  approach_steps?: string[] | null
+  approach_steps?: string | null
   results?: Record<string, unknown> | null
   github_url?: string | null
   demo_url?: string | null
   repo_structure?: string | null
-  evidence_sources?: string[] | null
+  evidence_sources?: string | null
   releases?: unknown[] | null
   status: ProjectStatus
   is_featured: boolean
@@ -253,7 +253,7 @@ export interface RoleNarrative {
   title: string
   usage_context?: string | null
   full_narrative?: string | null
-  key_points?: string[] | null
+  key_points?: string | null
   is_active: boolean
   created_at: ISODateTime
   updated_at: ISODateTime
@@ -268,7 +268,7 @@ export interface SearchPlan {
   period_end?: ISODate | null
   target_role_id?: number | null
   weekly_targets?: Record<string, unknown> | null
-  primary_channels?: string[] | null
+  primary_channels?: string | null
   target_cvs_sent?: number | null
   target_interviews?: number | null
   target_offers?: number | null
@@ -351,7 +351,7 @@ export interface CVVersion {
   length_pages?: number | null
   status: VersionStatus
   executive_summary?: string | null
-  key_competencies?: string[] | null
+  key_competencies?: string | null
   key_experience?: unknown[] | null
   featured_achievement?: string | null
   target_vacancy_ids?: number[] | null
@@ -410,9 +410,9 @@ export interface Interview {
   application_id: number
   interview_type?: string | null
   scheduled_at?: ISODateTime | null
-  interviewers?: string[] | null
-  questions_asked?: string[] | null
-  answers_given?: string[] | null
+  interviewers?: string | null
+  questions_asked?: string | null
+  answers_given?: string | null
   feedback_received?: string | null
   overall_impression?: OverallImpression | null
   narrative_used_id?: number | null
@@ -485,7 +485,7 @@ export interface ContentPiece {
   body_content?: string | null
   content_type?: string | null
   thematic_pillar?: string | null
-  tags?: string[] | null
+  tags?: string | null
   status: ContentStatus
   reading_minutes?: number | null
   featured_on_home: boolean
@@ -506,7 +506,7 @@ export interface Publication {
   published_at?: ISODateTime | null
   full_content?: string | null
   char_length?: number | null
-  hashtags_used?: string[] | null
+  hashtags_used?: string | null
   views?: number | null
   likes_reactions?: number | null
   comments?: number | null

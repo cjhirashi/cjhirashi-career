@@ -97,7 +97,7 @@ class RoleNarrativeBase(BaseModel):
     title: str = Field(..., max_length=255)
     usage_context: Optional[str] = Field(None, max_length=100)
     full_narrative: Optional[str] = None
-    key_points: Optional[List[Any]] = None
+    key_points: Optional[str] = None
     is_active: bool = True
 
 
@@ -110,7 +110,7 @@ class RoleNarrativeUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
     usage_context: Optional[str] = None
     full_narrative: Optional[str] = None
-    key_points: Optional[List[Any]] = None
+    key_points: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -136,7 +136,7 @@ class SearchPlanBase(BaseModel):
     period_end: Optional[date] = None
     target_role_id: Optional[int] = None
     weekly_targets: Optional[Dict[str, Any]] = None
-    primary_channels: Optional[List[Any]] = None
+    primary_channels: Optional[str] = None
     target_cvs_sent: Optional[int] = None
     target_interviews: Optional[int] = None
     target_offers: Optional[int] = None
@@ -154,7 +154,7 @@ class SearchPlanUpdate(BaseModel):
     period_end: Optional[date] = None
     target_role_id: Optional[int] = None
     weekly_targets: Optional[Dict[str, Any]] = None
-    primary_channels: Optional[List[Any]] = None
+    primary_channels: Optional[str] = None
     target_cvs_sent: Optional[int] = None
     target_interviews: Optional[int] = None
     target_offers: Optional[int] = None
@@ -332,7 +332,7 @@ class CVVersionBase(BaseModel):
     length_pages: Optional[int] = None
     status: VersionStatusLiteral = "draft"
     executive_summary: Optional[str] = None
-    key_competencies: Optional[List[Any]] = None
+    key_competencies: Optional[str] = None
     key_experience: Optional[List[Any]] = None
     featured_achievement: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
@@ -349,7 +349,7 @@ class CVVersionUpdate(BaseModel):
     length_pages: Optional[int] = None
     status: Optional[VersionStatusLiteral] = None
     executive_summary: Optional[str] = None
-    key_competencies: Optional[List[Any]] = None
+    key_competencies: Optional[str] = None
     key_experience: Optional[List[Any]] = None
     featured_achievement: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
@@ -491,9 +491,9 @@ class InterviewBase(BaseModel):
     application_id: int
     interview_type: Optional[str] = Field(None, max_length=50)
     scheduled_at: Optional[datetime] = None
-    interviewers: Optional[List[Any]] = None
-    questions_asked: Optional[List[Any]] = None
-    answers_given: Optional[List[Any]] = None
+    interviewers: Optional[str] = None
+    questions_asked: Optional[str] = None
+    answers_given: Optional[str] = None
     feedback_received: Optional[str] = None
     overall_impression: Optional[OverallImpressionLiteral] = None
     narrative_used_id: Optional[int] = None
@@ -507,9 +507,9 @@ class InterviewCreate(InterviewBase):
 class InterviewUpdate(BaseModel):
     interview_type: Optional[str] = None
     scheduled_at: Optional[datetime] = None
-    interviewers: Optional[List[Any]] = None
-    questions_asked: Optional[List[Any]] = None
-    answers_given: Optional[List[Any]] = None
+    interviewers: Optional[str] = None
+    questions_asked: Optional[str] = None
+    answers_given: Optional[str] = None
     feedback_received: Optional[str] = None
     overall_impression: Optional[OverallImpressionLiteral] = None
     narrative_used_id: Optional[int] = None

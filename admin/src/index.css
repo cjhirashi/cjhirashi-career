@@ -247,6 +247,12 @@
     @apply list-decimal list-inside mb-3 space-y-1;
   }
 
+  .markdown-body ul li::marker,
+  .markdown-body ol li::marker {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
   .markdown-body li > p {
     @apply inline;
   }
@@ -256,7 +262,13 @@
   }
 
   .markdown-body strong {
-    @apply font-semibold text-text;
+    @apply font-semibold;
+    color: var(--primary-color);
+  }
+
+  .markdown-body em {
+    @apply italic;
+    color: var(--primary-color);
   }
 
   .markdown-body blockquote {

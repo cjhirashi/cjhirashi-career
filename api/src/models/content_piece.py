@@ -3,7 +3,6 @@ ContentPiece Model - Blog/content pieces authored by the user.
 Career domain (v2) - Presencia Digital.
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -29,7 +28,7 @@ class ContentPiece(Base):
     body_content = Column(Text, nullable=True)
     content_type = Column(String(50), nullable=True)
     thematic_pillar = Column(String(100), nullable=True)
-    tags = Column(JSONB, nullable=True)
+    tags = Column(Text, nullable=True)
     status = Column(String(30), default="draft", nullable=True, index=True)
     reading_minutes = Column(Integer, nullable=True)
     featured_on_home = Column(Boolean, default=False, nullable=True)

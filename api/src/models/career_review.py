@@ -3,7 +3,6 @@ CareerReview Model - Periodic gap analysis / transition decisions / quarterly re
 Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -25,7 +24,7 @@ class CareerReview(Base):
     context = Column(Text, nullable=True)
     decision_or_finding = Column(Text, nullable=True)
     result_or_learning = Column(Text, nullable=True)
-    action_items = Column(JSONB, nullable=True)
+    action_items = Column(Text, nullable=True)
     tracking_status = Column(String(30), default="active", nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

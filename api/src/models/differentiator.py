@@ -3,7 +3,6 @@ Differentiator Model - Professional differentiation pillars.
 Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -18,7 +17,7 @@ class Differentiator(Base):
 
     pillar_name = Column(String(255), nullable=False)
     pillar_description = Column(Text, nullable=True)
-    strengths = Column(JSONB, nullable=True)
+    strengths = Column(Text, nullable=True)
     evidence = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
