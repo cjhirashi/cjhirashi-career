@@ -1,36 +1,20 @@
 import { Link } from 'react-router-dom'
 import { useTrackClick } from '@/hooks/useTracking'
-
-interface SocialLink {
-  label: string
-  href: string
-  icon: string
-}
-
-const socialLinks: SocialLink[] = [
-  {
-    label: 'GitHub',
-    href: 'https://github.com',
-    icon: '📱',
-  },
-  {
-    label: 'LinkedIn',
-    href: 'https://linkedin.com',
-    icon: '💼',
-  },
-  {
-    label: 'Twitter',
-    href: 'https://twitter.com',
-    icon: '🐦',
-  },
-]
+import { useContact } from '@/hooks/useContact'
 
 export const Footer = () => {
   const { trackClick } = useTrackClick()
+  const { data: contact } = useContact()
 
   const handleSocialClick = (label: string) => {
     trackClick(`social-${label.toLowerCase()}`)
   }
+
+  const socialLinks = [
+    ...(contact?.github_url ? [{ label: 'GitHub', href: contact.github_url }] : []),
+    ...(contact?.linkedin_url ? [{ label: 'LinkedIn', href: contact.linkedin_url }] : []),
+    ...(contact?.footer_links ?? []).map(link => ({ label: link.label, href: link.url })),
+  ]
 
   return (
     <footer className="section-alt text-text-secondary mt-16">
@@ -39,14 +23,12 @@ export const Footer = () => {
           {/* Brand */}
           <div>
             <h3 className="text-lg font-bold text-text mb-2">Carlos Jiménez Hirashi</h3>
-            <p className="text-text-secondary text-sm">
-              Solutions Architect & Portfolio Professional
-            </p>
+            <p className="text-text-secondary text-sm">AI Solutions Architect</p>
           </div>
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold text-text mb-4">Navigation</h4>
+            <h4 className="font-semibold text-text mb-4">Navegación</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="text-text-secondary hover:text-primary transition">
@@ -55,15 +37,12 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/about" className="text-text-secondary hover:text-primary transition">
-                  About
+                  Sobre Mí
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/projects"
-                  className="text-text-secondary hover:text-primary transition"
-                >
-                  Projects
+                <Link to="/projects" className="text-text-secondary hover:text-primary transition">
+                  Proyectos
                 </Link>
               </li>
             </ul>
@@ -71,7 +50,7 @@ export const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h4 className="font-semibold text-text mb-4">Resources</h4>
+            <h4 className="font-semibold text-text mb-4">Recursos</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/blog" className="text-text-secondary hover:text-primary transition">
@@ -80,51 +59,50 @@ export const Footer = () => {
               </li>
               <li>
                 <Link to="/contact" className="text-text-secondary hover:text-primary transition">
-                  Contact
+                  Contacto
                 </Link>
               </li>
-              <li>
-                <a href="#" className="text-text-secondary hover:text-primary transition">
-                  Sitemap
-                </a>
-              </li>
+              {contact?.contact_email && (
+                <li>
+                  <a
+                    href={`mailto:${contact.contact_email}`}
+                    className="text-text-secondary hover:text-primary transition"
+                  >
+                    {contact.contact_email}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
           {/* Social */}
-          <div>
-            <h4 className="font-semibold text-text mb-4">Follow</h4>
-            <div className="flex space-x-4">
-              {socialLinks.map(link => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleSocialClick(link.label)}
-                  className="text-text-secondary hover:text-primary transition text-lg"
-                  aria-label={link.label}
-                >
-                  {link.icon}
-                </a>
-              ))}
+          {socialLinks.length > 0 && (
+            <div>
+              <h4 className="font-semibold text-text mb-4">Sígueme</h4>
+              <ul className="space-y-2 text-sm">
+                {socialLinks.map(link => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => handleSocialClick(link.label)}
+                      className="text-text-secondary hover:text-primary transition"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Divider */}
         <div className="border-t border-border pt-8">
-          <div className="flex justify-between items-center text-sm text-text-secondary">
-            <p>© 2024 Carlos Jiménez Hirashi. All rights reserved.</p>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-primary transition">
-                Privacy
-              </a>
-              <a href="#" className="hover:text-primary transition">
-                Terms
-              </a>
-            </div>
-          </div>
+          <p className="text-sm text-text-secondary">
+            © {new Date().getFullYear()} Carlos Jiménez Hirashi. Todos los derechos reservados.
+          </p>
         </div>
       </div>
     </footer>

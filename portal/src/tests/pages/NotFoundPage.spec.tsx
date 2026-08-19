@@ -14,24 +14,24 @@ describe('NotFoundPage', () => {
     expect(screen.getByText('404')).toBeInTheDocument()
   })
 
-  it('renders page not found message', () => {
+  it('renders "not found" message', () => {
     render(
       <BrowserRouter>
         <NotFoundPage />
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Page Not Found')).toBeInTheDocument()
+    expect(screen.getByText('Página no encontrada')).toBeInTheDocument()
   })
 
-  it('renders back to home link', () => {
+  it('renders the "back to home" link', () => {
     render(
       <BrowserRouter>
         <NotFoundPage />
       </BrowserRouter>
     )
 
-    const homeLink = screen.getByRole('link', { name: /back to home/i })
+    const homeLink = screen.getByRole('link', { name: /volver a home/i })
     expect(homeLink).toHaveAttribute('href', '/')
   })
 
@@ -42,8 +42,8 @@ describe('NotFoundPage', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByRole('link', { name: /about/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /projects/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /contact/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /sobre mí/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /proyectos/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /contacto/i })).toBeInTheDocument()
   })
 })

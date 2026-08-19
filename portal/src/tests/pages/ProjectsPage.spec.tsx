@@ -20,7 +20,7 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('My Projects')).toBeInTheDocument()
+      expect(screen.getByText('Mis Proyectos')).toBeInTheDocument()
     })
   })
 
@@ -30,7 +30,7 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/showcase my skills and expertise/i)).toBeInTheDocument()
+      expect(screen.getByText(/habilidades y experiencia/i)).toBeInTheDocument()
     })
   })
 
@@ -46,14 +46,25 @@ describe('ProjectsPage', () => {
     })
   })
 
+  it('links each project card to its detail page', async () => {
+    vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
+
+    render(<ProjectsPage />)
+
+    await waitFor(() => {
+      const link = screen.getByText(mockProjects[0].title).closest('a')
+      expect(link).toHaveAttribute('href', `/projects/${mockProjects[0].id}`)
+    })
+  })
+
   it('renders technology filter buttons', async () => {
     vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
 
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Filter by Technology')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /All Projects/i })).toBeInTheDocument()
+      expect(screen.getByText('Filtrar por tecnología')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Todos los proyectos/i })).toBeInTheDocument()
     })
   })
 
@@ -64,14 +75,14 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
     })
 
     const reactFilter = screen.getByRole('button', { name: 'React' })
     await user.click(reactFilter)
 
     await waitFor(() => {
-      const projects = mockProjects.filter(p => p.technologies.includes('React'))
+      const projects = mockProjects.filter(p => p.tech_stack.includes('React'))
       projects.forEach(project => {
         expect(screen.getByText(project.title)).toBeInTheDocument()
       })
@@ -85,7 +96,7 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
     })
 
     const reactFilter = screen.getByRole('button', { name: 'React' })
@@ -102,20 +113,20 @@ describe('ProjectsPage', () => {
     })
   })
 
-  it('resets filter to All Projects', async () => {
+  it('resets filter to all projects', async () => {
     const user = userEvent.setup()
     vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
 
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
     })
 
     const reactFilter = screen.getByRole('button', { name: 'React' })
     await user.click(reactFilter)
 
-    const allButton = screen.getByRole('button', { name: /All Projects/i })
+    const allButton = screen.getByRole('button', { name: /Todos los proyectos/i })
     await user.click(allButton)
 
     await waitFor(() => {
@@ -132,43 +143,33 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
     })
 
     const reactFilter = screen.getByRole('button', { name: 'React' })
     await user.click(reactFilter)
 
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'filter-React',
-      })
-    )
+    expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: 'filter-React' }))
   })
 
-  it('tracks all projects filter click', async () => {
+  it('tracks the "all projects" filter click', async () => {
     const user = userEvent.setup()
     vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
 
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('React')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
     })
 
-    const allButton = screen.getByRole('button', { name: /All Projects/i })
+    const allButton = screen.getByRole('button', { name: /Todos los proyectos/i })
     await user.click(allButton)
 
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'filter-all',
-      })
-    )
+    expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: 'filter-all' }))
   })
 
   it('shows loading spinner initially', () => {
-    vi.mocked(projectsApi.getProjects).mockImplementation(
-      () => new Promise(() => {})
-    )
+    vi.mocked(projectsApi.getProjects).mockImplementation(() => new Promise(() => {}))
 
     render(<ProjectsPage />)
 
@@ -181,58 +182,26 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load projects/i)).toBeInTheDocument()
+      expect(screen.getByText(/No se pudieron cargar los proyectos/i)).toBeInTheDocument()
     })
   })
 
-  it('shows no projects message when filter returns empty', async () => {
+  it('shows no-results message when filter returns empty', async () => {
     const user = userEvent.setup()
-    const projectsWithoutReact = mockProjects.filter(p => !p.technologies.includes('React'))
+    const projectsWithoutReact = mockProjects.filter(p => !p.tech_stack.includes('React'))
     vi.mocked(projectsApi.getProjects).mockResolvedValue(projectsWithoutReact)
 
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/showcase my skills/i)).toBeInTheDocument()
+      expect(screen.getByText(/habilidades y experiencia/i)).toBeInTheDocument()
     })
 
-    // Try to click React filter if it exists
     const reactFilter = screen.queryByRole('button', { name: 'React' })
     if (reactFilter) {
       await user.click(reactFilter)
-      expect(screen.getByText(/No projects found/i)).toBeInTheDocument()
+      expect(screen.getByText(/No hay proyectos para este filtro/i)).toBeInTheDocument()
     }
-  })
-
-  it('renders download CV button section', async () => {
-    vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
-
-    render(<ProjectsPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Want to know more/i)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Download Full CV/i })).toBeInTheDocument()
-    })
-  })
-
-  it('tracks CV download button click', async () => {
-    const user = userEvent.setup()
-    vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
-
-    render(<ProjectsPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Want to know more/i)).toBeInTheDocument()
-    })
-
-    const downloadButton = screen.getByRole('button', { name: /Download Full CV/i })
-    await user.click(downloadButton)
-
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'download-cv',
-      })
-    )
   })
 
   it('renders projects in grid layout', async () => {
@@ -247,13 +216,13 @@ describe('ProjectsPage', () => {
     })
   })
 
-  it('handles empty projects array', async () => {
+  it('handles an empty projects array', async () => {
     vi.mocked(projectsApi.getProjects).mockResolvedValue([])
 
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/My Projects/)).toBeInTheDocument()
+      expect(screen.getByText(/Mis Proyectos/)).toBeInTheDocument()
     })
   })
 
@@ -263,10 +232,20 @@ describe('ProjectsPage', () => {
     render(<ProjectsPage />)
 
     await waitFor(() => {
-      const uniqueTechs = Array.from(new Set(mockProjects.flatMap(p => p.technologies)))
+      const uniqueTechs = Array.from(new Set(mockProjects.flatMap(p => p.tech_stack)))
       uniqueTechs.forEach(tech => {
         expect(screen.getByRole('button', { name: tech })).toBeInTheDocument()
       })
+    })
+  })
+
+  it('shows a "Destacado" badge on featured projects', async () => {
+    vi.mocked(projectsApi.getProjects).mockResolvedValue(mockProjects)
+
+    render(<ProjectsPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Destacado').length).toBeGreaterThan(0)
     })
   })
 })

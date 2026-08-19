@@ -16,14 +16,12 @@ export const ProjectsPage = () => {
   }
 
   if (isLoading) return <LoadingSpinner />
-  if (error) return <ErrorMessage message="Failed to load projects" />
+  if (error) return <ErrorMessage message="No se pudieron cargar los proyectos" />
 
-  // Extract unique technologies
-  const allTechs = Array.from(new Set(projects?.flatMap(p => p.technologies) || []))
+  const allTechs = Array.from(new Set(projects?.flatMap(p => p.tech_stack) || []))
 
-  // Filter projects
   const filteredProjects = selectedTech
-    ? projects?.filter(p => p.technologies.includes(selectedTech))
+    ? projects?.filter(p => p.tech_stack.includes(selectedTech))
     : projects
 
   return (
@@ -31,9 +29,9 @@ export const ProjectsPage = () => {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">My Projects</h1>
+          <h1 className="text-4xl font-bold text-text mb-4">Mis Proyectos</h1>
           <p className="text-lg text-text-secondary">
-            A selection of projects that showcase my skills and expertise.
+            Una selección de proyectos que muestran mis habilidades y experiencia.
           </p>
         </div>
 
@@ -41,7 +39,7 @@ export const ProjectsPage = () => {
         {allTechs.length > 0 && (
           <div className="mb-12">
             <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
-              Filter by Technology
+              Filtrar por tecnología
             </h2>
             <div className="flex flex-wrap gap-2">
               <button
@@ -55,7 +53,7 @@ export const ProjectsPage = () => {
                     : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                 }`}
               >
-                All Projects
+                Todos los proyectos
               </button>
               {allTechs.map(tech => (
                 <button
@@ -78,22 +76,14 @@ export const ProjectsPage = () => {
         {filteredProjects && filteredProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard key={project.id} project={project} featured={project.is_featured} />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-text-secondary text-lg">No projects found for this filter.</p>
+            <p className="text-text-secondary text-lg">No hay proyectos para este filtro.</p>
           </div>
         )}
-
-        {/* Download CV */}
-        <div className="card mt-16 text-center py-12 px-6">
-          <h2 className="text-2xl font-bold text-text mb-6">Want to know more?</h2>
-          <button onClick={() => trackClick('download-cv')} className="btn px-8 py-3 font-semibold">
-            Download Full CV
-          </button>
-        </div>
       </div>
     </div>
   )

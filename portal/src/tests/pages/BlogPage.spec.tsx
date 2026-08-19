@@ -30,7 +30,7 @@ describe('BlogPage', () => {
     render(<BlogPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Technical articles, insights/i)).toBeInTheDocument()
+      expect(screen.getByText(/Artículos técnicos, ideas/i)).toBeInTheDocument()
     })
   })
 
@@ -52,7 +52,7 @@ describe('BlogPage', () => {
     render(<BlogPage />)
 
     await waitFor(() => {
-      const searchInput = screen.getByPlaceholderText(/Search articles/i)
+      const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
       expect(searchInput).toBeInTheDocument()
     })
   })
@@ -67,7 +67,7 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.type(searchInput, 'System')
 
     await waitFor(() => {
@@ -85,7 +85,7 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.clear(searchInput)
     await user.type(searchInput, 'React')
 
@@ -104,7 +104,7 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.clear(searchInput)
     await user.type(searchInput, 'Essential')
 
@@ -123,7 +123,7 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.type(searchInput, 'React')
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(
@@ -139,7 +139,7 @@ describe('BlogPage', () => {
     render(<BlogPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Filter by Tag')).toBeInTheDocument()
+      expect(screen.getByText('Filtrar por etiqueta')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Architecture' })).toBeInTheDocument()
     })
   })
@@ -217,7 +217,7 @@ describe('BlogPage', () => {
     })
 
     // Search for React
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.type(searchInput, 'React')
 
     // Filter by Frontend tag
@@ -245,7 +245,7 @@ describe('BlogPage', () => {
     render(<BlogPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load blog posts/i)).toBeInTheDocument()
+      expect(screen.getByText(/No se pudieron cargar los artículos del blog/i)).toBeInTheDocument()
     })
   })
 
@@ -259,11 +259,11 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i)
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
     await user.type(searchInput, 'NonexistentTerm123')
 
     await waitFor(() => {
-      expect(screen.getByText(/No articles found/i)).toBeInTheDocument()
+      expect(screen.getByText(/No se encontraron artículos/i)).toBeInTheDocument()
     })
   })
 
@@ -312,7 +312,7 @@ describe('BlogPage', () => {
       expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search articles/i) as HTMLInputElement
+    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i) as HTMLInputElement
     await user.type(searchInput, 'React')
 
     expect(searchInput.value).toBe('React')

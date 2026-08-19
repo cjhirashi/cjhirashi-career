@@ -1,181 +1,143 @@
 import { Link } from 'react-router-dom'
-import { useIdentity, useCompetencies } from '@/hooks/useIdentity'
-import { useFeaturedProjects } from '@/hooks/useProjects'
+import { useHome } from '@/hooks/useHome'
 import { useTrackClick } from '@/hooks/useTracking'
-import { ProjectCard } from '@/components/Common/ProjectCard'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 
 export const HomePage = () => {
-  const { data: identity, isLoading: identityLoading, error: identityError } = useIdentity()
-  const { data: competencies } = useCompetencies()
-  const {
-    data: featuredProjects,
-    isLoading: projectsLoading,
-    error: projectsError,
-  } = useFeaturedProjects(3)
+  const { data: home, isLoading, error } = useHome()
   const { trackClick } = useTrackClick()
 
   const handleCTA = (action: string) => {
     trackClick(`hero-${action}`)
   }
 
-  if (identityLoading) return <LoadingSpinner />
-  if (identityError) return <ErrorMessage message="Failed to load profile" />
+  if (isLoading) return <LoadingSpinner />
+  if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl hero-split">
-          {/* Copy column */}
-          <div className="text-center content:text-left">
-            <div className="mb-6 flex flex-wrap gap-2 justify-center content:justify-start">
-              <span className="badge">Available for opportunities</span>
-              <span className="badge badge-secondary">Remote-first</span>
-            </div>
-
-            {/* Title and Tagline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-4">
-              {identity?.name || 'Carlos Jiménez Hirashi'}
-            </h1>
-            <p className="text-xl sm:text-2xl text-primary font-semibold mb-4">
-              {identity?.title || 'Solutions Architect'}
+        <div className="mx-auto max-w-4xl text-center">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-4">
+            {home?.hero_title || 'Carlos Jiménez Hirashi'}
+          </h1>
+          {home?.hero_subtitle && (
+            <p className="text-xl sm:text-2xl text-primary font-semibold mb-4">{home.hero_subtitle}</p>
+          )}
+          {home?.hero_intro && (
+            <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-8 whitespace-pre-wrap">
+              {home.hero_intro}
             </p>
-            <p className="text-lg text-text-secondary max-w-2xl mx-auto content:mx-0 mb-8">
-              {identity?.tagline ||
-                'Transforming complex ideas into elegant, scalable solutions. Specialized in enterprise architecture and full-stack development.'}
-            </p>
+          )}
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center content:justify-start">
-              <Link
-                to="/projects"
-                onClick={() => handleCTA('view-portfolio')}
-                className="btn px-8 py-3 font-semibold"
-              >
-                View Portfolio
-              </Link>
-              <Link
-                to="/contact"
-                onClick={() => handleCTA('contact-cta')}
-                className="btn-secondary px-8 py-3 font-semibold"
-              >
-                Get in Touch
-              </Link>
-            </div>
-          </div>
-
-          {/* Visual column */}
-          <div className="flex justify-center content:justify-end">
-            <div className="card p-8 w-full max-w-sm">
-              {identity?.avatar && (
-                <div className="mb-6 flex justify-center">
-                  <img
-                    src={identity.avatar}
-                    alt={identity.name}
-                    className="w-24 h-24 rounded-full border-4 border-primary shadow-glow"
-                  />
-                </div>
-              )}
-              <p className="text-center text-text-secondary text-sm mono">
-                {identity?.location || 'Remote'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Stats */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="card text-center p-6">
-              <div className="text-4xl font-bold text-primary mb-2">10+</div>
-              <p className="text-text-secondary">Years of Experience</p>
-            </div>
-            <div className="card text-center p-6">
-              <div className="text-4xl font-bold text-primary mb-2">50+</div>
-              <p className="text-text-secondary">Projects Completed</p>
-            </div>
-            <div className="card text-center p-6">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {competencies?.length || '20'}+
-              </div>
-              <p className="text-text-secondary">Technical Skills</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Value Proposition */}
-      <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-text text-center mb-12">Why Work With Me</h2>
-
-          <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
-            {[
-              {
-                title: 'Expert Architecture',
-                description: 'Design scalable, maintainable systems that grow with your business.',
-              },
-              {
-                title: 'Full-Stack Expertise',
-                description: 'End-to-end solutions from database design to frontend optimization.',
-              },
-              {
-                title: 'Problem Solver',
-                description: 'Transform complex challenges into elegant, practical solutions.',
-              },
-            ].map((item, index) => (
-              <div key={index} className="card p-6">
-                <h3 className="font-bold text-lg text-text mb-2">{item.title}</h3>
-                <p className="text-text-secondary">{item.description}</p>
-              </div>
-            ))}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/projects"
+              onClick={() => handleCTA('view-portfolio')}
+              className="btn px-8 py-3 font-semibold"
+            >
+              Ver Proyectos
+            </Link>
+            <Link
+              to="/contact"
+              onClick={() => handleCTA('contact-cta')}
+              className="btn-secondary px-8 py-3 font-semibold"
+            >
+              Contactar
+            </Link>
           </div>
         </div>
       </section>
 
       {/* Featured Projects */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-text">Featured Projects</h2>
-            <Link
-              to="/projects"
-              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
-            >
-              View All →
-            </Link>
-          </div>
+      {home && home.featured_projects.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex justify-between items-center mb-12">
+              <h2 className="text-3xl font-bold text-text">Proyectos Destacados</h2>
+              <Link
+                to="/projects"
+                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+              >
+                Ver todos →
+              </Link>
+            </div>
 
-          {projectsLoading && <LoadingSpinner />}
-          {projectsError && <ErrorMessage message="Failed to load projects" />}
-
-          {featuredProjects && (
             <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
-              {featuredProjects.map(project => (
-                <ProjectCard key={project.id} project={project} featured />
+              {home.featured_projects.map(project => (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.id}`}
+                  className="card p-6 block hover:shadow-lg"
+                  onClick={() => trackClick(`home-project-${project.id}`)}
+                >
+                  {project.category && <span className="badge mb-3">{project.category}</span>}
+                  <h3 className="font-bold text-lg text-text mb-2">{project.title}</h3>
+                  {project.card_summary && (
+                    <p className="text-text-secondary text-sm line-clamp-3 mb-3">{project.card_summary}</p>
+                  )}
+                  {project.tech_stack.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {project.tech_stack.slice(0, 3).map(tech => (
+                        <span key={tech} className="badge mono badge-secondary">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </Link>
               ))}
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Publications */}
+      {home && home.featured_publications.length > 0 && (
+        <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="flex justify-between items-center mb-12">
+              <h2 className="text-3xl font-bold text-text">Del Blog</h2>
+              <Link
+                to="/blog"
+                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+              >
+                Ver todo →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {home.featured_publications.map(post => (
+                <Link
+                  key={post.id}
+                  to={`/blog/${post.slug ?? post.id}`}
+                  className="card p-6 block hover:shadow-lg"
+                  onClick={() => trackClick(`home-post-${post.id}`)}
+                >
+                  <h3 className="font-bold text-lg text-text mb-2 line-clamp-2">{post.title}</h3>
+                  {post.excerpt && <p className="text-text-secondary text-sm line-clamp-2">{post.excerpt}</p>}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-text mb-4">Ready to work together?</h2>
+          <h2 className="text-3xl font-bold text-text mb-4">¿Trabajamos juntos?</h2>
           <p className="text-text-secondary mb-8">
-            Let's discuss how I can help transform your next project into reality.
+            Hablemos de cómo puedo ayudarte a llevar tu siguiente proyecto a la realidad.
           </p>
           <Link
             to="/contact"
             onClick={() => handleCTA('footer-cta')}
             className="btn inline-flex px-8 py-3 font-semibold"
           >
-            Start a Conversation
+            Iniciar una conversación
           </Link>
         </div>
       </section>

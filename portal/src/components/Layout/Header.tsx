@@ -11,10 +11,10 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Projects', href: '/projects' },
+  { label: 'Sobre Mí', href: '/about' },
+  { label: 'Proyectos', href: '/projects' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Contacto', href: '/contact' },
 ]
 
 export const Header = () => {
@@ -29,8 +29,11 @@ export const Header = () => {
   const location = useLocation()
   const { trackClick } = useTrackClick()
 
-  const handleNavClick = (label: string) => {
-    trackClick(`nav-${label.toLowerCase()}`)
+  // Tracking id derived from the route, not the display label - the label
+  // is now in Spanish (with spaces/accents), but analytics event names
+  // should stay stable ASCII slugs.
+  const handleNavClick = (href: string) => {
+    trackClick(`nav-${href === '/' ? 'home' : href.slice(1)}`)
     setMobileMenuOpen(false)
   }
 
@@ -44,7 +47,10 @@ export const Header = () => {
           <Link
             to="/"
             className="flex items-center h-full flex-shrink-0"
-            onClick={() => handleNavClick('logo')}
+            onClick={() => {
+              trackClick('nav-logo')
+              setMobileMenuOpen(false)
+            }}
           >
             <img src={logoSrc} alt="cjhirashi" className="h-[80%] w-auto" />
           </Link>
@@ -55,7 +61,7 @@ export const Header = () => {
               <Link
                 key={link.href}
                 to={link.href}
-                onClick={() => handleNavClick(link.label)}
+                onClick={() => handleNavClick(link.href)}
                 className={clsx(
                   'px-3 py-2 rounded-md text-sm font-medium transition-colors',
                   isActive(link.href)
@@ -107,7 +113,7 @@ export const Header = () => {
               <Link
                 key={link.href}
                 to={link.href}
-                onClick={() => handleNavClick(link.label)}
+                onClick={() => handleNavClick(link.href)}
                 className={clsx(
                   'block px-3 py-2 mt-1 rounded-md text-base font-medium transition-colors',
                   isActive(link.href)

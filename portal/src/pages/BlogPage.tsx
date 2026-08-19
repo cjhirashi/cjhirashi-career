@@ -22,19 +22,17 @@ export const BlogPage = () => {
   }
 
   if (isLoading) return <LoadingSpinner />
-  if (error) return <ErrorMessage message="Failed to load blog posts" />
+  if (error) return <ErrorMessage message="No se pudieron cargar los artículos del blog" />
 
-  // Extract unique tags
   const allTags = Array.from(new Set(posts?.flatMap(p => p.tags) || []))
 
-  // Filter posts
   let filteredPosts = posts || []
 
   if (searchTerm) {
     filteredPosts = filteredPosts.filter(
       p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+        (p.excerpt ?? '').toLowerCase().includes(searchTerm.toLowerCase())
     )
   }
 
@@ -49,7 +47,7 @@ export const BlogPage = () => {
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-text mb-4">Blog</h1>
           <p className="text-lg text-text-secondary">
-            Technical articles, insights, and learnings from my professional journey.
+            Artículos técnicos, ideas y aprendizajes de mi trayectoria profesional.
           </p>
         </div>
 
@@ -71,7 +69,7 @@ export const BlogPage = () => {
             </svg>
             <input
               type="text"
-              placeholder="Search articles..."
+              placeholder="Buscar artículos..."
               value={searchTerm}
               onChange={e => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
@@ -83,7 +81,7 @@ export const BlogPage = () => {
         {allTags.length > 0 && (
           <div className="mb-12">
             <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
-              Filter by Tag
+              Filtrar por etiqueta
             </h2>
             <div className="flex flex-wrap gap-2">
               {allTags.map(tag => (
@@ -112,7 +110,7 @@ export const BlogPage = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-text-secondary text-lg">No articles found.</p>
+            <p className="text-text-secondary text-lg">No se encontraron artículos.</p>
           </div>
         )}
       </div>

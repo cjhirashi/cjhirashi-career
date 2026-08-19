@@ -2,48 +2,64 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
 import { trackingApi } from '@/api/tracking'
+import { contactApi } from '@/api/contact'
 import { ContactPage } from '@/pages/ContactPage'
-import { mockContactMessage } from '../fixtures/mockData'
+import { mockContact, mockContactMessage } from '../fixtures/mockData'
 
 vi.mock('@/api/tracking')
+vi.mock('@/api/contact')
+
+const renderReady = async () => {
+  vi.mocked(contactApi.getContact).mockResolvedValue(mockContact)
+  render(<ContactPage />)
+  await waitFor(() => {
+    expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument()
+  })
+}
+
+const fillAndSubmit = async (user: ReturnType<typeof userEvent.setup>) => {
+  const nameInput = screen.getByLabelText(/Nombre/i)
+  const emailInput = screen.getByLabelText(/Email/i)
+  const messageInput = screen.getByLabelText(/Mensaje/i)
+  const submitButton = screen.getByRole('button', { name: /Enviar mensaje/i })
+
+  await user.type(nameInput, mockContactMessage.name)
+  await user.type(emailInput, mockContactMessage.email)
+  await user.type(messageInput, mockContactMessage.message)
+  await user.click(submitButton)
+}
 
 describe('ContactPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders Get in Touch heading', () => {
-    render(<ContactPage />)
+  it('renders the page heading', async () => {
+    await renderReady()
 
-    expect(screen.getByText('Get in Touch')).toBeInTheDocument()
+    expect(screen.getByText('Hablemos')).toBeInTheDocument()
   })
 
-  it('renders contact page description', () => {
-    render(<ContactPage />)
+  it('renders the contact form with all fields', async () => {
+    await renderReady()
 
-    expect(screen.getByText(/Have a question or want to work together/i)).toBeInTheDocument()
-  })
-
-  it('renders contact form with all fields', () => {
-    render(<ContactPage />)
-
-    expect(screen.getByLabelText(/Name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Subject/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Message/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Asunto/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Mensaje/i)).toBeInTheDocument()
   })
 
-  it('renders submit button', () => {
-    render(<ContactPage />)
+  it('renders the submit button', async () => {
+    await renderReady()
 
-    expect(screen.getByRole('button', { name: /Send Message/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Enviar mensaje/i })).toBeInTheDocument()
   })
 
   it('updates form fields on input change', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
+    await renderReady()
 
-    const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement
+    const nameInput = screen.getByLabelText(/Nombre/i) as HTMLInputElement
     const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement
 
     await user.type(nameInput, 'John Doe')
@@ -53,254 +69,133 @@ describe('ContactPage', () => {
     expect(emailInput.value).toBe('john@example.com')
   })
 
-  it('displays success message after form submission', async () => {
+  it('displays a success message after form submission', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
+    await renderReady()
+    await fillAndSubmit(user)
 
     await waitFor(() => {
-      expect(screen.getByText(/Message Sent/i)).toBeInTheDocument()
-      expect(screen.getByText(/Thank you for reaching out/i)).toBeInTheDocument()
+      expect(screen.getByText(/¡Mensaje enviado!/i)).toBeInTheDocument()
     })
   })
 
-  it('resets form fields after submission', async () => {
+  it('tracks the form submission', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement
-    const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement
-    const messageInput = screen.getByLabelText(/Message/i) as HTMLTextAreaElement
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Message Sent/i)).toBeInTheDocument()
-    })
-
-    expect(nameInput.value).toBe('')
-    expect(emailInput.value).toBe('')
-    expect(messageInput.value).toBe('')
-  })
-
-  it('tracks form submission', async () => {
-    const user = userEvent.setup()
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
+    await renderReady()
+    await fillAndSubmit(user)
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'form_submit',
-        target: 'contact-form',
-      })
+      expect.objectContaining({ type: 'form_submit', target: 'contact-form' })
     )
   })
 
-  it('tracks submit button click', async () => {
+  it('tracks the submit button click', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
+    await renderReady()
+    await fillAndSubmit(user)
 
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
+    expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: 'contact-submit' }))
+  })
 
-    await user.type(nameInput, 'Test')
-    await user.type(emailInput, 'test@example.com')
-    await user.type(messageInput, 'Test message')
-    await user.click(submitButton)
+  it('displays the contact email from real data', async () => {
+    await renderReady()
 
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'contact-submit',
-      })
+    const emailLink = screen.getByRole('link', { name: mockContact.contact_email! })
+    expect(emailLink).toHaveAttribute('href', `mailto:${mockContact.contact_email}`)
+  })
+
+  it('renders social links from real data', async () => {
+    await renderReady()
+
+    expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', mockContact.github_url!)
+    expect(screen.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', mockContact.linkedin_url!)
+    expect(screen.getByRole('link', { name: mockContact.footer_links[0].label })).toHaveAttribute(
+      'href',
+      mockContact.footer_links[0].url
     )
   })
 
-  it('renders contact info section', () => {
-    render(<ContactPage />)
+  it('displays availability status', async () => {
+    await renderReady()
 
-    expect(screen.getByText(/Email/)).toBeInTheDocument()
-    expect(screen.getByText(/Follow/)).toBeInTheDocument()
+    expect(screen.getByText(mockContact.availability_status!)).toBeInTheDocument()
   })
 
-  it('displays email address', () => {
-    render(<ContactPage />)
+  it('has required attributes on name, email, and message fields', async () => {
+    await renderReady()
 
-    const emailLink = screen.getByRole('link', { name: 'cjhirashi@gmail.com' })
-    expect(emailLink).toHaveAttribute('href', 'mailto:cjhirashi@gmail.com')
-  })
-
-  it('renders social media links', () => {
-    render(<ContactPage />)
-
-    expect(screen.getByRole('link', { name: /GitHub/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /LinkedIn/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Twitter/i })).toBeInTheDocument()
-  })
-
-  it('displays response time information', () => {
-    render(<ContactPage />)
-
-    expect(screen.getByText(/Response Time/i)).toBeInTheDocument()
-    expect(screen.getByText(/Usually within 24 hours/i)).toBeInTheDocument()
-  })
-
-  it('has required attributes on name field', () => {
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i) as HTMLInputElement
-    expect(nameInput).toHaveAttribute('required')
-  })
-
-  it('has required attributes on email field', () => {
-    render(<ContactPage />)
-
-    const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement
+    expect(screen.getByLabelText(/Nombre/i)).toHaveAttribute('required')
+    const emailInput = screen.getByLabelText(/Email/i)
     expect(emailInput).toHaveAttribute('required')
     expect(emailInput).toHaveAttribute('type', 'email')
+    expect(screen.getByLabelText(/Mensaje/i)).toHaveAttribute('required')
   })
 
-  it('has required attributes on message field', () => {
-    render(<ContactPage />)
+  it('does not require the subject field', async () => {
+    await renderReady()
 
-    const messageInput = screen.getByLabelText(/Message/i) as HTMLTextAreaElement
-    expect(messageInput).toHaveAttribute('required')
+    expect(screen.getByLabelText(/Asunto/i)).not.toHaveAttribute('required')
   })
 
-  it('has subject field not required', () => {
-    render(<ContactPage />)
-
-    const subjectInput = screen.getByLabelText(/Subject/i) as HTMLInputElement
-    expect(subjectInput).not.toHaveAttribute('required')
-  })
-
-  it('hides form and shows success after submission', async () => {
+  it('hides the form and shows success after submission', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
+    await renderReady()
 
-    const form = screen.getByLabelText(/Name/i).closest('form')
-
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
+    const form = screen.getByLabelText(/Nombre/i).closest('form')
+    await fillAndSubmit(user)
 
     await waitFor(() => {
-      expect(screen.getByText(/Message Sent/i)).toBeInTheDocument()
+      expect(screen.getByText(/¡Mensaje enviado!/i)).toBeInTheDocument()
     })
-
     expect(form).not.toBeInTheDocument()
   })
 
-  it('shows success message with checkmark icon', async () => {
+  it('shows a green success box', async () => {
     const user = userEvent.setup()
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
+    await renderReady()
+    await fillAndSubmit(user)
 
     await waitFor(() => {
-      const successBox = screen.getByText(/Message Sent/i).closest('div')
+      const successBox = screen.getByText(/¡Mensaje enviado!/i).closest('div')
       expect(successBox).toHaveClass('bg-green-50')
     })
   })
 
-  it('reverts to form after success message timeout', async () => {
+  it('reverts to the form after the success message times out', async () => {
     const user = userEvent.setup()
-    vi.useFakeTimers()
-
-    render(<ContactPage />)
-
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    await renderReady()
+    await fillAndSubmit(user)
 
     await waitFor(() => {
-      expect(screen.getByText(/Message Sent/i)).toBeInTheDocument()
+      expect(screen.getByText(/¡Mensaje enviado!/i)).toBeInTheDocument()
     })
 
     vi.advanceTimersByTime(5000)
 
     await waitFor(() => {
-      expect(screen.queryByText(/Message Sent/i)).not.toBeInTheDocument()
-      expect(screen.getByLabelText(/Name/i)).toBeInTheDocument()
+      expect(screen.queryByText(/¡Mensaje enviado!/i)).not.toBeInTheDocument()
+      expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument()
     })
 
     vi.useRealTimers()
   })
 
-  it('disables submit button while loading', async () => {
-    const user = userEvent.setup()
+  it('shows a loading spinner while contact info loads', () => {
+    vi.mocked(contactApi.getContact).mockImplementation(() => new Promise(() => {}))
+
     render(<ContactPage />)
 
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i }) as HTMLButtonElement
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
-
-    expect(submitButton).toHaveAttribute('disabled')
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
-  it('shows Sending text while loading', async () => {
-    const user = userEvent.setup()
+  it('shows an error message when contact info fails to load', async () => {
+    vi.mocked(contactApi.getContact).mockRejectedValue(new Error('Failed'))
+
     render(<ContactPage />)
 
-    const nameInput = screen.getByLabelText(/Name/i)
-    const emailInput = screen.getByLabelText(/Email/i)
-    const messageInput = screen.getByLabelText(/Message/i)
-    const submitButton = screen.getByRole('button', { name: /Send Message/i })
-
-    await user.type(nameInput, mockContactMessage.name)
-    await user.type(emailInput, mockContactMessage.email)
-    await user.type(messageInput, mockContactMessage.message)
-    await user.click(submitButton)
-
-    expect(screen.getByText(/Sending/i)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/No se pudo cargar la información de contacto/i)).toBeInTheDocument()
+    })
   })
 })

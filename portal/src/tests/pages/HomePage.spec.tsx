@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
-import { identityApi } from '@/api/identity'
-import { projectsApi } from '@/api/projects'
+import { homeApi } from '@/api/home'
 import { trackingApi } from '@/api/tracking'
 import { HomePage } from '@/pages/HomePage'
-import { mockIdentity, mockCompetencies, mockFeaturedProjects } from '../fixtures/mockData'
+import { mockHome } from '../fixtures/mockData'
 
-vi.mock('@/api/identity')
-vi.mock('@/api/projects')
+vi.mock('@/api/home')
 vi.mock('@/api/tracking')
 
 describe('HomePage - Entry Point', () => {
@@ -16,254 +14,152 @@ describe('HomePage - Entry Point', () => {
     vi.clearAllMocks()
   })
 
-  it('renders hero section with identity data', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders hero copy from home content', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText(mockIdentity.name)).toBeInTheDocument()
+      expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
     })
-    expect(screen.getByText(mockIdentity.title)).toBeInTheDocument()
-    expect(screen.getByText(mockIdentity.tagline)).toBeInTheDocument()
-  })
-
-  it('renders avatar image when available', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      const avatar = screen.getByAltText(mockIdentity.name) as HTMLImageElement
-      expect(avatar).toBeInTheDocument()
-      expect(avatar.src).toContain(mockIdentity.avatar)
-    })
-  })
-
-  it('renders quick stats section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/10\+/)).toBeInTheDocument()
-      expect(screen.getByText(/50\+/)).toBeInTheDocument()
-      expect(screen.getByText(/Years of Experience/i)).toBeInTheDocument()
-      expect(screen.getByText(/Projects Completed/i)).toBeInTheDocument()
-      expect(screen.getByText(/Technical Skills/i)).toBeInTheDocument()
-    })
-  })
-
-  it('displays competencies count in stats', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(`${mockCompetencies.length}+`)).toBeInTheDocument()
-    })
-  })
-
-  it('renders "Why Work With Me" section with differentiators', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Expert Architecture/)).toBeInTheDocument()
-      expect(screen.getByText(/Full-Stack Expertise/)).toBeInTheDocument()
-      expect(screen.getByText(/Problem Solver/)).toBeInTheDocument()
-    })
+    expect(screen.getByText(mockHome.hero_subtitle!)).toBeInTheDocument()
+    expect(screen.getByText(mockHome.hero_intro!)).toBeInTheDocument()
   })
 
   it('renders featured projects section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Featured Projects/)).toBeInTheDocument()
+      expect(screen.getByText(/Proyectos Destacados/)).toBeInTheDocument()
       expect(screen.getByText('E-Commerce Platform')).toBeInTheDocument()
       expect(screen.getByText('SaaS Dashboard')).toBeInTheDocument()
     })
   })
 
-  it('displays featured badge on featured projects', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('links featured projects to their detail page', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      const badges = screen.getAllByText(/Featured/)
-      expect(badges.length).toBeGreaterThan(0)
+      const projectLink = screen.getByText('E-Commerce Platform').closest('a')
+      expect(projectLink).toHaveAttribute('href', '/projects/1')
+    })
+  })
+
+  it('renders featured publications section', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+
+    render(<HomePage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Del Blog/)).toBeInTheDocument()
+      expect(screen.getByText('Understanding System Design')).toBeInTheDocument()
     })
   })
 
   it('renders CTA buttons for navigation', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: /View Portfolio/i })).toHaveAttribute('href', '/projects')
-      expect(screen.getByRole('link', { name: /Get in Touch/i })).toHaveAttribute('href', '/contact')
+      expect(screen.getByRole('link', { name: /Ver Proyectos/i })).toHaveAttribute('href', '/projects')
+      expect(screen.getByRole('link', { name: /Contactar/i })).toHaveAttribute('href', '/contact')
     })
   })
 
   it('renders final CTA section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Ready to work together/i)).toBeInTheDocument()
-      expect(screen.getByText(/Start a Conversation/i)).toBeInTheDocument()
+      expect(screen.getByText(/Trabajamos juntos/i)).toBeInTheDocument()
+      expect(screen.getByText(/Iniciar una conversación/i)).toBeInTheDocument()
     })
   })
 
-  it('tracks clicks on portfolio CTA button', async () => {
+  it('tracks clicks on the portfolio CTA button', async () => {
     const user = userEvent.setup()
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Featured Projects/)).toBeInTheDocument()
+      expect(screen.getByText(/Proyectos Destacados/)).toBeInTheDocument()
     })
 
-    const portfolioButton = screen.getByRole('link', { name: /View Portfolio/i })
+    const portfolioButton = screen.getByRole('link', { name: /Ver Proyectos/i })
     await user.click(portfolioButton)
 
-    // Tracking should have been called (mocked)
     expect(trackingApi.trackEvent).toHaveBeenCalled()
   })
 
   it('shows loading spinner initially', () => {
-    vi.mocked(identityApi.getIdentity).mockImplementation(
-      () => new Promise(() => {})
-    )
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockImplementation(() => new Promise(() => {}))
 
     render(<HomePage />)
 
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
-  it('shows error message when identity fails to load', async () => {
-    vi.mocked(identityApi.getIdentity).mockRejectedValue(new Error('Failed'))
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('shows error message when home content fails to load', async () => {
+    vi.mocked(homeApi.getHome).mockRejectedValue(new Error('Failed'))
 
     render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load profile/i)).toBeInTheDocument()
+      expect(screen.getByText(/No se pudo cargar el contenido de la Home/i)).toBeInTheDocument()
     })
   })
 
-  it('shows error message when projects fail to load', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockRejectedValue(new Error('Failed'))
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Featured Projects/)).toBeInTheDocument()
-      expect(screen.getByText(/Failed to load projects/i)).toBeInTheDocument()
-    })
-  })
-
-  it('uses default data when identity is missing', async () => {
-    const incompleteIdentity = {
-      ...mockIdentity,
-      avatar: undefined,
-      name: undefined,
-    }
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(incompleteIdentity as any)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('falls back to the default title when hero_title is missing', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_title: null })
 
     render(<HomePage />)
 
     await waitFor(() => {
       expect(screen.getByText('Carlos Jiménez Hirashi')).toBeInTheDocument()
-      expect(screen.getByText('Solutions Architect')).toBeInTheDocument()
     })
   })
 
-  it('renders all featured projects in featured mode', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('omits the featured sections when there is no featured content', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({
+      ...mockHome,
+      featured_projects: [],
+      featured_publications: [],
+    })
 
     render(<HomePage />)
 
     await waitFor(() => {
-      mockFeaturedProjects.forEach(project => {
-        expect(screen.getByText(project.title)).toBeInTheDocument()
-      })
+      expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
     })
-  })
-
-  it('renders view all projects link', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      const viewAllLinks = screen.getAllByRole('link', { name: /View All/i })
-      expect(viewAllLinks.length).toBeGreaterThan(0)
-    })
+    expect(screen.queryByText(/Proyectos Destacados/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Del Blog/)).not.toBeInTheDocument()
   })
 
   it('renders hero section in gradient background', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     const { container } = render(<HomePage />)
 
-    const heroSection = container.querySelector('.bg-gradient-to-br')
-    expect(heroSection).toBeInTheDocument()
+    await waitFor(() => {
+      expect(container.querySelector('.bg-gradient-to-br')).toBeInTheDocument()
+    })
   })
 
-  it('navigates to contact page on CTA click', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(projectsApi.getFeaturedProjects).mockResolvedValue(mockFeaturedProjects)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders "Ver todos" / "Ver todo" links pointing at their list pages', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
 
     render(<HomePage />)
 
     await waitFor(() => {
-      const contactLinks = screen.getAllByRole('link', { name: /Get in Touch|Start a Conversation/i })
-      expect(contactLinks.length).toBeGreaterThan(0)
-      contactLinks.forEach(link => {
-        expect(link).toHaveAttribute('href', '/contact')
-      })
+      expect(screen.getByRole('link', { name: 'Ver todos →' })).toHaveAttribute('href', '/projects')
+      expect(screen.getByRole('link', { name: 'Ver todo →' })).toHaveAttribute('href', '/blog')
     })
   })
 })

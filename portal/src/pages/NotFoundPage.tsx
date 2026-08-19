@@ -16,19 +16,18 @@ export const NotFoundPage = () => {
           <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-primary [text-shadow:0_0_30px_var(--primary-glow)]">
             404
           </h1>
-          <p className="text-2xl font-bold text-text">Page Not Found</p>
+          <p className="text-2xl font-bold text-text">Página no encontrada</p>
         </div>
 
         {/* Message */}
         <p className="text-lg text-text-secondary max-w-md mx-auto mb-8">
-          Oops! It looks like the page you're looking for doesn't exist. Let me help you get back
-          on track.
+          Ups, la página que buscas no existe. Te ayudo a volver al camino.
         </p>
 
         {/* CTA */}
         <div className="space-y-4">
           <Link to="/" onClick={handleBackHome} className="btn inline-flex px-8 py-3 font-semibold">
-            Back to Home
+            Volver a Home
           </Link>
 
           <div className="flex flex-wrap justify-center gap-4">
@@ -36,21 +35,21 @@ export const NotFoundPage = () => {
               to="/about"
               className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
             >
-              About
+              Sobre Mí
             </Link>
             <span className="text-border">•</span>
             <Link
               to="/projects"
               className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
             >
-              Projects
+              Proyectos
             </Link>
             <span className="text-border">•</span>
             <Link
               to="/contact"
               className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
             >
-              Contact
+              Contacto
             </Link>
           </div>
         </div>

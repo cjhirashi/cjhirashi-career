@@ -23,25 +23,24 @@ describe('BlogCard Component', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    expect(screen.getByText(post.excerpt)).toBeInTheDocument()
+    expect(screen.getByText(post.excerpt!)).toBeInTheDocument()
   })
 
-  it('renders published date formatted correctly', () => {
+  it('renders the published date formatted', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    const dateText = screen.getByText('Aug 10, 2024')
-    expect(dateText).toBeInTheDocument()
+    expect(screen.getByText('10 Aug 2024')).toBeInTheDocument()
   })
 
-  it('renders read time when available', () => {
+  it('renders reading time when available', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    expect(screen.getByText(`${post.readTime} min read`)).toBeInTheDocument()
+    expect(screen.getByText(`${post.reading_minutes} min de lectura`)).toBeInTheDocument()
   })
 
-  it('renders all tags up to 3', () => {
+  it('renders up to 3 tags', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
@@ -50,117 +49,89 @@ describe('BlogCard Component', () => {
     })
   })
 
-  it('renders blog post image when available', () => {
+  it('links to the post detail page by slug', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    const image = screen.getByAltText(post.title) as HTMLImageElement
-    expect(image).toBeInTheDocument()
-    expect(image.src).toContain(post.image)
+    const link = screen.getByText(post.title).closest('a')
+    expect(link).toHaveAttribute('href', `/blog/${post.slug}`)
   })
 
-  it('uses lazy loading for blog images', () => {
+  it('falls back to the post id when slug is missing', () => {
+    const post = { ...mockBlogPosts[0], slug: null }
+    render(<BlogCard post={post} />)
+
+    const link = screen.getByText(post.title).closest('a')
+    expect(link).toHaveAttribute('href', `/blog/${post.id}`)
+  })
+
+  it('renders a "Leer más" call to action', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    const image = screen.getByAltText(post.title) as HTMLImageElement
-    expect(image).toHaveAttribute('loading', 'lazy')
+    expect(screen.getByText(/Leer más/i)).toBeInTheDocument()
   })
 
-  it('renders Read More link with correct href', () => {
-    const post = mockBlogPosts[0]
-    render(<BlogCard post={post} />)
-
-    const readMoreLink = screen.getByRole('link', { name: /Read More/i })
-    expect(readMoreLink).toHaveAttribute('href', `/blog/${post.slug}`)
-  })
-
-  it('tracks click when card is clicked', async () => {
+  it('tracks a click on the card', async () => {
     const user = userEvent.setup()
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    const card = screen.getByText(post.title).closest('article')!
+    const card = screen.getByText(post.title).closest('a')!
     await user.click(card)
 
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: `blog-${post.slug}`,
-      })
-    )
+    expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: `blog-${post.slug}` }))
   })
 
-  it('applies hover shadow effect', () => {
+  it('applies a hover shadow effect', () => {
     const post = mockBlogPosts[0]
     const { container } = render(<BlogCard post={post} />)
 
-    const card = container.querySelector('.hover\\:shadow-lg')
-    expect(card).toBeInTheDocument()
+    expect(container.querySelector('.hover\\:shadow-lg')).toBeInTheDocument()
   })
 
-  it('renders card without image when image is not provided', () => {
-    const post = {
-      ...mockBlogPosts[0],
-      image: undefined,
-    }
+  it('applies line-clamp to the title', () => {
+    const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    expect(screen.queryByAltText(post.title)).not.toBeInTheDocument()
-    expect(screen.getByText(post.title)).toBeInTheDocument()
+    expect(screen.getByText(post.title)).toHaveClass('line-clamp-2')
   })
 
-  it('renders article element', () => {
+  it('applies line-clamp to the excerpt', () => {
     const post = mockBlogPosts[0]
-    const { container } = render(<BlogCard post={post} />)
+    render(<BlogCard post={post} />)
 
-    const article = container.querySelector('article')
-    expect(article).toBeInTheDocument()
+    expect(screen.getByText(post.excerpt!)).toHaveClass('line-clamp-3')
   })
 
-  it('applies line-clamp to title', () => {
-    const post = mockBlogPosts[0]
-    const { container } = render(<BlogCard post={post} />)
-
-    const title = screen.getByText(post.title)
-    expect(title).toHaveClass('line-clamp-2')
-  })
-
-  it('applies line-clamp to excerpt', () => {
-    const post = mockBlogPosts[0]
-    const { container } = render(<BlogCard post={post} />)
-
-    const excerpt = screen.getByText(post.excerpt)
-    expect(excerpt).toHaveClass('line-clamp-3')
-  })
-
-  it('uses time element for published date', () => {
+  it('uses a time element for the published date', () => {
     const post = mockBlogPosts[0]
     const { container } = render(<BlogCard post={post} />)
 
     const timeElement = container.querySelector('time')
     expect(timeElement).toBeInTheDocument()
-    expect(timeElement).toHaveAttribute('dateTime', post.publishedAt)
+    expect(timeElement).toHaveAttribute('dateTime', post.published_at!)
   })
 
-  it('handles post without tags gracefully', () => {
-    const post = {
-      ...mockBlogPosts[0],
-      tags: [],
-    }
+  it('handles a post with no tags gracefully', () => {
+    const post = { ...mockBlogPosts[0], tags: [] }
     render(<BlogCard post={post} />)
 
     expect(screen.getByText(post.title)).toBeInTheDocument()
-    expect(screen.queryByRole('generic', { name: /tags/i })).not.toBeInTheDocument()
   })
 
-  it('handles post without readTime gracefully', () => {
-    const post = {
-      ...mockBlogPosts[0],
-      readTime: undefined,
-    }
+  it('handles a post with no reading_minutes gracefully', () => {
+    const post = { ...mockBlogPosts[0], reading_minutes: null }
     render(<BlogCard post={post} />)
 
     expect(screen.getByText(post.title)).toBeInTheDocument()
-    expect(screen.queryByText(/min read/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/min de lectura/i)).not.toBeInTheDocument()
+  })
+
+  it('handles a post with no excerpt gracefully', () => {
+    const post = { ...mockBlogPosts[0], excerpt: null }
+    render(<BlogCard post={post} />)
+
+    expect(screen.getByText(post.title)).toBeInTheDocument()
   })
 })

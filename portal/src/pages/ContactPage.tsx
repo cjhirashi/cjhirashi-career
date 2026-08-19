@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { useContact } from '@/hooks/useContact'
 import { useTrackClick } from '@/hooks/useTracking'
 import { trackingApi } from '@/api/tracking'
+import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
+import { ErrorMessage } from '@/components/Common/ErrorMessage'
 
 export const ContactPage = () => {
+  const { data: contact, isLoading, error } = useContact()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,10 +19,7 @@ export const ContactPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,88 +27,110 @@ export const ContactPage = () => {
     setLoading(true)
 
     try {
-      // Track form submission
+      // No backend endpoint receives this yet (no SMTP/delivery pipeline) -
+      // only the click gets tracked. Wire a real /public/contact-message
+      // endpoint here when that's actually needed.
       trackingApi.trackEvent({
         type: 'form_submit',
         page: '/contact',
         target: 'contact-form',
-        metadata: {
-          name: formData.name,
-          email: formData.email,
-        },
+        metadata: { name: formData.name, email: formData.email },
       })
 
-      // Send message (if backend supports it)
-      // const response = await contactApi.sendMessage(formData)
-
-      // For now, just show success
       setSubmitted(true)
       setFormData({ name: '', email: '', subject: '', message: '' })
-
-      // Reset after 5 seconds
       setTimeout(() => setSubmitted(false), 5000)
-    } catch (error) {
-      console.error('Failed to send message:', error)
+    } catch (err) {
+      console.error('Failed to send message:', err)
     } finally {
       setLoading(false)
     }
   }
+
+  if (isLoading) return <LoadingSpinner />
+  if (error) return <ErrorMessage message="No se pudo cargar la información de contacto" />
 
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">Get in Touch</h1>
+          <h1 className="text-4xl font-bold text-text mb-4">Hablemos</h1>
           <p className="text-lg text-text-secondary">
-            Have a question or want to work together? I'd love to hear from you.
+            ¿Tienes una pregunta o quieres trabajar juntos? Me encantaría saber de ti.
           </p>
         </div>
 
         <div className="grid grid-cols-1 content:grid-cols-3 gap-8 mb-12">
           {/* Contact Info */}
           <div className="content:col-span-1 space-y-6">
-            {/* Email */}
-            <div className="card p-4">
-              <h3 className="font-bold text-text mb-2">Email</h3>
-              <a
-                href="mailto:cjhirashi@gmail.com"
-                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] break-all"
-              >
-                cjhirashi@gmail.com
-              </a>
-            </div>
-
-            {/* Social */}
-            <div className="card p-4">
-              <h3 className="font-bold text-text mb-2">Follow</h3>
-              <div className="space-y-2">
+            {contact?.contact_email && (
+              <div className="card p-4">
+                <h3 className="font-bold text-text mb-2">Email</h3>
                 <a
-                  href="#"
-                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                  href={`mailto:${contact.contact_email}`}
+                  className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] break-all"
                 >
-                  GitHub
-                </a>
-                <a
-                  href="#"
-                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
-                >
-                  LinkedIn
-                </a>
-                <a
-                  href="#"
-                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
-                >
-                  Twitter
+                  {contact.contact_email}
                 </a>
               </div>
-            </div>
+            )}
 
-            {/* Response Time */}
-            <div className="card bg-primary-light p-4">
-              <p className="text-xs uppercase font-bold text-primary mb-1">Response Time</p>
-              <p className="text-text">Usually within 24 hours</p>
-            </div>
+            {contact?.location && (
+              <div className="card p-4">
+                <h3 className="font-bold text-text mb-2">Ubicación</h3>
+                <p className="text-text-secondary">{contact.location}</p>
+              </div>
+            )}
+
+            {(contact?.linkedin_url || contact?.github_url || (contact?.footer_links.length ?? 0) > 0) && (
+              <div className="card p-4">
+                <h3 className="font-bold text-text mb-2">Sígueme</h3>
+                <div className="space-y-2">
+                  {contact?.linkedin_url && (
+                    <a
+                      href={contact.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackClick('social-linkedin')}
+                      className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                    >
+                      LinkedIn
+                    </a>
+                  )}
+                  {contact?.github_url && (
+                    <a
+                      href={contact.github_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackClick('social-github')}
+                      className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                    >
+                      GitHub
+                    </a>
+                  )}
+                  {contact?.footer_links.map(link => (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackClick(`social-${link.label.toLowerCase()}`)}
+                      className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {contact?.availability_status && (
+              <div className="card bg-primary-light p-4">
+                <p className="text-xs uppercase font-bold text-primary mb-1">Disponibilidad</p>
+                <p className="text-text">{contact.availability_status}</p>
+              </div>
+            )}
           </div>
 
           {/* Contact Form */}
@@ -115,19 +138,14 @@ export const ContactPage = () => {
             {submitted ? (
               <div className="bg-green-50 dark:bg-green-950/40 backdrop-blur-lg border border-green-200 dark:border-green-900 rounded-md p-8 text-center">
                 <div className="text-4xl mb-4">✓</div>
-                <h3 className="text-xl font-bold text-green-900 dark:text-green-200 mb-2">
-                  Message Sent!
-                </h3>
-                <p className="text-green-700 dark:text-green-300">
-                  Thank you for reaching out. I'll get back to you soon.
-                </p>
+                <h3 className="text-xl font-bold text-green-900 dark:text-green-200 mb-2">¡Mensaje enviado!</h3>
+                <p className="text-green-700 dark:text-green-300">Gracias por escribir. Te responderé pronto.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-                {/* Name */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-text mb-2">
-                    Name
+                    Nombre
                   </label>
                   <input
                     type="text"
@@ -137,11 +155,10 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-                    placeholder="Your name"
+                    placeholder="Tu nombre"
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
                     Email
@@ -154,14 +171,13 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-                    placeholder="your@email.com"
+                    placeholder="tu@email.com"
                   />
                 </div>
 
-                {/* Subject */}
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-text mb-2">
-                    Subject
+                    Asunto
                   </label>
                   <input
                     type="text"
@@ -170,14 +186,13 @@ export const ContactPage = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-                    placeholder="What's this about?"
+                    placeholder="¿De qué se trata?"
                   />
                 </div>
 
-                {/* Message */}
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
-                    Message
+                    Mensaje
                   </label>
                   <textarea
                     id="message"
@@ -187,18 +202,17 @@ export const ContactPage = () => {
                     required
                     rows={6}
                     className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-                    placeholder="Your message..."
+                    placeholder="Tu mensaje..."
                   />
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={loading}
                   onClick={() => trackClick('contact-submit')}
                   className="btn w-full font-semibold py-3"
                 >
-                  {loading ? 'Sending...' : 'Send Message'}
+                  {loading ? 'Enviando...' : 'Enviar mensaje'}
                 </button>
               </form>
             )}

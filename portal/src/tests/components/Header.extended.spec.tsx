@@ -30,10 +30,10 @@ describe('Header - Extended Tests', () => {
     render(<Header />, { initialRoute: '/' })
 
     expect(screen.getByRole('link', { name: /Home/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /About/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Projects/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Sobre Mí/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Proyectos/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Blog/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Contact/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Contacto/i })).toBeInTheDocument()
   })
 
   it('highlights active link with cyan background', () => {
@@ -46,7 +46,7 @@ describe('Header - Extended Tests', () => {
   it('inactive links have slate color', () => {
     render(<Header />, { initialRoute: '/' })
 
-    const aboutLink = screen.getByRole('link', { name: /About/i })
+    const aboutLink = screen.getByRole('link', { name: /Sobre Mí/i })
     expect(aboutLink).toHaveClass('text-slate-600')
   })
 
@@ -80,7 +80,7 @@ describe('Header - Extended Tests', () => {
     const menuButton = screen.getByLabelText(/Toggle menu/i)
     await user.click(menuButton)
 
-    const aboutLink = screen.getAllByRole('link', { name: /About/i })[1] // Mobile link
+    const aboutLink = screen.getAllByRole('link', { name: /Sobre Mí/i })[1] // Mobile link
     await user.click(aboutLink)
 
     // Menu should close after clicking a link
@@ -92,7 +92,7 @@ describe('Header - Extended Tests', () => {
     const user = userEvent.setup()
     render(<Header />, { initialRoute: '/' })
 
-    const aboutLink = screen.getByRole('link', { name: /About/i })
+    const aboutLink = screen.getByRole('link', { name: /Sobre Mí/i })
     await user.click(aboutLink)
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(
@@ -120,10 +120,10 @@ describe('Header - Extended Tests', () => {
     render(<Header />, { initialRoute: '/' })
 
     expect(screen.getByRole('link', { name: /Home/i })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: /About/i })).toHaveAttribute('href', '/about')
-    expect(screen.getByRole('link', { name: /Projects/i })).toHaveAttribute('href', '/projects')
+    expect(screen.getByRole('link', { name: /Sobre Mí/i })).toHaveAttribute('href', '/about')
+    expect(screen.getByRole('link', { name: /Proyectos/i })).toHaveAttribute('href', '/projects')
     expect(screen.getByRole('link', { name: /Blog/i })).toHaveAttribute('href', '/blog')
-    expect(screen.getByRole('link', { name: /Contact/i })).toHaveAttribute('href', '/contact')
+    expect(screen.getByRole('link', { name: /Contacto/i })).toHaveAttribute('href', '/contact')
   })
 
   it('shows hamburger icon when menu is closed', () => {

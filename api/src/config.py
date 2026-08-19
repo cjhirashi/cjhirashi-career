@@ -83,6 +83,10 @@ class Settings(BaseSettings):
     LINKEDIN_REDIRECT_URI: str = ""
     LINKEDIN_FRONTEND_URL: str = ""
 
+    # Public Portal - this is a single-owner portfolio, so the unauthenticated
+    # /public/* routes (routes/public.py) always serve this one user's data.
+    PUBLIC_PORTAL_USER_ID: int = 2
+
     class Config:
         env_file = ".env"
         case_sensitive = True

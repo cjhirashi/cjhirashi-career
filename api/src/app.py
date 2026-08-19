@@ -17,6 +17,7 @@ from routes import auth_enhanced
 from routes import career_identity, career_search, career_digital, career_support, career_metrics
 from routes import files
 from routes import linkedin
+from routes import public
 from services import storage_service, linkedin_scheduler
 
 # Configurar logging
@@ -145,6 +146,7 @@ app.include_router(career_support.router)
 app.include_router(career_metrics.router)
 app.include_router(files.router)
 app.include_router(linkedin.router)
+app.include_router(public.router)
 
 
 # Log de startup

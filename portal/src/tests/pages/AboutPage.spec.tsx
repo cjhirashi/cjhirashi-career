@@ -1,218 +1,162 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
-import { identityApi } from '@/api/identity'
+import { aboutApi } from '@/api/about'
 import { AboutPage } from '@/pages/AboutPage'
-import { mockIdentity, mockCompetencies } from '../fixtures/mockData'
+import { mockAbout } from '../fixtures/mockData'
 
-vi.mock('@/api/identity')
+vi.mock('@/api/about')
 
 describe('AboutPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders About Me heading', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders the page heading', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('About Me')).toBeInTheDocument()
+      expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
     })
   })
 
-  it('renders bio from identity', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders the professional tagline', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(mockIdentity.bio)).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.professional_tagline!)).toBeInTheDocument()
     })
   })
 
-  it('renders avatar image', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders bio_summary and unique_value_proposition', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      const avatar = screen.getByAltText(mockIdentity.name) as HTMLImageElement
-      expect(avatar).toBeInTheDocument()
-      expect(avatar.src).toContain(mockIdentity.avatar)
+      expect(screen.getByText(mockAbout.bio_summary!)).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.unique_value_proposition!)).toBeInTheDocument()
     })
   })
 
-  it('renders name and title in info box', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders the photo when available', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(mockIdentity.name)).toBeInTheDocument()
-      expect(screen.getByText(mockIdentity.title)).toBeInTheDocument()
+      const photo = screen.getByAltText('Carlos Jiménez Hirashi') as HTMLImageElement
+      expect(photo.src).toContain(mockAbout.photo_url)
     })
   })
 
-  it('renders location in info box', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders all four IKIGAI dimensions with translated labels', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(mockIdentity.location)).toBeInTheDocument()
+      expect(screen.getByText('Mi IKIGAI')).toBeInTheDocument()
+      expect(screen.getByText('Pasión')).toBeInTheDocument()
+      expect(screen.getByText('Profesión')).toBeInTheDocument()
+      expect(screen.getByText('Vocación')).toBeInTheDocument()
+      expect(screen.getByText('Misión')).toBeInTheDocument()
     })
   })
 
-  it('renders IKIGAI section with all four pillars', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders values as a list', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('My IKIGAI')).toBeInTheDocument()
-      if (mockIdentity.ikigai) {
-        expect(screen.getByText(mockIdentity.ikigai.passion)).toBeInTheDocument()
-        expect(screen.getByText(mockIdentity.ikigai.profession)).toBeInTheDocument()
-        expect(screen.getByText(mockIdentity.ikigai.vocation)).toBeInTheDocument()
-        expect(screen.getByText(mockIdentity.ikigai.mission)).toBeInTheDocument()
-      }
-    })
-  })
-
-  it('renders IKIGAI labels correctly formatted', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/passion/i)).toBeInTheDocument()
-      expect(screen.getByText(/profession/i)).toBeInTheDocument()
-      expect(screen.getByText(/vocation/i)).toBeInTheDocument()
-      expect(screen.getByText(/mission/i)).toBeInTheDocument()
-    })
-  })
-
-  it('renders Core Values section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Core Values')).toBeInTheDocument()
-      expect(screen.getByText(/Excellence in technical delivery/)).toBeInTheDocument()
-      expect(screen.getByText(/Continuous learning and growth/)).toBeInTheDocument()
-      expect(screen.getByText(/Collaboration and communication/)).toBeInTheDocument()
-      expect(screen.getByText(/Ethical and sustainable solutions/)).toBeInTheDocument()
-    })
-  })
-
-  it('renders checkmark icons for core values', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    const { container } = render(<AboutPage />)
-
-    await waitFor(() => {
-      const svgs = container.querySelectorAll('svg')
-      // Should have checkmark SVGs for values
-      expect(svgs.length).toBeGreaterThan(0)
-    })
-  })
-
-  it('renders Technical Skills section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Technical Skills')).toBeInTheDocument()
-    })
-  })
-
-  it('displays all competencies as skill tags', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      mockCompetencies.forEach(skill => {
-        expect(screen.getByText(skill)).toBeInTheDocument()
+      mockAbout.values.forEach(value => {
+        expect(screen.getByText(value)).toBeInTheDocument()
       })
     })
   })
 
-  it('renders Experience section', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders interests/hobbies as badges', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Experience')).toBeInTheDocument()
+      mockAbout.interests_hobbies.forEach(item => {
+        expect(screen.getByText(item)).toBeInTheDocument()
+      })
     })
   })
 
-  it('displays experience timeline items', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders the Technical Skills section with all competencies', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/2020-Present/)).toBeInTheDocument()
-      expect(screen.getByText(/Senior Solutions Architect/)).toBeInTheDocument()
-      expect(screen.getByText(/Tech Company/)).toBeInTheDocument()
+      expect(screen.getByText('Habilidades Técnicas')).toBeInTheDocument()
+      mockAbout.competencies.forEach(skill => {
+        expect(screen.getByText(skill.name)).toBeInTheDocument()
+      })
+    })
+  })
+
+  it('renders certifications', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    render(<AboutPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Certificaciones')).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.certifications[0].name)).toBeInTheDocument()
+    })
+  })
+
+  it('renders the experience timeline from work_history', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    render(<AboutPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Experiencia')).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.work_history[0].role_title)).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.work_history[0].company)).toBeInTheDocument()
     })
   })
 
   it('shows loading spinner initially', () => {
-    vi.mocked(identityApi.getIdentity).mockImplementation(
-      () => new Promise(() => {})
-    )
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+    vi.mocked(aboutApi.getAbout).mockImplementation(() => new Promise(() => {}))
 
     render(<AboutPage />)
 
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
-  it('shows error message when identity fails to load', async () => {
-    vi.mocked(identityApi.getIdentity).mockRejectedValue(new Error('Failed'))
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('shows error message when the about content fails to load', async () => {
+    vi.mocked(aboutApi.getAbout).mockRejectedValue(new Error('Failed'))
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load profile/i)).toBeInTheDocument()
+      expect(screen.getByText(/No se pudo cargar el contenido de Sobre Mí/i)).toBeInTheDocument()
     })
   })
 
-  it('renders avatar in sticky position', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders the photo in a sticky container', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     const { container } = render(<AboutPage />)
 
     await waitFor(() => {
-      const stickyDiv = container.querySelector('.sticky')
-      expect(stickyDiv).toBeInTheDocument()
+      expect(container.querySelector('.sticky')).toBeInTheDocument()
     })
   })
 
-  it('displays timeline dots for experience', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('renders timeline dots for experience', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     const { container } = render(<AboutPage />)
 
@@ -222,28 +166,21 @@ describe('AboutPage', () => {
     })
   })
 
-  it('displays year labels for experience items', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
+  it('gracefully omits sections whose data is empty', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue({
+      ...mockAbout,
+      values: [],
+      interests_hobbies: [],
+      certifications: [],
+      work_history: [],
+    })
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('2020-Present')).toBeInTheDocument()
-      expect(screen.getByText('2018-2020')).toBeInTheDocument()
-      expect(screen.getByText('2015-2018')).toBeInTheDocument()
+      expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
     })
-  })
-
-  it('renders grid layout for about content', async () => {
-    vi.mocked(identityApi.getIdentity).mockResolvedValue(mockIdentity)
-    vi.mocked(identityApi.getCompetencies).mockResolvedValue(mockCompetencies)
-
-    const { container } = render(<AboutPage />)
-
-    await waitFor(() => {
-      const grids = container.querySelectorAll('.grid')
-      expect(grids.length).toBeGreaterThan(0)
-    })
+    expect(screen.queryByText('Certificaciones')).not.toBeInTheDocument()
+    expect(screen.queryByText('Experiencia')).not.toBeInTheDocument()
   })
 })

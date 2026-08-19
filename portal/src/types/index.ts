@@ -1,73 +1,135 @@
-// Identity Types
-export interface Identity {
-  id: string
-  name: string
+// ============================================================================
+// Mirrors api/src/schemas/public.py - the unauthenticated /public/* API this
+// portal reads from (single portfolio owner, see PUBLIC_PORTAL_USER_ID).
+// ============================================================================
+
+// Home
+export interface PublicProjectCard {
+  id: number
   title: string
-  bio: string
-  avatar: string
-  location: string
-  email: string
-  phone?: string
-  website?: string
-  tagline: string
-  ikigai?: {
-    passion: string
-    profession: string
-    vocation: string
-    mission: string
-  }
-  createdAt: string
-  updatedAt: string
+  category: string | null
+  card_summary: string | null
+  tech_stack: string[]
+  github_url: string | null
+  demo_url: string | null
 }
 
-// Competencies Types
-export interface Competency {
-  id: string
-  name: string
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  category: string
-  years?: number
-  description?: string
-  verified?: boolean
-}
-
-// Project/Evidence Types
-export interface Project {
-  id: string
+export interface PublicPublicationCard {
+  id: number
   title: string
-  description: string
-  shortDescription?: string
-  thumbnail?: string
-  images?: string[]
-  technologies: string[]
-  link?: string
-  github?: string
-  status: 'completed' | 'in-progress' | 'archived'
-  startDate: string
-  endDate?: string
-  featured?: boolean
-  metrics?: Record<string, string | number>
-  createdAt: string
-  updatedAt: string
-}
-
-// Blog/Networking Types
-export interface BlogPost {
-  id: string
-  title: string
-  slug: string
-  excerpt: string
-  content: string
+  slug: string | null
+  excerpt: string | null
+  platform: string | null
+  published_at: string | null
+  reading_minutes: number | null
   tags: string[]
-  published: boolean
-  publishedAt?: string
-  image?: string
-  readTime?: number
-  createdAt: string
-  updatedAt: string
 }
 
-// Contact Types
+export interface HomeContent {
+  hero_title: string | null
+  hero_subtitle: string | null
+  hero_intro: string | null
+  featured_projects: PublicProjectCard[]
+  featured_publications: PublicPublicationCard[]
+}
+
+// About
+export interface IkigaiReflection {
+  dimension: string
+  content: string | null
+}
+
+export interface WorkHistoryEntry {
+  company: string
+  role_title: string
+  start_date: string | null
+  end_date: string | null
+  description: string | null
+  achievements: string | null
+}
+
+export interface Competency {
+  name: string
+  type: string
+  category: string | null
+  level: string | null
+  is_highlighted: boolean | null
+}
+
+export interface CertificationEntry {
+  name: string
+  institution: string | null
+  year: number | null
+}
+
+export interface AboutContent {
+  professional_tagline: string | null
+  bio_summary: string | null
+  unique_value_proposition: string | null
+  photo_url: string | null
+  values: string[]
+  interests_hobbies: string[]
+  personal_quote: string | null
+  ikigai: IkigaiReflection[]
+  work_history: WorkHistoryEntry[]
+  competencies: Competency[]
+  certifications: CertificationEntry[]
+}
+
+// Contact
+export interface FooterLink {
+  label: string
+  url: string
+}
+
+export interface ContactContent {
+  contact_email: string | null
+  location: string | null
+  availability_status: string | null
+  preferred_contact_method: string | null
+  footer_links: FooterLink[]
+  linkedin_url: string | null
+  github_url: string | null
+}
+
+// Projects
+export interface Project {
+  id: number
+  title: string
+  category: string | null
+  industry: string | null
+  year: number | null
+  card_summary: string | null
+  detailed_summary: string | null
+  problem: string | null
+  solution: string | null
+  architecture: string | null
+  tech_stack: string[]
+  metrics: unknown
+  approach_steps: string | null
+  results: unknown
+  github_url: string | null
+  demo_url: string | null
+  status: string | null
+  is_featured: boolean
+}
+
+// Blog
+export interface BlogPost {
+  id: number
+  title: string
+  slug: string | null
+  excerpt: string | null
+  body_content: string | null
+  content_type: string | null
+  tags: string[]
+  platform: string | null
+  publication_url: string | null
+  published_at: string | null
+  reading_minutes: number | null
+}
+
+// Contact form (client-side only - no backend endpoint to receive it yet)
 export interface ContactMessage {
   id?: string
   name: string

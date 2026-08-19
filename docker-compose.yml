@@ -146,6 +146,8 @@ services:
       LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
       LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI}
       LINKEDIN_FRONTEND_URL: ${LINKEDIN_FRONTEND_URL}
+      # Public portal (unauthenticated /public/* routes)
+      PUBLIC_PORTAL_USER_ID: ${PUBLIC_PORTAL_USER_ID}
     depends_on:
       postgres:
         condition: service_healthy

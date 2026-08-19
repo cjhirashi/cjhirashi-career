@@ -12,8 +12,8 @@ describe('Header Component', () => {
     )
 
     expect(screen.getByText('Home')).toBeInTheDocument()
-    expect(screen.getByText('About')).toBeInTheDocument()
-    expect(screen.getByText('Projects')).toBeInTheDocument()
+    expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
+    expect(screen.getByText('Proyectos')).toBeInTheDocument()
   })
 
   it('renders logo', () => {
