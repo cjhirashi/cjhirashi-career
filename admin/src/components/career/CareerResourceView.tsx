@@ -1,5 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
+import {
+  ArrowLeft,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Maximize,
+  Pencil,
+  Plus,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
@@ -18,6 +30,17 @@ import { formatDate, formatDateTime } from '@/utils/formatters'
 export interface ParentFilter {
   field: string
   value: number
+}
+
+/** Just the svg-pan-zoom instance methods MermaidDiagram actually uses -
+ * the package's own ambient `export =` types don't cleanly describe its
+ * callable default export, so this stands in for it instead of fighting
+ * that. */
+interface SvgPanZoomInstance {
+  zoomIn(): void
+  zoomOut(): void
+  reset(): void
+  destroy(): void
 }
 
 /**
@@ -61,6 +84,8 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const idRef = useRef(`mermaid-${Math.random().toString(36).slice(2)}`)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const panZoomRef = useRef<SvgPanZoomInstance | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -90,6 +115,38 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
     }
   }, [code, resolvedTheme])
 
+  // Wires up pan/drag + zoom on the rendered SVG once it's actually in the
+  // DOM - needed for diagrams too big to read at their natural size instead
+  // of just growing the page. Dynamically imported for the same reason as
+  // mermaid itself: only pages with a diagram pay for it.
+  useEffect(() => {
+    if (!svg || !containerRef.current) return
+    const svgEl = containerRef.current.querySelector('svg')
+    if (!svgEl) return
+
+    let cancelled = false
+    let instance: SvgPanZoomInstance | null = null
+    import('svg-pan-zoom').then(({ default: svgPanZoom }) => {
+      if (cancelled) return
+      instance = svgPanZoom(svgEl, {
+        zoomEnabled: true,
+        panEnabled: true,
+        controlIconsEnabled: false,
+        fit: true,
+        center: true,
+        minZoom: 0.2,
+        maxZoom: 10,
+      }) as unknown as SvgPanZoomInstance
+      panZoomRef.current = instance
+    })
+
+    return () => {
+      cancelled = true
+      instance?.destroy()
+      panZoomRef.current = null
+    }
+  }, [svg])
+
   if (error) {
     return (
       <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-3">
@@ -102,7 +159,40 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
     return <p className="text-xs text-text-muted mb-3">Renderizando diagrama...</p>
   }
 
-  return <div className="mermaid-diagram mb-3" dangerouslySetInnerHTML={{ __html: svg }} />
+  return (
+    <div className="relative group/mermaid mb-3">
+      <div ref={containerRef} className="mermaid-diagram" dangerouslySetInnerHTML={{ __html: svg }} />
+      <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover/mermaid:opacity-100 focus-within:opacity-100 transition-opacity">
+        <button
+          type="button"
+          onClick={() => panZoomRef.current?.zoomIn()}
+          aria-label="Acercar"
+          title="Acercar"
+          className="p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass"
+        >
+          <ZoomIn size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => panZoomRef.current?.zoomOut()}
+          aria-label="Alejar"
+          title="Alejar"
+          className="p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass"
+        >
+          <ZoomOut size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => panZoomRef.current?.reset()}
+          aria-label="Restablecer vista"
+          title="Restablecer vista"
+          className="p-1.5 rounded-lg text-text-secondary hover:text-text bg-glass"
+        >
+          <Maximize size={14} />
+        </button>
+      </div>
+    </div>
+  )
 }
 
 /** Wraps a fenced code block's `<pre>` with a language label (from the

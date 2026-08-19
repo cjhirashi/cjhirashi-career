@@ -33,6 +33,7 @@
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
+    "svg-pan-zoom": "^3.6.2",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
