@@ -114,7 +114,7 @@ const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[] }> = ({ i
       {metaEntries.length > 0 && (
         <div className="pt-4 border-t border-border">
           <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Metadatos</h3>
-          <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {metaEntries.map((entry) => (
               <div key={entry.label}>
                 <dt className="text-xs text-text-secondary mb-1">{entry.label}</dt>
