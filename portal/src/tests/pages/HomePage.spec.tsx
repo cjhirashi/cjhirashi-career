@@ -125,15 +125,16 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('falls back to the default title when hero_title is missing', async () => {
+  it('renders no H1 at all when hero_title is empty - no silent fallback to other content', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_title: null })
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
-    render(<HomePage />)
+    const { container } = render(<HomePage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Carlos Jiménez Hirashi')).toBeInTheDocument()
+      expect(screen.getByText(mockHome.hero_subtitle!)).toBeInTheDocument()
     })
+    expect(container.querySelector('h1')).not.toBeInTheDocument()
   })
 
   it('omits the anchor case study and featured sections when there is none', async () => {

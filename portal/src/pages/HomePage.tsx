@@ -48,9 +48,11 @@ export const HomePage = () => {
             </span>
           )}
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-6">
-            {home?.hero_title || 'Carlos Jiménez Hirashi'}
-          </h1>
+          {home?.hero_title && (
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-6">
+              {home.hero_title}
+            </h1>
+          )}
 
           {home?.hero_intro && (
             <p className="text-lg text-text-secondary max-w-xl mb-8 whitespace-pre-wrap">{home.hero_intro}</p>

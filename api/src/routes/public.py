@@ -56,37 +56,6 @@ def _parse_lines(text: Optional[str]) -> List[str]:
     return lines
 
 
-def _short_title_fallback(tagline: Optional[str], max_len: int = 80) -> Optional[str]:
-    """Identity.professional_tagline is written as full CV copy (multiple
-    "|"-joined clauses, can run to 100+ chars) - portal_home.hero_title is
-    meant to be a short headline. Used only until the admin fills in
-    portal_home directly; keeps as many whole "|" clauses as fit under
-    max_len instead of showing the entire tagline or hard-truncating
-    mid-word."""
-    if not tagline:
-        return None
-    clauses = [c.strip() for c in tagline.split("|")]
-    result = clauses[0]
-    for clause in clauses[1:]:
-        candidate = f"{result} | {clause}"
-        if len(candidate) > max_len:
-            break
-        result = candidate
-    return result
-
-
-def _short_intro_fallback(bio: Optional[str], max_len: int = 320) -> Optional[str]:
-    """Same idea for hero_intro: identity.bio_summary is several paragraphs
-    of CV copy - just the first paragraph, hard-capped, until portal_home
-    has its own short intro."""
-    if not bio:
-        return None
-    first_paragraph = bio.strip().split("\n\n")[0].strip()
-    if len(first_paragraph) <= max_len:
-        return first_paragraph
-    return first_paragraph[:max_len].rsplit(" ", 1)[0] + "…"
-
-
 def _project_card(p: Project) -> PublicProjectCard:
     return PublicProjectCard(
         id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
@@ -121,10 +90,10 @@ def _blog_post(pub: Publication) -> PublicBlogPost:
 
 @router.get("/home", response_model=PublicHomeResponse)
 async def get_home(db: AsyncSession = Depends(get_db)):
+    # No fallback to Identity here on purpose: what's in the Portal · Home
+    # admin form is exactly what the Home page shows, nothing borrowed
+    # silently from another table - empty field means empty on the site.
     home = (await db.execute(select(PortalHome).where(PortalHome.user_id == USER_ID))).scalar_one_or_none()
-    # Falls back to Identity's tagline/bio when portal_home hasn't been
-    # filled in yet, so Home isn't blank before that table has content.
-    identity = (await db.execute(select(Identity).where(Identity.user_id == USER_ID))).scalar_one_or_none()
 
     anchor = (
         await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_anchor.is_(True)))
@@ -145,11 +114,9 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     ).scalars().all()
 
     return PublicHomeResponse(
-        hero_title=(home.hero_title if home else None)
-        or _short_title_fallback(identity.professional_tagline if identity else None),
+        hero_title=home.hero_title if home else None,
         hero_subtitle=home.hero_subtitle if home else None,
-        hero_intro=(home.hero_intro if home else None)
-        or _short_intro_fallback(identity.bio_summary if identity else None),
+        hero_intro=home.hero_intro if home else None,
         stats=(home.stats if home and home.stats else []),
         anchor_project=_project_detail(anchor) if anchor else None,
         featured_projects=[_project_card(p) for p in projects],
