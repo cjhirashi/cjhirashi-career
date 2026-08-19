@@ -77,7 +77,29 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
           </pre>
         )
       }
-      return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
+      // Long free-text fields (bio, narratives, etc.) often carry line
+      // breaks between paragraphs. A plain `whitespace-pre-wrap` preserves
+      // them but with only normal line-height between lines, so paragraphs
+      // read as one dense block - render each line as its own paragraph
+      // with a real gap instead, so they're visually distinguishable.
+      {
+        const lines = String(value)
+          .split('\n')
+          .map((line) => line.trim())
+          .filter((line) => line !== '')
+        if (lines.length <= 1) {
+          return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
+        }
+        return (
+          <div className="space-y-3">
+            {lines.map((line, idx) => (
+              <p key={idx} className="whitespace-pre-wrap break-words">
+                {line}
+              </p>
+            ))}
+          </div>
+        )
+      }
   }
 }
 
