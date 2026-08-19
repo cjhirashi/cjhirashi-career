@@ -1,15 +1,18 @@
 """
 File upload routes - MinIO-backed bucket with public download links.
 
-Every write (upload/delete) requires JWT auth and is scoped to the
-authenticated user, same row-level-isolation pattern as
-`routes/career_common.py`. Reads of an already-uploaded object's public URL
-need no auth by design - that's the whole point of "generar links públicos".
+Every write (upload/delete/visibility change) requires JWT auth and is
+scoped to the authenticated user, same row-level-isolation pattern as
+`routes/career_common.py`. Reading a *public* file needs no auth by design -
+that's the whole point of "generar links públicos" - but reading a *private*
+one always goes through this API (get_presigned_url), never a bare bucket
+URL: the bucket policy only grants anonymous access under `public/`.
 """
 import io
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,6 +46,7 @@ async def upload_file(
     file: UploadFile = File(...),
     description: str = Form(None),
     category: str = Form(None),
+    is_public: bool = Form(True),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -60,6 +64,7 @@ async def upload_file(
         size=len(contents),
         content_type=content_type,
         category=category,
+        is_public=is_public,
     )
     # The bucket key's folder is the slugified category (e.g. "Certificaciones"
     # -> "certificaciones/") - store that same slug as the row's category so
@@ -76,8 +81,8 @@ async def upload_file(
         file_size=len(contents),
         description=description,
         category=category_slug,
-        is_public=True,
-        download_url=storage_service.get_public_url(stored_filename),
+        is_public=is_public,
+        download_url=storage_service.get_public_url(stored_filename) if is_public else None,
     )
     db.add(row)
     await db.flush()
@@ -127,6 +132,58 @@ async def list_categories(
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+class VisibilityUpdate(BaseModel):
+    is_public: bool
+
+
+class PresignedUrlResponse(BaseModel):
+    url: str
+
+
+@router.patch("/{file_id}/visibility", response_model=FileUploadResponse)
+async def update_visibility(
+    file_id: int,
+    payload: VisibilityUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(FileUpload).where(FileUpload.id == file_id, FileUpload.user_id == current_user.id)
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo no encontrado")
+
+    if row.is_public != payload.is_public:
+        new_key = storage_service.set_visibility(row.stored_filename, row.category, payload.is_public)
+        row.stored_filename = new_key
+        row.file_path = new_key
+        row.is_public = payload.is_public
+        row.download_url = storage_service.get_public_url(new_key) if payload.is_public else None
+        await db.flush()
+        await db.refresh(row)
+        await db.commit()
+    return row
+
+
+@router.get("/{file_id}/download", response_model=PresignedUrlResponse)
+async def get_download_url(
+    file_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Short-lived signed URL for *any* owned file, public or private - the
+    only way to read a private one (its bare bucket URL is never valid), and
+    a convenient escape hatch for a public one too (e.g. previewing before
+    the row's own permanent `download_url` is trusted)."""
+    stmt = select(FileUpload).where(FileUpload.id == file_id, FileUpload.user_id == current_user.id)
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo no encontrado")
+
+    return PresignedUrlResponse(url=storage_service.get_presigned_url(row.stored_filename))
 
 
 @router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)

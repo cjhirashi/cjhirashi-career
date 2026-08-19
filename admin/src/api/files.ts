@@ -6,6 +6,9 @@ export interface UploadFileOptions {
   /** Free-typed folder name - the backend slugifies it into both the row's
    * `category` and the actual S3 key prefix (real folder in the bucket). */
   category?: string
+  /** Defaults to true server-side. Public files get a permanent download_url;
+   * private ones have none - see filesApi.getDownloadUrl. */
+  isPublic?: boolean
 }
 
 /**
@@ -30,11 +33,27 @@ export const filesApi = {
     formData.append('file', file)
     if (options.description) formData.append('description', options.description)
     if (options.category) formData.append('category', options.category)
+    if (options.isPublic !== undefined) formData.append('is_public', String(options.isPublic))
 
     const response = await axiosInstance.post<FileUploadEntity>('/files', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     return response.data
+  },
+
+  setVisibility: async (id: number, isPublic: boolean): Promise<FileUploadEntity> => {
+    const response = await axiosInstance.patch<FileUploadEntity>(`/files/${id}/visibility`, {
+      is_public: isPublic,
+    })
+    return response.data
+  },
+
+  /** Short-lived signed URL - the only way to read a private file, and also
+   * usable for a public one (e.g. to preview without trusting the stored
+   * download_url yet). */
+  getDownloadUrl: async (id: number): Promise<string> => {
+    const response = await axiosInstance.get<{ url: string }>(`/files/${id}/download`)
+    return response.data.url
   },
 
   remove: async (id: number): Promise<void> => {

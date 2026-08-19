@@ -1,6 +1,18 @@
 import React, { useRef, useState } from 'react'
-import { Copy, Check, FileArchive, FileText, File as FileIcon, Folder, Trash2, Upload } from 'lucide-react'
+import {
+  Copy,
+  Check,
+  FileArchive,
+  FileText,
+  File as FileIcon,
+  Folder,
+  Globe,
+  Lock,
+  Trash2,
+  Upload,
+} from 'lucide-react'
 import { useFilesList, useFileCategories, useFileMutations } from '@/hooks/useFiles'
+import { filesApi } from '@/api/files'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
@@ -13,10 +25,16 @@ const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type 
   return <FileIcon size={28} className="text-text-secondary" aria-hidden="true" />
 }
 
-const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ file, onDelete }) => {
+const FileCard: React.FC<{
+  file: FileUploadEntity
+  onDelete: () => void
+  onToggleVisibility: () => void
+  isTogglingVisibility: boolean
+}> = ({ file, onDelete, onToggleVisibility, isTogglingVisibility }) => {
   const [copied, setCopied] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const isPreviewableImage = file.file_type === 'image' && !!file.download_url
+  const [previewError, setPreviewError] = useState<string | null>(null)
+  const isPreviewableImage = file.file_type === 'image' && file.is_public && !!file.download_url
 
   const handleCopyLink = () => {
     if (!file.download_url) return
@@ -24,6 +42,16 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     })
+  }
+
+  const handleViewPrivate = async () => {
+    setPreviewError(null)
+    try {
+      const url = await filesApi.getDownloadUrl(file.id)
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      setPreviewError(getErrorMessage(err))
+    }
   }
 
   return (
@@ -47,6 +75,8 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
       >
         {isPreviewableImage ? (
           <img src={file.download_url!} alt={file.original_filename} className="w-full h-full object-cover" />
+        ) : !file.is_public ? (
+          <Lock size={28} className="text-text-secondary" aria-hidden="true" />
         ) : (
           <FileTypeIcon type={file.file_type} />
         )}
@@ -72,17 +102,38 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
         <p className="text-xs text-text-secondary">
           {formatFileSize(file.file_size)} · {formatDateTime(file.created_at)}
         </p>
+        {previewError && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{previewError}</p>}
       </div>
 
       <div className="flex items-center gap-2 mt-auto">
+        {file.is_public ? (
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="btn-secondary btn-small flex-1 flex items-center justify-center gap-1"
+            disabled={!file.download_url}
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+            {copied ? 'Copiado' : 'Copiar link'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleViewPrivate}
+            className="btn-secondary btn-small flex-1 flex items-center justify-center gap-1"
+          >
+            <Lock size={14} /> Ver
+          </button>
+        )}
         <button
           type="button"
-          onClick={handleCopyLink}
-          className="btn-secondary btn-small flex-1 flex items-center justify-center gap-1"
-          disabled={!file.download_url}
+          onClick={onToggleVisibility}
+          disabled={isTogglingVisibility}
+          aria-label={file.is_public ? 'Hacer privado' : 'Hacer público'}
+          title={file.is_public ? 'Hacer privado' : 'Hacer público'}
+          className="btn-icon flex-shrink-0"
         >
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-          {copied ? 'Copiado' : 'Copiar link'}
+          {file.is_public ? <Globe size={16} /> : <Lock size={16} />}
         </button>
         <button
           type="button"
@@ -101,11 +152,12 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
 export const FilesPage: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [uploadCategory, setUploadCategory] = useState('')
+  const [uploadIsPublic, setUploadIsPublic] = useState(true)
   const { data, isLoading, isError, error, refetch } = useFilesList(
     categoryFilter ? { category: categoryFilter } : {}
   )
   const { data: categories } = useFileCategories()
-  const { uploadMutation, deleteMutation } = useFileMutations()
+  const { uploadMutation, deleteMutation, visibilityMutation } = useFileMutations()
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -115,7 +167,7 @@ export const FilesPage: React.FC = () => {
     if (!file) return
     setUploadError(null)
     uploadMutation.mutate(
-      { file, options: { category: uploadCategory.trim() || undefined } },
+      { file, options: { category: uploadCategory.trim() || undefined, isPublic: uploadIsPublic } },
       { onError: (err) => setUploadError(getErrorMessage(err)) }
     )
   }
@@ -163,6 +215,16 @@ export const FilesPage: React.FC = () => {
             ))}
           </datalist>
 
+          <label className="flex items-center gap-1.5 text-sm text-text-secondary select-none">
+            <input
+              type="checkbox"
+              checked={uploadIsPublic}
+              onChange={(e) => setUploadIsPublic(e.target.checked)}
+              className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+            />
+            Público
+          </label>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -203,7 +265,15 @@ export const FilesPage: React.FC = () => {
         {!isLoading && !isError && (data?.length ?? 0) > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {data!.map((file) => (
-              <FileCard key={file.id} file={file} onDelete={() => handleDelete(file)} />
+              <FileCard
+                key={file.id}
+                file={file}
+                onDelete={() => handleDelete(file)}
+                onToggleVisibility={() =>
+                  visibilityMutation.mutate({ id: file.id, isPublic: !file.is_public })
+                }
+                isTogglingVisibility={visibilityMutation.isPending && visibilityMutation.variables?.id === file.id}
+              />
             ))}
           </div>
         )}

@@ -32,5 +32,10 @@ export function useFileMutations() {
     onSuccess: invalidate,
   })
 
-  return { uploadMutation, deleteMutation }
+  const visibilityMutation = useMutation({
+    mutationFn: ({ id, isPublic }: { id: number; isPublic: boolean }) => filesApi.setVisibility(id, isPublic),
+    onSuccess: invalidate,
+  })
+
+  return { uploadMutation, deleteMutation, visibilityMutation }
 }

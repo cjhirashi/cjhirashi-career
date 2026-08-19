@@ -64,7 +64,21 @@ describe('FilesPage', () => {
     fireEvent.change(input, { target: { files: [file] } })
 
     await waitFor(() =>
-      expect(mockedFilesApi.upload).toHaveBeenCalledWith(file, { category: undefined })
+      expect(mockedFilesApi.upload).toHaveBeenCalledWith(file, { category: undefined, isPublic: true })
+    )
+  })
+
+  it('uploads as private when the "Público" checkbox is unchecked', async () => {
+    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 2, original_filename: 'nuevo.png' })
+    render(<FilesPage />)
+    await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /público/i }))
+    const file = new File(['contenido'], 'nuevo.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText(/seleccionar archivo/i), { target: { files: [file] } })
+
+    await waitFor(() =>
+      expect(mockedFilesApi.upload).toHaveBeenCalledWith(file, { category: undefined, isPublic: false })
     )
   })
 
@@ -79,7 +93,9 @@ describe('FilesPage', () => {
     const file = new File(['contenido'], 'nuevo.png', { type: 'image/png' })
     fireEvent.change(screen.getByLabelText(/seleccionar archivo/i), { target: { files: [file] } })
 
-    await waitFor(() => expect(mockedFilesApi.upload).toHaveBeenCalledWith(file, { category: 'blog' }))
+    await waitFor(() =>
+      expect(mockedFilesApi.upload).toHaveBeenCalledWith(file, { category: 'blog', isPublic: true })
+    )
   })
 
   it('filters the list by folder', async () => {
@@ -101,6 +117,39 @@ describe('FilesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /ver diagrama.png en grande/i }))
 
     expect(screen.getByRole('dialog', { name: 'diagrama.png' })).toBeInTheDocument()
+  })
+
+  it('toggles a public file to private', async () => {
+    mockedFilesApi.setVisibility.mockResolvedValue({ ...sampleFile, is_public: false, download_url: null })
+    render(<FilesPage />)
+    await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /hacer privado/i }))
+
+    await waitFor(() => expect(mockedFilesApi.setVisibility).toHaveBeenCalledWith(1, false))
+  })
+
+  it('opens a signed download URL for a private file instead of copying a link', async () => {
+    const privateFile = { ...sampleFile, is_public: false, download_url: null }
+    mockedFilesApi.list.mockResolvedValue([privateFile])
+    mockedFilesApi.getDownloadUrl.mockResolvedValue('https://files.cjhirashi.com/...signed...')
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+
+    render(<FilesPage />)
+    await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
+
+    expect(screen.queryByRole('button', { name: /copiar link/i })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /^ver$/i }))
+
+    await waitFor(() => expect(mockedFilesApi.getDownloadUrl).toHaveBeenCalledWith(1))
+    await waitFor(() =>
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://files.cjhirashi.com/...signed...',
+        '_blank',
+        'noopener,noreferrer'
+      )
+    )
+    openSpy.mockRestore()
   })
 
   it('asks for confirmation and deletes a file', async () => {
