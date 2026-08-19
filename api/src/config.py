@@ -76,6 +76,13 @@ class Settings(BaseSettings):
     BEDROCK_REGION: str = "us-east-1"
     BEDROCK_MODEL_ID: str = "claude-3-sonnet-20240229"
 
+    # LinkedIn OAuth (Share on LinkedIn + Sign In with LinkedIn using OpenID
+    # Connect - both self-serve products, no LinkedIn app review required)
+    LINKEDIN_CLIENT_ID: str = ""
+    LINKEDIN_CLIENT_SECRET: str = ""
+    LINKEDIN_REDIRECT_URI: str = ""
+    LINKEDIN_FRONTEND_URL: str = ""
+
     class Config:
         env_file = ".env"
         case_sensitive = True

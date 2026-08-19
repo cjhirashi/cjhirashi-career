@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen } from 'lucide-react'
+import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen, Linkedin } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -18,6 +18,7 @@ const menuItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Métricas', path: '/metrics', icon: BarChart3 },
   { label: 'Archivos', path: '/files', icon: FolderOpen },
+  { label: 'LinkedIn', path: '/linkedin', icon: Linkedin },
 ]
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {

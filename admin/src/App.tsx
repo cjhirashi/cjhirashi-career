@@ -13,6 +13,7 @@ import { MetricsPage } from '@/pages/MetricsPage'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
 import { FilesPage } from '@/pages/FilesPage'
+import { LinkedInPage } from '@/pages/LinkedInPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +61,17 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <FilesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/linkedin"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <LinkedInPage />
                 </Layout>
               </PrivateRoute>
             }

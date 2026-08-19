@@ -39,6 +39,7 @@ describe('Sidebar', () => {
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText('Métricas')).toBeInTheDocument()
       expect(screen.getByText('Archivos')).toBeInTheDocument()
+      expect(screen.getByText('LinkedIn')).toBeInTheDocument()
     })
 
     it('should not render legacy (pre-career-domain) menu items anymore', () => {

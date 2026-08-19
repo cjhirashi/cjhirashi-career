@@ -48,6 +48,13 @@ from models.publication import Publication
 from models.tag import Tag
 
 # ----------------------------------------------------------------------------
+# LinkedIn Integration
+# ----------------------------------------------------------------------------
+
+from models.linkedin_connection import LinkedInConnection
+from models.linkedin_post import LinkedInPost
+
+# ----------------------------------------------------------------------------
 # Base System (v1) - unchanged
 # ----------------------------------------------------------------------------
 
@@ -100,6 +107,9 @@ __all__ = [
     "Publication",
     # Support domain
     "Tag",
+    # LinkedIn integration
+    "LinkedInConnection",
+    "LinkedInPost",
     # Security
     "RefreshToken",
     # Files
