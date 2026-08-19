@@ -28,6 +28,7 @@ AUTHORIZE_URL = "https://www.linkedin.com/oauth/v2/authorization"
 TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 USERINFO_URL = "https://api.linkedin.com/v2/userinfo"
 POSTS_URL = "https://api.linkedin.com/rest/posts"
+IMAGES_URL = "https://api.linkedin.com/rest/images"
 
 # LinkedIn's versioned REST APIs require this header (YYYYMM). LinkedIn
 # supports versions up to ~12 months old, so this only needs bumping
@@ -111,8 +112,50 @@ async def fetch_userinfo(access_token: str) -> dict:
     return response.json()
 
 
-async def create_post(access_token: str, member_sub: str, text: str) -> Optional[str]:
-    """Publishes a text post as the connected member. Returns the post's URN if LinkedIn returns one."""
+def _linkedin_headers(access_token: str) -> dict:
+    return {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+        "X-Restli-Protocol-Version": "2.0.0",
+        "LinkedIn-Version": LINKEDIN_API_VERSION,
+    }
+
+
+async def upload_image(access_token: str, member_sub: str, image_bytes: bytes) -> str:
+    """Uploads an image to LinkedIn's own storage (required before it can be
+    referenced in a post - LinkedIn does not accept external image URLs).
+    Returns the image's URN (urn:li:image:...)."""
+    async with httpx.AsyncClient() as client:
+        init_response = await client.post(
+            f"{IMAGES_URL}?action=initializeUpload",
+            json={"initializeUploadRequest": {"owner": f"urn:li:person:{member_sub}"}},
+            headers=_linkedin_headers(access_token),
+        )
+        if init_response.status_code != 200:
+            logger.error(f"LinkedIn image init failed: {init_response.status_code} {init_response.text}")
+            raise LinkedInError(f"LinkedIn rejected the image upload ({init_response.status_code})")
+
+        value = init_response.json()["value"]
+        upload_url = value["uploadUrl"]
+        image_urn = value["image"]
+
+        upload_response = await client.put(
+            upload_url,
+            content=image_bytes,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        if upload_response.status_code not in (200, 201):
+            logger.error(f"LinkedIn image binary upload failed: {upload_response.status_code}")
+            raise LinkedInError(f"LinkedIn rejected the image bytes ({upload_response.status_code})")
+
+    return image_urn
+
+
+async def create_post(
+    access_token: str, member_sub: str, text: str, image_urn: Optional[str] = None
+) -> Optional[str]:
+    """Publishes a post (text, optionally with one image) as the connected
+    member. Returns the post's URN if LinkedIn returns one."""
     payload = {
         "author": f"urn:li:person:{member_sub}",
         "commentary": text,
@@ -125,14 +168,11 @@ async def create_post(access_token: str, member_sub: str, text: str) -> Optional
         "lifecycleState": "PUBLISHED",
         "isReshareDisabledByAuthor": False,
     }
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json",
-        "X-Restli-Protocol-Version": "2.0.0",
-        "LinkedIn-Version": LINKEDIN_API_VERSION,
-    }
+    if image_urn:
+        payload["content"] = {"media": {"id": image_urn}}
+
     async with httpx.AsyncClient() as client:
-        response = await client.post(POSTS_URL, json=payload, headers=headers)
+        response = await client.post(POSTS_URL, json=payload, headers=_linkedin_headers(access_token))
 
     if response.status_code != 201:
         logger.error(f"LinkedIn post creation failed: {response.status_code} {response.text}")

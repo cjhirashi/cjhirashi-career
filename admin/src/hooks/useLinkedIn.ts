@@ -27,10 +27,17 @@ export function useLinkedInMutations() {
     onSuccess: invalidateStatus,
   })
 
+  const invalidatePosts = () => queryClient.invalidateQueries({ queryKey: linkedinPostsKey })
+
   const createPostMutation = useMutation({
-    mutationFn: (text: string) => linkedinApi.createPost(text),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: linkedinPostsKey }),
+    mutationFn: (params: { text: string; image?: File; scheduledAt?: string }) => linkedinApi.createPost(params),
+    onSuccess: invalidatePosts,
   })
 
-  return { disconnectMutation, createPostMutation }
+  const cancelPostMutation = useMutation({
+    mutationFn: (id: number) => linkedinApi.cancelPost(id),
+    onSuccess: invalidatePosts,
+  })
+
+  return { disconnectMutation, createPostMutation, cancelPostMutation }
 }

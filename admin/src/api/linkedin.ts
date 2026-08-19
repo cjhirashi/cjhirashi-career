@@ -26,8 +26,19 @@ export const linkedinApi = {
     return response.data
   },
 
-  createPost: async (text: string): Promise<LinkedInPostEntity> => {
-    const response = await axiosInstance.post<LinkedInPostEntity>('/linkedin/posts', { text })
+  createPost: async (params: { text: string; image?: File; scheduledAt?: string }): Promise<LinkedInPostEntity> => {
+    const formData = new FormData()
+    formData.append('text', params.text)
+    if (params.image) formData.append('image', params.image)
+    if (params.scheduledAt) formData.append('scheduled_at', params.scheduledAt)
+
+    const response = await axiosInstance.post<LinkedInPostEntity>('/linkedin/posts', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
     return response.data
+  },
+
+  cancelPost: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/linkedin/posts/${id}`)
   },
 }

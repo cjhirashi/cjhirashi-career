@@ -1,25 +1,45 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CheckCircle2, ExternalLink, Linkedin, Unlink } from 'lucide-react'
+import { CheckCircle2, Clock, ExternalLink, Image as ImageIcon, Linkedin, Unlink, X } from 'lucide-react'
 import { useLinkedInStatus, useLinkedInPosts, useLinkedInMutations } from '@/hooks/useLinkedIn'
 import { linkedinApi } from '@/api/linkedin'
+import { LinkedInPostEntity } from '@/types/linkedin'
 import { getErrorMessage } from '@/utils/errors'
 import { formatDateTime } from '@/utils/formatters'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 
 const POST_MAX_LENGTH = 3000
 
+const PostStatusBadge: React.FC<{ post: LinkedInPostEntity }> = ({ post }) => {
+  if (post.status === 'scheduled') {
+    return (
+      <span className="badge badge-slate flex items-center gap-1 w-fit">
+        <Clock size={10} aria-hidden="true" /> Programado: {post.scheduled_at && formatDateTime(post.scheduled_at)}
+      </span>
+    )
+  }
+  if (post.status === 'failed') {
+    return <span className="badge badge-error w-fit">Falló</span>
+  }
+  return <span className="badge badge-cyan w-fit">Publicado</span>
+}
+
 export const LinkedInPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: status, isLoading: statusLoading, isError: statusError, error: statusErrorObj } = useLinkedInStatus()
   const { data: posts } = useLinkedInPosts()
-  const { disconnectMutation, createPostMutation } = useLinkedInMutations()
+  const { disconnectMutation, createPostMutation, cancelPostMutation } = useLinkedInMutations()
 
   const [connecting, setConnecting] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
   const [postText, setPostText] = useState('')
+  const [postImage, setPostImage] = useState<File | null>(null)
+  const [postImagePreview, setPostImagePreview] = useState<string | null>(null)
+  const [scheduleEnabled, setScheduleEnabled] = useState(false)
+  const [scheduledAt, setScheduledAt] = useState('')
   const [postError, setPostError] = useState<string | null>(null)
   const [banner, setBanner] = useState<'connected' | 'error' | null>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   // The OAuth callback lands back here with a query param instead of a
   // normal in-app navigation - read it once, show a banner, then strip it
@@ -34,6 +54,16 @@ export const LinkedInPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (!postImage) {
+      setPostImagePreview(null)
+      return
+    }
+    const objectUrl = URL.createObjectURL(postImage)
+    setPostImagePreview(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [postImage])
 
   const handleConnect = async () => {
     setConnectError(null)
@@ -52,15 +82,45 @@ export const LinkedInPage: React.FC = () => {
     disconnectMutation.mutate()
   }
 
+  const handleImageSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) setPostImage(file)
+  }
+
   const handlePublish = () => {
     setPostError(null)
     const text = postText.trim()
     if (!text) return
-    createPostMutation.mutate(text, {
-      onSuccess: () => setPostText(''),
-      onError: (err) => setPostError(getErrorMessage(err)),
-    })
+    if (scheduleEnabled && !scheduledAt) {
+      setPostError('Elige una fecha y hora para programar el post.')
+      return
+    }
+
+    createPostMutation.mutate(
+      {
+        text,
+        image: postImage ?? undefined,
+        scheduledAt: scheduleEnabled ? new Date(scheduledAt).toISOString() : undefined,
+      },
+      {
+        onSuccess: () => {
+          setPostText('')
+          setPostImage(null)
+          setScheduleEnabled(false)
+          setScheduledAt('')
+        },
+        onError: (err) => setPostError(getErrorMessage(err)),
+      }
+    )
   }
+
+  const handleCancelScheduled = (post: LinkedInPostEntity) => {
+    if (!window.confirm('¿Cancelar este post programado? No se publicará.')) return
+    cancelPostMutation.mutate(post.id)
+  }
+
+  const minDateTimeLocal = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16)
 
   return (
     <div className="space-y-6">
@@ -149,6 +209,61 @@ export const LinkedInPage: React.FC = () => {
               rows={6}
               className="input-field resize-y"
             />
+
+            {postImagePreview && (
+              <div className="relative w-fit">
+                <img src={postImagePreview} alt="Vista previa" className="max-h-48 rounded-lg border border-border" />
+                <button
+                  type="button"
+                  onClick={() => setPostImage(null)}
+                  aria-label="Quitar imagen"
+                  title="Quitar imagen"
+                  className="absolute -top-2 -right-2 p-1 rounded-full bg-glass border border-border text-text-secondary hover:text-red-600"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center gap-4">
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageSelected}
+                aria-label="Seleccionar imagen"
+              />
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="btn-secondary btn-small flex items-center gap-1.5"
+              >
+                <ImageIcon size={14} /> {postImage ? 'Cambiar imagen' : 'Agregar imagen'}
+              </button>
+
+              <label className="flex items-center gap-1.5 text-sm text-text-secondary select-none">
+                <input
+                  type="checkbox"
+                  checked={scheduleEnabled}
+                  onChange={(e) => setScheduleEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+                />
+                Programar
+              </label>
+
+              {scheduleEnabled && (
+                <input
+                  type="datetime-local"
+                  value={scheduledAt}
+                  min={minDateTimeLocal}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                  className="input-field text-sm py-1.5 w-auto"
+                  aria-label="Fecha y hora programada"
+                />
+              )}
+            </div>
+
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-text-muted">
                 {postText.length} / {POST_MAX_LENGTH}
@@ -160,7 +275,14 @@ export const LinkedInPage: React.FC = () => {
                 disabled={!postText.trim() || createPostMutation.isPending}
                 className="btn-primary btn-small flex items-center gap-1.5"
               >
-                <Linkedin size={14} /> {createPostMutation.isPending ? 'Publicando...' : 'Publicar'}
+                <Linkedin size={14} />
+                {createPostMutation.isPending
+                  ? scheduleEnabled
+                    ? 'Programando...'
+                    : 'Publicando...'
+                  : scheduleEnabled
+                    ? 'Programar'
+                    : 'Publicar'}
               </button>
             </div>
           </div>
@@ -174,20 +296,39 @@ export const LinkedInPage: React.FC = () => {
           </div>
           <div className="card-body divide-y divide-border">
             {posts.map((post) => (
-              <div key={post.id} className="py-3 first:pt-0 last:pb-0">
-                <p className="text-sm text-text whitespace-pre-wrap line-clamp-3">{post.text}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <span className="text-xs text-text-muted">{formatDateTime(post.published_at)}</span>
-                  {post.linkedin_post_urn && (
-                    <a
-                      href={`https://www.linkedin.com/feed/update/${post.linkedin_post_urn}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
-                    >
-                      Ver en LinkedIn <ExternalLink size={11} />
-                    </a>
+              <div key={post.id} className="py-3 first:pt-0 last:pb-0 flex gap-3">
+                {post.image_url && (
+                  <img src={post.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-text whitespace-pre-wrap line-clamp-3">{post.text}</p>
+                  {post.status === 'failed' && post.error_message && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">{post.error_message}</p>
                   )}
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    <PostStatusBadge post={post} />
+                    <span className="text-xs text-text-muted">{formatDateTime(post.created_at)}</span>
+                    {post.linkedin_post_urn && (
+                      <a
+                        href={`https://www.linkedin.com/feed/update/${post.linkedin_post_urn}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
+                      >
+                        Ver en LinkedIn <ExternalLink size={11} />
+                      </a>
+                    )}
+                    {post.status === 'scheduled' && (
+                      <button
+                        type="button"
+                        onClick={() => handleCancelScheduled(post)}
+                        disabled={cancelPostMutation.isPending}
+                        className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -4,7 +4,7 @@ Pydantic schemas for the LinkedIn integration (connection status, posting).
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class LinkedInStatusResponse(BaseModel):
@@ -19,15 +19,16 @@ class LinkedInConnectResponse(BaseModel):
     authorize_url: str
 
 
-class LinkedInPostCreate(BaseModel):
-    text: str = Field(..., min_length=1, max_length=3000)
-
-
 class LinkedInPostResponse(BaseModel):
     id: int
     text: str
+    image_url: Optional[str] = None
+    status: str
+    error_message: Optional[str] = None
     linkedin_post_urn: Optional[str] = None
-    published_at: datetime
+    scheduled_at: Optional[datetime] = None
+    published_at: Optional[datetime] = None
+    created_at: datetime
 
     class Config:
         from_attributes = True

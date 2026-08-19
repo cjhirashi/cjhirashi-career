@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
+import asyncio
 import logging
 import sys
 
@@ -16,7 +17,7 @@ from routes import auth_enhanced
 from routes import career_identity, career_search, career_digital, career_support, career_metrics
 from routes import files
 from routes import linkedin
-from services import storage_service
+from services import storage_service, linkedin_scheduler
 
 # Configurar logging
 logging.basicConfig(
@@ -52,10 +53,14 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize MinIO bucket: {e}")
         raise
 
+    scheduler_task = asyncio.create_task(linkedin_scheduler.scheduler_loop())
+    logger.info("LinkedIn post scheduler started")
+
     yield
 
     # Shutdown
     logger.info("Shutting down API server...")
+    scheduler_task.cancel()
     await close_db()
 
 

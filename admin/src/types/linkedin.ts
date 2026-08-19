@@ -8,9 +8,16 @@ export interface LinkedInStatus {
   expires_at: string | null
 }
 
+export type LinkedInPostStatus = 'scheduled' | 'published' | 'failed'
+
 export interface LinkedInPostEntity {
   id: number
   text: string
+  image_url: string | null
+  status: LinkedInPostStatus
+  error_message: string | null
   linkedin_post_urn: string | null
-  published_at: string
+  scheduled_at: string | null
+  published_at: string | null
+  created_at: string
 }
