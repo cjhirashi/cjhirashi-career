@@ -142,21 +142,23 @@ describe('Sidebar', () => {
     it('should highlight active menu item', () => {
       renderSidebar(true, mockOnToggle)
       const dashboardLink = screen.getByRole('link', { name: /Dashboard/i })
-      expect(dashboardLink.className).toContain('bg-cyan-600')
+      expect(dashboardLink.className).toContain('is-active')
+      expect(dashboardLink).toHaveAttribute('aria-current', 'page')
     })
 
     it('should not highlight inactive menu items', () => {
       renderSidebar(true, mockOnToggle)
       const identityLink = screen.getByRole('link', { name: /Identity/i })
-      expect(identityLink.className).not.toContain('bg-cyan-600')
-      expect(identityLink.className).toContain('text-slate-300')
+      expect(identityLink.className).not.toContain('is-active')
+      expect(identityLink).not.toHaveAttribute('aria-current')
     })
 
-    it('should use cyan for active item', () => {
+    it('should use the shared sidebar-item styling for every link', () => {
       renderSidebar(true, mockOnToggle)
       const dashboardLink = screen.getByRole('link', { name: /Dashboard/i })
-      expect(dashboardLink.className).toContain('bg-cyan-600')
-      expect(dashboardLink.className).toContain('text-white')
+      const identityLink = screen.getByRole('link', { name: /Identity/i })
+      expect(dashboardLink.className).toContain('sidebar-item')
+      expect(identityLink.className).toContain('sidebar-item')
     })
   })
 
@@ -189,29 +191,42 @@ describe('Sidebar', () => {
   })
 
   describe('styling and colors', () => {
-    it('should have dark slate background', () => {
+    it('should render as a glass (blurred, translucent) panel', () => {
       const { container } = renderSidebar(true, mockOnToggle)
       const sidebar = container.querySelector('aside')
-      expect(sidebar?.className).toContain('bg-slate-800')
-      expect(sidebar?.className).toContain('text-white')
+      expect(sidebar?.className).toContain('glass-panel')
+      expect(sidebar?.className).toMatch(/backdrop-blur/)
+      expect(sidebar?.className).toContain('text-text')
     })
 
-    it('should have cyan title color when open', () => {
+    it('should have primary (cyan) title color when open', () => {
       renderSidebar(true, mockOnToggle)
       const title = screen.getByText('Portfolio')
-      expect(title.className).toContain('text-cyan-400')
+      expect(title.className).toContain('text-primary')
     })
 
-    it('should have slate borders', () => {
+    it('should have a themed glass border', () => {
       const { container } = renderSidebar(true, mockOnToggle)
       const sidebar = container.querySelector('aside')
-      expect(sidebar?.className).toContain('border-slate-700')
+      expect(sidebar?.className).toContain('border-border')
     })
 
-    it('should have hover effects on inactive items', () => {
+    it('should use the shared sidebar-item class (hover handled in CSS) on inactive items', () => {
       renderSidebar(true, mockOnToggle)
       const identityLink = screen.getByRole('link', { name: /Identity/i })
-      expect(identityLink.className).toContain('hover:bg-slate-700')
+      expect(identityLink.className).toContain('sidebar-item')
+    })
+  })
+
+  describe('profile footer', () => {
+    it('should render a profile summary block when open', () => {
+      const { container } = renderSidebar(true, mockOnToggle)
+      expect(container.querySelector('.sidebar-profile')).toBeInTheDocument()
+    })
+
+    it('should fall back to "U" avatar initial when there is no user', () => {
+      renderSidebar(true, mockOnToggle)
+      expect(screen.getByText('U')).toBeInTheDocument()
     })
   })
 

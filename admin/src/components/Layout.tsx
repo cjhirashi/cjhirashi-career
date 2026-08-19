@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
+import { SidebarRight } from './SidebarRight'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -48,28 +49,35 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-bg text-text overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen((open) => !open)} />
+    // `dash-wrapper`: the body (see index.css) carries the Glass Steel
+    // ambient gradient - this stays transparent so it's visible through the
+    // glass chrome (topbar/sidebars) and behind the (also translucent)
+    // `.card` panels rendered by each page.
+    <div className="flex flex-col h-screen text-text overflow-hidden">
+      {/* Topbar (`dash-topbar`) - full-width, sticky, glass. */}
+      <Navbar onLogout={handleLogout} onMenuToggle={() => setSidebarOpen((open) => !open)} />
 
-      {/* Mobile backdrop - dims content and closes the drawer on click */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-slate-900/50 md:hidden"
-          aria-hidden="true"
-          onClick={closeMobileSidebar}
-        />
-      )}
+      {/* `dash-body`: sidebar-left | main-content | sidebar-right */}
+      <div className="flex flex-1 min-h-0">
+        <Sidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen((open) => !open)} />
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 min-w-0">
-        {/* Navbar */}
-        <Navbar onLogout={handleLogout} onMenuToggle={() => setSidebarOpen((open) => !open)} />
+        {/* Mobile backdrop - dims content and closes the drawer on click */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-slate-900/50 md:hidden"
+            aria-hidden="true"
+            onClick={closeMobileSidebar}
+          />
+        )}
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        {/* Main Content (`main-content`) */}
+        <main className="flex-1 overflow-auto min-w-0">
           <div className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</div>
         </main>
+
+        {/* Reserved for the future in-Admin Bedrock assistant - see
+            SidebarRight.tsx. `xl:` and up only. */}
+        <SidebarRight />
       </div>
     </div>
   )

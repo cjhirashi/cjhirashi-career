@@ -192,13 +192,20 @@ describe('Navbar', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)
       const header = container.querySelector('header')
       expect(header?.className).toContain('border-b')
-      expect(header?.className).toContain('border-slate-200')
+      expect(header?.className).toContain('border-border')
     })
 
-    it('should use slate colors for text', () => {
+    it('should render as a glass (blurred, translucent) panel', () => {
+      const { container } = render(<Navbar onLogout={mockLogout} />)
+      const header = container.querySelector('header')
+      expect(header?.className).toContain('glass-panel')
+      expect(header?.className).toMatch(/backdrop-blur/)
+    })
+
+    it('should use the semantic text token for the title', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)
       const title = container.querySelector('h1')
-      expect(title?.className).toContain('text-slate-900')
+      expect(title?.className).toContain('text-text')
     })
 
     it('should have flex layout for navbar content', () => {
@@ -212,7 +219,7 @@ describe('Navbar', () => {
       fireEvent.click(getUserMenuButton())
 
       const passwordLink = screen.getByRole('link', { name: /Change Password/i })
-      expect(passwordLink?.className).toContain('hover:bg-slate-100')
+      expect(passwordLink?.className).toContain('hover:bg-glass')
     })
   })
 

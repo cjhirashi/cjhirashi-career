@@ -21,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({ title, onClose, children, maxWidth
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
       <div
-        className="fixed inset-0 bg-slate-900/60"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
         aria-hidden="true"
         onClick={onClose}
       />
@@ -29,15 +29,15 @@ export const Modal: React.FC<ModalProps> = ({ title, onClose, children, maxWidth
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative w-full ${maxWidth} bg-surface-card border border-border rounded-lg shadow-xl my-8`}
+        className={`card relative w-full ${maxWidth} my-8`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="card-header flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="p-1 rounded-lg text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-text transition-colors"
+            className="p-1 rounded-lg text-text-secondary hover:bg-glass hover:text-text transition-colors"
           >
             <X size={20} />
           </button>

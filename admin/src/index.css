@@ -3,38 +3,130 @@
 @tailwind utilities;
 
 /*
- * Theme tokens (light + dark) — values verified against the real
- * cjhirashi.com site so the Admin Panel matches the public portal.
- * `data-theme` is set on <html> by the blocking script in index.html
- * (pre-paint) and kept in sync by src/stores/themeStore.ts.
+ * ==========================================================================
+ * "Glass Steel" design system — glassmorphism skin (cyan + slate/steel).
+ *
+ * Token values verified against the real reference implementation at
+ * https://cjhirashi.github.io/design-html/glass-steel/ (dashboard.html +
+ * css/style.css). `data-theme` is set on <html> by the blocking script in
+ * index.html (pre-paint) and kept in sync by src/stores/themeStore.ts — the
+ * theming *mechanism* (3-way light/system/dark with an explicit resolved
+ * value always written to the DOM) is untouched here, only the color/effect
+ * tokens change.
+ * ==========================================================================
  */
 @layer base {
   :root {
-    --bg: #f8fafc;
-    --primary: #0e7490;
-    --on-primary: #fff;
-    --primary-container: #cffafe;
-    --secondary: #f97316;
-    --secondary-container: #ffedd5;
-    --surface: #eef1f6;
-    --surface-card: #ffffff;
-    --border: #dbe1ea;
-    --text: #0f172a;
+    /* Surfaces */
+    --bg-primary: #f0fafb;
+    --bg-secondary: rgba(255, 255, 255, 0.7);
+    --bg-glass: rgba(255, 255, 255, 0.65);
+    --bg-card: rgba(255, 255, 255, 0.5);
+
+    /* Text */
+    --text-primary: #0f172a;
     --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    /* Borders */
+    --border-glass: rgba(255, 255, 255, 0.6);
+    --border-glass-hover: rgba(8, 145, 178, 0.4);
+
+    /* Brand (cyan) */
+    --primary-color: #0891b2;
+    --primary-hover: #0e7490;
+    --primary-light: rgba(8, 145, 178, 0.1);
+    --primary-glow: rgba(8, 145, 178, 0.18);
+
+    /* Secondary (slate/steel) */
+    --secondary-color: #475569;
+    --secondary-hover: #334155;
+    --secondary-light: rgba(71, 85, 105, 0.1);
+
+    /* Semantic */
+    --error-bg: rgba(220, 38, 38, 0.1);
+    --error-text: #dc2626;
+    --error-border: rgba(220, 38, 38, 0.2);
+    --warning-bg: rgba(217, 119, 6, 0.1);
+    --warning-text: #d97706;
+    --warning-border: rgba(217, 119, 6, 0.2);
+    --success-bg: rgba(5, 150, 105, 0.1);
+    --success-text: #059669;
+    --success-border: rgba(5, 150, 105, 0.2);
+
+    /* Elevation */
+    --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    --shadow-glow: 0 0 30px var(--primary-glow);
+
+    /* Radii */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+
+    /* Ambient body gradients */
+    --ambient-a: rgba(8, 145, 178, 0.12);
+    --ambient-b: rgba(71, 85, 105, 0.1);
+
+    /* Legacy semantic aliases kept for backwards-compatible Tailwind tokens
+       (bg-bg, bg-surface-card, border-border, text-text, ...) — see
+       tailwind.config.ts. */
+    --bg: var(--bg-primary);
+    --surface: var(--bg-secondary);
+    --surface-card: var(--bg-card);
+    --border: var(--border-glass);
+    --text: var(--text-primary);
+    --text-secondary-legacy: var(--text-secondary);
+    --primary: var(--primary-color);
+    --on-primary: #ffffff;
+    --primary-container: var(--primary-light);
+    --secondary: var(--secondary-color);
+    --secondary-container: var(--secondary-light);
   }
 
   [data-theme='dark'] {
-    --bg: #1b1b1e;
-    --primary: #0891b2;
-    --on-primary: #0a0e17;
-    --primary-container: #1b3237;
-    --secondary: #fdba74;
-    --secondary-container: #3d2b1b;
-    --surface: #242427;
-    --surface-card: #2d2d31;
-    --border: #46464c;
-    --text: #f1f5f9;
-    --text-secondary: #a3acbc;
+    /* Surfaces */
+    --bg-primary: #071018;
+    --bg-secondary: rgba(16, 30, 42, 0.6);
+    --bg-glass: rgba(12, 24, 34, 0.7);
+    --bg-card: rgba(26, 48, 64, 0.5);
+
+    /* Text */
+    --text-primary: #f8fafc;
+    --text-secondary: #a3b6c0;
+    --text-muted: #6b808a;
+
+    /* Borders */
+    --border-glass: rgba(255, 255, 255, 0.09);
+    --border-glass-hover: rgba(34, 211, 238, 0.5);
+
+    /* Brand (cyan) */
+    --primary-color: #06b6d4;
+    --primary-hover: #0891b2;
+    --primary-light: rgba(34, 211, 238, 0.16);
+    --primary-glow: rgba(34, 211, 238, 0.35);
+
+    /* Secondary (slate/steel) */
+    --secondary-color: #94a3b8;
+    --secondary-hover: #64748b;
+    --secondary-light: rgba(148, 163, 184, 0.16);
+
+    /* Semantic */
+    --error-bg: rgba(239, 68, 68, 0.15);
+    --error-text: #f87171;
+    --error-border: rgba(239, 68, 68, 0.3);
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --warning-text: #fbbf24;
+    --warning-border: rgba(245, 158, 11, 0.3);
+    --success-bg: rgba(16, 185, 129, 0.15);
+    --success-text: #34d399;
+    --success-border: rgba(16, 185, 129, 0.3);
+
+    /* Elevation */
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+    /* Ambient body gradients */
+    --ambient-a: rgba(34, 211, 238, 0.16);
+    --ambient-b: rgba(100, 116, 139, 0.14);
   }
 
   html {
@@ -47,17 +139,39 @@
   }
 
   body {
-    @apply bg-bg text-text transition-colors duration-200;
+    @apply text-text transition-colors duration-200;
+    background-color: var(--bg-primary);
+    background-image:
+      radial-gradient(circle at 15% 20%, var(--ambient-a) 0%, transparent 45%),
+      radial-gradient(circle at 85% 85%, var(--ambient-b) 0%, transparent 45%);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-cyan-500 dark:focus:ring-offset-slate-900;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-slate-900;
+    background-image: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    box-shadow: 0 4px 20px var(--primary-glow);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px var(--primary-glow);
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-slate-200 text-slate-900 rounded-lg font-medium hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600 dark:focus:ring-offset-slate-900;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium text-text border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-slate-900;
+    background-color: var(--bg-card);
+    border-color: var(--border-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--border-glass-hover);
+    background-color: var(--bg-glass);
   }
 
   .btn-small {
@@ -65,15 +179,41 @@
   }
 
   .input-field {
-    @apply w-full px-3 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder:text-text-secondary;
+    @apply w-full px-3 py-2 text-text rounded-xl border focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-transparent placeholder:text-text-muted transition-colors;
+    background-color: var(--bg-card);
+    border-color: var(--border-glass);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .card {
-    @apply bg-surface-card rounded-lg shadow-sm border border-border;
+    @apply rounded-2xl border transition-all duration-300;
+    background-color: var(--bg-card);
+    border-color: var(--border-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-glass-hover);
+  }
+
+  /* Table(s) rendered inside a `.card` (Dashboard weekly metrics, career
+     resource lists) automatically pick up a glass header + hover rows
+     without needing a dedicated wrapper class in every page/component. */
+  .card table thead th {
+    background-color: var(--bg-glass);
+  }
+
+  .card table tbody tr:hover {
+    background-color: var(--bg-glass);
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-border;
+    @apply px-6 py-4 border-b;
+    border-color: var(--border-glass);
   }
 
   .card-body {
@@ -81,7 +221,9 @@
   }
 
   .card-footer {
-    @apply px-6 py-4 border-t border-border bg-surface;
+    @apply px-6 py-4 border-t rounded-b-2xl;
+    border-color: var(--border-glass);
+    background-color: var(--bg-glass);
   }
 
   .form-group {
@@ -93,41 +235,104 @@
   }
 
   .badge {
-    @apply inline-block px-3 py-1 text-xs font-medium rounded-full;
+    @apply inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border;
   }
 
   .badge-cyan {
-    @apply bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300;
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+    border-color: var(--border-glass-hover);
   }
 
   .badge-slate {
-    @apply bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200;
+    color: var(--text-secondary);
+    background-color: var(--bg-glass);
+    border-color: var(--border-glass);
   }
 
   .badge-success {
-    @apply bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300;
+    color: var(--success-text);
+    background-color: var(--success-bg);
+    border-color: var(--success-border);
   }
 
   .badge-error {
-    @apply bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300;
+    color: var(--error-text);
+    background-color: var(--error-bg);
+    border-color: var(--error-border);
   }
 
   .badge-warning {
-    @apply bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300;
+    color: var(--warning-text);
+    background-color: var(--warning-bg);
+    border-color: var(--warning-border);
+  }
+
+  /* Monospace treatment for data-ish values (stat numbers, ids, timestamps). */
+  .mono {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+
+  /* Stat cards (Dashboard/Metrics quick-stats) - same glass card, slightly
+     stronger hover lift + glow border to read as an interactive KPI tile. */
+  .stat-card {
+    @apply card p-6;
+  }
+
+  .stat-card:hover {
+    box-shadow: var(--shadow-glass), 0 0 0 1px var(--border-glass-hover);
+  }
+
+  /* Reusable glass panel for chrome (topbar, sidebars) - see Layout.tsx,
+     Sidebar.tsx, Navbar.tsx. Not a `.card` (no radius/hover-lift, used for
+     full-height/full-width chrome instead). */
+  .glass-panel {
+    background-color: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .sidebar-section-label {
+    @apply px-4 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider;
+    color: var(--text-muted);
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors;
+    color: var(--text-secondary);
+  }
+
+  .sidebar-item:hover {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  .sidebar-item[aria-current='page'],
+  .sidebar-item.is-active {
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+  }
+
+  .sidebar-profile {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-glass);
   }
 
   /*
-   * Theme pill selector (light / system / dark) — structure and CSS
-   * verified against the real cjhirashi.com implementation. See
-   * src/components/ThemeToggle.tsx.
+   * Theme pill selector (light / system / dark) — same mechanism as before
+   * (see src/components/ThemeToggle.tsx, unchanged), restyled with the
+   * glass/glow treatment.
    */
   .theme-pill {
     position: relative;
     display: inline-flex;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-glass);
     border-radius: 100px;
     padding: 3px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .theme-pill-btn {
@@ -147,7 +352,7 @@
   }
 
   .theme-pill-btn:hover {
-    color: var(--text);
+    color: var(--text-primary);
   }
 
   .theme-pill-btn[aria-pressed='true'] {
@@ -161,7 +366,8 @@
     width: 30px;
     height: 30px;
     border-radius: 100px;
-    background: var(--primary);
+    background-image: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    box-shadow: 0 0 15px var(--primary-glow);
     transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
   }

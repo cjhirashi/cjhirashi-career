@@ -92,7 +92,10 @@ describe('MetricsPage', () => {
 
     it('should have consistent card padding', () => {
       const { container } = render(<MetricsPage />)
-      const metricCards = container.querySelectorAll('.card.p-6')
+      // Quick-stat tiles use the `.stat-card` variant (a `.card` with glass
+      // hover glow baked in via `@apply card p-6` in index.css) instead of
+      // the raw `.card.p-6` combo.
+      const metricCards = container.querySelectorAll('.stat-card')
       expect(metricCards.length).toBeGreaterThan(0)
     })
   })

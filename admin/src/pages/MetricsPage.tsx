@@ -9,41 +9,41 @@ export const MetricsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Profile Completeness</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0%</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0%</p>
             </div>
             <div className="text-3xl">📊</div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Portal Views</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">👁️</div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Interactions</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">🔗</div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Agent Activity</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">🤖</div>
           </div>

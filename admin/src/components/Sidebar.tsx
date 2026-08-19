@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { ChevronDown } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -22,6 +23,7 @@ const menuItems = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
+  const { user } = useAuth()
   // Which career domain accordion is expanded ("Identidad Profesional",
   // "Operativa de Búsqueda", ...). At most one at a time to keep the list
   // manageable - there are 30 resources across 5 domains.
@@ -52,9 +54,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   return (
     <aside
       className={clsx(
-        // Base look - kept intentionally dark in both light/dark themes for
-        // a consistent, professional admin chrome (see report for rationale).
-        'bg-slate-800 text-white transition-all duration-300 flex flex-col border-r border-slate-700',
+        // Glass Steel chrome: translucent, blurred glass panel (see
+        // `.glass-panel` / `--bg-glass` in src/index.css) instead of the
+        // previous flat, always-dark slate-800 background - it now adapts
+        // to the active theme like the rest of the app.
+        'glass-panel backdrop-blur-[20px] text-text transition-all duration-300 flex flex-col border-r border-border',
         // Mobile: off-canvas drawer that slides in/out over the content.
         // Desktop (md+): back in normal flow, width toggles expanded/collapsed.
         'fixed inset-y-0 left-0 z-40 md:static md:z-auto md:translate-x-0',
@@ -62,11 +66,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-700 flex items-center justify-between">
-        {isOpen && <h1 className="text-lg font-bold text-cyan-400">Portfolio</h1>}
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        {isOpen && <h1 className="text-lg font-bold text-primary">Portfolio</h1>}
         <button
           onClick={onToggle}
-          className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+          className="p-2 hover:bg-glass rounded-xl transition-colors"
           title={isOpen ? 'Collapse' : 'Expand'}
         >
           ☰
@@ -74,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <Link
             key={item.path}
@@ -83,12 +87,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               // Close the drawer after navigating on mobile.
               if (window.innerWidth < 768 && isOpen) onToggle()
             }}
-            className={clsx(
-              'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
-              isActive(item.path)
-                ? 'bg-cyan-600 text-white'
-                : 'text-slate-300 hover:bg-slate-700'
-            )}
+            aria-current={isActive(item.path) ? 'page' : undefined}
+            className={clsx('sidebar-item', isActive(item.path) && 'is-active')}
             title={isOpen ? undefined : item.label}
           >
             <span className="text-xl flex-shrink-0">{item.icon}</span>
@@ -99,15 +99,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         {/* Career domain (v2) - collapsible section grouping the 30
             career-domain resources into 5 sub-menus, see
             src/config/careerResources.ts (CAREER_DOMAINS). */}
-        <div className="pt-2 mt-2 border-t border-slate-700">
+        <div className="pt-2 mt-2 border-t border-border">
           <button
             type="button"
             onClick={handleCareerSectionToggle}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors text-slate-300 hover:bg-slate-700"
+            className="sidebar-item w-full justify-between"
             title={isOpen ? undefined : 'Carrera'}
             aria-expanded={careerSectionOpen}
           >
-            <span className="flex items-center space-x-3 min-w-0">
+            <span className="flex items-center gap-3 min-w-0">
               <span className="text-xl flex-shrink-0">🚀</span>
               {isOpen && <span className="text-sm font-medium truncate">Carrera</span>}
             </span>
@@ -128,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                     <button
                       type="button"
                       onClick={() => setExpandedDomain((current) => (current === domain.key ? null : domain.key))}
-                      className="w-full flex items-center justify-between pl-8 pr-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition-colors"
+                      className="sidebar-section-label w-full flex items-center justify-between hover:bg-glass hover:text-text rounded-xl transition-colors"
                       aria-expanded={isDomainExpanded}
                     >
                       <span className="flex items-center gap-2 truncate">
@@ -147,16 +147,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                           const resource = CAREER_RESOURCES[resourceKey]
                           if (!resource) return null
                           const path = `/career/${resourceKey}`
+                          const active = isCareerResourceActive(resourceKey)
                           return (
                             <Link
                               key={resourceKey}
                               to={path}
                               onClick={closeMobileDrawer}
+                              aria-current={active ? 'page' : undefined}
                               className={clsx(
-                                'block pl-12 pr-4 py-1.5 rounded-lg text-sm truncate transition-colors',
-                                isCareerResourceActive(resourceKey)
-                                  ? 'bg-cyan-600 text-white'
-                                  : 'text-slate-300 hover:bg-slate-700'
+                                'block pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                                active ? 'text-primary bg-primary-light' : 'text-text-secondary hover:bg-glass hover:text-text'
                               )}
                             >
                               {resource.label}
@@ -173,9 +173,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         </div>
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-slate-700 text-xs text-slate-400 text-center">
-        {isOpen && <p>v0.1.0</p>}
+      {/* Footer - profile summary (avatar, name, role). The theme toggle
+          lives in the topbar (Navbar) so it's always reachable even when
+          this sidebar is off-canvas on mobile - see Navbar.tsx. */}
+      <div className="p-3 border-t border-border">
+        {isOpen ? (
+          <div className="sidebar-profile">
+            <div className="w-9 h-9 rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-glow">
+              {user?.username?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-text truncate">{user?.full_name || user?.username}</p>
+              <p className="text-xs text-text-muted truncate">{user?.professional_title || 'Administrador'}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="w-9 h-9 mx-auto rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm shadow-glow">
+            {user?.username?.charAt(0).toUpperCase() || 'U'}
+          </div>
+        )}
+        {isOpen && <p className="text-[11px] text-text-muted text-center mt-2">v0.1.0</p>}
       </div>
     </aside>
   )

@@ -26,44 +26,44 @@ export const DashboardPage: React.FC = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Skills</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">🎯</div>
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Add your competencies</p>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Projects</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">📁</div>
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Showcase your work</p>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Positions</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">💼</div>
           </div>
           <p className="text-slate-500 dark:text-slate-400 text-xs mt-4">Document your experience</p>
         </div>
 
-        <div className="card p-6">
+        <div className="stat-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">Contacts</p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-2">0</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mono mt-2">0</p>
             </div>
             <div className="text-3xl">🤝</div>
           </div>
@@ -114,17 +114,17 @@ export const DashboardPage: React.FC = () => {
                       key={week.week_start ?? idx}
                       className="border-b border-slate-100 dark:border-slate-800 last:border-0"
                     >
-                      <td className="px-6 py-2 whitespace-nowrap text-slate-900 dark:text-slate-100">
+                      <td className="px-6 py-2 whitespace-nowrap text-slate-900 dark:text-slate-100 mono">
                         {formatWeekStart(week.week_start)}
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap">{week.applications_sent}</td>
-                      <td className="px-6 py-2 whitespace-nowrap">{week.responses_received}</td>
-                      <td className="px-6 py-2 whitespace-nowrap">
+                      <td className="px-6 py-2 whitespace-nowrap mono">{week.applications_sent}</td>
+                      <td className="px-6 py-2 whitespace-nowrap mono">{week.responses_received}</td>
+                      <td className="px-6 py-2 whitespace-nowrap mono">
                         {week.response_rate_percentage !== null ? `${week.response_rate_percentage}%` : '—'}
                       </td>
-                      <td className="px-6 py-2 whitespace-nowrap">{week.interviews_scheduled}</td>
-                      <td className="px-6 py-2 whitespace-nowrap">{week.offers}</td>
-                      <td className="px-6 py-2 whitespace-nowrap">{week.rejections}</td>
+                      <td className="px-6 py-2 whitespace-nowrap mono">{week.interviews_scheduled}</td>
+                      <td className="px-6 py-2 whitespace-nowrap mono">{week.offers}</td>
+                      <td className="px-6 py-2 whitespace-nowrap mono">{week.rejections}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -39,11 +39,13 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-bg px-4">
+    // Transparent so the body's Glass Steel ambient gradient (see
+    // src/index.css) shows through behind this floating glass card.
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-glow">
             <span className="text-2xl">👤</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Admin Panel</h1>
@@ -51,7 +53,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Login Card */}
-        <div className="bg-surface-card rounded-lg shadow-md border border-border p-6 sm:p-8">
+        <div className="card p-6 sm:p-8">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
