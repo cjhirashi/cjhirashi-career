@@ -46,21 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </h1>
         </div>
 
-        {/* Right side - Theme toggle + user menu */}
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          {onRightPanelToggle && (
-            <button
-              type="button"
-              onClick={onRightPanelToggle}
-              aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
-              aria-pressed={rightPanelOpen}
-              title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
-              className="hidden xl:flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
-            >
-              <PanelRight size={20} aria-hidden="true" />
-            </button>
-          )}
-
+        {/* Right side - Theme toggle + user menu + panel toggle */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <ThemeToggle />
 
           <div className="relative">
@@ -120,6 +107,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
           </div>
+
+          {/* Panel toggle sits at the far edge, adjacent to where
+              SidebarRight itself opens - keeps the spatial link between
+              the control and what it controls, instead of living among
+              unrelated view/account controls. */}
+          {onRightPanelToggle && (
+            <button
+              type="button"
+              onClick={onRightPanelToggle}
+              aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
+              aria-pressed={rightPanelOpen}
+              title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
+              className="hidden xl:flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+            >
+              <PanelRight size={20} aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
     </header>
