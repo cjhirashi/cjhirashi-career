@@ -1,22 +1,42 @@
-import { format, formatDistanceToNow, parseISO } from 'date-fns'
+import { formatDistanceToNow, parseISO } from 'date-fns'
+
+/**
+ * Carlos (the only Admin Panel user) is in Mexico City - every date/time
+ * shown here is always rendered in that timezone (UTC-6, no DST since
+ * Mexico dropped it in 2022) regardless of the viewing device's own
+ * timezone, so a timestamp reads the same no matter where it's opened
+ * from. `Intl.DateTimeFormat`'s `timeZone` option handles the UTC
+ * conversion - no need for a date-fns-tz dependency just for this.
+ */
+const MEXICO_CITY_TZ = 'America/Mexico_City'
 
 // Date formatting
-export const formatDate = (dateString: string, formatStr: string = 'MMM dd, yyyy'): string => {
+export const formatDate = (dateString: string): string => {
   try {
     const date = typeof dateString === 'string' ? parseISO(dateString) : dateString
-    return format(date, formatStr)
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: MEXICO_CITY_TZ,
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    }).format(date)
   } catch {
     return 'Invalid date'
   }
 }
 
-export const formatDateTime = (
-  dateString: string,
-  formatStr: string = 'MMM dd, yyyy HH:mm'
-): string => {
+export const formatDateTime = (dateString: string): string => {
   try {
     const date = typeof dateString === 'string' ? parseISO(dateString) : dateString
-    return format(date, formatStr)
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: MEXICO_CITY_TZ,
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(date)
   } catch {
     return 'Invalid date'
   }

@@ -120,6 +120,23 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
           </div>
         )
       case 'textarea':
+        return (
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+            </label>
+            <textarea
+              {...commonProps}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              required={field.required}
+              placeholder={field.placeholder}
+              className="input-field h-48 font-mono text-xs"
+            />
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
+        )
       case 'json':
       case 'string-array':
       case 'number-array':
