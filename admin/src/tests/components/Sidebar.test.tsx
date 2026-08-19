@@ -50,19 +50,9 @@ describe('Sidebar', () => {
       expect(screen.queryByText('Interviews')).not.toBeInTheDocument()
     })
 
-    it('should render the logo when open', () => {
-      renderSidebar(true, mockOnToggle)
-      expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
-    })
-
     it('should not show menu labels when closed', () => {
       renderSidebar(false, mockOnToggle)
       expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
-    })
-
-    it('should not show the logo when closed', () => {
-      renderSidebar(false, mockOnToggle)
-      expect(screen.queryByAltText('cjhirashi')).not.toBeInTheDocument()
     })
 
     it('should show version number when open', () => {
@@ -158,11 +148,6 @@ describe('Sidebar', () => {
       expect(sidebar?.className).toMatch(/backdrop-blur/)
     })
 
-    it('should swap logo file based on the resolved theme (color is baked into the SVG)', () => {
-      renderSidebar(true, mockOnToggle)
-      const src = screen.getByAltText('cjhirashi').getAttribute('src')
-      expect(src).toMatch(/^\/logo-(light|dark)\.svg$/)
-    })
   })
 
   describe('no redundant profile card', () => {

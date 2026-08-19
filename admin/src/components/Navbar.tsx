@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, PanelRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useThemeStore } from '@/stores/themeStore'
 import { ThemeToggle } from './ThemeToggle'
 import { clsx } from 'clsx'
 
@@ -24,6 +25,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { user } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  // The wordmark's text color is baked into the SVG itself (dark text for
+  // light backgrounds, light text for dark ones), so swap the whole file
+  // instead of trying to theme it via CSS.
+  const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
+  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
 
   return (
     <header className="sticky top-0 z-20 glass-panel backdrop-blur-[16px] border-b border-border">
@@ -40,11 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         )}
 
-        {/* Left side - Breadcrumb or title placeholder */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg sm:text-xl font-semibold text-text truncate">
-            Welcome to Admin Panel
-          </h1>
+        {/* Left side - logo */}
+        <div className="flex-1 min-w-0 flex items-center">
+          <img src={logoSrc} alt="cjhirashi" className="h-7 w-auto" />
         </div>
 
         {/* Right side - Theme toggle + user menu + panel toggle */}

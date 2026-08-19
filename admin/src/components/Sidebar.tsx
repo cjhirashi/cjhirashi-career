@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
-import { useThemeStore } from '@/stores/themeStore'
 
 interface SidebarProps {
   isOpen: boolean
@@ -23,11 +22,6 @@ const menuItems = [
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
-  // The wordmark's text color is baked into the SVG itself (dark text for
-  // light backgrounds, light text for dark ones) - Mermaid-style theme
-  // tokens don't apply to a static image, so swap the whole file instead.
-  const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
-  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
   // Which career domain accordion is expanded ("Identidad Profesional",
   // "Operativa de Búsqueda", ...). At most one at a time to keep the list
   // manageable - there are 30 resources across 5 domains. Domains render
@@ -69,8 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        {isOpen && <img src={logoSrc} alt="cjhirashi" className="h-7 w-auto" />}
+      <div className="p-4 border-b border-border flex items-center justify-end">
         <button
           onClick={onToggle}
           className="p-2 hover:bg-glass rounded-xl transition-colors"

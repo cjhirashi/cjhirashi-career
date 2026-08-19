@@ -43,10 +43,10 @@ export const Header = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center flex-shrink-0"
+            className="flex items-center h-full flex-shrink-0"
             onClick={() => handleNavClick('logo')}
           >
-            <img src={logoSrc} alt="cjhirashi" className="h-7 w-auto" />
+            <img src={logoSrc} alt="cjhirashi" className="h-[80%] w-auto" />
           </Link>
 
           {/* Desktop Navigation */}

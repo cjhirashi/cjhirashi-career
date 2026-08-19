@@ -29,14 +29,19 @@ describe('Navbar', () => {
 
   describe('rendering', () => {
     it('should render navbar header', () => {
-      render(<Navbar onLogout={mockLogout} />)
-      expect(screen.getByText('Welcome to Admin Panel')).toBeInTheDocument()
+      const { container } = render(<Navbar onLogout={mockLogout} />)
+      expect(container.querySelector('header')).toBeInTheDocument()
     })
 
-    it('should render user welcome message', () => {
+    it('should render the logo', () => {
       render(<Navbar onLogout={mockLogout} />)
-      const title = screen.getByText('Welcome to Admin Panel')
-      expect(title).toBeInTheDocument()
+      expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
+    })
+
+    it('should swap logo file based on the resolved theme (color is baked into the SVG)', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      const src = screen.getByAltText('cjhirashi').getAttribute('src')
+      expect(src).toMatch(/^\/logo-(light|dark)\.svg$/)
     })
 
     it('should render user avatar with initial', () => {
@@ -230,11 +235,6 @@ describe('Navbar', () => {
       expect(header?.className).toMatch(/backdrop-blur/)
     })
 
-    it('should use the semantic text token for the title', () => {
-      const { container } = render(<Navbar onLogout={mockLogout} />)
-      const title = container.querySelector('h1')
-      expect(title?.className).toContain('text-text')
-    })
 
     it('should have flex layout for navbar content', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)
