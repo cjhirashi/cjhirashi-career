@@ -304,6 +304,11 @@
     border-color: var(--border-glass-hover);
   }
 
+  .markdown-body hr {
+    @apply my-4 border-0 border-t;
+    border-color: var(--border-glass);
+  }
+
   .markdown-body code {
     @apply text-xs px-1 py-0.5 rounded;
     background-color: var(--bg-glass);
