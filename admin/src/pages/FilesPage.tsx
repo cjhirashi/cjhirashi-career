@@ -214,6 +214,7 @@ export const FilesPage: React.FC = () => {
   }
 
   return (
+    <>
     <div className="card">
       <div className="card-header flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-text">Archivos</h2>
@@ -332,13 +333,20 @@ export const FilesPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {preview && (
-        <Modal title={preview.filename} onClose={() => setPreview(null)} maxWidth="max-w-4xl">
-          <img src={preview.url} alt={preview.filename} className="w-full h-auto rounded-lg" />
-        </Modal>
-      )}
     </div>
+
+    {/* Rendered outside the `.card` above on purpose: that card can pick up
+        `transform` from its own `:hover` styling (see `.card:hover` in
+        index.css), and a `transform` on any ancestor turns it into the
+        containing block for `position: fixed` descendants - the Modal would
+        get trapped inside the card's (possibly tiny, single-row) bounds
+        instead of covering the viewport. */}
+    {preview && (
+      <Modal title={preview.filename} onClose={() => setPreview(null)} maxWidth="max-w-4xl">
+        <img src={preview.url} alt={preview.filename} className="w-full h-auto rounded-lg" />
+      </Modal>
+    )}
+    </>
   )
 }
 

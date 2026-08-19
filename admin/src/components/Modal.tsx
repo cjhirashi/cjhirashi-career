@@ -29,7 +29,7 @@ export const Modal: React.FC<ModalProps> = ({ title, onClose, children, maxWidth
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`card relative w-full ${maxWidth} my-8`}
+        className={`card relative w-full ${maxWidth} my-4`}
       >
         <div className="card-header flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text">{title}</h2>
@@ -42,7 +42,7 @@ export const Modal: React.FC<ModalProps> = ({ title, onClose, children, maxWidth
             <X size={20} />
           </button>
         </div>
-        <div className="px-6 py-4 max-h-[75vh] overflow-y-auto">{children}</div>
+        <div className="px-6 py-4 max-h-[90vh] overflow-y-auto">{children}</div>
       </div>
     </div>
   )
