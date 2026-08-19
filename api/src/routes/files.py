@@ -12,9 +12,11 @@ import io
 from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.background import BackgroundTask
 
 from database import get_db
 from middleware.auth import get_current_user
@@ -184,6 +186,31 @@ async def get_download_url(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo no encontrado")
 
     return PresignedUrlResponse(url=storage_service.get_presigned_url(row.stored_filename))
+
+
+@router.get("/{file_id}/raw")
+async def download_file(
+    file_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Streams the file's raw bytes through the API (authenticated via the
+    normal JWT header, unlike the bucket URLs) so the frontend can force a
+    real "Save As" download via a Blob - a plain <a href> to a public/signed
+    bucket URL just navigates the browser to it (or is blocked by CORS for a
+    fetch() from a different origin), it doesn't reliably download."""
+    stmt = select(FileUpload).where(FileUpload.id == file_id, FileUpload.user_id == current_user.id)
+    result = await db.execute(stmt)
+    row = result.scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archivo no encontrado")
+
+    obj = storage_service.get_object_stream(row.stored_filename)
+    return StreamingResponse(
+        obj.stream(32 * 1024),
+        media_type=row.mime_type or "application/octet-stream",
+        background=BackgroundTask(lambda: (obj.close(), obj.release_conn())),
+    )
 
 
 @router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)

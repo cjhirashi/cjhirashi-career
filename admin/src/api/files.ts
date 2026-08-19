@@ -56,6 +56,14 @@ export const filesApi = {
     return response.data.url
   },
 
+  /** Raw file bytes, authenticated the normal way (JWT header via
+   * axiosInstance) - used to force a real "Save As" download via a Blob.
+   * A plain link to the bucket URL just navigates/opens it instead. */
+  downloadBlob: async (id: number): Promise<Blob> => {
+    const response = await axiosInstance.get(`/files/${id}/raw`, { responseType: 'blob' })
+    return response.data
+  },
+
   remove: async (id: number): Promise<void> => {
     await axiosInstance.delete(`/files/${id}`)
   },

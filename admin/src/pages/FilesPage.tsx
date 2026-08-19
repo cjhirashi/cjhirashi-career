@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react'
 import {
   Copy,
   Check,
+  Download,
+  Eye,
   FileArchive,
   FileText,
   File as FileIcon,
@@ -20,21 +22,43 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { Modal } from '@/components/Modal'
 
 const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type }) => {
-  if (type === 'document') return <FileText size={28} className="text-text-secondary" aria-hidden="true" />
-  if (type === 'archive') return <FileArchive size={28} className="text-text-secondary" aria-hidden="true" />
-  return <FileIcon size={28} className="text-text-secondary" aria-hidden="true" />
+  if (type === 'document') return <FileText size={18} className="text-text-secondary" aria-hidden="true" />
+  if (type === 'archive') return <FileArchive size={18} className="text-text-secondary" aria-hidden="true" />
+  return <FileIcon size={18} className="text-text-secondary" aria-hidden="true" />
 }
 
-const FileCard: React.FC<{
+const FileRow: React.FC<{
   file: FileUploadEntity
   onDelete: () => void
   onToggleVisibility: () => void
   isTogglingVisibility: boolean
-}> = ({ file, onDelete, onToggleVisibility, isTogglingVisibility }) => {
+  onPreviewImage: (url: string) => void
+}> = ({ file, onDelete, onToggleVisibility, isTogglingVisibility, onPreviewImage }) => {
   const [copied, setCopied] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState<string | null>(null)
-  const isPreviewableImage = file.file_type === 'image' && file.is_public && !!file.download_url
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+
+  const handleDownload = async () => {
+    setDownloadError(null)
+    setDownloading(true)
+    try {
+      const blob = await filesApi.downloadBlob(file.id)
+      const objectUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = file.original_filename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (err) {
+      setDownloadError(getErrorMessage(err))
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   const handleCopyLink = () => {
     if (!file.download_url) return
@@ -44,108 +68,119 @@ const FileCard: React.FC<{
     })
   }
 
-  const handleViewPrivate = async () => {
+  const handleView = async () => {
     setPreviewError(null)
+    const url = file.download_url
+    if (url) {
+      if (file.file_type === 'image') {
+        onPreviewImage(url)
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+      return
+    }
+    // Private file - no permanent URL, fetch a short-lived signed one on demand.
+    setPreviewLoading(true)
     try {
-      const url = await filesApi.getDownloadUrl(file.id)
-      window.open(url, '_blank', 'noopener,noreferrer')
+      const signedUrl = await filesApi.getDownloadUrl(file.id)
+      if (file.file_type === 'image') {
+        onPreviewImage(signedUrl)
+      } else {
+        window.open(signedUrl, '_blank', 'noopener,noreferrer')
+      }
     } catch (err) {
       setPreviewError(getErrorMessage(err))
+    } finally {
+      setPreviewLoading(false)
     }
   }
 
   return (
-    <div className="card p-4 flex flex-col gap-3">
-      <div
-        className={`aspect-video rounded-lg overflow-hidden flex items-center justify-center bg-glass ${isPreviewableImage ? 'cursor-zoom-in' : ''}`}
-        onClick={isPreviewableImage ? () => setPreviewOpen(true) : undefined}
-        role={isPreviewableImage ? 'button' : undefined}
-        tabIndex={isPreviewableImage ? 0 : undefined}
-        aria-label={isPreviewableImage ? `Ver ${file.original_filename} en grande` : undefined}
-        onKeyDown={
-          isPreviewableImage
-            ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  setPreviewOpen(true)
-                }
-              }
-            : undefined
-        }
-      >
-        {isPreviewableImage ? (
-          <img src={file.download_url!} alt={file.original_filename} className="w-full h-full object-cover" />
-        ) : !file.is_public ? (
-          <Lock size={28} className="text-text-secondary" aria-hidden="true" />
-        ) : (
-          <FileTypeIcon type={file.file_type} />
-        )}
-      </div>
-
-      {isPreviewableImage && previewOpen && (
-        <Modal title={file.original_filename} onClose={() => setPreviewOpen(false)} maxWidth="max-w-4xl">
-          <img src={file.download_url!} alt={file.original_filename} className="w-full h-auto rounded-lg" />
-        </Modal>
-      )}
-
-      <div className="min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="text-sm font-medium text-text truncate flex-1" title={file.original_filename}>
-            {file.original_filename}
-          </p>
-          {file.category && (
-            <span className="badge badge-slate flex items-center gap-1 flex-shrink-0">
-              <Folder size={10} aria-hidden="true" /> {file.category}
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-text-secondary">
-          {formatFileSize(file.file_size)} · {formatDateTime(file.created_at)}
+    <tr className="border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+      <td className="px-4 py-2.5 w-8">
+        <FileTypeIcon type={file.file_type} />
+      </td>
+      <td className="px-4 py-2.5 min-w-0">
+        <p className="text-sm text-text truncate" title={file.original_filename}>
+          {file.original_filename}
         </p>
-        {previewError && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{previewError}</p>}
-      </div>
-
-      <div className="flex items-center gap-2 mt-auto">
-        {file.is_public ? (
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="btn-secondary btn-small flex-1 flex items-center justify-center gap-1"
-            disabled={!file.download_url}
-          >
-            {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? 'Copiado' : 'Copiar link'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleViewPrivate}
-            className="btn-secondary btn-small flex-1 flex items-center justify-center gap-1"
-          >
-            <Lock size={14} /> Ver
-          </button>
+        {(previewError || downloadError) && (
+          <p className="text-red-600 dark:text-red-400 text-xs mt-0.5">{previewError || downloadError}</p>
         )}
-        <button
-          type="button"
-          onClick={onToggleVisibility}
-          disabled={isTogglingVisibility}
-          aria-label={file.is_public ? 'Hacer privado' : 'Hacer público'}
-          title={file.is_public ? 'Hacer privado' : 'Hacer público'}
-          className="btn-icon flex-shrink-0"
-        >
-          {file.is_public ? <Globe size={16} /> : <Lock size={16} />}
-        </button>
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label="Eliminar"
-          title="Eliminar"
-          className="btn-icon btn-icon-danger flex-shrink-0"
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
-    </div>
+      </td>
+      <td className="px-4 py-2.5 whitespace-nowrap">
+        {file.category ? (
+          <span className="badge badge-slate flex items-center gap-1 w-fit">
+            <Folder size={10} aria-hidden="true" /> {file.category}
+          </span>
+        ) : (
+          <span className="text-text-muted text-xs">—</span>
+        )}
+      </td>
+      <td className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">{formatFileSize(file.file_size)}</td>
+      <td className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">{formatDateTime(file.created_at)}</td>
+      <td className="px-4 py-2.5 whitespace-nowrap">
+        <span className={`badge ${file.is_public ? 'badge-cyan' : 'badge-slate'} flex items-center gap-1 w-fit`}>
+          {file.is_public ? <Globe size={10} aria-hidden="true" /> : <Lock size={10} aria-hidden="true" />}
+          {file.is_public ? 'Público' : 'Privado'}
+        </span>
+      </td>
+      <td className="px-4 py-2.5 text-right whitespace-nowrap">
+        <div className="flex justify-end items-center gap-1">
+          <button
+            type="button"
+            onClick={handleView}
+            disabled={previewLoading}
+            aria-label="Ver"
+            title="Ver"
+            className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+          >
+            <Eye size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            aria-label="Descargar"
+            title="Descargar"
+            className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+          >
+            <Download size={15} />
+          </button>
+          {file.is_public && (
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              disabled={!file.download_url}
+              aria-label={copied ? 'Copiado' : 'Copiar link'}
+              title={copied ? 'Copiado' : 'Copiar link'}
+              className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+            >
+              {copied ? <Check size={15} /> : <Copy size={15} />}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onToggleVisibility}
+            disabled={isTogglingVisibility}
+            aria-label={file.is_public ? 'Hacer privado' : 'Hacer público'}
+            title={file.is_public ? 'Hacer privado' : 'Hacer público'}
+            className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+          >
+            {file.is_public ? <Globe size={15} /> : <Lock size={15} />}
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Eliminar"
+            title="Eliminar"
+            className="p-1.5 rounded text-text-secondary hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      </td>
+    </tr>
   )
 }
 
@@ -159,6 +194,7 @@ export const FilesPage: React.FC = () => {
   const { data: categories } = useFileCategories()
   const { uploadMutation, deleteMutation, visibilityMutation } = useFileMutations()
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [preview, setPreview] = useState<{ filename: string; url: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,21 +299,45 @@ export const FilesPage: React.FC = () => {
         )}
 
         {!isLoading && !isError && (data?.length ?? 0) > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {data!.map((file) => (
-              <FileCard
-                key={file.id}
-                file={file}
-                onDelete={() => handleDelete(file)}
-                onToggleVisibility={() =>
-                  visibilityMutation.mutate({ id: file.id, isPublic: !file.is_public })
-                }
-                isTogglingVisibility={visibilityMutation.isPending && visibilityMutation.variables?.id === file.id}
-              />
-            ))}
+          <div className="overflow-x-auto -mx-6">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-text-secondary">
+                  <th className="px-4 py-2 font-medium"></th>
+                  <th className="px-4 py-2 font-medium">Nombre</th>
+                  <th className="px-4 py-2 font-medium">Carpeta</th>
+                  <th className="px-4 py-2 font-medium">Tamaño</th>
+                  <th className="px-4 py-2 font-medium">Subido</th>
+                  <th className="px-4 py-2 font-medium">Estado</th>
+                  <th className="px-4 py-2 font-medium text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data!.map((file) => (
+                  <FileRow
+                    key={file.id}
+                    file={file}
+                    onDelete={() => handleDelete(file)}
+                    onToggleVisibility={() =>
+                      visibilityMutation.mutate({ id: file.id, isPublic: !file.is_public })
+                    }
+                    isTogglingVisibility={
+                      visibilityMutation.isPending && visibilityMutation.variables?.id === file.id
+                    }
+                    onPreviewImage={(url) => setPreview({ filename: file.original_filename, url })}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      {preview && (
+        <Modal title={preview.filename} onClose={() => setPreview(null)} maxWidth="max-w-4xl">
+          <img src={preview.url} alt={preview.filename} className="w-full h-auto rounded-lg" />
+        </Modal>
+      )}
     </div>
   )
 }

@@ -134,3 +134,12 @@ def get_presigned_url(stored_filename: str, expires_seconds: int = 300) -> str:
     return get_client().presigned_get_object(
         settings.MINIO_BUCKET, stored_filename, expires=timedelta(seconds=expires_seconds)
     )
+
+
+def get_object_stream(stored_filename: str):
+    """Raw urllib3 HTTPResponse for an object, for the API to re-stream as a
+    forced download (Content-Disposition: attachment). Caller must call
+    `.close()` and `.release_conn()` when done - FastAPI's StreamingResponse
+    does this automatically when passed the response's `.stream()` generator
+    plus a background task, see routes/files.py."""
+    return get_client().get_object(settings.MINIO_BUCKET, stored_filename)
