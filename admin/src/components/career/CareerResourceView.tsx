@@ -1,10 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Copy, Pencil, Plus, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
+import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
@@ -39,12 +40,79 @@ const markdownSanitizeSchema = {
   },
 }
 
+/** Recursively pulls the plain source text out of a fenced code block's
+ * `children` (a <code> element whose own children are either a single
+ * string or, once rehype-highlight has tokenized a recognized language,
+ * a tree of <span>s) - needed to hand Mermaid its raw diagram source,
+ * unaffected by whatever syntax-highlighting markup wrapped around it. */
+const extractText = (node: React.ReactNode): string => {
+  if (typeof node === 'string') return node
+  if (typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(extractText).join('')
+  if (React.isValidElement<{ children?: React.ReactNode }>(node)) return extractText(node.props.children)
+  return ''
+}
+
+/** Renders a ```mermaid fenced block as an actual diagram (SVG) instead of
+ * text. Re-renders on theme change since Mermaid bakes colors into the SVG
+ * at render time rather than via CSS custom properties. */
+const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
+  const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
+  const [svg, setSvg] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const idRef = useRef(`mermaid-${Math.random().toString(36).slice(2)}`)
+
+  useEffect(() => {
+    let cancelled = false
+    // Dynamic import: mermaid pulls in a large diagram-renderer/d3/katex
+    // dependency tree - only pay for it when a page actually has a
+    // ```mermaid block, instead of bundling it into everyone's page load.
+    import('mermaid').then(({ default: mermaid }) => {
+      if (cancelled) return
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: resolvedTheme === 'dark' ? 'dark' : 'default',
+        securityLevel: 'strict',
+      })
+      return mermaid.render(idRef.current, code)
+    })
+      .then((result) => {
+        if (!cancelled && result) {
+          setSvg(result.svg)
+          setError(null)
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [code, resolvedTheme])
+
+  if (error) {
+    return (
+      <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-3">
+        No se pudo renderizar el diagrama Mermaid: {error}
+      </div>
+    )
+  }
+
+  if (!svg) {
+    return <p className="text-xs text-text-muted mb-3">Renderizando diagrama...</p>
+  }
+
+  return <div className="mermaid-diagram mb-3" dangerouslySetInnerHTML={{ __html: svg }} />
+}
+
 /** Wraps a fenced code block's `<pre>` with a language label (from the
  * fence's info string, e.g. ` ```js `) and a copy-to-clipboard button shown
  * on hover. Used as ReactMarkdown's `pre` component override, so `children`
  * is already the syntax-highlighted `<code className="language-js ...">`
  * from rehype-highlight - the label just reads that class back out instead
- * of re-deriving it. */
+ * of re-deriving it. A ```mermaid block renders as a diagram instead, via
+ * MermaidDiagram above - no point syntax-highlighting or offering to copy
+ * a "language" that isn't one. */
 const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children, ...props }) => {
   const [copied, setCopied] = useState(false)
   const preRef = useRef<HTMLPreElement>(null)
@@ -54,6 +122,10 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
       ? children.props.className
       : ''
   const language = codeClassName.match(/language-(\w+)/)?.[1] ?? null
+
+  if (language === 'mermaid') {
+    return <MermaidDiagram code={extractText(children)} />
+  }
 
   const handleCopy = () => {
     const text = preRef.current?.textContent ?? ''

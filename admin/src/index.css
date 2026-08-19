@@ -394,6 +394,17 @@
     border-color: var(--border-glass);
   }
 
+  .markdown-body .mermaid-diagram {
+    @apply rounded-lg p-3 overflow-x-auto flex justify-center border;
+    background-color: var(--bg-glass);
+    border-color: var(--border-glass);
+  }
+
+  .markdown-body .mermaid-diagram svg {
+    max-width: 100%;
+    height: auto;
+  }
+
   .markdown-body table {
     @apply text-sm mb-3 w-full;
   }

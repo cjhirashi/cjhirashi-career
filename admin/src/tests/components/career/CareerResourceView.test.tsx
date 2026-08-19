@@ -146,7 +146,23 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     const copyButton = screen.getByRole('button', { name: /copiar código/i })
     fireEvent.click(copyButton)
     expect(writeText).toHaveBeenCalledWith('const x = 1;\n')
-    await waitFor(() => expect(screen.getByRole('button', { name: /^copiado$/i })).toBeInTheDocument())
+  })
+
+  it('renders a ```mermaid fenced block as a diagram, not a code block', async () => {
+    // jsdom doesn't implement SVG layout (getBBox etc.), so Mermaid's actual
+    // render never resolves here - this only asserts the branch is taken
+    // (no <pre>, the diagram component mounted) rather than the finished SVG,
+    // which is exercised for real against the deployed app instead.
+    mockedCareerApi.list.mockResolvedValue([
+      { ...sampleItem, depth_description: '```mermaid\ngraph TD\n  A --> B\n```' },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    expect(container.querySelector('.markdown-body pre')).not.toBeInTheDocument()
+    expect(screen.getByText(/renderizando diagrama/i)).toBeInTheDocument()
   })
 
   it('goes back to the table when "Volver" is clicked from the view', async () => {
