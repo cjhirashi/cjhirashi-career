@@ -92,6 +92,13 @@ describe('Navbar', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Tema oscuro' }))
       expect(useThemeStore.getState().theme).toBe('dark')
     })
+
+    it('should also render a theme toggle inside the user dropdown, for mobile', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      fireEvent.click(getUserMenuButton())
+      // One standalone (tablet/desktop) + one inside the dropdown (mobile).
+      expect(screen.getAllByRole('group', { name: 'Tema' })).toHaveLength(2)
+    })
   })
 
   describe('mobile menu toggle', () => {
@@ -150,6 +157,14 @@ describe('Navbar', () => {
       const userEmails = screen.getAllByText('demo@example.com')
       expect(userEmails.length).toBeGreaterThan(1)
     })
+
+    it('should use the near-opaque popover background, not the translucent card one', () => {
+      const { container } = render(<Navbar onLogout={mockLogout} />)
+      fireEvent.click(getUserMenuButton())
+
+      const dropdown = container.querySelector('.absolute.right-0')
+      expect(dropdown).toHaveStyle({ backgroundColor: 'var(--bg-popover)' })
+    })
   })
 
   describe('dropdown links', () => {
@@ -184,6 +199,19 @@ describe('Navbar', () => {
 
       // The dropdown menu items should be hidden
       expect(screen.queryByText('Change Password')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('right panel toggle', () => {
+    it('should only be visible on mobile - md and up use the lateral edge tab instead', () => {
+      render(<Navbar onLogout={mockLogout} onRightPanelToggle={vi.fn()} rightPanelOpen />)
+      const toggle = screen.getByRole('button', { name: /panel de asistencia/i })
+      expect(toggle.className).toContain('md:hidden')
+    })
+
+    it('should not render when onRightPanelToggle is not provided', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      expect(screen.queryByRole('button', { name: /panel de asistencia/i })).not.toBeInTheDocument()
     })
   })
 

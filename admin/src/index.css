@@ -22,6 +22,13 @@
     --bg-secondary: rgba(255, 255, 255, 0.7);
     --bg-glass: rgba(255, 255, 255, 0.65);
     --bg-card: rgba(255, 255, 255, 0.5);
+    /* Near-opaque variant for transient overlays (dropdown menus, popovers)
+       that float above arbitrary page content instead of sitting within the
+       page's own layered background - --bg-card's translucency reads as
+       "part of the page" and lets whatever is underneath show through too
+       much to stay legible for these. Not part of the reference Glass Steel
+       tokens; added on top for this legibility need. */
+    --bg-popover: rgba(255, 255, 255, 0.96);
 
     /* Text */
     --text-primary: #0f172a;
@@ -90,6 +97,7 @@
     --bg-secondary: rgba(16, 30, 42, 0.6);
     --bg-glass: rgba(12, 24, 34, 0.7);
     --bg-card: rgba(26, 48, 64, 0.5);
+    --bg-popover: rgba(15, 28, 40, 0.96);
 
     /* Text */
     --text-primary: #f8fafc;

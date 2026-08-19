@@ -120,13 +120,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         ) : (
           // Edge tab to bring the panel back - same idea as the collapsed
           // left Sidebar always leaving a strip to re-expand from, so
-          // hiding the right panel is never a dead end.
+          // hiding the right panel is never a dead end. Tablet/desktop
+          // (md+) only - on mobile the Navbar toggle handles this instead,
+          // since there's no in-flow content edge to anchor a tab to once
+          // the panel becomes a full-screen overlay.
           <button
             type="button"
             onClick={() => setRightPanelOpen(true)}
             aria-label="Mostrar panel de asistencia"
             title="Mostrar panel"
-            className="hidden xl:flex items-center justify-center w-8 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border text-text-secondary hover:text-text hover:bg-glass transition-colors"
+            className="hidden md:flex items-center justify-center w-8 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border text-text-secondary hover:text-text hover:bg-glass transition-colors"
           >
             <PanelRight size={18} aria-hidden="true" />
           </button>

@@ -9,8 +9,9 @@ interface NavbarProps {
   onLogout: () => void
   /** Only rendered on mobile (<md). Opens/closes the off-canvas sidebar. */
   onMenuToggle?: () => void
-  /** Shows/hides the right panel (chat/instructions) - `xl:` and up only,
-   * mirrors where SidebarRight itself renders. */
+  /** Shows/hides the right panel (chat/instructions). Only rendered here on
+   * mobile (<md) - at md and up the panel is controlled solely by its own
+   * lateral edge tab (see Layout.tsx), not from the Navbar. */
   onRightPanelToggle?: () => void
   rightPanelOpen?: boolean
 }
@@ -48,7 +49,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right side - Theme toggle + user menu + panel toggle */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <ThemeToggle />
+          {/* Standalone theme toggle - tablet/desktop only. On mobile it
+              moves inside the user dropdown instead (below) to keep this
+              row from getting cramped next to the avatar and panel icon. */}
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
 
           <div className="relative">
             <button
@@ -75,14 +81,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             {dropdownOpen && (
               <div
                 className="absolute right-0 mt-2 w-56 max-w-[90vw] z-50 rounded-2xl border shadow-glass"
-                style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-glass)', backdropFilter: 'blur(16px)' }}
+                style={{ backgroundColor: 'var(--bg-popover)', borderColor: 'var(--border-glass)', backdropFilter: 'blur(16px)' }}
               >
-                {/* Not `.card` on purpose - avoids the hover lift/glow-border
-                    treatment that `.card` applies for content panels, which
+                {/* `--bg-popover` (near-opaque) rather than `--bg-card` on
+                    purpose - this floats over arbitrary page content, so it
+                    needs to stay legible instead of letting that content
+                    bleed through like a card embedded in the page does.
+                    Also not `.card` - avoids the hover lift/glow-border
+                    treatment that class applies for content panels, which
                     would feel wrong on this ephemeral popover menu. */}
                 <div className="p-4 border-b border-border">
                   <p className="text-sm font-medium text-text">{user?.full_name}</p>
                   <p className="text-xs text-text-secondary">{user?.email}</p>
+                </div>
+                {/* Theme toggle - mobile only, see the standalone one above. */}
+                <div className="p-3 border-b border-border flex items-center justify-between md:hidden">
+                  <span className="text-sm text-text-secondary">Tema</span>
+                  <ThemeToggle />
                 </div>
                 <nav className="p-2 space-y-1">
                   <Link
@@ -108,13 +123,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Panel toggle sits at the far edge, adjacent to where
-              SidebarRight itself opens - keeps the spatial link between
-              the control and what it controls, instead of living among
-              unrelated view/account controls. Visible at every breakpoint
-              since the panel itself is reachable on mobile/tablet too now
-              (as a full-screen / right-anchored overlay - see
-              SidebarRight.tsx), not just on desktop. */}
+          {/* Panel toggle - mobile only. At md and up the right panel is
+              controlled solely by its own lateral edge tab (see
+              Layout.tsx), which keeps the spatial link between the control
+              and what it controls instead of tucking it among unrelated
+              view/account controls in the Navbar. */}
           {onRightPanelToggle && (
             <button
               type="button"
@@ -122,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
               aria-pressed={rightPanelOpen}
               title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
-              className="flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+              className="flex md:hidden p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
             >
               <PanelRight size={20} aria-hidden="true" />
             </button>
