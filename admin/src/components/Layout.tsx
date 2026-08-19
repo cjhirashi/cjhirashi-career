@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import { PanelRight } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
 import { SidebarRight } from './SidebarRight'
@@ -87,7 +88,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Chat (reserved for the future in-Admin Bedrock assistant) /
             instructions panel - see SidebarRight.tsx. `xl:` and up only,
             and only when the user hasn't hidden it via the topbar toggle. */}
-        {rightPanelOpen && <SidebarRight onClose={() => setRightPanelOpen(false)} />}
+        {rightPanelOpen ? (
+          <SidebarRight onClose={() => setRightPanelOpen(false)} />
+        ) : (
+          // Edge tab to bring the panel back - same idea as the collapsed
+          // left Sidebar always leaving a strip to re-expand from, so
+          // hiding the right panel is never a dead end.
+          <button
+            type="button"
+            onClick={() => setRightPanelOpen(true)}
+            aria-label="Mostrar panel de asistencia"
+            title="Mostrar panel"
+            className="hidden xl:flex items-center justify-center w-8 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border text-text-secondary hover:text-text hover:bg-glass transition-colors"
+          >
+            <PanelRight size={18} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </div>
   )
