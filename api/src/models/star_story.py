@@ -28,6 +28,7 @@ class StarStory(Base):
     active_in_interviews = Column(Boolean, default=True, nullable=True, index=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<StarStory(id={self.id}, title='{self.title}')>"

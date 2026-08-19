@@ -37,6 +37,7 @@ class Vacancy(Base):
     is_active = Column(Boolean, default=True, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<Vacancy(id={self.id}, company='{self.company}', exact_role='{self.exact_role}')>"

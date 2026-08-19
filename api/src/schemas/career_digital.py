@@ -43,6 +43,7 @@ class DigitalPlatformResponse(DigitalPlatformBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -97,6 +98,7 @@ class ContentPieceResponse(ContentPieceBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -144,6 +146,7 @@ class PublicationResponse(PublicationBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

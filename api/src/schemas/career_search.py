@@ -36,6 +36,8 @@ class FitScoringFactorUpdate(BaseModel):
 class FitScoringFactorResponse(FitScoringFactorBase):
     id: int
     user_id: int
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -80,6 +82,7 @@ class MarketSegmentResponse(MarketSegmentBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -310,6 +313,7 @@ class VacancyResponse(VacancyBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -434,6 +438,7 @@ class ApplicationResponse(ApplicationBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -468,6 +473,7 @@ class ApplicationInteractionResponse(ApplicationInteractionBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -514,6 +520,7 @@ class InterviewResponse(InterviewBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -552,6 +559,7 @@ class ContactInteractionResponse(ContactInteractionBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -592,6 +600,7 @@ class NetworkingActivityResponse(NetworkingActivityBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

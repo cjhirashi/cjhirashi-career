@@ -36,6 +36,7 @@ class Application(Base):
     final_result = Column(String(30), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<Application(id={self.id}, vacancy_id={self.vacancy_id}, status='{self.current_status}')>"

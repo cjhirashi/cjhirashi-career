@@ -22,6 +22,7 @@ class Certification(Base):
     related_competency_id = Column(Integer, ForeignKey("competencies.id", ondelete="SET NULL"), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<Certification(id={self.id}, name='{self.name}')>"

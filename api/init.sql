@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS identity_reflections (
     dimension VARCHAR(50) NOT NULL CHECK (dimension IN ('passion', 'profession', 'vocation', 'mission')),
     content TEXT,
     tags JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     UNIQUE (user_id, dimension)
 );
@@ -102,7 +103,8 @@ CREATE TABLE IF NOT EXISTS certifications (
     year INTEGER,
     description TEXT,
     related_competency_id INTEGER REFERENCES competencies(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_certifications_user_id ON certifications(user_id);
 
@@ -143,7 +145,8 @@ CREATE TABLE IF NOT EXISTS work_history (
     learnings TEXT,
     contract_type VARCHAR(50),
     industry_sector VARCHAR(100),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_work_history_user_id ON work_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_work_history_start_date ON work_history(start_date);
@@ -164,7 +167,8 @@ CREATE TABLE IF NOT EXISTS achievements (
     visible_on_cv BOOLEAN DEFAULT TRUE,
     visible_in_interview BOOLEAN DEFAULT TRUE,
     visible_on_portal BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_achievements_user_id ON achievements(user_id);
 CREATE INDEX IF NOT EXISTS idx_achievements_work_history_id ON achievements(work_history_id);
@@ -181,7 +185,8 @@ CREATE TABLE IF NOT EXISTS star_stories (
     role_application TEXT,
     times_practiced INTEGER DEFAULT 0,
     active_in_interviews BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_star_stories_user_id ON star_stories(user_id);
 CREATE INDEX IF NOT EXISTS idx_star_stories_active ON star_stories(active_in_interviews);
@@ -196,7 +201,8 @@ CREATE TABLE IF NOT EXISTS career_reviews (
     result_or_learning TEXT,
     action_items JSONB,
     tracking_status VARCHAR(30) DEFAULT 'active' CHECK (tracking_status IN ('active', 'completed', 'paused')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_career_reviews_user_id ON career_reviews(user_id);
 
@@ -210,7 +216,8 @@ CREATE TABLE IF NOT EXISTS role_gap_analysis (
     closing_plan TEXT,
     viability VARCHAR(30) CHECK (viability IN ('viable', 'viable_with_caveats', 'not_viable')),
     closure_status VARCHAR(30) DEFAULT 'not_started' CHECK (closure_status IN ('not_started', 'in_progress', 'completed', 'paused')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_role_gap_analysis_user_id ON role_gap_analysis(user_id);
 CREATE INDEX IF NOT EXISTS idx_role_gap_analysis_role_id ON role_gap_analysis(target_role_id);
@@ -255,7 +262,9 @@ CREATE TABLE IF NOT EXISTS fit_scoring_factors (
     factor_name VARCHAR(100) NOT NULL,
     weight_percentage INTEGER,
     scoring_guide TEXT,
-    display_order INTEGER
+    display_order INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_fit_scoring_factors_user_id ON fit_scoring_factors(user_id);
 
@@ -271,7 +280,8 @@ CREATE TABLE IF NOT EXISTS market_segments (
     interviews_achieved INTEGER DEFAULT 0,
     priority INTEGER CHECK (priority BETWEEN 1 AND 10),
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_market_segments_user_id ON market_segments(user_id);
 
@@ -363,7 +373,8 @@ CREATE TABLE IF NOT EXISTS vacancies (
     analysis_notes TEXT,
     evaluation VARCHAR(30) DEFAULT 'pending_review' CHECK (evaluation IN ('apply', 'do_not_apply', 'pending_review')),
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_vacancies_user_id ON vacancies(user_id);
 CREATE INDEX IF NOT EXISTS idx_vacancies_fit ON vacancies(fit_percentage DESC);
@@ -418,7 +429,8 @@ CREATE TABLE IF NOT EXISTS applications (
     current_status VARCHAR(30) DEFAULT 'applied' CHECK (current_status IN ('applied', 'in_process', 'offer', 'rejected', 'archived')),
     recruiter_contact_id INTEGER REFERENCES networking_contacts(id) ON DELETE SET NULL,
     final_result VARCHAR(30) CHECK (final_result IN ('offer_accepted', 'offer_rejected', 'rejected', 'negotiating')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_applications_user_id ON applications(user_id);
 CREATE INDEX IF NOT EXISTS idx_applications_vacancy_id ON applications(vacancy_id);
@@ -433,7 +445,8 @@ CREATE TABLE IF NOT EXISTS application_interactions (
     content_sent TEXT,
     response_received TEXT,
     status VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_application_interactions_app_id ON application_interactions(application_id);
 
@@ -450,7 +463,8 @@ CREATE TABLE IF NOT EXISTS interviews (
     overall_impression VARCHAR(20) CHECK (overall_impression IN ('very_positive', 'positive', 'neutral', 'negative')),
     narrative_used_id INTEGER REFERENCES role_narratives(id) ON DELETE SET NULL,
     interview_result VARCHAR(30) CHECK (interview_result IN ('pending', 'advanced', 'rejected', 'under_consideration')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_interviews_user_id ON interviews(user_id);
 CREATE INDEX IF NOT EXISTS idx_interviews_application_id ON interviews(application_id);
@@ -466,7 +480,8 @@ CREATE TABLE IF NOT EXISTS contact_interactions (
     status VARCHAR(50),
     generated_opportunity BOOLEAN DEFAULT FALSE,
     related_vacancy_id INTEGER REFERENCES vacancies(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_contact_interactions_contact_id ON contact_interactions(contact_id);
 
@@ -480,7 +495,8 @@ CREATE TABLE IF NOT EXISTS networking_activities (
     frequency_description VARCHAR(100),
     times_completed INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_networking_activities_user_id ON networking_activities(user_id);
 CREATE INDEX IF NOT EXISTS idx_networking_activities_category ON networking_activities(category);
@@ -498,7 +514,8 @@ CREATE TABLE IF NOT EXISTS digital_platforms (
     platform_strategy TEXT,
     followers_count INTEGER,
     is_active_in_search BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_digital_platforms_user_id ON digital_platforms(user_id);
 
@@ -519,7 +536,8 @@ CREATE TABLE IF NOT EXISTS content_pieces (
     related_project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
     related_achievement_id INTEGER REFERENCES achievements(id) ON DELETE SET NULL,
     related_competency_id INTEGER REFERENCES competencies(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_content_pieces_user_id ON content_pieces(user_id);
 CREATE INDEX IF NOT EXISTS idx_content_pieces_status ON content_pieces(status);
@@ -541,7 +559,8 @@ CREATE TABLE IF NOT EXISTS publications (
     comments INTEGER,
     shares INTEGER,
     content_status VARCHAR(30) DEFAULT 'draft' CHECK (content_status IN ('draft', 'scheduled', 'published')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_publications_content_piece_id ON publications(content_piece_id);
 CREATE INDEX IF NOT EXISTS idx_publications_platform_id ON publications(platform_id);
@@ -558,6 +577,7 @@ CREATE TABLE IF NOT EXISTS tags (
     color_hex VARCHAR(7),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     UNIQUE (user_id, tag_name)
 );
 CREATE INDEX IF NOT EXISTS idx_tags_user_id ON tags(user_id);
@@ -651,6 +671,24 @@ CREATE TRIGGER update_networking_contacts_updated_at BEFORE UPDATE ON networking
 CREATE TRIGGER update_target_companies_updated_at BEFORE UPDATE ON target_companies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_cv_versions_updated_at BEFORE UPDATE ON cv_versions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_cover_letter_versions_updated_at BEFORE UPDATE ON cover_letter_versions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_certifications_updated_at BEFORE UPDATE ON certifications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_work_history_updated_at BEFORE UPDATE ON work_history FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_achievements_updated_at BEFORE UPDATE ON achievements FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_star_stories_updated_at BEFORE UPDATE ON star_stories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_career_reviews_updated_at BEFORE UPDATE ON career_reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_role_gap_analysis_updated_at BEFORE UPDATE ON role_gap_analysis FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_fit_scoring_factors_updated_at BEFORE UPDATE ON fit_scoring_factors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_market_segments_updated_at BEFORE UPDATE ON market_segments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_vacancies_updated_at BEFORE UPDATE ON vacancies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_application_interactions_updated_at BEFORE UPDATE ON application_interactions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_interviews_updated_at BEFORE UPDATE ON interviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_contact_interactions_updated_at BEFORE UPDATE ON contact_interactions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_networking_activities_updated_at BEFORE UPDATE ON networking_activities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_digital_platforms_updated_at BEFORE UPDATE ON digital_platforms FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_content_pieces_updated_at BEFORE UPDATE ON content_pieces FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_publications_updated_at BEFORE UPDATE ON publications FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_tags_updated_at BEFORE UPDATE ON tags FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
 -- INITIAL DATA - Usuario administrador

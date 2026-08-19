@@ -29,6 +29,7 @@ class RoleGapAnalysis(Base):
     closure_status = Column(String(30), default="not_started", nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<RoleGapAnalysis(id={self.id}, gap_name='{self.gap_name}')>"

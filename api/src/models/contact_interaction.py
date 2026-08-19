@@ -27,6 +27,7 @@ class ContactInteraction(Base):
     generated_opportunity = Column(Boolean, default=False, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<ContactInteraction(id={self.id}, contact_id={self.contact_id})>"

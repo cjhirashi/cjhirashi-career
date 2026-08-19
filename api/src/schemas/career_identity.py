@@ -97,6 +97,7 @@ class IdentityReflectionUpdate(BaseModel):
 class IdentityReflectionResponse(IdentityReflectionBase):
     id: int
     user_id: int
+    created_at: datetime
     updated_at: datetime
 
     class Config:
@@ -184,6 +185,7 @@ class CertificationResponse(CertificationBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -281,6 +283,7 @@ class WorkHistoryResponse(WorkHistoryBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -333,6 +336,7 @@ class AchievementResponse(AchievementBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -374,6 +378,7 @@ class StarStoryResponse(StarStoryBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -415,6 +420,7 @@ class CareerReviewResponse(CareerReviewBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -457,6 +463,7 @@ class RoleGapAnalysisResponse(RoleGapAnalysisBase):
     id: int
     user_id: int
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
