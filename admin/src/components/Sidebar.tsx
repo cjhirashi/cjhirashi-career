@@ -163,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                         )}
                       >
                         <Linkedin size={13} className="flex-shrink-0" aria-hidden="true" />
-                        LinkedIn
+                        LinkedIn · Publicar
                       </Link>
                     )}
                   </div>

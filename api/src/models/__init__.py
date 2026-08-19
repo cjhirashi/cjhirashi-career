@@ -40,9 +40,12 @@ from models.contact_interaction import ContactInteraction
 from models.networking_activity import NetworkingActivity
 
 # Dominio 3: Presencia Digital
-from models.digital_platform import DigitalPlatform
-from models.content_piece import ContentPiece
 from models.publication import Publication
+from models.linkedin_profile import LinkedInProfile
+from models.github_profile import GitHubProfile
+from models.portal_home import PortalHome
+from models.portal_about import PortalAbout
+from models.portal_contact import PortalContact
 
 # Dominio 4: Soporte
 from models.tag import Tag
@@ -102,9 +105,12 @@ __all__ = [
     "ContactInteraction",
     "NetworkingActivity",
     # Digital presence domain
-    "DigitalPlatform",
-    "ContentPiece",
     "Publication",
+    "LinkedInProfile",
+    "GitHubProfile",
+    "PortalHome",
+    "PortalAbout",
+    "PortalContact",
     # Support domain
     "Tag",
     # LinkedIn integration

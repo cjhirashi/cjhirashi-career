@@ -1,7 +1,8 @@
 """
 Pydantic schemas - Career domain (v2), Dominio 3: Presencia Digital.
 
-Covers: digital_platforms, content_pieces, publications.
+Covers: publications, linkedin_profile, github_profile, portal_home,
+portal_about, portal_contact.
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List, Any, Literal
@@ -9,119 +10,30 @@ from datetime import datetime
 
 
 # ============================================================================
-# DigitalPlatform
+# Publication
 # ============================================================================
 
-PlatformNameLiteral = Literal[
-    "linkedin", "github", "kaggle", "portfolio_web", "medium", "twitter", "other"
-]
+PublicationStatusLiteral = Literal["draft", "scheduled", "published"]
 
 
-class DigitalPlatformBase(BaseModel):
-    platform_name: Optional[PlatformNameLiteral] = None
-    profile_url: Optional[str] = Field(None, max_length=500)
-    profile_status: Optional[str] = Field(None, max_length=30)
-    platform_strategy: Optional[str] = None
-    followers_count: Optional[int] = None
-    is_active_in_search: bool = True
-
-
-class DigitalPlatformCreate(DigitalPlatformBase):
-    pass
-
-
-class DigitalPlatformUpdate(BaseModel):
-    platform_name: Optional[PlatformNameLiteral] = None
-    profile_url: Optional[str] = None
-    profile_status: Optional[str] = None
-    platform_strategy: Optional[str] = None
-    followers_count: Optional[int] = None
-    is_active_in_search: Optional[bool] = None
-
-
-class DigitalPlatformResponse(DigitalPlatformBase):
-    id: int
-    user_id: int
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# ============================================================================
-# ContentPiece
-# ============================================================================
-
-ContentStatusLiteral = Literal["draft", "scheduled", "published"]
-
-
-class ContentPieceBase(BaseModel):
+class PublicationBase(BaseModel):
     title: str = Field(..., max_length=255)
     slug: Optional[str] = Field(None, max_length=255)
     excerpt: Optional[str] = Field(None, max_length=500)
     body_content: Optional[str] = None
     content_type: Optional[str] = Field(None, max_length=50)
-    thematic_pillar: Optional[str] = Field(None, max_length=100)
     tags: Optional[str] = None
-    status: ContentStatusLiteral = "draft"
-    reading_minutes: Optional[int] = None
-    featured_on_home: bool = False
-    scheduled_publish_at: Optional[datetime] = None
-    related_project_id: Optional[int] = None
-    related_achievement_id: Optional[int] = None
-    related_competency_id: Optional[int] = None
-
-
-class ContentPieceCreate(ContentPieceBase):
-    pass
-
-
-class ContentPieceUpdate(BaseModel):
-    title: Optional[str] = Field(None, max_length=255)
-    slug: Optional[str] = None
-    excerpt: Optional[str] = None
-    body_content: Optional[str] = None
-    content_type: Optional[str] = None
-    thematic_pillar: Optional[str] = None
-    tags: Optional[str] = None
-    status: Optional[ContentStatusLiteral] = None
-    reading_minutes: Optional[int] = None
-    featured_on_home: Optional[bool] = None
-    scheduled_publish_at: Optional[datetime] = None
-    related_project_id: Optional[int] = None
-    related_achievement_id: Optional[int] = None
-    related_competency_id: Optional[int] = None
-
-
-class ContentPieceResponse(ContentPieceBase):
-    id: int
-    user_id: int
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# ============================================================================
-# Publication
-# ============================================================================
-
-class PublicationBase(BaseModel):
-    content_piece_id: int
-    platform_id: int
-    published_title: Optional[str] = Field(None, max_length=255)
+    platform: Optional[str] = Field(None, max_length=100)
     publication_url: Optional[str] = Field(None, max_length=500)
     published_at: Optional[datetime] = None
-    full_content: Optional[str] = None
-    char_length: Optional[int] = None
-    hashtags_used: Optional[str] = None
     views: Optional[int] = None
     likes_reactions: Optional[int] = None
     comments: Optional[int] = None
     shares: Optional[int] = None
-    content_status: ContentStatusLiteral = "draft"
+    status: PublicationStatusLiteral = "draft"
+    reading_minutes: Optional[int] = None
+    featured_on_home: bool = False
+    related_project_id: Optional[int] = None
 
 
 class PublicationCreate(PublicationBase):
@@ -129,20 +41,177 @@ class PublicationCreate(PublicationBase):
 
 
 class PublicationUpdate(BaseModel):
-    published_title: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=255)
+    slug: Optional[str] = None
+    excerpt: Optional[str] = None
+    body_content: Optional[str] = None
+    content_type: Optional[str] = None
+    tags: Optional[str] = None
+    platform: Optional[str] = None
     publication_url: Optional[str] = None
     published_at: Optional[datetime] = None
-    full_content: Optional[str] = None
-    char_length: Optional[int] = None
-    hashtags_used: Optional[str] = None
     views: Optional[int] = None
     likes_reactions: Optional[int] = None
     comments: Optional[int] = None
     shares: Optional[int] = None
-    content_status: Optional[ContentStatusLiteral] = None
+    status: Optional[PublicationStatusLiteral] = None
+    reading_minutes: Optional[int] = None
+    featured_on_home: Optional[bool] = None
+    related_project_id: Optional[int] = None
 
 
 class PublicationResponse(PublicationBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# LinkedInProfile (singleton)
+# ============================================================================
+
+class LinkedInProfileBase(BaseModel):
+    headline: Optional[str] = Field(None, max_length=255)
+    about: Optional[str] = None
+    profile_url: Optional[str] = Field(None, max_length=500)
+    location: Optional[str] = Field(None, max_length=255)
+    experience: Optional[List[Any]] = None
+    education: Optional[List[Any]] = None
+    featured_skills: Optional[str] = None
+    featured_certifications: Optional[str] = None
+    languages: Optional[str] = None
+
+
+class LinkedInProfileCreate(LinkedInProfileBase):
+    pass
+
+
+class LinkedInProfileUpdate(LinkedInProfileBase):
+    pass
+
+
+class LinkedInProfileResponse(LinkedInProfileBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# GitHubProfile (singleton)
+# ============================================================================
+
+class GitHubProfileBase(BaseModel):
+    headline: Optional[str] = Field(None, max_length=255)
+    bio: Optional[str] = None
+    readme_markdown: Optional[str] = None
+    profile_url: Optional[str] = Field(None, max_length=500)
+    username: Optional[str] = Field(None, max_length=255)
+
+
+class GitHubProfileCreate(GitHubProfileBase):
+    pass
+
+
+class GitHubProfileUpdate(GitHubProfileBase):
+    pass
+
+
+class GitHubProfileResponse(GitHubProfileBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# PortalHome (singleton)
+# ============================================================================
+
+class PortalHomeBase(BaseModel):
+    hero_title: Optional[str] = Field(None, max_length=255)
+    hero_subtitle: Optional[str] = Field(None, max_length=500)
+    hero_intro: Optional[str] = None
+
+
+class PortalHomeCreate(PortalHomeBase):
+    pass
+
+
+class PortalHomeUpdate(PortalHomeBase):
+    pass
+
+
+class PortalHomeResponse(PortalHomeBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# PortalAbout (singleton)
+# ============================================================================
+
+class PortalAboutBase(BaseModel):
+    photo_url: Optional[str] = Field(None, max_length=1024)
+    values: Optional[str] = None
+    interests_hobbies: Optional[str] = None
+    personal_quote: Optional[str] = Field(None, max_length=500)
+
+
+class PortalAboutCreate(PortalAboutBase):
+    pass
+
+
+class PortalAboutUpdate(PortalAboutBase):
+    pass
+
+
+class PortalAboutResponse(PortalAboutBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# PortalContact (singleton)
+# ============================================================================
+
+class PortalContactBase(BaseModel):
+    contact_email: Optional[str] = Field(None, max_length=255)
+    location: Optional[str] = Field(None, max_length=255)
+    availability_status: Optional[str] = Field(None, max_length=50)
+    preferred_contact_method: Optional[str] = Field(None, max_length=100)
+    footer_links: Optional[List[Any]] = None
+
+
+class PortalContactCreate(PortalContactBase):
+    pass
+
+
+class PortalContactUpdate(PortalContactBase):
+    pass
+
+
+class PortalContactResponse(PortalContactBase):
     id: int
     user_id: int
     created_at: datetime

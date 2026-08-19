@@ -186,7 +186,7 @@ describe('Sidebar', () => {
       expect(screen.queryByRole('link', { name: /LinkedIn/i })).not.toBeInTheDocument()
 
       fireEvent.click(screen.getByText('Presencia Digital'))
-      expect(screen.getByRole('link', { name: /LinkedIn/i })).toHaveAttribute('href', '/linkedin')
+      expect(screen.getByRole('link', { name: 'LinkedIn · Publicar' })).toHaveAttribute('href', '/linkedin')
     })
 
     it('should collapse the previously expanded domain when a different one is opened (at most one at a time)', () => {

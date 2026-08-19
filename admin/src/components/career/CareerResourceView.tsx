@@ -24,6 +24,7 @@ import { CareerEntity } from '@/types/career'
 import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ResourceForm } from './ResourceForm'
+import { GitHubReposPanel } from './GitHubReposPanel'
 import { formatCellValue } from './careerFieldUtils'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 
@@ -356,7 +357,11 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
  * columns - grouped into "Información" plus an automatic "Metadatos"
  * section for whichever of id/created_at/updated_at the record actually
  * carries (not every career table has all three, see types/career.ts). */
-const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[] }> = ({ item, fields }) => {
+const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[]; resourceKey?: string }> = ({
+  item,
+  fields,
+  resourceKey,
+}) => {
   const metaEntries = useMemo(() => {
     const entries: { label: string; value: string }[] = []
     if (typeof item.id === 'number') entries.push({ label: 'ID', value: String(item.id) })
@@ -395,6 +400,8 @@ const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[] }> = ({ i
           </dl>
         </div>
       )}
+
+      {resourceKey === 'github-profile' && <GitHubReposPanel />}
     </div>
   )
 }
@@ -711,7 +718,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
               submitLabel={existing ? 'Actualizar' : 'Crear'}
             />
           ) : (
-            <RecordView item={existing} fields={config.fields} />
+            <RecordView item={existing} fields={config.fields} resourceKey={config.key} />
           )}
         </div>
       </div>
@@ -785,7 +792,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
       )}
 
       <div className={hideTitle ? '' : 'card-body'}>
-        {viewState === 'view' && activeItem && <RecordView item={activeItem} fields={config.fields} />}
+        {viewState === 'view' && activeItem && <RecordView item={activeItem} fields={config.fields} resourceKey={config.key} />}
 
         {(viewState === 'edit' || viewState === 'create') && (
           <>

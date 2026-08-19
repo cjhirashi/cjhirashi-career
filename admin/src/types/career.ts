@@ -453,30 +453,9 @@ export interface NetworkingActivity {
 // Dominio 3: Presencia Digital
 // ---------------------------------------------------------------------------
 
-export type PlatformName =
-  | 'linkedin'
-  | 'github'
-  | 'kaggle'
-  | 'portfolio_web'
-  | 'medium'
-  | 'twitter'
-  | 'other'
+export type PublicationStatus = 'draft' | 'scheduled' | 'published'
 
-export interface DigitalPlatform {
-  id: number
-  user_id: number
-  platform_name?: PlatformName | null
-  profile_url?: string | null
-  profile_status?: string | null
-  platform_strategy?: string | null
-  followers_count?: number | null
-  is_active_in_search: boolean
-  created_at: ISODateTime
-}
-
-export type ContentStatus = 'draft' | 'scheduled' | 'published'
-
-export interface ContentPiece {
+export interface Publication {
   id: number
   user_id: number
   title: string
@@ -484,35 +463,93 @@ export interface ContentPiece {
   excerpt?: string | null
   body_content?: string | null
   content_type?: string | null
-  thematic_pillar?: string | null
   tags?: string | null
-  status: ContentStatus
-  reading_minutes?: number | null
-  featured_on_home: boolean
-  scheduled_publish_at?: ISODateTime | null
-  related_project_id?: number | null
-  related_achievement_id?: number | null
-  related_competency_id?: number | null
-  created_at: ISODateTime
-}
-
-export interface Publication {
-  id: number
-  user_id: number
-  content_piece_id: number
-  platform_id: number
-  published_title?: string | null
+  platform?: string | null
   publication_url?: string | null
   published_at?: ISODateTime | null
-  full_content?: string | null
-  char_length?: number | null
-  hashtags_used?: string | null
   views?: number | null
   likes_reactions?: number | null
   comments?: number | null
   shares?: number | null
-  content_status: ContentStatus
+  status: PublicationStatus
+  reading_minutes?: number | null
+  featured_on_home: boolean
+  related_project_id?: number | null
   created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+export interface LinkedInProfileRecord {
+  id: number
+  user_id: number
+  headline?: string | null
+  about?: string | null
+  profile_url?: string | null
+  location?: string | null
+  experience?: unknown[] | null
+  education?: unknown[] | null
+  featured_skills?: string | null
+  featured_certifications?: string | null
+  languages?: string | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+export interface GitHubProfileRecord {
+  id: number
+  user_id: number
+  headline?: string | null
+  bio?: string | null
+  readme_markdown?: string | null
+  profile_url?: string | null
+  username?: string | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+export interface GitHubRepo {
+  name: string
+  description: string | null
+  url: string
+  language: string | null
+  stars: number
+  forks: number
+  updated_at: string | null
+  is_fork: boolean
+  topics: string[]
+}
+
+export interface PortalHomeRecord {
+  id: number
+  user_id: number
+  hero_title?: string | null
+  hero_subtitle?: string | null
+  hero_intro?: string | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+export interface PortalAboutRecord {
+  id: number
+  user_id: number
+  photo_url?: string | null
+  values?: string | null
+  interests_hobbies?: string | null
+  personal_quote?: string | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+export interface PortalContactRecord {
+  id: number
+  user_id: number
+  contact_email?: string | null
+  location?: string | null
+  availability_status?: string | null
+  preferred_contact_method?: string | null
+  footer_links?: unknown[] | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
 }
 
 // ---------------------------------------------------------------------------

@@ -1001,56 +1001,22 @@ export const networkingActivitiesConfig: ResourceConfig = {
 // Dominio 3: Presencia Digital
 // ---------------------------------------------------------------------------
 
-export const digitalPlatformsConfig: ResourceConfig = {
-  key: 'digital-platforms',
-  label: 'Plataformas Digitales',
-  labelSingular: 'Plataforma',
+export const publicationsConfig: ResourceConfig = {
+  key: 'publications',
+  label: 'Publicaciones',
+  labelSingular: 'Publicación',
   genderFeminine: true,
   columns: [
-    { key: 'platform_name', label: 'Plataforma', format: 'badge' },
-    { key: 'profile_status', label: 'Estado del perfil' },
-    { key: 'followers_count', label: 'Seguidores', format: 'number' },
-    { key: 'is_active_in_search', label: 'Activa en búsqueda', format: 'boolean' },
-  ],
-  fields: [
-    {
-      name: 'platform_name',
-      label: 'Plataforma',
-      type: 'select',
-      options: [
-        { value: 'linkedin', label: 'LinkedIn' },
-        { value: 'github', label: 'GitHub' },
-        { value: 'kaggle', label: 'Kaggle' },
-        { value: 'portfolio_web', label: 'Portafolio web' },
-        { value: 'medium', label: 'Medium' },
-        { value: 'twitter', label: 'Twitter / X' },
-        { value: 'other', label: 'Otra' },
-      ],
-    },
-    { name: 'profile_url', label: 'URL del perfil', type: 'text', fullWidth: true },
-    { name: 'profile_status', label: 'Estado del perfil', type: 'text' },
-    { name: 'followers_count', label: 'Número de seguidores', type: 'number' },
-    { name: 'is_active_in_search', label: 'Activa en búsqueda', type: 'boolean' },
-    { name: 'platform_strategy', label: 'Estrategia de la plataforma', type: 'textarea', fullWidth: true },
-  ],
-}
-
-export const contentPiecesConfig: ResourceConfig = {
-  key: 'content-pieces',
-  label: 'Piezas de Contenido',
-  labelSingular: 'Contenido',
-  genderFeminine: false,
-  columns: [
     { key: 'title', label: 'Título' },
-    { key: 'content_type', label: 'Tipo' },
+    { key: 'platform', label: 'Plataforma' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
     { key: 'featured_on_home', label: 'Destacado', format: 'boolean' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
     { name: 'slug', label: 'Slug', type: 'text' },
+    { name: 'platform', label: 'Plataforma', type: 'text', placeholder: 'LinkedIn, Medium, Blog propio...' },
     { name: 'content_type', label: 'Tipo de contenido', type: 'text' },
-    { name: 'thematic_pillar', label: 'Pilar temático', type: 'text' },
     { name: 'reading_minutes', label: 'Minutos de lectura', type: 'number' },
     {
       name: 'status',
@@ -1063,50 +1029,122 @@ export const contentPiecesConfig: ResourceConfig = {
       ],
     },
     { name: 'featured_on_home', label: 'Destacado en home', type: 'boolean' },
-    { name: 'scheduled_publish_at', label: 'Publicación programada', type: 'datetime' },
     { name: 'related_project_id', label: 'ID de proyecto relacionado', type: 'number' },
-    { name: 'related_achievement_id', label: 'ID de logro relacionado', type: 'number' },
-    { name: 'related_competency_id', label: 'ID de competencia relacionada', type: 'number' },
+    { name: 'publication_url', label: 'URL de publicación', type: 'text', fullWidth: true },
+    { name: 'published_at', label: 'Fecha de publicación', type: 'datetime' },
+    { name: 'views', label: 'Vistas', type: 'number' },
+    { name: 'likes_reactions', label: 'Likes / reacciones', type: 'number' },
+    { name: 'comments', label: 'Comentarios', type: 'number' },
+    { name: 'shares', label: 'Compartidos', type: 'number' },
     { name: 'excerpt', label: 'Extracto', type: 'textarea', fullWidth: true },
     { name: 'body_content', label: 'Contenido completo', type: 'textarea', fullWidth: true },
     { name: 'tags', label: 'Tags', type: 'textarea', fullWidth: true },
   ],
 }
 
-export const publicationsConfig: ResourceConfig = {
-  key: 'publications',
-  label: 'Publicaciones',
-  labelSingular: 'Publicación',
-  genderFeminine: true,
-  columns: [
-    { key: 'published_title', label: 'Título publicado' },
-    { key: 'content_status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
-    { key: 'views', label: 'Vistas', format: 'number' },
-    { key: 'likes_reactions', label: 'Likes', format: 'number' },
-  ],
+// LinkedIn *profile* content (headline/about/experience/education/...) - not
+// to be confused with the "LinkedIn" posting/OAuth tool at /linkedin (see
+// Sidebar.tsx), which is a separate standalone page, not a career resource.
+export const linkedinProfileConfig: ResourceConfig = {
+  key: 'linkedin-profile',
+  label: 'Perfil de LinkedIn',
+  labelSingular: 'Perfil de LinkedIn',
+  genderFeminine: false,
+  mode: 'singleton',
+  columns: [],
   fields: [
-    { name: 'content_piece_id', label: 'ID de pieza de contenido', type: 'number', required: true },
-    { name: 'platform_id', label: 'ID de plataforma', type: 'number', required: true },
-    { name: 'published_title', label: 'Título publicado', type: 'text' },
-    { name: 'publication_url', label: 'URL de publicación', type: 'text', fullWidth: true },
-    { name: 'published_at', label: 'Fecha de publicación', type: 'datetime' },
-    { name: 'char_length', label: 'Longitud en caracteres', type: 'number' },
-    { name: 'views', label: 'Vistas', type: 'number' },
-    { name: 'likes_reactions', label: 'Likes / reacciones', type: 'number' },
-    { name: 'comments', label: 'Comentarios', type: 'number' },
-    { name: 'shares', label: 'Compartidos', type: 'number' },
+    { name: 'headline', label: 'Headline', type: 'text', fullWidth: true },
+    { name: 'profile_url', label: 'URL del perfil', type: 'text' },
+    { name: 'location', label: 'Ubicación', type: 'text' },
+    { name: 'about', label: 'About', type: 'textarea', fullWidth: true },
     {
-      name: 'content_status',
-      label: 'Estado',
-      type: 'select',
-      options: [
-        { value: 'draft', label: 'Borrador' },
-        { value: 'scheduled', label: 'Programado' },
-        { value: 'published', label: 'Publicado' },
-      ],
+      name: 'experience',
+      label: 'Experiencia (JSON)',
+      type: 'json',
+      fullWidth: true,
+      helpText:
+        'Lista de objetos: [{"company","title","location","start_date","end_date","description"}, ...]',
     },
-    { name: 'full_content', label: 'Contenido completo', type: 'textarea', fullWidth: true },
-    { name: 'hashtags_used', label: 'Hashtags', type: 'textarea', fullWidth: true },
+    {
+      name: 'education',
+      label: 'Educación (JSON)',
+      type: 'json',
+      fullWidth: true,
+      helpText: 'Lista de objetos: [{"institution","degree","field_of_study","start_date","end_date"}, ...]',
+    },
+    { name: 'featured_skills', label: 'Skills destacadas', type: 'textarea', fullWidth: true },
+    { name: 'featured_certifications', label: 'Certificaciones destacadas', type: 'textarea', fullWidth: true },
+    { name: 'languages', label: 'Idiomas', type: 'textarea', fullWidth: true },
+  ],
+}
+
+export const githubProfileConfig: ResourceConfig = {
+  key: 'github-profile',
+  label: 'Perfil de GitHub',
+  labelSingular: 'Perfil de GitHub',
+  genderFeminine: false,
+  mode: 'singleton',
+  columns: [],
+  fields: [
+    { name: 'headline', label: 'Título', type: 'text', fullWidth: true },
+    { name: 'username', label: 'Username de GitHub', type: 'text', helpText: 'Necesario para mostrar tus repos en vivo.' },
+    { name: 'profile_url', label: 'URL del perfil', type: 'text' },
+    { name: 'bio', label: 'Bio', type: 'textarea', fullWidth: true },
+    { name: 'readme_markdown', label: 'README principal (Markdown)', type: 'textarea', fullWidth: true },
+  ],
+}
+
+export const portalHomeConfig: ResourceConfig = {
+  key: 'portal-home',
+  label: 'Portal · Home',
+  labelSingular: 'Home del portal',
+  genderFeminine: false,
+  mode: 'singleton',
+  description: 'Solo el hero de la Home - proyectos y blog destacados ya se leen de sus propias tablas.',
+  columns: [],
+  fields: [
+    { name: 'hero_title', label: 'Título principal', type: 'text', fullWidth: true },
+    { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
+    { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },
+  ],
+}
+
+export const portalAboutConfig: ResourceConfig = {
+  key: 'portal-about',
+  label: 'Portal · Sobre Mí',
+  labelSingular: 'Sobre Mí del portal',
+  genderFeminine: false,
+  mode: 'singleton',
+  description: 'Solo lo personal que no vive ya en Identidad/Experiencia/Competencias/Certificaciones.',
+  columns: [],
+  fields: [
+    { name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
+    { name: 'personal_quote', label: 'Frase personal', type: 'text', fullWidth: true },
+    { name: 'values', label: 'Valores', type: 'textarea', fullWidth: true },
+    { name: 'interests_hobbies', label: 'Intereses / hobbies', type: 'textarea', fullWidth: true },
+  ],
+}
+
+export const portalContactConfig: ResourceConfig = {
+  key: 'portal-contact',
+  label: 'Portal · Contacto',
+  labelSingular: 'Contacto del portal',
+  genderFeminine: false,
+  mode: 'singleton',
+  description: 'Página de Contacto y los links del footer (LinkedIn/GitHub se leen de sus propios perfiles).',
+  columns: [],
+  fields: [
+    { name: 'contact_email', label: 'Email de contacto', type: 'text' },
+    { name: 'location', label: 'Ubicación', type: 'text' },
+    { name: 'availability_status', label: 'Disponibilidad', type: 'text', placeholder: 'Abierto a oportunidades...' },
+    { name: 'preferred_contact_method', label: 'Método de contacto preferido', type: 'text' },
+    {
+      name: 'footer_links',
+      label: 'Links del footer (JSON)',
+      type: 'json',
+      fullWidth: true,
+      helpText: 'Lista de objetos: [{"label","url"}, ...] - cualquier link adicional del footer.',
+    },
   ],
 }
 
@@ -1196,7 +1234,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     key: 'digital',
     label: 'Presencia Digital',
     icon: Globe,
-    resourceKeys: ['digital-platforms', 'content-pieces', 'publications'],
+    resourceKeys: ['publications', 'linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact'],
   },
   {
     key: 'networking',
@@ -1241,8 +1279,11 @@ export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   interviews: interviewsConfig,
   'contact-interactions': contactInteractionsConfig,
   'networking-activities': networkingActivitiesConfig,
-  'digital-platforms': digitalPlatformsConfig,
-  'content-pieces': contentPiecesConfig,
+  'linkedin-profile': linkedinProfileConfig,
+  'github-profile': githubProfileConfig,
+  'portal-home': portalHomeConfig,
+  'portal-about': portalAboutConfig,
+  'portal-contact': portalContactConfig,
   publications: publicationsConfig,
   tags: tagsConfig,
 }

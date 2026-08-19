@@ -1,5 +1,5 @@
 import { axiosInstance } from './client'
-import { CareerEntity, WeeklySearchMetrics } from '@/types/career'
+import { CareerEntity, GitHubRepo, WeeklySearchMetrics } from '@/types/career'
 
 /**
  * Generic client for the career-domain (v2) CRUD REST API.
@@ -53,6 +53,11 @@ export const careerApi = {
     const response = await axiosInstance.get<WeeklySearchMetrics[]>('/career/metrics/weekly', {
       params: { limit },
     })
+    return response.data
+  },
+
+  githubRepos: async (): Promise<GitHubRepo[]> => {
+    const response = await axiosInstance.get<GitHubRepo[]>('/career/github-profile/repos')
     return response.data
   },
 }
