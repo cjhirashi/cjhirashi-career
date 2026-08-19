@@ -390,16 +390,20 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                     setFormError(null)
                     setIsEditingSingleton(true)
                   }}
-                  className="btn-secondary btn-small flex items-center gap-1"
+                  className="btn-icon"
+                  aria-label="Editar"
+                  title="Editar"
                 >
-                  <Pencil size={14} /> Editar
+                  <Pencil size={16} />
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteSingleton}
-                  className="btn-secondary btn-small flex items-center gap-1 text-red-600 dark:text-red-400"
+                  className="btn-icon btn-icon-danger"
+                  aria-label="Eliminar"
+                  title="Eliminar"
                 >
-                  <Trash2 size={14} /> Eliminar
+                  <Trash2 size={16} />
                 </button>
               </div>
             )}
@@ -460,29 +464,33 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   const headerActions =
     viewState === 'list' ? (
-      <button type="button" onClick={openCreate} className="btn-primary btn-small flex items-center gap-1">
-        <Plus size={14} /> Nuevo
+      <button type="button" onClick={openCreate} className="btn-icon" aria-label="Nuevo" title="Nuevo">
+        <Plus size={16} />
       </button>
     ) : (
       <div className="flex items-center gap-2">
-        <button type="button" onClick={backToList} className="btn-secondary btn-small flex items-center gap-1">
-          <ArrowLeft size={14} /> Volver
+        <button type="button" onClick={backToList} className="btn-icon" aria-label="Volver" title="Volver">
+          <ArrowLeft size={16} />
         </button>
         {viewState === 'view' && activeItem && (
           <>
             <button
               type="button"
               onClick={() => openEdit(activeItem)}
-              className="btn-secondary btn-small flex items-center gap-1"
+              className="btn-icon"
+              aria-label="Editar"
+              title="Editar"
             >
-              <Pencil size={14} /> Editar
+              <Pencil size={16} />
             </button>
             <button
               type="button"
               onClick={() => handleDelete(activeItem)}
-              className="btn-secondary btn-small flex items-center gap-1 text-red-600 dark:text-red-400"
+              className="btn-icon btn-icon-danger"
+              aria-label="Eliminar"
+              title="Eliminar"
             >
-              <Trash2 size={14} /> Eliminar
+              <Trash2 size={16} />
             </button>
           </>
         )}

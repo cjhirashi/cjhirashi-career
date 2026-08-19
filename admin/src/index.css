@@ -187,6 +187,30 @@
     @apply px-3 py-1 text-sm;
   }
 
+  /* Round, icon-only action buttons (view/edit header: Nuevo, Volver,
+     Editar, Eliminar) - same glow-gradient treatment as `.btn-primary`,
+     just circular and without a text label. `.btn-icon-danger` swaps the
+     gradient to red for destructive actions (Eliminar) only. */
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-full text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-slate-900;
+    background-image: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    box-shadow: 0 4px 20px var(--primary-glow);
+  }
+
+  .btn-icon:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px var(--primary-glow);
+  }
+
+  .btn-icon-danger {
+    background-image: linear-gradient(135deg, #dc2626, #b91c1c);
+    box-shadow: 0 4px 20px rgba(220, 38, 38, 0.35);
+  }
+
+  .btn-icon-danger:hover:not(:disabled) {
+    box-shadow: 0 6px 28px rgba(220, 38, 38, 0.45);
+  }
+
   .input-field {
     @apply w-full px-3 py-2 text-text rounded-xl border focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-transparent placeholder:text-text-muted transition-colors;
     background-color: var(--bg-card);
