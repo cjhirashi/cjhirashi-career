@@ -129,6 +129,8 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
 
     let cancelled = false
     let instance: SvgPanZoomInstance | null = null
+    let resizeObserver: ResizeObserver | null = null
+    const container = containerRef.current
     import('svg-pan-zoom').then(({ default: svgPanZoom }) => {
       if (cancelled) return
       instance = svgPanZoom(svgEl, {
@@ -141,21 +143,24 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
         maxZoom: 10,
       }) as unknown as SvgPanZoomInstance
       panZoomRef.current = instance
-      // fit/center at construction time can measure the container before
-      // the browser has finished laying it out (dangerouslySetInnerHTML
-      // just landed), computing a scale that leaves part of the diagram
-      // outside the visible box - re-run them a frame later once layout
-      // has actually settled, the fix svg-pan-zoom's own docs recommend.
-      requestAnimationFrame(() => {
+      // The container's size can keep settling well past the SVG landing in
+      // the DOM (card hover transforms, the record view's own layout, a
+      // desktop/tablet window resize) - a one-off re-fit after a single
+      // frame only fixed the initial-mount race and still left the diagram
+      // fit to a stale size afterwards. Re-fit on every real size change
+      // instead, which also fires once immediately on observe().
+      resizeObserver = new ResizeObserver(() => {
         if (cancelled) return
         instance?.resize()
         instance?.fit()
         instance?.center()
       })
+      resizeObserver.observe(container)
     })
 
     return () => {
       cancelled = true
+      resizeObserver?.disconnect()
       instance?.destroy()
       panZoomRef.current = null
     }
