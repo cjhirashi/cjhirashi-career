@@ -40,6 +40,9 @@ interface SvgPanZoomInstance {
   zoomIn(): void
   zoomOut(): void
   reset(): void
+  resize(): void
+  fit(): void
+  center(): void
   destroy(): void
 }
 
@@ -138,6 +141,17 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
         maxZoom: 10,
       }) as unknown as SvgPanZoomInstance
       panZoomRef.current = instance
+      // fit/center at construction time can measure the container before
+      // the browser has finished laying it out (dangerouslySetInnerHTML
+      // just landed), computing a scale that leaves part of the diagram
+      // outside the visible box - re-run them a frame later once layout
+      // has actually settled, the fix svg-pan-zoom's own docs recommend.
+      requestAnimationFrame(() => {
+        if (cancelled) return
+        instance?.resize()
+        instance?.fit()
+        instance?.center()
+      })
     })
 
     return () => {
