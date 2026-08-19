@@ -1234,7 +1234,10 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     key: 'digital',
     label: 'Presencia Digital',
     icon: Globe,
-    resourceKeys: ['publications', 'linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact'],
+    // Publicaciones deliberately goes last, right before the LinkedIn
+    // posting tool spliced in below (Sidebar.tsx) - both are "publish
+    // content" actions (portfolio blog vs. LinkedIn), kept together.
+    resourceKeys: ['linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact', 'publications'],
   },
   {
     key: 'networking',
