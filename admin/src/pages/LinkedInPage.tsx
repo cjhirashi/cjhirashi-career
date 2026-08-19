@@ -289,13 +289,20 @@ export const LinkedInPage: React.FC = () => {
         </div>
       )}
 
-      {status?.connected && posts && posts.length > 0 && (
+      {status?.connected && (
         <div className="card">
           <div className="card-header">
             <h2 className="font-semibold text-text">Publicados desde este panel</h2>
           </div>
-          <div className="card-body divide-y divide-border">
-            {posts.map((post) => (
+          <div className="card-body">
+            {(!posts || posts.length === 0) && (
+              <p className="text-text-secondary text-sm text-center py-6">
+                Aún no has publicado ni programado nada desde aquí.
+              </p>
+            )}
+            {posts && posts.length > 0 && (
+              <div className="divide-y divide-border">
+                {posts.map((post) => (
               <div key={post.id} className="py-3 first:pt-0 last:pb-0 flex gap-3">
                 {post.image_url && (
                   <img src={post.image_url} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
@@ -331,7 +338,9 @@ export const LinkedInPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
