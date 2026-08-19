@@ -60,10 +60,25 @@ describe('SidebarRight', () => {
     expect(screen.getByText('Esta pantalla')).toBeInTheDocument()
   })
 
-  it('should only be visible from the xl breakpoint up', () => {
+  it('should render as a full-screen overlay on mobile', () => {
     const { container } = renderAt('/dashboard')
     const aside = container.querySelector('aside')
-    expect(aside?.className).toContain('hidden')
-    expect(aside?.className).toContain('xl:flex')
+    expect(aside?.className).toContain('fixed')
+    expect(aside?.className).toContain('inset-0')
+    expect(aside?.className).toContain('w-full')
+  })
+
+  it('should render as a right-anchored overlay on tablet (md)', () => {
+    const { container } = renderAt('/dashboard')
+    const aside = container.querySelector('aside')
+    expect(aside?.className).toContain('md:right-0')
+    expect(aside?.className).toContain('md:w-96')
+  })
+
+  it('should sit back in normal flow on desktop (xl)', () => {
+    const { container } = renderAt('/dashboard')
+    const aside = container.querySelector('aside')
+    expect(aside?.className).toContain('xl:static')
+    expect(aside?.className).toContain('xl:w-80')
   })
 })

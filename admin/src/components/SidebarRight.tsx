@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { clsx } from 'clsx'
 import { Sparkles, MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 
@@ -69,9 +70,12 @@ interface SidebarRightProps {
  *   derived from the route (career-domain resources pull their blurb from
  *   their own config, so this never goes stale as resources are added).
  *
- * Only shown from the `xl` breakpoint up (see Layout.tsx) - on smaller
- * viewports the two off-canvas sidebars (left nav + this one) would fight
- * for the same drawer space.
+ * Responsive behavior (mirrors the left Sidebar's mobile-drawer pattern,
+ * see Layout.tsx for the matching backdrop):
+ * - Mobile (<md): full-screen overlay above the work area.
+ * - Tablet (md-lg): overlay anchored to the right edge, not full width.
+ * - Desktop (xl+): back in normal flow alongside the main content, same
+ *   as before.
  */
 export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('instructions')
@@ -80,7 +84,12 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
 
   return (
     <aside
-      className="hidden xl:flex xl:flex-col w-80 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border p-4 gap-4"
+      className={clsx(
+        'glass-panel backdrop-blur-[20px] flex flex-col border-l border-border p-4 gap-4',
+        'fixed inset-0 z-50 w-full',
+        'md:inset-y-0 md:left-auto md:right-0 md:w-96 md:max-w-[90vw] md:rounded-l-2xl',
+        'xl:static xl:z-auto xl:w-80 xl:h-auto xl:flex-shrink-0 xl:rounded-none'
+      )}
       aria-label="Panel de asistencia"
     >
       {/* Header: tab switch (chat / instrucciones) + hide button */}

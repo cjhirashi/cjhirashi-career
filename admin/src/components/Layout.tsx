@@ -11,32 +11,44 @@ interface LayoutProps {
 }
 
 const MOBILE_BREAKPOINT = 768 // Tailwind's `md` breakpoint
+const DESKTOP_BREAKPOINT = 1280 // Tailwind's `xl` breakpoint - matches SidebarRight's own
 
 const isDesktopViewport = (): boolean =>
   typeof window !== 'undefined' ? window.innerWidth >= MOBILE_BREAKPOINT : true
+
+const isXlViewport = (): boolean =>
+  typeof window !== 'undefined' ? window.innerWidth >= DESKTOP_BREAKPOINT : true
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Sidebar is expanded by default on desktop, and closed (off-canvas) by
   // default on mobile - it doubles as "expanded/collapsed" on desktop and
   // "open/closed drawer" on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(isDesktopViewport)
-  // Right panel (chat/instructions) - open by default on desktop; the panel
-  // itself only ever renders from the `xl` breakpoint up regardless (see
-  // SidebarRight.tsx), this just tracks the user's show/hide choice.
-  const [rightPanelOpen, setRightPanelOpen] = useState(true)
+  // Right panel (chat/instructions) - open by default on desktop (xl+),
+  // where it lives in normal flow; closed by default below that, where it's
+  // a full-screen (mobile) or right-anchored (tablet) overlay instead - see
+  // SidebarRight.tsx - so it doesn't cover the work area on first load.
+  const [rightPanelOpen, setRightPanelOpen] = useState(isXlViewport)
   const { logout } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     let wasDesktop = isDesktopViewport()
+    let wasXl = isXlViewport()
 
     const handleResize = (): void => {
-      const isDesktop = isDesktopViewport()
-      // Only react when crossing the breakpoint, so we don't fight a user's
+      // Only react when crossing a breakpoint, so we don't fight a user's
       // manual expand/collapse choice on every pixel of resizing.
+      const isDesktop = isDesktopViewport()
       if (isDesktop !== wasDesktop) {
         setSidebarOpen(isDesktop)
         wasDesktop = isDesktop
+      }
+
+      const isXl = isXlViewport()
+      if (isXl !== wasXl) {
+        setRightPanelOpen(isXl)
+        wasXl = isXl
       }
     }
 
@@ -85,9 +97,24 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</div>
         </main>
 
+        {/* Backdrop for the right panel's overlay modes (mobile full-screen,
+            tablet right-anchored) - dims the work area and closes it on
+            click, same idea as the left sidebar's mobile backdrop above.
+            Not needed at `xl:` and up, where the panel lives in normal flow
+            instead of floating over the content. */}
+        {rightPanelOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-slate-900/50 xl:hidden"
+            aria-hidden="true"
+            onClick={() => setRightPanelOpen(false)}
+          />
+        )}
+
         {/* Chat (reserved for the future in-Admin Bedrock assistant) /
-            instructions panel - see SidebarRight.tsx. `xl:` and up only,
-            and only when the user hasn't hidden it via the topbar toggle. */}
+            instructions panel - see SidebarRight.tsx. Full-screen overlay on
+            mobile, right-anchored overlay on tablet, normal flow on desktop
+            (xl+) - and only when the user hasn't hidden it via the topbar
+            toggle. */}
         {rightPanelOpen ? (
           <SidebarRight onClose={() => setRightPanelOpen(false)} />
         ) : (

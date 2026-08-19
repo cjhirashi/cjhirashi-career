@@ -111,7 +111,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Panel toggle sits at the far edge, adjacent to where
               SidebarRight itself opens - keeps the spatial link between
               the control and what it controls, instead of living among
-              unrelated view/account controls. */}
+              unrelated view/account controls. Visible at every breakpoint
+              since the panel itself is reachable on mobile/tablet too now
+              (as a full-screen / right-anchored overlay - see
+              SidebarRight.tsx), not just on desktop. */}
           {onRightPanelToggle && (
             <button
               type="button"
@@ -119,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
               aria-pressed={rightPanelOpen}
               title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
-              className="hidden xl:flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+              className="flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
             >
               <PanelRight size={20} aria-hidden="true" />
             </button>
