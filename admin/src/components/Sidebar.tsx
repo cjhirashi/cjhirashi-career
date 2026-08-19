@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { ChevronDown, Menu, LayoutDashboard, BarChart3 } from 'lucide-react'
+import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -9,7 +9,7 @@ interface SidebarProps {
   onToggle: () => void
 }
 
-// Only the two pages that still have real, standalone content. Every other
+// Only the pages that still have real, standalone content. Every other
 // legacy menu item (Identity/Competencies/Evidence/Job Strategies/
 // Networking/Interviews) pointed at pre-career-domain (v1) pages superseded
 // by the 30 resources under CAREER_DOMAINS below — removed rather than kept
@@ -17,6 +17,7 @@ interface SidebarProps {
 const menuItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Métricas', path: '/metrics', icon: BarChart3 },
+  { label: 'Archivos', path: '/files', icon: FolderOpen },
 ]
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {

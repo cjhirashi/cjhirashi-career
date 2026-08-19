@@ -14,6 +14,8 @@ from config import settings
 from database import init_db, close_db
 from routes import auth_enhanced
 from routes import career_identity, career_search, career_digital, career_support, career_metrics
+from routes import files
+from services import storage_service
 
 # Configurar logging
 logging.basicConfig(
@@ -40,6 +42,13 @@ async def lifespan(app: FastAPI):
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
+        raise
+
+    try:
+        storage_service.ensure_bucket()
+        logger.info("MinIO bucket ready")
+    except Exception as e:
+        logger.error(f"Failed to initialize MinIO bucket: {e}")
         raise
 
     yield
@@ -128,6 +137,7 @@ app.include_router(career_search.router)
 app.include_router(career_digital.router)
 app.include_router(career_support.router)
 app.include_router(career_metrics.router)
+app.include_router(files.router)
 
 
 # Log de startup

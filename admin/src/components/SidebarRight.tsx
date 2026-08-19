@@ -20,6 +20,10 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
     title: 'Métricas',
     body: 'Vista de métricas del portafolio público y del panel. Por ahora son cifras de referencia — se llenan solas conforme haya tráfico e interacciones reales.',
   },
+  '/files': {
+    title: 'Archivos',
+    body: 'Sube cualquier archivo (imágenes, documentos) y obtén un link público para referenciarlo donde quieras, por ejemplo dentro de un campo Markdown con ![descripción](link). "Copiar link" copia la URL pública; "Eliminar" borra el archivo del bucket de forma permanente.',
+  },
 }
 
 /** Generic, always-accurate instructions for any of the 30 career-domain

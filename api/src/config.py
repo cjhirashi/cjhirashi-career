@@ -49,6 +49,19 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10 MB
     ALLOWED_EXTENSIONS: List[str] = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif"]
 
+    # MinIO (object storage bucket - required)
+    MINIO_ENDPOINT: str = Field(
+        ...,
+        description="MinIO host:port on the internal Docker network (required)"
+    )
+    MINIO_ROOT_USER: str = Field(..., description="MinIO access key (required)")
+    MINIO_ROOT_PASSWORD: str = Field(..., description="MinIO secret key (required)")
+    MINIO_BUCKET: str = Field(..., description="Bucket name for uploaded files (required)")
+    MINIO_PUBLIC_URL: str = Field(
+        ...,
+        description="Public base URL the bucket is exposed at (e.g. https://files.cjhirashi.com), required"
+    )
+
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REQUESTS: int = 100

@@ -135,8 +135,16 @@ services:
       # AWS Bedrock (para Agent Bedrock)
       BEDROCK_REGION: ${BEDROCK_REGION}
       BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID}
+      # MinIO (bucket de archivos)
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
     depends_on:
       postgres:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
@@ -211,6 +219,35 @@ services:
       - network-cjhirashi-srv
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # MinIO — Almacenamiento de objetos (bucket S3-compatible)
+  # =========================================================================
+  # Responsabilidad: Archivos subidos desde Admin Panel (imágenes, documentos)
+  #   con links públicos para referenciar en campos Markdown. Expuesto
+  #   públicamente vía Caddy (ver servicios-externos/portafolio-cjhirashi.md)
+  #   solo el puerto de la API S3 (9000) - la consola de administración
+  #   (9001) se queda interna, sin exponer.
+  minio:
+    image: minio/minio:latest
+    container_name: minio_storage
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      # Misma raíz de disco que Postgres, en su propia carpeta.
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/minio:/data:rw
+    networks:
+      - network-cjhirashi-srv
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5

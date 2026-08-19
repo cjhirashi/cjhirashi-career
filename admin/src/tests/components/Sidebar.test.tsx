@@ -34,10 +34,11 @@ describe('Sidebar', () => {
       expect(sidebar).toBeInTheDocument()
     })
 
-    it('should display the two static menu items when open', () => {
+    it('should display the static menu items when open', () => {
       renderSidebar(true, mockOnToggle)
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText('Métricas')).toBeInTheDocument()
+      expect(screen.getByText('Archivos')).toBeInTheDocument()
     })
 
     it('should not render legacy (pre-career-domain) menu items anymore', () => {
@@ -94,10 +95,11 @@ describe('Sidebar', () => {
   })
 
   describe('static menu items and links', () => {
-    it('should render exactly 2 static top-level links', () => {
+    it('should render the static top-level links', () => {
       renderSidebar(true, mockOnToggle)
       expect(screen.getByRole('link', { name: /Dashboard/i })).toHaveAttribute('href', '/dashboard')
       expect(screen.getByRole('link', { name: /Métricas/i })).toHaveAttribute('href', '/metrics')
+      expect(screen.getByRole('link', { name: /Archivos/i })).toHaveAttribute('href', '/files')
     })
 
     it('should render a Lucide (svg) icon for each static link', () => {

@@ -12,6 +12,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { MetricsPage } from '@/pages/MetricsPage'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
+import { FilesPage } from '@/pages/FilesPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +49,17 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <MetricsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/files"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <FilesPage />
                 </Layout>
               </PrivateRoute>
             }
