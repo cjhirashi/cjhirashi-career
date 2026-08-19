@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { ArrowLeft, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
@@ -60,6 +62,18 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
           {JSON.stringify(value, null, 2)}
         </pre>
       )
+    case 'textarea':
+      // Long free-text fields (bio, narratives, etc.) are authored as
+      // Markdown in the form's plain textarea - rendered here instead of
+      // guessing paragraph breaks from raw line breaks, so real Markdown
+      // (blank line between paragraphs, **bold**, lists, ...) shows up
+      // properly, and plain prose with no Markdown syntax still renders
+      // fine as ordinary paragraphs.
+      return (
+        <div className="markdown-body">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{String(value)}</ReactMarkdown>
+        </div>
+      )
     default:
       if (Array.isArray(value)) {
         return (
@@ -77,29 +91,7 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
           </pre>
         )
       }
-      // Long free-text fields (bio, narratives, etc.) often carry line
-      // breaks between paragraphs. A plain `whitespace-pre-wrap` preserves
-      // them but with only normal line-height between lines, so paragraphs
-      // read as one dense block - render each line as its own paragraph
-      // with a real gap instead, so they're visually distinguishable.
-      {
-        const lines = String(value)
-          .split('\n')
-          .map((line) => line.trim())
-          .filter((line) => line !== '')
-        if (lines.length <= 1) {
-          return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
-        }
-        return (
-          <div className="space-y-3">
-            {lines.map((line, idx) => (
-              <p key={idx} className="whitespace-pre-wrap break-words">
-                {line}
-              </p>
-            ))}
-          </div>
-        )
-      }
+      return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
   }
 }
 

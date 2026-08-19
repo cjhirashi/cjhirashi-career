@@ -62,6 +62,24 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(screen.getByText('ID')).toBeInTheDocument()
   })
 
+  it('renders textarea field content as Markdown - bold and paragraph breaks', async () => {
+    mockedCareerApi.list.mockResolvedValue([
+      {
+        ...sampleItem,
+        depth_description: 'Primer párrafo con **texto en negritas**.\n\nSegundo párrafo distinto.',
+      },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    const markdownBody = container.querySelector('.markdown-body')
+    expect(markdownBody).toBeInTheDocument()
+    expect(markdownBody?.querySelectorAll('p').length).toBe(2)
+    expect(markdownBody?.querySelector('strong')?.textContent).toBe('texto en negritas')
+  })
+
   it('goes back to the table when "Volver" is clicked from the view', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())

@@ -134,6 +134,9 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
               placeholder={field.placeholder}
               className="input-field h-48 font-mono text-xs"
             />
+            <p className="text-text-secondary text-xs mt-1">
+              Admite Markdown - deja una línea en blanco entre párrafos, **negritas**, listas con &quot;- &quot;...
+            </p>
             {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
           </div>
         )
