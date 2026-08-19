@@ -290,6 +290,11 @@
     @apply p-0 bg-transparent;
   }
 
+  .markdown-body img {
+    @apply max-w-full h-auto rounded-lg mb-3 border;
+    border-color: var(--border-glass);
+  }
+
   .markdown-body table {
     @apply text-sm mb-3 w-full;
   }

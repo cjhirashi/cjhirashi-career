@@ -80,6 +80,20 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(markdownBody?.querySelector('strong')?.textContent).toBe('texto en negritas')
   })
 
+  it('renders a Markdown image link as an <img>', async () => {
+    mockedCareerApi.list.mockResolvedValue([
+      { ...sampleItem, depth_description: '![Diagrama de arquitectura](https://example.com/diagram.png)' },
+    ] as never)
+    const { container } = render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    const img = container.querySelector('.markdown-body img')
+    expect(img).toHaveAttribute('src', 'https://example.com/diagram.png')
+    expect(img).toHaveAttribute('alt', 'Diagrama de arquitectura')
+  })
+
   it('goes back to the table when "Volver" is clicked from the view', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
