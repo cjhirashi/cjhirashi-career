@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
-import { ResourceConfig } from '@/config/careerResources'
+import { ArrowLeft, ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
+import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
 import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { Modal } from '@/components/Modal'
 import { ResourceForm } from './ResourceForm'
 import { formatCellValue } from './careerFieldUtils'
+import { formatDate, formatDateTime } from '@/utils/formatters'
 
 export interface ParentFilter {
   field: string
@@ -29,17 +29,112 @@ interface CareerResourceViewProps {
   rowClassName?: (item: CareerEntity) => string
 }
 
+/** What the card is currently showing, in place of a popup modal - the card
+ * grows/shrinks with whichever content is active instead of being capped to
+ * a fixed height, and the page itself scrolls if needed. */
+type ViewState = 'list' | 'view' | 'edit' | 'create'
+
 const Badge: React.FC<{ color: 'cyan' | 'slate' | 'success' | 'error' | 'warning'; children: React.ReactNode }> = ({
   color,
   children,
 }) => <span className={`badge badge-${color}`}>{children}</span>
 
+/** Read-only rendering of a single field's value, matching its `FieldType` -
+ * no truncation (unlike the table's `formatCellValue`), since this is the
+ * one place meant to show the complete content. */
+const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type }) => {
+  if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
+    return <span className="text-text-muted">—</span>
+  }
+
+  switch (type) {
+    case 'boolean':
+      return <>{value ? 'Sí' : 'No'}</>
+    case 'date':
+      return <>{typeof value === 'string' ? formatDate(value) : String(value)}</>
+    case 'datetime':
+      return <>{typeof value === 'string' ? formatDateTime(value) : String(value)}</>
+    case 'json':
+      return (
+        <pre className="text-xs bg-glass rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      )
+    default:
+      if (Array.isArray(value)) {
+        return (
+          <ul className="list-disc list-inside space-y-0.5">
+            {value.map((v, idx) => (
+              <li key={idx}>{String(v)}</li>
+            ))}
+          </ul>
+        )
+      }
+      if (typeof value === 'object') {
+        return (
+          <pre className="text-xs bg-glass rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
+            {JSON.stringify(value, null, 2)}
+          </pre>
+        )
+      }
+      return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
+  }
+}
+
+/** Every field the record has, in full - not just the table's summary
+ * columns - grouped into "Información" plus an automatic "Metadatos"
+ * section for whichever of id/created_at/updated_at the record actually
+ * carries (not every career table has all three, see types/career.ts). */
+const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[] }> = ({ item, fields }) => {
+  const metaEntries = useMemo(() => {
+    const entries: { label: string; value: string }[] = []
+    if (typeof item.id === 'number') entries.push({ label: 'ID', value: String(item.id) })
+    if (typeof item.created_at === 'string') entries.push({ label: 'Creado', value: formatDateTime(item.created_at) })
+    if (typeof item.updated_at === 'string')
+      entries.push({ label: 'Última actualización', value: formatDateTime(item.updated_at) })
+    return entries
+  }, [item])
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Información</h3>
+        <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {fields.map((field) => (
+            <div key={field.name} className={field.fullWidth ? 'md:col-span-2' : ''}>
+              <dt className="text-xs text-text-secondary mb-1">{field.label}</dt>
+              <dd className="text-sm text-text">
+                <FieldValue value={item[field.name]} type={field.type} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {metaEntries.length > 0 && (
+        <div className="pt-4 border-t border-border">
+          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Metadatos</h3>
+          <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {metaEntries.map((entry) => (
+              <div key={entry.label}>
+                <dt className="text-xs text-text-secondary mb-1">{entry.label}</dt>
+                <dd className="text-sm text-text">{entry.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const ProjectCard: React.FC<{
   item: CareerEntity
   config: ResourceConfig
+  onView: () => void
   onEdit: () => void
   onDelete: () => void
-}> = ({ item, config, onEdit, onDelete }) => {
+}> = ({ item, config, onView, onEdit, onDelete }) => {
   const [headingCol, ...restCols] = config.columns
   const summary =
     typeof item.card_summary === 'string'
@@ -50,13 +145,27 @@ const ProjectCard: React.FC<{
   const techStack = Array.isArray(item.tech_stack) ? (item.tech_stack as unknown[]) : null
 
   return (
-    <div className="card p-5 flex flex-col gap-3">
+    <div
+      className="card p-5 flex flex-col gap-3 cursor-pointer"
+      onClick={onView}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onView()
+        }
+      }}
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-text text-lg">{String(item[headingCol.key] ?? '—')}</h3>
         <div className="flex gap-1 flex-shrink-0">
           <button
             type="button"
-            onClick={onEdit}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit()
+            }}
             aria-label="Editar"
             className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
           >
@@ -64,7 +173,10 @@ const ProjectCard: React.FC<{
           </button>
           <button
             type="button"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
             aria-label="Eliminar"
             className="p-1.5 rounded text-text-secondary hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
           >
@@ -112,12 +224,12 @@ const ProjectCard: React.FC<{
       {(typeof item.github_url === 'string' || typeof item.demo_url === 'string') && (
         <div className="flex gap-3 text-xs pt-1">
           {typeof item.github_url === 'string' && item.github_url && (
-            <a href={item.github_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline">
+            <a href={item.github_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline" onClick={(e) => e.stopPropagation()}>
               GitHub
             </a>
           )}
           {typeof item.demo_url === 'string' && item.demo_url && (
-            <a href={item.demo_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline">
+            <a href={item.demo_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline" onClick={(e) => e.stopPropagation()}>
               Demo
             </a>
           )}
@@ -156,26 +268,46 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     return data
   }, [data, isNested, parentFilter])
 
-  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null)
-  const [editingItem, setEditingItem] = useState<CareerEntity | null>(null)
+  // Table / view / edit / create all render in place of each other, inside
+  // the same card - no popup. The card has no max-height anywhere in this
+  // component, so it always grows to fit whichever of these is active and
+  // the page (see Layout.tsx's `<main>`) scrolls if it doesn't fit the
+  // viewport, instead of a cramped inner scrollbox.
+  const [viewState, setViewState] = useState<ViewState>('list')
+  const [activeItem, setActiveItem] = useState<CareerEntity | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
 
-  const closeModal = () => {
-    setModalMode(null)
-    setEditingItem(null)
+  const backToList = () => {
+    setViewState('list')
+    setActiveItem(null)
     setFormError(null)
   }
 
-  const handleCreate = () => {
-    setEditingItem(null)
+  const openView = (item: CareerEntity) => {
+    setActiveItem(item)
     setFormError(null)
-    setModalMode('create')
+    setViewState('view')
   }
 
-  const handleEdit = (item: CareerEntity) => {
-    setEditingItem(item)
+  const openCreate = () => {
+    setActiveItem(null)
     setFormError(null)
-    setModalMode('edit')
+    setViewState('create')
+  }
+
+  const openEdit = (item: CareerEntity) => {
+    setActiveItem(item)
+    setFormError(null)
+    setViewState('edit')
+  }
+
+  const cancelForm = () => {
+    if (activeItem) {
+      setViewState('view')
+      setFormError(null)
+    } else {
+      backToList()
+    }
   }
 
   const handleDelete = (item: CareerEntity) => {
@@ -185,22 +317,32 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     ) {
       return
     }
-    deleteMutation.mutate(item.id)
+    deleteMutation.mutate(item.id, {
+      onSuccess: () => {
+        if (activeItem?.id === item.id) backToList()
+      },
+    })
   }
 
   const handleSubmit = (payload: Record<string, unknown>) => {
     setFormError(null)
-    if (modalMode === 'edit' && editingItem) {
+    if (viewState === 'edit' && activeItem) {
       updateMutation.mutate(
-        { id: editingItem.id, payload },
+        { id: activeItem.id, payload },
         {
-          onSuccess: closeModal,
+          onSuccess: (updated) => {
+            setActiveItem(updated)
+            setViewState('view')
+          },
           onError: (err) => setFormError(getErrorMessage(err)),
         }
       )
     } else {
       createMutation.mutate(payload, {
-        onSuccess: closeModal,
+        onSuccess: (created) => {
+          setActiveItem(created)
+          setViewState('view')
+        },
         onError: (err) => setFormError(getErrorMessage(err)),
       })
     }
@@ -208,7 +350,8 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   // ---------------------------------------------------------------------
   // Singleton mode (e.g. `identity`): a single record with an inline form,
-  // no table, no pagination, no delete.
+  // no table, no pagination, no delete. Already renders in place (no
+  // modal), so it needs no changes for the view/edit-in-place behavior.
   // ---------------------------------------------------------------------
   if (isSingleton) {
     const existing = items[0]
@@ -251,174 +394,219 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   const isCards = config.variant === 'cards'
 
+  // ---------------------------------------------------------------------
+  // Header - changes with viewState instead of always showing the table's
+  // title + "Nuevo" button.
+  // ---------------------------------------------------------------------
+  const headerTitle =
+    viewState === 'list'
+      ? title || config.label
+      : viewState === 'create'
+        ? `${config.genderFeminine ? 'Nueva' : 'Nuevo'} ${config.labelSingular}`
+        : viewState === 'edit'
+          ? `Editar ${config.labelSingular}`
+          : String(activeItem?.[config.columns[0]?.key ?? ''] ?? config.labelSingular)
+
+  const headerActions =
+    viewState === 'list' ? (
+      <button type="button" onClick={openCreate} className="btn-primary btn-small flex items-center gap-1">
+        <Plus size={14} /> Nuevo
+      </button>
+    ) : (
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={backToList} className="btn-secondary btn-small flex items-center gap-1">
+          <ArrowLeft size={14} /> Volver
+        </button>
+        {viewState === 'view' && activeItem && (
+          <>
+            <button
+              type="button"
+              onClick={() => openEdit(activeItem)}
+              className="btn-secondary btn-small flex items-center gap-1"
+            >
+              <Pencil size={14} /> Editar
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(activeItem)}
+              className="btn-secondary btn-small flex items-center gap-1 text-red-600 dark:text-red-400"
+            >
+              <Trash2 size={14} /> Eliminar
+            </button>
+          </>
+        )}
+      </div>
+    )
+
   return (
     <div className={hideTitle ? '' : 'card'}>
       {!hideTitle && (
         <div className="card-header flex items-center justify-between gap-3">
-          <h2 className="font-semibold text-text">{title || config.label}</h2>
-          <button type="button" onClick={handleCreate} className="btn-primary btn-small flex items-center gap-1">
-            <Plus size={14} /> Nuevo
-          </button>
+          <h2 className="font-semibold text-text">{headerTitle}</h2>
+          {headerActions}
         </div>
       )}
 
       {hideTitle && (
         <div className="flex items-center justify-between gap-3 mb-3">
-          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
-            {title || config.label}
-          </h3>
-          <button type="button" onClick={handleCreate} className="btn-primary btn-small flex items-center gap-1">
-            <Plus size={14} /> Nuevo
-          </button>
+          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">{headerTitle}</h3>
+          {headerActions}
         </div>
       )}
 
       <div className={hideTitle ? '' : 'card-body'}>
-        {isLoading && <LoadingSpinner fullScreen={false} message="Cargando..." />}
+        {viewState === 'view' && activeItem && <RecordView item={activeItem} fields={config.fields} />}
 
-        {isError && (
-          <div className="text-center py-6">
-            <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
-            <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
-              Reintentar
-            </button>
-          </div>
+        {(viewState === 'edit' || viewState === 'create') && (
+          <>
+            {formError && (
+              <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
+                <p className="text-red-800 dark:text-red-300 text-sm font-medium">{formError}</p>
+              </div>
+            )}
+            <ResourceForm
+              config={config}
+              initialValues={viewState === 'edit' ? activeItem || undefined : undefined}
+              presetValues={presetValues}
+              onSubmit={handleSubmit}
+              onCancel={cancelForm}
+              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              submitLabel={viewState === 'create' ? 'Crear' : 'Actualizar'}
+            />
+          </>
         )}
 
-        {!isLoading && !isError && items.length === 0 && (
-          <p className="text-text-secondary text-sm text-center py-6">
-            No hay {config.label.toLowerCase()} todavía.
-          </p>
-        )}
+        {viewState === 'list' && (
+          <>
+            {isLoading && <LoadingSpinner fullScreen={false} message="Cargando..." />}
 
-        {!isLoading && !isError && items.length > 0 && isCards && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {items.map((item) => (
-              <ProjectCard
-                key={item.id}
-                item={item}
-                config={config}
-                onEdit={() => handleEdit(item)}
-                onDelete={() => handleDelete(item)}
-              />
-            ))}
-          </div>
-        )}
+            {isError && (
+              <div className="text-center py-6">
+                <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
+                <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
+                  Reintentar
+                </button>
+              </div>
+            )}
 
-        {!isLoading && !isError && items.length > 0 && !isCards && (
-          <div className="overflow-x-auto -mx-6">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-text-secondary">
-                  {config.columns.map((col) => (
-                    <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
-                      {col.label}
-                    </th>
-                  ))}
-                  <th className="px-6 py-2 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
+            {!isLoading && !isError && items.length === 0 && (
+              <p className="text-text-secondary text-sm text-center py-6">
+                No hay {config.label.toLowerCase()} todavía.
+              </p>
+            )}
+
+            {!isLoading && !isError && items.length > 0 && isCards && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {items.map((item) => (
-                  <tr
+                  <ProjectCard
                     key={item.id}
-                    className={`border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${rowClassName ? rowClassName(item) : ''}`}
-                  >
-                    {config.columns.map((col) => {
-                      const value = item[col.key]
-                      if (col.format === 'badge' && value !== null && value !== undefined && value !== '') {
-                        return (
-                          <td key={col.key} className="px-6 py-2 whitespace-nowrap">
-                            <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>
-                              {String(value)}
-                            </Badge>
-                          </td>
-                        )
-                      }
-                      return (
-                        <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
-                          {formatCellValue(value, col.format)}
-                        </td>
-                      )
-                    })}
-                    <td className="px-6 py-2 text-right whitespace-nowrap">
-                      <div className="flex justify-end items-center gap-1">
-                        {renderExtraRowAction?.(item)}
-                        <button
-                          type="button"
-                          onClick={() => handleEdit(item)}
-                          aria-label="Editar"
-                          className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item)}
-                          aria-label="Eliminar"
-                          className="p-1.5 rounded text-text-secondary hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    item={item}
+                    config={config}
+                    onView={() => openView(item)}
+                    onEdit={() => openEdit(item)}
+                    onDelete={() => handleDelete(item)}
+                  />
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
+            )}
 
-        {!isNested && !isLoading && !isError && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-            <button
-              type="button"
-              onClick={() => setSkip((s) => Math.max(0, s - pageSize))}
-              disabled={skip === 0}
-              className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
-            >
-              <ChevronLeft size={14} /> Anterior
-            </button>
-            <span className="text-xs text-text-secondary">
-              Mostrando {items.length === 0 ? 0 : skip + 1}–{skip + items.length}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSkip((s) => s + pageSize)}
-              disabled={items.length < pageSize}
-              className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
-            >
-              Siguiente <ChevronRight size={14} />
-            </button>
-          </div>
+            {!isLoading && !isError && items.length > 0 && !isCards && (
+              <div className="overflow-x-auto -mx-6">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-text-secondary">
+                      {config.columns.map((col) => (
+                        <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
+                          {col.label}
+                        </th>
+                      ))}
+                      <th className="px-6 py-2 font-medium text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item) => (
+                      <tr
+                        key={item.id}
+                        onClick={() => openView(item)}
+                        className={`border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer ${rowClassName ? rowClassName(item) : ''}`}
+                      >
+                        {config.columns.map((col) => {
+                          const value = item[col.key]
+                          if (col.format === 'badge' && value !== null && value !== undefined && value !== '') {
+                            return (
+                              <td key={col.key} className="px-6 py-2 whitespace-nowrap">
+                                <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>
+                                  {String(value)}
+                                </Badge>
+                              </td>
+                            )
+                          }
+                          return (
+                            <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
+                              {formatCellValue(value, col.format)}
+                            </td>
+                          )
+                        })}
+                        <td className="px-6 py-2 text-right whitespace-nowrap">
+                          <div className="flex justify-end items-center gap-1">
+                            {renderExtraRowAction?.(item)}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                openEdit(item)
+                              }}
+                              aria-label="Editar"
+                              className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDelete(item)
+                              }}
+                              aria-label="Eliminar"
+                              className="p-1.5 rounded text-text-secondary hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {!isNested && !isLoading && !isError && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setSkip((s) => Math.max(0, s - pageSize))}
+                  disabled={skip === 0}
+                  className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
+                >
+                  <ChevronLeft size={14} /> Anterior
+                </button>
+                <span className="text-xs text-text-secondary">
+                  Mostrando {items.length === 0 ? 0 : skip + 1}–{skip + items.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSkip((s) => s + pageSize)}
+                  disabled={items.length < pageSize}
+                  className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
+                >
+                  Siguiente <ChevronRight size={14} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {modalMode && (
-        <Modal
-          title={
-            modalMode === 'create'
-              ? `${config.genderFeminine ? 'Nueva' : 'Nuevo'} ${config.labelSingular}`
-              : `Editar ${config.labelSingular}`
-          }
-          onClose={closeModal}
-        >
-          {formError && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
-              <p className="text-red-800 dark:text-red-300 text-sm font-medium">{formError}</p>
-            </div>
-          )}
-          <ResourceForm
-            config={config}
-            initialValues={editingItem || undefined}
-            presetValues={presetValues}
-            onSubmit={handleSubmit}
-            onCancel={closeModal}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-            submitLabel={modalMode === 'create' ? 'Crear' : 'Actualizar'}
-          />
-        </Modal>
-      )}
     </div>
   )
 }
