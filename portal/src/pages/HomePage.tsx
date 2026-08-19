@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
+import { Anchor, BookOpen, Clock, Network, ShieldCheck, TrendingUp } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
 import { useAbout } from '@/hooks/useAbout'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
 import { BlogCard } from '@/components/Common/BlogCard'
-import { MetricChips } from '@/components/Common/MetricChips'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
+import { parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
@@ -21,99 +22,130 @@ export const HomePage = () => {
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
   const anchor = home?.anchor_project
+  const anchorMetrics = parseMetrics(anchor?.metrics).slice(0, 3)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
-      {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl hero-split">
-          <div className="text-center content:text-left">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-4">
-              {home?.hero_title || 'Carlos Jiménez Hirashi'}
-            </h1>
-            {home?.hero_subtitle && (
-              <p className="text-xl sm:text-2xl text-primary font-semibold mb-4">{home.hero_subtitle}</p>
-            )}
-            {home?.hero_intro && (
-              <p className="text-lg text-text-secondary max-w-2xl mx-auto content:mx-0 mb-8 whitespace-pre-wrap">
-                {home.hero_intro}
-              </p>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center content:justify-start">
-              {anchor && (
-                <Link
-                  to={`/projects/${anchor.id}`}
-                  onClick={() => handleCTA('anchor-case')}
-                  className="btn px-8 py-3 font-semibold"
-                >
-                  {/* Split only on a dash surrounded by spaces (" - "/" — ") -
-                      a bare hyphen with no spaces is part of a word (e.g.
-                      "E-Commerce"), not a title/subtitle separator. */}
-                  Ver Caso {anchor.title.split(/\s[-–—]\s/)[0].trim()}
-                </Link>
-              )}
-              <Link
-                to="/projects"
-                onClick={() => handleCTA('view-projects')}
-                className={anchor ? 'btn-secondary px-8 py-3 font-semibold' : 'btn px-8 py-3 font-semibold'}
-              >
-                Ver proyectos
-              </Link>
-            </div>
-          </div>
-
+      {/* Hero - single centered column: photo, role badge, headline, tagline, CTAs */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-3xl flex flex-col items-center">
           {about?.photo_url && (
-            <div className="flex justify-center content:justify-end">
-              <img
-                src={about.photo_url}
-                alt="Carlos A. Jiménez Hirashi"
-                className="w-64 h-64 sm:w-80 sm:h-80 rounded-2xl object-cover border-4 border-primary shadow-glow"
-              />
-            </div>
+            <img
+              src={about.photo_url}
+              alt="Carlos A. Jiménez Hirashi"
+              className="w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-primary shadow-glow mb-6"
+            />
           )}
+
+          {home?.hero_subtitle && (
+            <span className="badge mb-6 flex items-center gap-1.5 text-sm">
+              <ShieldCheck size={14} /> {home.hero_subtitle}
+            </span>
+          )}
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-6">
+            {home?.hero_title || 'Carlos Jiménez Hirashi'}
+          </h1>
+
+          {home?.hero_intro && (
+            <p className="text-lg text-text-secondary max-w-xl mb-8 whitespace-pre-wrap">{home.hero_intro}</p>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {anchor && (
+              <Link
+                to={`/projects/${anchor.id}`}
+                onClick={() => handleCTA('anchor-case')}
+                className="btn px-8 py-3 font-semibold"
+              >
+                Ver Caso {anchor.title.split(/\s[-–—]\s/)[0].trim()} →
+              </Link>
+            )}
+            <Link
+              to="/projects"
+              onClick={() => handleCTA('view-projects')}
+              className={anchor ? 'btn-secondary px-8 py-3 font-semibold' : 'btn px-8 py-3 font-semibold'}
+            >
+              Ver proyectos
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Stats */}
       {home && home.stats.length > 0 && (
-        <section className="py-12 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {home.stats.map(stat => (
-              <div key={stat.label} className="card text-center p-6">
-                <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
-                <p className="text-text-secondary text-sm">{stat.label}</p>
+        <section className="py-8 px-4 sm:px-6 lg:px-8 border-t border-border">
+          <div className="mx-auto max-w-4xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-border">
+            {home.stats.map((stat, index) => (
+              <div key={stat.label} className="text-center px-4">
+                <div className={`text-3xl font-bold mb-1 ${index === 1 ? 'text-amber-500' : 'text-primary'}`}>
+                  {stat.value}
+                </div>
+                <p className="text-text-secondary text-xs uppercase tracking-wide">{stat.label}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Flagship case study */}
+      {/* Flagship case study - bento layout: narrative card + a grid of
+          metric/image cards, matching cjhirashi.com's case-study block. */}
       {anchor && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-5xl card overflow-hidden">
-            {anchor.image_url && (
-              <img src={anchor.image_url} alt={anchor.title} className="w-full h-64 object-cover" />
-            )}
-            <div className="p-8">
-              <div className="flex items-center gap-2 mb-4 text-xs text-text-secondary mono">
-                {anchor.year && <span>{anchor.year}</span>}
-                {anchor.category && <span className="badge mono">{anchor.category}</span>}
-                {anchor.industry && <span className="badge badge-secondary">{anchor.industry}</span>}
+          <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-4">
+            {/* Narrative card */}
+            <div className="card p-6">
+              <div className="flex items-start justify-between gap-2 mb-4">
+                <h2 className="text-lg font-bold text-text flex items-center gap-2">
+                  <Anchor size={16} className="text-primary flex-shrink-0" />
+                  Caso ancla — {anchor.title}
+                </h2>
+                {anchor.year && <span className="text-xs text-text-muted flex-shrink-0">{anchor.year}</span>}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-text mb-4">{anchor.title}</h2>
-              {anchor.problem && <p className="text-text-secondary mb-4 whitespace-pre-wrap">{anchor.problem}</p>}
-              <div className="mb-6">
-                <MetricChips metrics={anchor.metrics} />
-              </div>
-              <Link
-                to={`/projects/${anchor.id}`}
-                onClick={() => handleCTA('anchor-detail')}
-                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
-              >
-                Ver caso completo →
-              </Link>
+
+              {anchor.problem && (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                    <Clock size={12} /> Problema
+                  </p>
+                  <p className="text-text-secondary text-sm whitespace-pre-wrap">{anchor.problem}</p>
+                </div>
+              )}
+
+              {anchor.architecture && (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                    <Network size={12} /> Arquitectura
+                  </p>
+                  <p className="text-text-secondary text-sm whitespace-pre-wrap">{anchor.architecture}</p>
+                </div>
+              )}
+
+              {anchor.solution && (
+                <div className="rounded-lg p-4 bg-amber-500/10 border border-amber-500/20">
+                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                    <TrendingUp size={12} /> Resultado
+                  </p>
+                  <p className="text-text text-sm whitespace-pre-wrap">{anchor.solution}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Metrics + image mini-grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {anchorMetrics.map(([label, value], index) => (
+                <div key={label} className="card p-6 flex flex-col items-center justify-center text-center">
+                  <div className={`text-2xl font-bold mb-1 ${index === 1 ? 'text-amber-500' : 'text-primary'}`}>
+                    {String(value)}
+                  </div>
+                  <p className="text-text-secondary text-xs">{label}</p>
+                </div>
+              ))}
+              {anchor.image_url && (
+                <div className="card overflow-hidden">
+                  <img src={anchor.image_url} alt={anchor.title} className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -147,7 +179,9 @@ export const HomePage = () => {
         <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="flex justify-between items-center mb-12">
-              <h2 className="text-3xl font-bold text-text">Del blog</h2>
+              <h2 className="text-3xl font-bold text-text flex items-center gap-2">
+                <BookOpen size={22} className="text-primary" /> Del blog
+              </h2>
               <Link
                 to="/blog"
                 className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"

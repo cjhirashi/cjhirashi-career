@@ -48,17 +48,20 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('renders the anchor project as a flagship case study', async () => {
+  it('renders the anchor project as a flagship case study with problem/architecture/result', async () => {
     await renderReady()
 
-    expect(screen.getByText('Ver caso completo →')).toBeInTheDocument()
-    expect(screen.getAllByText(mockHome.anchor_project!.title).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(mockHome.anchor_project!.title, { exact: false }).length).toBeGreaterThan(0)
+    expect(screen.getByText('Problema')).toBeInTheDocument()
+    expect(screen.getAllByText('Arquitectura').length).toBeGreaterThan(0)
+    expect(screen.getByText('Resultado')).toBeInTheDocument()
+    expect(screen.getByText(mockHome.anchor_project!.problem!)).toBeInTheDocument()
   })
 
   it('renders a "Ver Caso" CTA linking to the anchor project', async () => {
     await renderReady()
 
-    const anchorLink = screen.getByRole('link', { name: `Ver Caso ${mockHome.anchor_project!.title}` })
+    const anchorLink = screen.getByRole('link', { name: new RegExp(`Ver Caso ${mockHome.anchor_project!.title}`) })
     expect(anchorLink).toHaveAttribute('href', `/projects/${mockHome.anchor_project!.id}`)
   })
 
