@@ -314,6 +314,16 @@
     background-color: var(--bg-glass);
   }
 
+  /* Higher specificity than `.markdown-body pre` above (2 classes + 1 tag
+     beats 1 class + 1 tag) - a plain `pt-*` utility class applied directly
+     to the <pre> loses that fight and gets silently overridden by the
+     shorthand `padding` in p-3 above, which is what happened here: the
+     language label (CodeBlockPre) ended up overlapping the first code line
+     instead of sitting above it. */
+  .markdown-body pre.has-code-lang {
+    padding-top: 1.75rem;
+  }
+
   .markdown-body pre code {
     @apply p-0 bg-transparent;
   }

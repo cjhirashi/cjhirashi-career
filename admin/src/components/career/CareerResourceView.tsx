@@ -65,7 +65,7 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
 
   return (
     <div className="relative group/code">
-      <pre ref={preRef} {...props} className={language ? 'pt-7' : props.className}>
+      <pre ref={preRef} {...props} className={language ? 'has-code-lang' : props.className}>
         {children}
       </pre>
       {language && (
