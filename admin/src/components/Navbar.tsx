@@ -33,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-20 glass-panel backdrop-blur-[16px] border-b border-border">
-      <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+      <div className="px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* Mobile menu toggle - only present when Layout wires it up */}
         {onMenuToggle && (
           <button
@@ -46,9 +46,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         )}
 
-        {/* Left side - logo */}
-        <div className="flex-1 min-w-0 flex items-center">
-          <img src={logoSrc} alt="cjhirashi" className="h-7 w-auto" />
+        {/* Left side - logo, sized relative to the navbar's own height like
+            the portal header's logo, rather than a fixed pixel size. */}
+        <div className="flex-1 min-w-0 h-full flex items-center">
+          <img src={logoSrc} alt="cjhirashi" className="h-[80%] w-auto" />
         </div>
 
         {/* Right side - Theme toggle + user menu + panel toggle */}
