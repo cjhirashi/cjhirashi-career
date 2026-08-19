@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu } from 'lucide-react'
+import { Menu, PanelRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { ThemeToggle } from './ThemeToggle'
 import { clsx } from 'clsx'
@@ -9,9 +9,18 @@ interface NavbarProps {
   onLogout: () => void
   /** Only rendered on mobile (<md). Opens/closes the off-canvas sidebar. */
   onMenuToggle?: () => void
+  /** Shows/hides the right panel (chat/instructions) - `xl:` and up only,
+   * mirrors where SidebarRight itself renders. */
+  onRightPanelToggle?: () => void
+  rightPanelOpen?: boolean
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onLogout, onMenuToggle }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onLogout,
+  onMenuToggle,
+  onRightPanelToggle,
+  rightPanelOpen,
+}) => {
   const { user } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -39,6 +48,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onLogout, onMenuToggle }) => {
 
         {/* Right side - Theme toggle + user menu */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          {onRightPanelToggle && (
+            <button
+              type="button"
+              onClick={onRightPanelToggle}
+              aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
+              aria-pressed={rightPanelOpen}
+              title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
+              className="hidden xl:flex p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+            >
+              <PanelRight size={20} aria-hidden="true" />
+            </button>
+          )}
+
           <ThemeToggle />
 
           <div className="relative">

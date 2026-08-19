@@ -9,12 +9,6 @@ import { Layout } from '@/components/Layout'
 // Pages
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
-import { IdentityPage } from '@/pages/IdentityPage'
-import { CompetenciesPage } from '@/pages/CompetenciesPage'
-import { EvidencePage } from '@/pages/EvidencePage'
-import { JobStrategiesPage } from '@/pages/JobStrategiesPage'
-import { NetworkingPage } from '@/pages/NetworkingPage'
-import { InterviewsPage } from '@/pages/InterviewsPage'
 import { MetricsPage } from '@/pages/MetricsPage'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
@@ -43,72 +37,6 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <DashboardPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/identity"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <IdentityPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/competencies"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <CompetenciesPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/evidence"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <EvidencePage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/job-strategies"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <JobStrategiesPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/networking"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <NetworkingPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/interviews"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <InterviewsPage />
                 </Layout>
               </PrivateRoute>
             }

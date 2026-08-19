@@ -19,6 +19,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // default on mobile - it doubles as "expanded/collapsed" on desktop and
   // "open/closed drawer" on mobile.
   const [sidebarOpen, setSidebarOpen] = useState(isDesktopViewport)
+  // Right panel (chat/instructions) - open by default on desktop; the panel
+  // itself only ever renders from the `xl` breakpoint up regardless (see
+  // SidebarRight.tsx), this just tracks the user's show/hide choice.
+  const [rightPanelOpen, setRightPanelOpen] = useState(true)
   const { logout } = useAuth()
   const navigate = useNavigate()
 
@@ -55,7 +59,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     // `.card` panels rendered by each page.
     <div className="flex flex-col h-screen text-text overflow-hidden">
       {/* Topbar (`dash-topbar`) - full-width, sticky, glass. */}
-      <Navbar onLogout={handleLogout} onMenuToggle={() => setSidebarOpen((open) => !open)} />
+      <Navbar
+        onLogout={handleLogout}
+        onMenuToggle={() => setSidebarOpen((open) => !open)}
+        onRightPanelToggle={() => setRightPanelOpen((open) => !open)}
+        rightPanelOpen={rightPanelOpen}
+      />
 
       {/* `dash-body`: sidebar-left | main-content | sidebar-right */}
       <div className="flex flex-1 min-h-0">
@@ -75,9 +84,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</div>
         </main>
 
-        {/* Reserved for the future in-Admin Bedrock assistant - see
-            SidebarRight.tsx. `xl:` and up only. */}
-        <SidebarRight />
+        {/* Chat (reserved for the future in-Admin Bedrock assistant) /
+            instructions panel - see SidebarRight.tsx. `xl:` and up only,
+            and only when the user hasn't hidden it via the topbar toggle. */}
+        {rightPanelOpen && <SidebarRight onClose={() => setRightPanelOpen(false)} />}
       </div>
     </div>
   )

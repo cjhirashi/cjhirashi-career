@@ -1,20 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import {
-  ChevronDown,
-  Menu,
-  Rocket,
-  LayoutDashboard,
-  UserCircle,
-  Target,
-  FolderOpen,
-  Search,
-  Handshake,
-  Briefcase,
-  TrendingUp,
-} from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { ChevronDown, Menu, LayoutDashboard, BarChart3 } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -22,26 +9,23 @@ interface SidebarProps {
   onToggle: () => void
 }
 
+// Only the two pages that still have real, standalone content. Every other
+// legacy menu item (Identity/Competencies/Evidence/Job Strategies/
+// Networking/Interviews) pointed at pre-career-domain (v1) pages superseded
+// by the 30 resources under CAREER_DOMAINS below — removed rather than kept
+// as dead links (see also App.tsx, which no longer routes to them).
 const menuItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Identity', path: '/identity', icon: UserCircle },
-  { label: 'Competencies', path: '/competencies', icon: Target },
-  { label: 'Evidence', path: '/evidence', icon: FolderOpen },
-  { label: 'Job Strategies', path: '/job-strategies', icon: Search },
-  { label: 'Networking', path: '/networking', icon: Handshake },
-  { label: 'Interviews', path: '/interviews', icon: Briefcase },
-  { label: 'Metrics', path: '/metrics', icon: TrendingUp },
+  { label: 'Métricas', path: '/metrics', icon: BarChart3 },
 ]
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
-  const { user } = useAuth()
   // Which career domain accordion is expanded ("Identidad Profesional",
   // "Operativa de Búsqueda", ...). At most one at a time to keep the list
-  // manageable - there are 30 resources across 5 domains.
+  // manageable - there are 30 resources across 5 domains. Domains render
+  // directly in the sidebar (no outer "Carrera" wrapper to expand first).
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null)
-  // Whether the "Carrera" section itself (the 5 domains) is expanded.
-  const [careerSectionOpen, setCareerSectionOpen] = useState(false)
 
   const isActive = (path: string): boolean => location.pathname === path
   const isCareerResourceActive = (resourceKey: string): boolean =>
@@ -51,16 +35,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     if (window.innerWidth < 768 && isOpen) onToggle()
   }
 
-  const handleCareerSectionToggle = () => {
-    // When the sidebar itself is collapsed (icon-only, desktop), clicking the
-    // "Carrera" icon expands the sidebar first instead of trying to render a
+  const handleDomainToggle = (domainKey: string) => {
+    // When the sidebar itself is collapsed (icon-only, desktop), clicking a
+    // domain expands the sidebar first instead of trying to render a
     // sub-menu with no room for labels.
     if (!isOpen) {
       onToggle()
-      setCareerSectionOpen(true)
+      setExpandedDomain(domainKey)
       return
     }
-    setCareerSectionOpen((open) => !open)
+    setExpandedDomain((current) => (current === domainKey ? null : domainKey))
   }
 
   return (
@@ -83,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         <button
           onClick={onToggle}
           className="p-2 hover:bg-glass rounded-xl transition-colors"
-          title={isOpen ? 'Collapse' : 'Expand'}
+          title={isOpen ? 'Contraer' : 'Expandir'}
         >
           <Menu size={20} aria-hidden="true" />
         </button>
@@ -108,104 +92,74 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           </Link>
         ))}
 
-        {/* Career domain (v2) - collapsible section grouping the 30
-            career-domain resources into 5 sub-menus, see
-            src/config/careerResources.ts (CAREER_DOMAINS). */}
-        <div className="pt-2 mt-2 border-t border-border">
-          <button
-            type="button"
-            onClick={handleCareerSectionToggle}
-            className="sidebar-item w-full justify-between"
-            title={isOpen ? undefined : 'Carrera'}
-            aria-expanded={careerSectionOpen}
-          >
-            <span className="flex items-center gap-3 min-w-0">
-              <Rocket size={20} className="flex-shrink-0" aria-hidden="true" />
-              {isOpen && <span className="text-sm font-medium truncate">Carrera</span>}
-            </span>
-            {isOpen && (
-              <ChevronDown
-                size={16}
-                className={clsx('flex-shrink-0 transition-transform', careerSectionOpen && 'rotate-180')}
-              />
-            )}
-          </button>
+        {/* Career domain (v2) - the 30 resources, grouped into 5 logical
+            domains (Identidad Profesional, Operativa de Búsqueda, Presencia
+            Digital, Networking, Soporte - see careerResources.ts). Each
+            domain is its own collapsible section directly in the sidebar,
+            in the order the domains are approved/declared - no outer
+            "Carrera" wrapper to expand first. */}
+        <div className="pt-2 mt-2 border-t border-border space-y-1">
+          {CAREER_DOMAINS.map((domain) => {
+            const isDomainExpanded = expandedDomain === domain.key
+            return (
+              <div key={domain.key}>
+                <button
+                  type="button"
+                  onClick={() => handleDomainToggle(domain.key)}
+                  className="sidebar-item w-full justify-between"
+                  title={isOpen ? undefined : domain.label}
+                  aria-expanded={isDomainExpanded}
+                >
+                  <span className="flex items-center gap-3 min-w-0">
+                    <domain.icon size={20} className="flex-shrink-0" aria-hidden="true" />
+                    {isOpen && <span className="text-sm font-medium truncate">{domain.label}</span>}
+                  </span>
+                  {isOpen && (
+                    <ChevronDown
+                      size={16}
+                      className={clsx('flex-shrink-0 transition-transform', isDomainExpanded && 'rotate-180')}
+                    />
+                  )}
+                </button>
 
-          {isOpen && careerSectionOpen && (
-            <div className="mt-1 space-y-1">
-              {CAREER_DOMAINS.map((domain) => {
-                const isDomainExpanded = expandedDomain === domain.key
-                return (
-                  <div key={domain.key}>
-                    <button
-                      type="button"
-                      onClick={() => setExpandedDomain((current) => (current === domain.key ? null : domain.key))}
-                      className="sidebar-section-label w-full flex items-center justify-between hover:bg-glass hover:text-text rounded-xl transition-colors"
-                      aria-expanded={isDomainExpanded}
-                    >
-                      <span className="flex items-center gap-2 truncate">
-                        <domain.icon size={14} className="flex-shrink-0" aria-hidden="true" />
-                        <span className="truncate">{domain.label}</span>
-                      </span>
-                      <ChevronDown
-                        size={12}
-                        className={clsx('flex-shrink-0 transition-transform', isDomainExpanded && 'rotate-180')}
-                      />
-                    </button>
-
-                    {isDomainExpanded && (
-                      <div className="space-y-0.5 mb-1">
-                        {domain.resourceKeys.map((resourceKey) => {
-                          const resource = CAREER_RESOURCES[resourceKey]
-                          if (!resource) return null
-                          const path = `/career/${resourceKey}`
-                          const active = isCareerResourceActive(resourceKey)
-                          return (
-                            <Link
-                              key={resourceKey}
-                              to={path}
-                              onClick={closeMobileDrawer}
-                              aria-current={active ? 'page' : undefined}
-                              className={clsx(
-                                'block pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
-                                active ? 'text-primary bg-primary-light' : 'text-text-secondary hover:bg-glass hover:text-text'
-                              )}
-                            >
-                              {resource.label}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )}
+                {isOpen && isDomainExpanded && (
+                  <div className="mt-1 space-y-0.5 mb-1">
+                    {domain.resourceKeys.map((resourceKey) => {
+                      const resource = CAREER_RESOURCES[resourceKey]
+                      if (!resource) return null
+                      const path = `/career/${resourceKey}`
+                      const active = isCareerResourceActive(resourceKey)
+                      return (
+                        <Link
+                          key={resourceKey}
+                          to={path}
+                          onClick={closeMobileDrawer}
+                          aria-current={active ? 'page' : undefined}
+                          className={clsx(
+                            'block pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                            active ? 'text-primary bg-primary-light' : 'text-text-secondary hover:bg-glass hover:text-text'
+                          )}
+                        >
+                          {resource.label}
+                        </Link>
+                      )
+                    })}
                   </div>
-                )
-              })}
-            </div>
-          )}
+                )}
+              </div>
+            )
+          })}
         </div>
       </nav>
 
-      {/* Footer - profile summary (avatar, name, role). The theme toggle
-          lives in the topbar (Navbar) so it's always reachable even when
-          this sidebar is off-canvas on mobile - see Navbar.tsx. */}
-      <div className="p-3 border-t border-border">
-        {isOpen ? (
-          <div className="sidebar-profile">
-            <div className="w-9 h-9 rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-glow">
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-text truncate">{user?.full_name || user?.username}</p>
-              <p className="text-xs text-text-muted truncate">{user?.professional_title || 'Administrador'}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="w-9 h-9 mx-auto rounded-full bg-cyan-600 flex items-center justify-center text-white font-bold text-sm shadow-glow">
-            {user?.username?.charAt(0).toUpperCase() || 'U'}
-          </div>
-        )}
-        {isOpen && <p className="text-[11px] text-text-muted text-center mt-2">v0.1.0</p>}
-      </div>
+      {/* Footer - just the version. User identity (avatar/name/role) already
+          lives in the Navbar dropdown at the top - no need to repeat it
+          here too. */}
+      {isOpen && (
+        <div className="p-3 border-t border-border">
+          <p className="text-[11px] text-text-muted text-center">v0.1.0</p>
+        </div>
+      )}
     </aside>
   )
 }

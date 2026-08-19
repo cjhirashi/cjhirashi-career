@@ -54,6 +54,9 @@ export interface ResourceConfig {
   key: string
   label: string
   labelSingular: string
+  /** Spanish grammatical gender of `labelSingular`, for "Nuevo/Nueva" and
+   * "este/esta" agreement in the UI (ResourceForm/CareerResourceView). */
+  genderFeminine: boolean
   description?: string
   /** `singleton`: the table has (at most) one row per user (e.g. `identity`). */
   mode?: 'list' | 'singleton'
@@ -95,6 +98,7 @@ export const differentiatorsConfig: ResourceConfig = {
   key: 'differentiators',
   label: 'Diferenciadores',
   labelSingular: 'Diferenciador',
+  genderFeminine: false,
   columns: [
     { key: 'pillar_name', label: 'Pilar' },
     { key: 'is_active', label: 'Activo', format: 'boolean' },
@@ -112,6 +116,7 @@ export const identityConfig: ResourceConfig = {
   key: 'identity',
   label: 'Identidad',
   labelSingular: 'Identidad',
+  genderFeminine: true,
   mode: 'singleton',
   columns: [],
   fields: [
@@ -130,6 +135,7 @@ export const identityReflectionsConfig: ResourceConfig = {
   key: 'identity-reflections',
   label: 'Reflexiones IKIGAI',
   labelSingular: 'Reflexión',
+  genderFeminine: true,
   columns: [
     { key: 'dimension', label: 'Dimensión', format: 'badge' },
     { key: 'content', label: 'Contenido', format: 'truncate' },
@@ -156,6 +162,7 @@ export const competenciesConfig: ResourceConfig = {
   key: 'competencies',
   label: 'Competencias',
   labelSingular: 'Competencia',
+  genderFeminine: true,
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'type', label: 'Tipo', format: 'badge' },
@@ -207,6 +214,7 @@ export const certificationsConfig: ResourceConfig = {
   key: 'certifications',
   label: 'Certificaciones',
   labelSingular: 'Certificación',
+  genderFeminine: true,
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'institution', label: 'Institución' },
@@ -225,6 +233,7 @@ export const targetRolesConfig: ResourceConfig = {
   key: 'target-roles',
   label: 'Roles Objetivo',
   labelSingular: 'Rol objetivo',
+  genderFeminine: false,
   columns: [
     { key: 'role_name', label: 'Rol' },
     { key: 'priority_order', label: 'Prioridad', format: 'number' },
@@ -258,6 +267,7 @@ export const workHistoryConfig: ResourceConfig = {
   key: 'work-history',
   label: 'Historial Laboral',
   labelSingular: 'Experiencia laboral',
+  genderFeminine: true,
   columns: [
     { key: 'company', label: 'Empresa' },
     { key: 'role_title', label: 'Puesto' },
@@ -291,6 +301,7 @@ export const achievementsConfig: ResourceConfig = {
   key: 'achievements',
   label: 'Logros',
   labelSingular: 'Logro',
+  genderFeminine: false,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'evidence_type', label: 'Tipo de evidencia', format: 'badge' },
@@ -336,6 +347,7 @@ export const starStoriesConfig: ResourceConfig = {
   key: 'star-stories',
   label: 'Historias STAR',
   labelSingular: 'Historia STAR',
+  genderFeminine: true,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'duration_seconds', label: 'Duración (s)', format: 'number' },
@@ -359,6 +371,7 @@ export const careerReviewsConfig: ResourceConfig = {
   key: 'career-reviews',
   label: 'Revisiones de Carrera',
   labelSingular: 'Revisión',
+  genderFeminine: true,
   columns: [
     { key: 'review_date', label: 'Fecha', format: 'date' },
     { key: 'review_type', label: 'Tipo', format: 'badge' },
@@ -402,6 +415,7 @@ export const roleGapAnalysisConfig: ResourceConfig = {
   key: 'role-gap-analysis',
   label: 'Análisis de Brechas',
   labelSingular: 'Brecha',
+  genderFeminine: true,
   columns: [
     { key: 'gap_name', label: 'Brecha' },
     { key: 'severity', label: 'Severidad', format: 'badge' },
@@ -452,6 +466,7 @@ export const projectsConfig: ResourceConfig = {
   key: 'projects',
   label: 'Proyectos',
   labelSingular: 'Proyecto',
+  genderFeminine: false,
   variant: 'cards',
   columns: [
     { key: 'title', label: 'Título' },
@@ -511,6 +526,7 @@ export const fitScoringFactorsConfig: ResourceConfig = {
   key: 'fit-scoring-factors',
   label: 'Factores de Fit',
   labelSingular: 'Factor de fit',
+  genderFeminine: false,
   columns: [
     { key: 'factor_name', label: 'Factor' },
     { key: 'weight_percentage', label: 'Peso %', format: 'number' },
@@ -528,6 +544,7 @@ export const marketSegmentsConfig: ResourceConfig = {
   key: 'market-segments',
   label: 'Segmentos de Mercado',
   labelSingular: 'Segmento',
+  genderFeminine: false,
   columns: [
     { key: 'channel_name', label: 'Canal' },
     { key: 'market_type', label: 'Tipo', format: 'badge' },
@@ -560,6 +577,7 @@ export const roleNarrativesConfig: ResourceConfig = {
   key: 'role-narratives',
   label: 'Narrativas de Rol',
   labelSingular: 'Narrativa',
+  genderFeminine: true,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'usage_context', label: 'Contexto de uso' },
@@ -579,6 +597,7 @@ export const searchPlansConfig: ResourceConfig = {
   key: 'search-plans',
   label: 'Planes de Búsqueda',
   labelSingular: 'Plan',
+  genderFeminine: false,
   columns: [
     { key: 'period_start', label: 'Inicio', format: 'date' },
     { key: 'period_end', label: 'Fin', format: 'date' },
@@ -620,6 +639,7 @@ export const networkingContactsConfig: ResourceConfig = {
   key: 'networking-contacts',
   label: 'Contactos',
   labelSingular: 'Contacto',
+  genderFeminine: false,
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'role_title', label: 'Puesto' },
@@ -665,6 +685,7 @@ export const targetCompaniesConfig: ResourceConfig = {
   key: 'target-companies',
   label: 'Empresas Diana',
   labelSingular: 'Empresa diana',
+  genderFeminine: true,
   columns: [
     { key: 'company_name', label: 'Empresa' },
     { key: 'tier', label: 'Tier', format: 'number' },
@@ -690,6 +711,7 @@ export const vacanciesConfig: ResourceConfig = {
   key: 'vacancies',
   label: 'Vacantes',
   labelSingular: 'Vacante',
+  genderFeminine: true,
   columns: [
     { key: 'company', label: 'Empresa' },
     { key: 'exact_role', label: 'Rol' },
@@ -727,6 +749,7 @@ export const cvVersionsConfig: ResourceConfig = {
   key: 'cv-versions',
   label: 'Versiones de CV',
   labelSingular: 'Versión de CV',
+  genderFeminine: true,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
@@ -774,6 +797,7 @@ export const coverLetterVersionsConfig: ResourceConfig = {
   key: 'cover-letter-versions',
   label: 'Cartas de Presentación',
   labelSingular: 'Carta',
+  genderFeminine: true,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
@@ -800,6 +824,7 @@ export const applicationsConfig: ResourceConfig = {
   key: 'applications',
   label: 'Aplicaciones',
   labelSingular: 'Aplicación',
+  genderFeminine: true,
   columns: [
     { key: 'vacancy_id', label: 'ID vacante', format: 'number' },
     { key: 'applied_at', label: 'Aplicado el', format: 'datetime' },
@@ -842,6 +867,7 @@ export const applicationInteractionsConfig: ResourceConfig = {
   key: 'application-interactions',
   label: 'Interacciones de Aplicación',
   labelSingular: 'Interacción',
+  genderFeminine: true,
   columns: [
     { key: 'interaction_at', label: 'Fecha', format: 'datetime' },
     { key: 'channel', label: 'Canal' },
@@ -861,6 +887,7 @@ export const interviewsConfig: ResourceConfig = {
   key: 'interviews',
   label: 'Entrevistas',
   labelSingular: 'Entrevista',
+  genderFeminine: true,
   columns: [
     { key: 'interview_type', label: 'Tipo' },
     { key: 'scheduled_at', label: 'Programada', format: 'datetime' },
@@ -920,6 +947,7 @@ export const contactInteractionsConfig: ResourceConfig = {
   key: 'contact-interactions',
   label: 'Interacciones de Contacto',
   labelSingular: 'Interacción',
+  genderFeminine: true,
   columns: [
     { key: 'interaction_at', label: 'Fecha', format: 'datetime' },
     { key: 'channel', label: 'Canal' },
@@ -942,6 +970,7 @@ export const networkingActivitiesConfig: ResourceConfig = {
   key: 'networking-activities',
   label: 'Actividades de Networking',
   labelSingular: 'Actividad',
+  genderFeminine: true,
   columns: [
     { key: 'activity_type', label: 'Actividad' },
     { key: 'category', label: 'Categoría', format: 'badge' },
@@ -976,6 +1005,7 @@ export const digitalPlatformsConfig: ResourceConfig = {
   key: 'digital-platforms',
   label: 'Plataformas Digitales',
   labelSingular: 'Plataforma',
+  genderFeminine: true,
   columns: [
     { key: 'platform_name', label: 'Plataforma', format: 'badge' },
     { key: 'profile_status', label: 'Estado del perfil' },
@@ -1009,6 +1039,7 @@ export const contentPiecesConfig: ResourceConfig = {
   key: 'content-pieces',
   label: 'Piezas de Contenido',
   labelSingular: 'Contenido',
+  genderFeminine: false,
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'content_type', label: 'Tipo' },
@@ -1046,6 +1077,7 @@ export const publicationsConfig: ResourceConfig = {
   key: 'publications',
   label: 'Publicaciones',
   labelSingular: 'Publicación',
+  genderFeminine: true,
   columns: [
     { key: 'published_title', label: 'Título publicado' },
     { key: 'content_status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
@@ -1084,8 +1116,9 @@ export const publicationsConfig: ResourceConfig = {
 
 export const tagsConfig: ResourceConfig = {
   key: 'tags',
-  label: 'Tags',
-  labelSingular: 'Tag',
+  label: 'Etiquetas',
+  labelSingular: 'Etiqueta',
+  genderFeminine: true,
   columns: [
     { key: 'tag_name', label: 'Nombre' },
     { key: 'entity_type', label: 'Tipo de entidad' },

@@ -179,7 +179,10 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   }
 
   const handleDelete = (item: CareerEntity) => {
-    if (!window.confirm(`¿Eliminar este ${config.labelSingular.toLowerCase()}? Esta acción no se puede deshacer.`)) {
+    const demonstrative = config.genderFeminine ? 'esta' : 'este'
+    if (
+      !window.confirm(`¿Eliminar ${demonstrative} ${config.labelSingular.toLowerCase()}? Esta acción no se puede deshacer.`)
+    ) {
       return
     }
     deleteMutation.mutate(item.id)
@@ -393,7 +396,11 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
       {modalMode && (
         <Modal
-          title={modalMode === 'create' ? `Nuevo ${config.labelSingular}` : `Editar ${config.labelSingular}`}
+          title={
+            modalMode === 'create'
+              ? `${config.genderFeminine ? 'Nueva' : 'Nuevo'} ${config.labelSingular}`
+              : `Editar ${config.labelSingular}`
+          }
           onClose={closeModal}
         >
           {formError && (

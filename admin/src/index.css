@@ -63,9 +63,10 @@
     --radius-md: 16px;
     --radius-lg: 24px;
 
-    /* Ambient body gradients */
-    --ambient-a: rgba(8, 145, 178, 0.12);
-    --ambient-b: rgba(71, 85, 105, 0.1);
+    /* Ambient body gradients — fixed values from the reference implementation,
+       intentionally the same in light and dark (not derived from --primary-color). */
+    --ambient-a: rgba(34, 211, 238, 0.2);
+    --ambient-b: rgba(148, 163, 184, 0.18);
 
     /* Legacy semantic aliases kept for backwards-compatible Tailwind tokens
        (bg-bg, bg-surface-card, border-border, text-text, ...) — see
@@ -124,9 +125,9 @@
     /* Elevation */
     --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
-    /* Ambient body gradients */
-    --ambient-a: rgba(34, 211, 238, 0.16);
-    --ambient-b: rgba(100, 116, 139, 0.14);
+    /* Ambient body gradients — same fixed values as light (see :root). */
+    --ambient-a: rgba(34, 211, 238, 0.2);
+    --ambient-b: rgba(148, 163, 184, 0.18);
   }
 
   html {
@@ -142,8 +143,8 @@
     @apply text-text transition-colors duration-200;
     background-color: var(--bg-primary);
     background-image:
-      radial-gradient(circle at 15% 20%, var(--ambient-a) 0%, transparent 45%),
-      radial-gradient(circle at 85% 85%, var(--ambient-b) 0%, transparent 45%);
+      radial-gradient(circle at 10% 20%, var(--ambient-a) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, var(--ambient-b) 0%, transparent 45%);
     background-attachment: fixed;
     min-height: 100vh;
   }

@@ -60,9 +60,11 @@
   --radius-md: 16px;
   --radius-lg: 24px;
 
-  /* Ambient background gradients (see body rule below) */
-  --ambient-cyan: rgba(8, 145, 178, 0.2);
-  --ambient-steel: rgba(71, 85, 105, 0.2);
+  /* Ambient background gradients — fixed values from the reference
+     implementation, intentionally the same in light and dark (not derived
+     from --primary-color). */
+  --ambient-cyan: rgba(34, 211, 238, 0.2);
+  --ambient-steel: rgba(148, 163, 184, 0.18);
 
   /* Legacy aliases kept so existing `bg-*`/`text-*` utility usages
      (see tailwind.config.ts) keep working, now backed by Glass Steel tokens. */
@@ -112,8 +114,9 @@
 
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
+  /* Same fixed values as light (see :root). */
   --ambient-cyan: rgba(34, 211, 238, 0.2);
-  --ambient-steel: rgba(148, 163, 184, 0.2);
+  --ambient-steel: rgba(148, 163, 184, 0.18);
 }
 
 /* Global Styles */
@@ -142,8 +145,8 @@ body {
      steel) sitting under every translucent surface in the app. */
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(circle at 10% 20%, var(--ambient-cyan) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, var(--ambient-steel) 0%, transparent 50%);
+    radial-gradient(circle at 10% 20%, var(--ambient-cyan) 0%, transparent 45%),
+    radial-gradient(circle at 90% 80%, var(--ambient-steel) 0%, transparent 45%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   background-size: cover;
