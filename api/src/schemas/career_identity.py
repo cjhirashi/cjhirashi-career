@@ -497,6 +497,8 @@ class ProjectBase(BaseModel):
     releases: Optional[List[Any]] = None
     status: ProjectStatusLiteral = "active"
     is_featured: bool = False
+    is_anchor: bool = False
+    image_url: Optional[str] = Field(None, max_length=1024)
 
 
 class ProjectCreate(ProjectBase):
@@ -524,6 +526,8 @@ class ProjectUpdate(BaseModel):
     releases: Optional[List[Any]] = None
     status: Optional[ProjectStatusLiteral] = None
     is_featured: Optional[bool] = None
+    is_anchor: Optional[bool] = None
+    image_url: Optional[str] = None
 
 
 class ProjectResponse(ProjectBase):

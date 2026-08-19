@@ -23,6 +23,7 @@ class PublicationBase(BaseModel):
     body_content: Optional[str] = None
     content_type: Optional[str] = Field(None, max_length=50)
     tags: Optional[str] = None
+    image_url: Optional[str] = Field(None, max_length=1024)
     platform: Optional[str] = Field(None, max_length=100)
     publication_url: Optional[str] = Field(None, max_length=500)
     published_at: Optional[datetime] = None
@@ -47,6 +48,7 @@ class PublicationUpdate(BaseModel):
     body_content: Optional[str] = None
     content_type: Optional[str] = None
     tags: Optional[str] = None
+    image_url: Optional[str] = None
     platform: Optional[str] = None
     publication_url: Optional[str] = None
     published_at: Optional[datetime] = None
@@ -142,6 +144,7 @@ class PortalHomeBase(BaseModel):
     hero_title: Optional[str] = Field(None, max_length=255)
     hero_subtitle: Optional[str] = Field(None, max_length=500)
     hero_intro: Optional[str] = None
+    stats: Optional[List[Any]] = None
 
 
 class PortalHomeCreate(PortalHomeBase):
@@ -168,9 +171,6 @@ class PortalHomeResponse(PortalHomeBase):
 
 class PortalAboutBase(BaseModel):
     photo_url: Optional[str] = Field(None, max_length=1024)
-    values: Optional[str] = None
-    interests_hobbies: Optional[str] = None
-    personal_quote: Optional[str] = Field(None, max_length=500)
 
 
 class PortalAboutCreate(PortalAboutBase):
@@ -197,6 +197,7 @@ class PortalAboutResponse(PortalAboutBase):
 
 class PortalContactBase(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
+    whatsapp: Optional[str] = Field(None, max_length=50)
     location: Optional[str] = Field(None, max_length=255)
     availability_status: Optional[str] = Field(None, max_length=50)
     preferred_contact_method: Optional[str] = Field(None, max_length=100)

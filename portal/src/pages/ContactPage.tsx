@@ -7,12 +7,7 @@ import { ErrorMessage } from '@/components/Common/ErrorMessage'
 
 export const ContactPage = () => {
   const { data: contact, isLoading, error } = useContact()
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  })
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const { trackClick } = useTrackClick()
@@ -38,7 +33,7 @@ export const ContactPage = () => {
       })
 
       setSubmitted(true)
-      setFormData({ name: '', email: '', subject: '', message: '' })
+      setFormData({ name: '', email: '', message: '' })
       setTimeout(() => setSubmitted(false), 5000)
     } catch (err) {
       console.error('Failed to send message:', err)
@@ -50,14 +45,16 @@ export const ContactPage = () => {
   if (isLoading) return <LoadingSpinner />
   if (error) return <ErrorMessage message="No se pudo cargar la información de contacto" />
 
+  const whatsappHref = contact?.whatsapp ? `https://wa.me/${contact.whatsapp.replace(/\D/g, '')}` : null
+
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">Hablemos</h1>
+          <h1 className="text-4xl font-bold text-text mb-4">Hablemos de tu proyecto</h1>
           <p className="text-lg text-text-secondary">
-            ¿Tienes una pregunta o quieres trabajar juntos? Me encantaría saber de ti.
+            Sistemas de datos, IA o automatización crítica que no pueden fallar. Cuéntame qué estás construyendo.
           </p>
         </div>
 
@@ -76,6 +73,21 @@ export const ContactPage = () => {
               </div>
             )}
 
+            {contact?.whatsapp && whatsappHref && (
+              <div className="card p-4">
+                <h3 className="font-bold text-text mb-2">WhatsApp</h3>
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackClick('contact-whatsapp')}
+                  className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                >
+                  {contact.whatsapp}
+                </a>
+              </div>
+            )}
+
             {contact?.location && (
               <div className="card p-4">
                 <h3 className="font-bold text-text mb-2">Ubicación</h3>
@@ -83,7 +95,7 @@ export const ContactPage = () => {
               </div>
             )}
 
-            {(contact?.linkedin_url || contact?.github_url || (contact?.footer_links.length ?? 0) > 0) && (
+            {(contact?.linkedin_url || contact?.github_url) && (
               <div className="card p-4">
                 <h3 className="font-bold text-text mb-2">Sígueme</h3>
                 <div className="space-y-2">
@@ -109,26 +121,7 @@ export const ContactPage = () => {
                       GitHub
                     </a>
                   )}
-                  {contact?.footer_links.map(link => (
-                    <a
-                      key={link.url}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => trackClick(`social-${link.label.toLowerCase()}`)}
-                      className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
                 </div>
-              </div>
-            )}
-
-            {contact?.availability_status && (
-              <div className="card bg-primary-light p-4">
-                <p className="text-xs uppercase font-bold text-primary mb-1">Disponibilidad</p>
-                <p className="text-text">{contact.availability_status}</p>
               </div>
             )}
           </div>
@@ -172,21 +165,6 @@ export const ContactPage = () => {
                     required
                     className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="tu@email.com"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-text mb-2">
-                    Asunto
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-                    placeholder="¿De qué se trata?"
                   />
                 </div>
 

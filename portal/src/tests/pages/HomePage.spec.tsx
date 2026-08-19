@@ -2,12 +2,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
 import { homeApi } from '@/api/home'
+import { aboutApi } from '@/api/about'
 import { trackingApi } from '@/api/tracking'
 import { HomePage } from '@/pages/HomePage'
-import { mockHome } from '../fixtures/mockData'
+import { mockHome, mockAbout } from '../fixtures/mockData'
 
 vi.mock('@/api/home')
+vi.mock('@/api/about')
 vi.mock('@/api/tracking')
+
+const renderReady = async () => {
+  vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+  vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+  render(<HomePage />)
+  await waitFor(() => {
+    expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
+  })
+}
 
 describe('HomePage - Entry Point', () => {
   beforeEach(() => {
@@ -15,91 +26,85 @@ describe('HomePage - Entry Point', () => {
   })
 
   it('renders hero copy from home content', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+    await renderReady()
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
-    })
     expect(screen.getByText(mockHome.hero_subtitle!)).toBeInTheDocument()
     expect(screen.getByText(mockHome.hero_intro!)).toBeInTheDocument()
   })
 
-  it('renders featured projects section', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+  it('renders the hero photo from about content', async () => {
+    await renderReady()
 
-    render(<HomePage />)
+    const photo = screen.getByAltText('Carlos A. Jiménez Hirashi') as HTMLImageElement
+    expect(photo.src).toContain(mockAbout.photo_url)
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText(/Proyectos Destacados/)).toBeInTheDocument()
-      expect(screen.getByText('E-Commerce Platform')).toBeInTheDocument()
-      expect(screen.getByText('SaaS Dashboard')).toBeInTheDocument()
+  it('renders the 4 stats', async () => {
+    await renderReady()
+
+    mockHome.stats.forEach(stat => {
+      expect(screen.getByText(stat.value)).toBeInTheDocument()
+      expect(screen.getByText(stat.label)).toBeInTheDocument()
     })
   })
 
-  it('links featured projects to their detail page', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+  it('renders the anchor project as a flagship case study', async () => {
+    await renderReady()
 
-    render(<HomePage />)
+    expect(screen.getByText('Ver caso completo →')).toBeInTheDocument()
+    expect(screen.getAllByText(mockHome.anchor_project!.title).length).toBeGreaterThan(0)
+  })
 
-    await waitFor(() => {
-      const projectLink = screen.getByText('E-Commerce Platform').closest('a')
-      expect(projectLink).toHaveAttribute('href', '/projects/1')
+  it('renders a "Ver Caso" CTA linking to the anchor project', async () => {
+    await renderReady()
+
+    const anchorLink = screen.getByRole('link', { name: `Ver Caso ${mockHome.anchor_project!.title}` })
+    expect(anchorLink).toHaveAttribute('href', `/projects/${mockHome.anchor_project!.id}`)
+  })
+
+  it('renders featured projects section', async () => {
+    await renderReady()
+
+    expect(screen.getByText('Proyectos')).toBeInTheDocument()
+    mockHome.featured_projects.forEach(p => {
+      expect(screen.getAllByText(p.title).length).toBeGreaterThan(0)
     })
   })
 
   it('renders featured publications section', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+    await renderReady()
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Del Blog/)).toBeInTheDocument()
-      expect(screen.getByText('Understanding System Design')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Del blog')).toBeInTheDocument()
+    expect(screen.getByText(mockHome.featured_publications[0].title)).toBeInTheDocument()
   })
 
-  it('renders CTA buttons for navigation', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+  it('renders the "Ver proyectos" CTA', async () => {
+    await renderReady()
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('link', { name: /Ver Proyectos/i })).toHaveAttribute('href', '/projects')
-      expect(screen.getByRole('link', { name: /Contactar/i })).toHaveAttribute('href', '/contact')
-    })
+    expect(screen.getByRole('link', { name: 'Ver proyectos' })).toHaveAttribute('href', '/projects')
   })
 
-  it('renders final CTA section', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Trabajamos juntos/i)).toBeInTheDocument()
-      expect(screen.getByText(/Iniciar una conversación/i)).toBeInTheDocument()
-    })
-  })
-
-  it('tracks clicks on the portfolio CTA button', async () => {
+  it('tracks clicks on the "Ver proyectos" CTA', async () => {
     const user = userEvent.setup()
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
+    await renderReady()
 
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Proyectos Destacados/)).toBeInTheDocument()
-    })
-
-    const portfolioButton = screen.getByRole('link', { name: /Ver Proyectos/i })
-    await user.click(portfolioButton)
+    await user.click(screen.getByRole('link', { name: 'Ver proyectos' }))
 
     expect(trackingApi.trackEvent).toHaveBeenCalled()
   })
 
+  it('renders "Ver todos" links pointing at /projects and /blog', async () => {
+    await renderReady()
+
+    const links = screen.getAllByRole('link', { name: /Ver todos/i })
+    const hrefs = links.map(l => l.getAttribute('href'))
+    expect(hrefs).toContain('/projects')
+    expect(hrefs).toContain('/blog')
+  })
+
   it('shows loading spinner initially', () => {
     vi.mocked(homeApi.getHome).mockImplementation(() => new Promise(() => {}))
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -108,6 +113,7 @@ describe('HomePage - Entry Point', () => {
 
   it('shows error message when home content fails to load', async () => {
     vi.mocked(homeApi.getHome).mockRejectedValue(new Error('Failed'))
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -118,6 +124,7 @@ describe('HomePage - Entry Point', () => {
 
   it('falls back to the default title when hero_title is missing', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_title: null })
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -126,40 +133,31 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('omits the featured sections when there is no featured content', async () => {
+  it('omits the anchor case study and featured sections when there is none', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({
       ...mockHome,
+      anchor_project: null,
       featured_projects: [],
       featured_publications: [],
     })
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
     await waitFor(() => {
       expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
     })
-    expect(screen.queryByText(/Proyectos Destacados/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Del Blog/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Ver caso completo →')).not.toBeInTheDocument()
+    expect(screen.queryByText('Del blog')).not.toBeInTheDocument()
   })
 
   it('renders hero section in gradient background', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
     const { container } = render(<HomePage />)
 
     await waitFor(() => {
       expect(container.querySelector('.bg-gradient-to-br')).toBeInTheDocument()
-    })
-  })
-
-  it('renders "Ver todos" / "Ver todo" links pointing at their list pages', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-
-    render(<HomePage />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'Ver todos →' })).toHaveAttribute('href', '/projects')
-      expect(screen.getByRole('link', { name: 'Ver todo →' })).toHaveAttribute('href', '/blog')
     })
   })
 })

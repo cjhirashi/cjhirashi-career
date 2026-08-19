@@ -37,6 +37,12 @@ class Project(Base):
     releases = Column(JSONB, nullable=True)
     status = Column(String(30), default="active", nullable=True, index=True)
     is_featured = Column(Boolean, default=False, nullable=True, index=True)
+    # The single flagship project the portal's Home page renders as a full
+    # case-study block (problem/architecture/result narrative), separate
+    # from is_featured (which drives the plain project-card grid). Not
+    # DB-enforced to be unique - the portal just uses the first match.
+    is_anchor = Column(Boolean, default=False, nullable=True, index=True)
+    image_url = Column(String(1024), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

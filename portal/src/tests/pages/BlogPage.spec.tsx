@@ -30,7 +30,7 @@ describe('BlogPage', () => {
     render(<BlogPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Artículos técnicos, ideas/i)).toBeInTheDocument()
+      expect(screen.getByText(/Pensamiento sistémico aplicado a arquitectura/i)).toBeInTheDocument()
     })
   })
 
@@ -46,193 +46,76 @@ describe('BlogPage', () => {
     })
   })
 
-  it('renders search input field', async () => {
+  it('renders category filter buttons', async () => {
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
     await waitFor(() => {
-      const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-      expect(searchInput).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Todos' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: mockBlogPosts[0].content_type! })).toBeInTheDocument()
     })
   })
 
-  it('filters blog posts by search term', async () => {
+  it('filters posts by selected category', async () => {
     const user = userEvent.setup()
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.type(searchInput, 'System')
+    const categoryButton = await screen.findByRole('button', { name: 'Pensamiento Sistémico' })
+    await user.click(categoryButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Understanding System Design/)).toBeInTheDocument()
+      expect(screen.getByText('React Best Practices')).toBeInTheDocument()
+      expect(screen.queryByText('Understanding System Design')).not.toBeInTheDocument()
     })
   })
 
-  it('searches by post title', async () => {
+  it('removes the category filter when clicked again', async () => {
     const user = userEvent.setup()
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
+    const categoryButton = await screen.findByRole('button', { name: 'Pensamiento Sistémico' })
+    await user.click(categoryButton)
+    await waitFor(() => expect(categoryButton).toHaveClass('bg-cyan-600'))
 
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.clear(searchInput)
-    await user.type(searchInput, 'React')
-
-    await waitFor(() => {
-      expect(screen.getByText(/React Best Practices/)).toBeInTheDocument()
-    })
+    await user.click(categoryButton)
+    await waitFor(() => expect(categoryButton).not.toHaveClass('bg-cyan-600'))
   })
 
-  it('searches by post excerpt', async () => {
+  it('tracks category filter clicks', async () => {
     const user = userEvent.setup()
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.clear(searchInput)
-    await user.type(searchInput, 'Essential')
-
-    await waitFor(() => {
-      expect(screen.getByText(/React Best Practices/)).toBeInTheDocument()
-    })
-  })
-
-  it('tracks search queries', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.type(searchInput, 'React')
+    const categoryButton = await screen.findByRole('button', { name: 'Pensamiento Sistémico' })
+    await user.click(categoryButton)
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'blog-search-React',
-      })
+      expect.objectContaining({ target: 'blog-category-Pensamiento Sistémico' })
     )
   })
 
-  it('renders tag filter buttons', async () => {
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Filtrar por etiqueta')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Architecture' })).toBeInTheDocument()
-    })
-  })
-
-  it('filters posts by selected tag', async () => {
+  it('renders a sort toggle and switches label on click', async () => {
     const user = userEvent.setup()
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Architecture' })).toBeInTheDocument()
-    })
-
-    const archTag = screen.getByRole('button', { name: 'Architecture' })
-    await user.click(archTag)
+    const sortButton = await screen.findByText('Más antiguos')
+    await user.click(sortButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Understanding System Design/)).toBeInTheDocument()
-    })
-  })
-
-  it('removes tag filter when same tag is clicked again', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
-    })
-
-    const reactTag = screen.getByRole('button', { name: 'React' })
-    await user.click(reactTag)
-
-    await waitFor(() => {
-      expect(reactTag).toHaveClass('bg-cyan-600')
-    })
-
-    await user.click(reactTag)
-
-    await waitFor(() => {
-      expect(reactTag).not.toHaveClass('bg-cyan-600')
-    })
-  })
-
-  it('tracks tag filter clicks', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'React' })).toBeInTheDocument()
-    })
-
-    const reactTag = screen.getByRole('button', { name: 'React' })
-    await user.click(reactTag)
-
-    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        target: 'blog-tag-React',
-      })
-    )
-  })
-
-  it('combines search and tag filters', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    // Search for React
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.type(searchInput, 'React')
-
-    // Filter by Frontend tag
-    const frontendTag = screen.getByRole('button', { name: 'Frontend' })
-    await user.click(frontendTag)
-
-    await waitFor(() => {
-      expect(screen.getByText(/React Best Practices/)).toBeInTheDocument()
+      expect(screen.getByText('Más recientes')).toBeInTheDocument()
     })
   })
 
   it('shows loading spinner initially', () => {
-    vi.mocked(blogApi.getPosts).mockImplementation(
-      () => new Promise(() => {})
-    )
+    vi.mocked(blogApi.getPosts).mockImplementation(() => new Promise(() => {}))
 
     render(<BlogPage />)
 
@@ -249,72 +132,47 @@ describe('BlogPage', () => {
     })
   })
 
-  it('shows no articles message when no results', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
+  it('shows a no-results message when there are no posts', async () => {
+    vi.mocked(blogApi.getPosts).mockResolvedValue([])
 
     render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i)
-    await user.type(searchInput, 'NonexistentTerm123')
 
     await waitFor(() => {
       expect(screen.getByText(/No se encontraron artículos/i)).toBeInTheDocument()
     })
   })
 
-  it('renders posts in grid layout', async () => {
+  it('renders posts in a grid layout', async () => {
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     const { container } = render(<BlogPage />)
 
     await waitFor(() => {
       const grid = container.querySelector('.grid')
-      expect(grid).toBeInTheDocument()
-      expect(grid).toHaveClass('grid-cols-1', 'md:grid-cols-2')
+      expect(grid).toHaveClass('grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3')
     })
   })
 
-  it('extracts unique tags from all posts', async () => {
+  it('extracts unique categories from all posts', async () => {
     vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
 
     render(<BlogPage />)
 
     await waitFor(() => {
-      const uniqueTags = Array.from(new Set(mockBlogPosts.flatMap(p => p.tags)))
-      uniqueTags.forEach(tag => {
-        expect(screen.getByRole('button', { name: tag })).toBeInTheDocument()
+      const categories = Array.from(new Set(mockBlogPosts.map(p => p.content_type)))
+      categories.forEach(category => {
+        expect(screen.getByRole('button', { name: category! })).toBeInTheDocument()
       })
     })
   })
 
-  it('handles empty blog posts array', async () => {
+  it('handles an empty blog posts array', async () => {
     vi.mocked(blogApi.getPosts).mockResolvedValue([])
 
     render(<BlogPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Blog/)).toBeInTheDocument()
+      expect(screen.getByText('Blog')).toBeInTheDocument()
     })
-  })
-
-  it('maintains search state when typing', async () => {
-    const user = userEvent.setup()
-    vi.mocked(blogApi.getPosts).mockResolvedValue(mockBlogPosts)
-
-    render(<BlogPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText(mockBlogPosts[0].title)).toBeInTheDocument()
-    })
-
-    const searchInput = screen.getByPlaceholderText(/Buscar artículos/i) as HTMLInputElement
-    await user.type(searchInput, 'React')
-
-    expect(searchInput.value).toBe('React')
   })
 })

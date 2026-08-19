@@ -15,32 +15,32 @@ export const BlogCard = ({ post }: BlogCardProps) => {
   return (
     <Link
       to={`/blog/${post.slug ?? post.id}`}
-      className="card group hover:shadow-lg p-4 block"
+      className="card group hover:shadow-lg overflow-hidden block"
       onClick={() => trackClick(`blog-${post.slug ?? post.id}`)}
     >
-      {/* Meta */}
-      <div className="mono flex items-center justify-between text-xs text-text-secondary mb-3">
-        {publishDate && <time dateTime={post.published_at ?? undefined}>{publishDate}</time>}
-        {post.reading_minutes && <span>{post.reading_minutes} min de lectura</span>}
-      </div>
-
-      <h3 className="font-bold text-lg text-text mb-2 line-clamp-2">{post.title}</h3>
-
-      {post.excerpt && <p className="text-text-secondary text-sm mb-4 line-clamp-3">{post.excerpt}</p>}
-
-      {post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
-          {post.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="badge mono">
-              {tag}
-            </span>
-          ))}
+      {post.image_url && (
+        <div className="relative h-40 bg-gradient-to-br from-cyan-100 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
+          <img
+            src={post.image_url}
+            alt={post.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
         </div>
       )}
 
-      <span className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium text-sm inline-flex items-center">
-        Leer más →
-      </span>
+      <div className="p-4">
+        {post.content_type && <span className="badge mono mb-3">{post.content_type}</span>}
+
+        <h3 className="font-bold text-lg text-text mb-2 line-clamp-2">{post.title}</h3>
+
+        {post.excerpt && <p className="text-text-secondary text-sm mb-4 line-clamp-3">{post.excerpt}</p>}
+
+        <div className="mono flex items-center gap-2 text-xs text-text-secondary">
+          {publishDate && <time dateTime={post.published_at ?? undefined}>{publishDate}</time>}
+          {post.reading_minutes && <span>· {post.reading_minutes} min de lectura</span>}
+        </div>
+      </div>
     </Link>
   )
 }

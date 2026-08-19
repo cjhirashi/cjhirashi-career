@@ -3,57 +3,77 @@
 // portal reads from (single portfolio owner, see PUBLIC_PORTAL_USER_ID).
 // ============================================================================
 
-// Home
-export interface PublicProjectCard {
+// Projects
+export interface Project {
   id: number
   title: string
   category: string | null
+  industry: string | null
+  year: number | null
   card_summary: string | null
   tech_stack: string[]
+  metrics: Record<string, unknown> | unknown[] | null
+  image_url: string | null
   github_url: string | null
   demo_url: string | null
+  detailed_summary: string | null
+  problem: string | null
+  solution: string | null
+  architecture: string | null
+  approach_steps: string | null
+  results: Record<string, unknown> | unknown[] | null
+  status: string | null
+  is_featured: boolean
+  is_anchor: boolean
 }
 
-export interface PublicPublicationCard {
+// Blog
+export interface BlogPost {
   id: number
   title: string
   slug: string | null
   excerpt: string | null
+  image_url: string | null
+  content_type: string | null
   platform: string | null
   published_at: string | null
   reading_minutes: number | null
   tags: string[]
+  body_content: string | null
+  publication_url: string | null
+}
+
+// Home
+export interface HomeStat {
+  label: string
+  value: string
 }
 
 export interface HomeContent {
   hero_title: string | null
   hero_subtitle: string | null
   hero_intro: string | null
-  featured_projects: PublicProjectCard[]
-  featured_publications: PublicPublicationCard[]
+  stats: HomeStat[]
+  anchor_project: Project | null
+  featured_projects: Project[]
+  featured_publications: BlogPost[]
 }
 
 // About
-export interface IkigaiReflection {
-  dimension: string
-  content: string | null
-}
-
 export interface WorkHistoryEntry {
   company: string
   role_title: string
   start_date: string | null
   end_date: string | null
   description: string | null
+  narrative: string | null
   achievements: string | null
+  key_metrics: Record<string, unknown> | unknown[] | null
 }
 
-export interface Competency {
-  name: string
-  type: string
-  category: string | null
-  level: string | null
-  is_highlighted: boolean | null
+export interface SkillGroup {
+  category: string
+  skills: string[]
 }
 
 export interface CertificationEntry {
@@ -67,12 +87,8 @@ export interface AboutContent {
   bio_summary: string | null
   unique_value_proposition: string | null
   photo_url: string | null
-  values: string[]
-  interests_hobbies: string[]
-  personal_quote: string | null
-  ikigai: IkigaiReflection[]
   work_history: WorkHistoryEntry[]
-  competencies: Competency[]
+  skill_groups: SkillGroup[]
   certifications: CertificationEntry[]
 }
 
@@ -84,49 +100,13 @@ export interface FooterLink {
 
 export interface ContactContent {
   contact_email: string | null
+  whatsapp: string | null
   location: string | null
   availability_status: string | null
   preferred_contact_method: string | null
   footer_links: FooterLink[]
   linkedin_url: string | null
   github_url: string | null
-}
-
-// Projects
-export interface Project {
-  id: number
-  title: string
-  category: string | null
-  industry: string | null
-  year: number | null
-  card_summary: string | null
-  detailed_summary: string | null
-  problem: string | null
-  solution: string | null
-  architecture: string | null
-  tech_stack: string[]
-  metrics: unknown
-  approach_steps: string | null
-  results: unknown
-  github_url: string | null
-  demo_url: string | null
-  status: string | null
-  is_featured: boolean
-}
-
-// Blog
-export interface BlogPost {
-  id: number
-  title: string
-  slug: string | null
-  excerpt: string | null
-  body_content: string | null
-  content_type: string | null
-  tags: string[]
-  platform: string | null
-  publication_url: string | null
-  published_at: string | null
-  reading_minutes: number | null
 }
 
 // Contact form (client-side only - no backend endpoint to receive it yet)

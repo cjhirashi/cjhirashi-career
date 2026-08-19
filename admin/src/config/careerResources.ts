@@ -474,6 +474,7 @@ export const projectsConfig: ResourceConfig = {
     { key: 'year', label: 'Año', format: 'number' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
     { key: 'is_featured', label: 'Destacado', format: 'boolean' },
+    { key: 'is_anchor', label: 'Ancla (caso destacado en Home)', format: 'boolean' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
@@ -490,7 +491,14 @@ export const projectsConfig: ResourceConfig = {
         { value: 'archived', label: 'Archivado' },
       ],
     },
-    { name: 'is_featured', label: 'Destacado', type: 'boolean' },
+    { name: 'is_featured', label: 'Destacado (grid de proyectos)', type: 'boolean' },
+    {
+      name: 'is_anchor',
+      label: 'Ancla (caso de estudio en Home)',
+      type: 'boolean',
+      helpText: 'Solo debe haber uno marcado como ancla a la vez - es el proyecto que se muestra completo en la Home.',
+    },
+    { name: 'image_url', label: 'URL de la imagen', type: 'text', fullWidth: true },
     { name: 'github_url', label: 'URL de GitHub', type: 'text' },
     { name: 'demo_url', label: 'URL de demo', type: 'text' },
     { name: 'card_summary', label: 'Resumen para tarjeta (máx. 500)', type: 'textarea', fullWidth: true },
@@ -1036,6 +1044,7 @@ export const publicationsConfig: ResourceConfig = {
     { name: 'likes_reactions', label: 'Likes / reacciones', type: 'number' },
     { name: 'comments', label: 'Comentarios', type: 'number' },
     { name: 'shares', label: 'Compartidos', type: 'number' },
+    { name: 'image_url', label: 'URL de la imagen destacada', type: 'text', fullWidth: true },
     { name: 'excerpt', label: 'Extracto', type: 'textarea', fullWidth: true },
     { name: 'body_content', label: 'Contenido completo', type: 'textarea', fullWidth: true },
     { name: 'tags', label: 'Tags', type: 'textarea', fullWidth: true },
@@ -1106,6 +1115,13 @@ export const portalHomeConfig: ResourceConfig = {
     { name: 'hero_title', label: 'Título principal', type: 'text', fullWidth: true },
     { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
     { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },
+    {
+      name: 'stats',
+      label: 'Estadísticas (JSON)',
+      type: 'json',
+      fullWidth: true,
+      helpText: 'Lista de objetos: [{"label","value"}, ...] - ej. [{"label":"Años en Sistemas Críticos","value":"20+"}]',
+    },
   ],
 }
 
@@ -1115,14 +1131,9 @@ export const portalAboutConfig: ResourceConfig = {
   labelSingular: 'Sobre Mí del portal',
   genderFeminine: false,
   mode: 'singleton',
-  description: 'Solo lo personal que no vive ya en Identidad/Experiencia/Competencias/Certificaciones.',
+  description: 'Solo la foto - historia, experiencia, skills y certificaciones ya viven en sus propias tablas.',
   columns: [],
-  fields: [
-    { name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
-    { name: 'personal_quote', label: 'Frase personal', type: 'text', fullWidth: true },
-    { name: 'values', label: 'Valores', type: 'textarea', fullWidth: true },
-    { name: 'interests_hobbies', label: 'Intereses / hobbies', type: 'textarea', fullWidth: true },
-  ],
+  fields: [{ name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true }],
 }
 
 export const portalContactConfig: ResourceConfig = {
@@ -1135,6 +1146,7 @@ export const portalContactConfig: ResourceConfig = {
   columns: [],
   fields: [
     { name: 'contact_email', label: 'Email de contacto', type: 'text' },
+    { name: 'whatsapp', label: 'WhatsApp', type: 'text', placeholder: '+52 55 1234 5678' },
     { name: 'location', label: 'Ubicación', type: 'text' },
     { name: 'availability_status', label: 'Disponibilidad', type: 'text', placeholder: 'Abierto a oportunidades...' },
     { name: 'preferred_contact_method', label: 'Método de contacto preferido', type: 'text' },

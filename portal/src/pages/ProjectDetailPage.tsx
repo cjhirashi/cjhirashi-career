@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useProjectById } from '@/hooks/useProjects'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
+import { MetricChips } from '@/components/Common/MetricChips'
 import { useTrackClick } from '@/hooks/useTracking'
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -26,6 +27,14 @@ export const ProjectDetailPage = () => {
           ← Volver a Proyectos
         </Link>
 
+        {project.image_url && (
+          <img
+            src={project.image_url}
+            alt={project.title}
+            className="w-full h-64 sm:h-80 object-cover rounded-2xl mb-8"
+          />
+        )}
+
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {project.category && <span className="badge mono">{project.category}</span>}
           {project.industry && <span className="badge badge-secondary">{project.industry}</span>}
@@ -34,7 +43,11 @@ export const ProjectDetailPage = () => {
 
         <h1 className="text-3xl sm:text-4xl font-bold text-text mb-4">{project.title}</h1>
 
-        {project.card_summary && <p className="text-lg text-text-secondary mb-8">{project.card_summary}</p>}
+        {project.card_summary && <p className="text-lg text-text-secondary mb-6">{project.card_summary}</p>}
+
+        <div className="mb-8">
+          <MetricChips metrics={project.metrics} />
+        </div>
 
         <div className="flex gap-3 mb-10">
           {project.demo_url && (

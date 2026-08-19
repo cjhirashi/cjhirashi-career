@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import clsx from 'clsx'
 import { useTrackClick } from '@/hooks/useTracking'
 import { useUIStore } from '@/stores/uiStore'
+import { useContact } from '@/hooks/useContact'
 import { ThemeToggle } from '@/components/Common/ThemeToggle'
 
 interface NavLink {
@@ -28,6 +29,7 @@ export const Header = () => {
   const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
   const location = useLocation()
   const { trackClick } = useTrackClick()
+  const { data: contact } = useContact()
 
   // Tracking id derived from the route, not the display label - the label
   // is now in Spanish (with spaces/accents), but analytics event names
@@ -75,7 +77,12 @@ export const Header = () => {
           </div>
 
           {/* Theme Toggle - always visible, desktop and mobile */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            {contact?.availability_status && (
+              <span className="hidden sm:inline-flex badge badge-secondary mono text-xs">
+                {contact.availability_status}
+              </span>
+            )}
             <ThemeToggle />
 
             {/* Mobile Menu Button */}

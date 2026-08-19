@@ -26,11 +26,37 @@ describe('ProjectCard Component', () => {
     expect(screen.getByText(project.card_summary!)).toBeInTheDocument()
   })
 
-  it('renders the category badge', () => {
+  it('renders the category and industry badges', () => {
     const project = mockProjects[0]
     render(<ProjectCard project={project} />)
 
     expect(screen.getByText(project.category!)).toBeInTheDocument()
+    expect(screen.getByText(project.industry!)).toBeInTheDocument()
+  })
+
+  it('renders the year', () => {
+    const project = mockProjects[0]
+    render(<ProjectCard project={project} />)
+
+    expect(screen.getByText(String(project.year))).toBeInTheDocument()
+  })
+
+  it('renders the image when available', () => {
+    const project = mockProjects[0]
+    render(<ProjectCard project={project} />)
+
+    const image = screen.getByAltText(project.title) as HTMLImageElement
+    expect(image.src).toContain(project.image_url)
+  })
+
+  it('renders metrics as chips', () => {
+    const project = mockProjects[0]
+    render(<ProjectCard project={project} />)
+
+    const metrics = project.metrics as Record<string, string>
+    Object.values(metrics).forEach(value => {
+      expect(screen.getByText(value)).toBeInTheDocument()
+    })
   })
 
   it('displays "Destacado" badge when featured prop is true', () => {
@@ -47,21 +73,11 @@ describe('ProjectCard Component', () => {
     expect(screen.queryByText('Destacado')).not.toBeInTheDocument()
   })
 
-  it('renders up to 3 technologies as tags', () => {
+  it('renders a "Ver caso" call to action', () => {
     const project = mockProjects[0]
     render(<ProjectCard project={project} />)
 
-    project.tech_stack.slice(0, 3).forEach(tech => {
-      expect(screen.getByText(tech)).toBeInTheDocument()
-    })
-  })
-
-  it('shows a "+N" indicator when there are more than 3 technologies', () => {
-    const project = mockProjects[0]
-    render(<ProjectCard project={project} />)
-
-    expect(project.tech_stack.length).toBeGreaterThan(3)
-    expect(screen.getByText(`+${project.tech_stack.length - 3}`)).toBeInTheDocument()
+    expect(screen.getByText(/Ver caso/i)).toBeInTheDocument()
   })
 
   it('links to the project detail page', () => {
@@ -90,6 +106,21 @@ describe('ProjectCard Component', () => {
     expect(container.querySelector('.hover\\:shadow-lg')).toBeInTheDocument()
   })
 
+  it('handles a project with no image gracefully', () => {
+    const project = mockProjects[1]
+    render(<ProjectCard project={project} />)
+
+    expect(screen.queryByAltText(project.title)).not.toBeInTheDocument()
+    expect(screen.getByText(project.title)).toBeInTheDocument()
+  })
+
+  it('handles a project with no metrics gracefully', () => {
+    const project = mockProjects[1]
+    render(<ProjectCard project={project} />)
+
+    expect(screen.getByText(project.title)).toBeInTheDocument()
+  })
+
   it('handles a project with no card_summary gracefully', () => {
     const project = { ...mockProjects[0], card_summary: null }
     render(<ProjectCard project={project} />)
@@ -97,15 +128,8 @@ describe('ProjectCard Component', () => {
     expect(screen.getByText(project.title)).toBeInTheDocument()
   })
 
-  it('handles a project with no tech_stack gracefully', () => {
-    const project = { ...mockProjects[0], tech_stack: [] }
-    render(<ProjectCard project={project} />)
-
-    expect(screen.getByText(project.title)).toBeInTheDocument()
-  })
-
-  it('handles a project with no category gracefully', () => {
-    const project = { ...mockProjects[0], category: null }
+  it('handles a project with no category or industry gracefully', () => {
+    const project = { ...mockProjects[0], category: null, industry: null }
     render(<ProjectCard project={project} />)
 
     expect(screen.getByText(project.title)).toBeInTheDocument()

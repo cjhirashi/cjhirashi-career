@@ -18,6 +18,7 @@ class PortalContact(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
     contact_email = Column(String(255), nullable=True)
+    whatsapp = Column(String(50), nullable=True)
     location = Column(String(255), nullable=True)
     availability_status = Column(String(50), nullable=True)
     preferred_contact_method = Column(String(100), nullable=True)

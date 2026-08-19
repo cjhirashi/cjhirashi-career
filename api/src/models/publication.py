@@ -25,6 +25,7 @@ class Publication(Base):
     body_content = Column(Text, nullable=True)  # Markdown
     content_type = Column(String(50), nullable=True)
     tags = Column(Text, nullable=True)
+    image_url = Column(String(1024), nullable=True)
 
     platform = Column(String(100), nullable=True)  # free text: "LinkedIn", "Blog propio", "Medium", ...
     publication_url = Column(String(500), nullable=True)

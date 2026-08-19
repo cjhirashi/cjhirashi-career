@@ -37,7 +37,7 @@ describe('ContactPage', () => {
   it('renders the page heading', async () => {
     await renderReady()
 
-    expect(screen.getByText('Hablemos')).toBeInTheDocument()
+    expect(screen.getByText('Hablemos de tu proyecto')).toBeInTheDocument()
   })
 
   it('renders the contact form with all fields', async () => {
@@ -45,8 +45,15 @@ describe('ContactPage', () => {
 
     expect(screen.getByLabelText(/Nombre/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Asunto/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Mensaje/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Asunto/i)).not.toBeInTheDocument()
+  })
+
+  it('renders WhatsApp and location info cards', async () => {
+    await renderReady()
+
+    expect(screen.getByText(mockContact.whatsapp!)).toBeInTheDocument()
+    expect(screen.getByText(mockContact.location!)).toBeInTheDocument()
   })
 
   it('renders the submit button', async () => {
@@ -109,16 +116,6 @@ describe('ContactPage', () => {
 
     expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', mockContact.github_url!)
     expect(screen.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', mockContact.linkedin_url!)
-    expect(screen.getByRole('link', { name: mockContact.footer_links[0].label })).toHaveAttribute(
-      'href',
-      mockContact.footer_links[0].url
-    )
-  })
-
-  it('displays availability status', async () => {
-    await renderReady()
-
-    expect(screen.getByText(mockContact.availability_status!)).toBeInTheDocument()
   })
 
   it('has required attributes on name, email, and message fields', async () => {
@@ -129,12 +126,6 @@ describe('ContactPage', () => {
     expect(emailInput).toHaveAttribute('required')
     expect(emailInput).toHaveAttribute('type', 'email')
     expect(screen.getByLabelText(/Mensaje/i)).toHaveAttribute('required')
-  })
-
-  it('does not require the subject field', async () => {
-    await renderReady()
-
-    expect(screen.getByLabelText(/Asunto/i)).not.toHaveAttribute('required')
   })
 
   it('hides the form and shows success after submission', async () => {

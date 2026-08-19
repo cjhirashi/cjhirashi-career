@@ -5,6 +5,7 @@ import { trackingApi } from '@/api/tracking'
 import { Header } from '@/components/Layout/Header'
 
 vi.mock('@/api/tracking')
+vi.mock('@/api/contact')
 
 describe('Header - Extended Tests', () => {
   beforeEach(() => {

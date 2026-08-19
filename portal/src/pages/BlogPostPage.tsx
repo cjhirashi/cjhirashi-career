@@ -22,10 +22,14 @@ export const BlogPostPage = () => {
           ← Volver al Blog
         </Link>
 
+        {post.image_url && (
+          <img src={post.image_url} alt={post.title} className="w-full h-64 sm:h-80 object-cover rounded-2xl mb-6" />
+        )}
+
         <div className="mono flex items-center gap-3 text-xs text-text-secondary mb-3">
+          {post.content_type && <span className="badge mono">{post.content_type}</span>}
           {publishDate && <time dateTime={post.published_at ?? undefined}>{publishDate}</time>}
           {post.reading_minutes && <span>· {post.reading_minutes} min de lectura</span>}
-          {post.platform && <span>· {post.platform}</span>}
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-bold text-text mb-6">{post.title}</h1>

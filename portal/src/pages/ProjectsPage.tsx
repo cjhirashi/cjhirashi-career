@@ -7,21 +7,25 @@ import { useTrackClick } from '@/hooks/useTracking'
 
 export const ProjectsPage = () => {
   const { data: projects, isLoading, error } = useProjects()
-  const [selectedTech, setSelectedTech] = useState<string | null>(null)
+  const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
   const { trackClick } = useTrackClick()
 
-  const handleTechFilter = (tech: string) => {
-    trackClick(`filter-${tech}`)
-    setSelectedTech(selectedTech === tech ? null : tech)
+  const handleFilter = (value: string) => {
+    trackClick(`filter-${value}`)
+    setSelectedFilter(selectedFilter === value ? null : value)
   }
 
   if (isLoading) return <LoadingSpinner />
   if (error) return <ErrorMessage message="No se pudieron cargar los proyectos" />
 
-  const allTechs = Array.from(new Set(projects?.flatMap(p => p.tech_stack) || []))
+  // A single flat filter bar combining category ("Systems", "Data"...) and
+  // industry ("Salud", "Fintech"...) - matches cjhirashi.com's Proyectos page.
+  const filters = Array.from(
+    new Set((projects ?? []).flatMap(p => [p.category, p.industry].filter((v): v is string => !!v)))
+  )
 
-  const filteredProjects = selectedTech
-    ? projects?.filter(p => p.tech_stack.includes(selectedTech))
+  const filteredProjects = selectedFilter
+    ? projects?.filter(p => p.category === selectedFilter || p.industry === selectedFilter)
     : projects
 
   return (
@@ -29,43 +33,40 @@ export const ProjectsPage = () => {
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">Mis Proyectos</h1>
+          <h1 className="text-4xl font-bold text-text mb-4">Proyectos</h1>
           <p className="text-lg text-text-secondary">
-            Una selección de proyectos que muestran mis habilidades y experiencia.
+            Sistemas de datos e IA diseñados para operar solos — incluso cuando fallar no es una opción.
           </p>
         </div>
 
         {/* Filter */}
-        {allTechs.length > 0 && (
+        {filters.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
-              Filtrar por tecnología
-            </h2>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => {
                   trackClick('filter-all')
-                  setSelectedTech(null)
+                  setSelectedFilter(null)
                 }}
                 className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedTech === null
+                  selectedFilter === null
                     ? 'bg-cyan-600 text-white shadow-glow'
                     : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                 }`}
               >
-                Todos los proyectos
+                Todos
               </button>
-              {allTechs.map(tech => (
+              {filters.map(filter => (
                 <button
-                  key={tech}
-                  onClick={() => handleTechFilter(tech)}
+                  key={filter}
+                  onClick={() => handleFilter(filter)}
                   className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
-                    selectedTech === tech
+                    selectedFilter === filter
                       ? 'bg-cyan-600 text-white shadow-glow'
                       : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                   }`}
                 >
-                  {tech}
+                  {filter}
                 </button>
               ))}
             </div>

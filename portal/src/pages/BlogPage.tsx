@@ -7,103 +7,86 @@ import { useTrackClick } from '@/hooks/useTracking'
 
 export const BlogPage = () => {
   const { data: posts, isLoading, error } = useBlogPosts()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [sortOldest, setSortOldest] = useState(false)
   const { trackClick } = useTrackClick()
 
-  const handleSearch = (term: string) => {
-    trackClick(`blog-search-${term}`)
-    setSearchTerm(term)
-  }
-
-  const handleTagFilter = (tag: string) => {
-    trackClick(`blog-tag-${tag}`)
-    setSelectedTag(selectedTag === tag ? null : tag)
+  const handleCategoryFilter = (category: string) => {
+    trackClick(`blog-category-${category}`)
+    setSelectedCategory(selectedCategory === category ? null : category)
   }
 
   if (isLoading) return <LoadingSpinner />
   if (error) return <ErrorMessage message="No se pudieron cargar los artículos del blog" />
 
-  const allTags = Array.from(new Set(posts?.flatMap(p => p.tags) || []))
+  const categories = Array.from(new Set((posts ?? []).map(p => p.content_type).filter((v): v is string => !!v)))
 
-  let filteredPosts = posts || []
-
-  if (searchTerm) {
-    filteredPosts = filteredPosts.filter(
-      p =>
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.excerpt ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  let filteredPosts = posts ?? []
+  if (selectedCategory) {
+    filteredPosts = filteredPosts.filter(p => p.content_type === selectedCategory)
   }
-
-  if (selectedTag) {
-    filteredPosts = filteredPosts.filter(p => p.tags.includes(selectedTag))
-  }
+  filteredPosts = [...filteredPosts].sort((a, b) => {
+    const aTime = a.published_at ? new Date(a.published_at).getTime() : 0
+    const bTime = b.published_at ? new Date(b.published_at).getTime() : 0
+    return sortOldest ? aTime - bTime : bTime - aTime
+  })
 
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-text mb-4">Blog</h1>
           <p className="text-lg text-text-secondary">
-            Artículos técnicos, ideas y aprendizajes de mi trayectoria profesional.
+            Pensamiento sistémico aplicado a arquitectura de datos, IA y sistemas críticos.
           </p>
         </div>
 
-        {/* Search */}
-        <div className="mb-12">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-3 w-5 h-5 text-text-secondary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        {/* Filters */}
+        <div className="mb-12 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                trackClick('blog-category-all')
+                setSelectedCategory(null)
+              }}
+              className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
+                selectedCategory === null
+                  ? 'bg-cyan-600 text-white shadow-glow'
+                  : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Buscar artículos..."
-              value={searchTerm}
-              onChange={e => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
-            />
+              Todos
+            </button>
+            {categories.map(category => (
+              <button
+                key={category}
+                onClick={() => handleCategoryFilter(category)}
+                className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
+                  selectedCategory === category
+                    ? 'bg-cyan-600 text-white shadow-glow'
+                    : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Tags Filter */}
-        {allTags.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-sm font-bold text-text-secondary uppercase tracking-wide mb-4">
-              Filtrar por etiqueta
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {allTags.map(tag => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagFilter(tag)}
-                  className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
-                    selectedTag === tag
-                      ? 'bg-cyan-600 text-white shadow-glow'
-                      : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          <button
+            onClick={() => {
+              trackClick(`blog-sort-${sortOldest ? 'recent' : 'oldest'}`)
+              setSortOldest(!sortOldest)
+            }}
+            className="text-sm text-text-secondary hover:text-primary font-medium"
+          >
+            {sortOldest ? 'Más recientes' : 'Más antiguos'}
+          </button>
+        </div>
 
         {/* Posts Grid */}
         {filteredPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map(post => (
               <BlogCard key={post.id} post={post} />
             ))}

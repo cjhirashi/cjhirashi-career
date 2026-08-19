@@ -37,16 +37,14 @@ describe('BlogCard Component', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    expect(screen.getByText(`${post.reading_minutes} min de lectura`)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`${post.reading_minutes} min de lectura`))).toBeInTheDocument()
   })
 
-  it('renders up to 3 tags', () => {
+  it('renders the content_type as a category badge', () => {
     const post = mockBlogPosts[0]
     render(<BlogCard post={post} />)
 
-    post.tags.slice(0, 3).forEach(tag => {
-      expect(screen.getByText(tag)).toBeInTheDocument()
-    })
+    expect(screen.getByText(post.content_type!)).toBeInTheDocument()
   })
 
   it('links to the post detail page by slug', () => {
@@ -63,13 +61,6 @@ describe('BlogCard Component', () => {
 
     const link = screen.getByText(post.title).closest('a')
     expect(link).toHaveAttribute('href', `/blog/${post.id}`)
-  })
-
-  it('renders a "Leer más" call to action', () => {
-    const post = mockBlogPosts[0]
-    render(<BlogCard post={post} />)
-
-    expect(screen.getByText(/Leer más/i)).toBeInTheDocument()
   })
 
   it('tracks a click on the card', async () => {

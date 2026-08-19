@@ -8,6 +8,7 @@ career-pipeline, application-tracking, or LinkedIn-connection data lives
 under this router.
 """
 import re
+from collections import OrderedDict
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -18,7 +19,6 @@ from database import get_db
 from config import settings
 
 from models.identity import Identity
-from models.identity_reflection import IdentityReflection
 from models.work_history import WorkHistory
 from models.competencies import Competency
 from models.certification import Certification
@@ -31,11 +31,9 @@ from models.portal_about import PortalAbout
 from models.portal_contact import PortalContact
 
 from schemas.public import (
-    PublicHomeResponse, PublicProjectCard, PublicPublicationCard,
-    PublicAboutResponse, PublicIkigaiReflection, PublicWorkHistoryEntry,
-    PublicCompetency, PublicCertification,
+    PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
+    PublicAboutResponse, PublicWorkHistoryEntry, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
-    PublicProjectDetail,
     PublicBlogPost,
 )
 
@@ -58,12 +56,48 @@ def _parse_lines(text: Optional[str]) -> List[str]:
     return lines
 
 
+def _project_card(p: Project) -> PublicProjectCard:
+    return PublicProjectCard(
+        id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
+        card_summary=p.card_summary, tech_stack=_parse_lines(p.tech_stack), metrics=p.metrics,
+        image_url=p.image_url, github_url=p.github_url, demo_url=p.demo_url,
+    )
+
+
+def _project_detail(p: Project) -> PublicProjectDetail:
+    return PublicProjectDetail(
+        **_project_card(p).model_dump(),
+        detailed_summary=p.detailed_summary, problem=p.problem, solution=p.solution,
+        architecture=p.architecture, approach_steps=p.approach_steps, results=p.results,
+        status=p.status, is_featured=bool(p.is_featured), is_anchor=bool(p.is_anchor),
+    )
+
+
+def _publication_card(pub: Publication) -> PublicPublicationCard:
+    return PublicPublicationCard(
+        id=pub.id, title=pub.title, slug=pub.slug, excerpt=pub.excerpt, image_url=pub.image_url,
+        content_type=pub.content_type, platform=pub.platform, published_at=pub.published_at,
+        reading_minutes=pub.reading_minutes, tags=_parse_lines(pub.tags),
+    )
+
+
+def _blog_post(pub: Publication) -> PublicBlogPost:
+    return PublicBlogPost(
+        **_publication_card(pub).model_dump(),
+        body_content=pub.body_content, publication_url=pub.publication_url,
+    )
+
+
 @router.get("/home", response_model=PublicHomeResponse)
 async def get_home(db: AsyncSession = Depends(get_db)):
     home = (await db.execute(select(PortalHome).where(PortalHome.user_id == USER_ID))).scalar_one_or_none()
     # Falls back to Identity's tagline/bio when portal_home hasn't been
     # filled in yet, so Home isn't blank before that table has content.
     identity = (await db.execute(select(Identity).where(Identity.user_id == USER_ID))).scalar_one_or_none()
+
+    anchor = (
+        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_anchor.is_(True)))
+    ).scalar_one_or_none()
 
     projects = (
         await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_featured.is_(True)))
@@ -83,21 +117,10 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         hero_title=(home.hero_title if home else None) or (identity.professional_tagline if identity else None),
         hero_subtitle=home.hero_subtitle if home else None,
         hero_intro=(home.hero_intro if home else None) or (identity.bio_summary if identity else None),
-        featured_projects=[
-            PublicProjectCard(
-                id=p.id, title=p.title, category=p.category, card_summary=p.card_summary,
-                tech_stack=_parse_lines(p.tech_stack), github_url=p.github_url, demo_url=p.demo_url,
-            )
-            for p in projects
-        ],
-        featured_publications=[
-            PublicPublicationCard(
-                id=pub.id, title=pub.title, slug=pub.slug, excerpt=pub.excerpt, platform=pub.platform,
-                published_at=pub.published_at, reading_minutes=pub.reading_minutes,
-                tags=_parse_lines(pub.tags),
-            )
-            for pub in publications
-        ],
+        stats=(home.stats if home and home.stats else []),
+        anchor_project=_project_detail(anchor) if anchor else None,
+        featured_projects=[_project_card(p) for p in projects],
+        featured_publications=[_publication_card(pub) for pub in publications],
     )
 
 
@@ -105,9 +128,6 @@ async def get_home(db: AsyncSession = Depends(get_db)):
 async def get_about(db: AsyncSession = Depends(get_db)):
     identity = (await db.execute(select(Identity).where(Identity.user_id == USER_ID))).scalar_one_or_none()
     about = (await db.execute(select(PortalAbout).where(PortalAbout.user_id == USER_ID))).scalar_one_or_none()
-    reflections = (
-        await db.execute(select(IdentityReflection).where(IdentityReflection.user_id == USER_ID))
-    ).scalars().all()
     history = (
         await db.execute(
             select(WorkHistory).where(WorkHistory.user_id == USER_ID).order_by(WorkHistory.start_date.desc())
@@ -118,28 +138,28 @@ async def get_about(db: AsyncSession = Depends(get_db)):
         await db.execute(select(Certification).where(Certification.user_id == USER_ID))
     ).scalars().all()
 
+    # Group skills by category, same clustering as cjhirashi.com's "Stack"
+    # section (e.g. "Data Science & ML", "Arquitectura & Sistemas Críticos") -
+    # driven entirely by whatever `category` values are actually in the data.
+    grouped: "OrderedDict[str, list[str]]" = OrderedDict()
+    for c in competencies:
+        key = c.category or "Otros"
+        grouped.setdefault(key, []).append(c.name)
+
     return PublicAboutResponse(
         professional_tagline=identity.professional_tagline if identity else None,
         bio_summary=identity.bio_summary if identity else None,
         unique_value_proposition=identity.unique_value_proposition if identity else None,
         photo_url=about.photo_url if about else None,
-        values=_parse_lines(about.values if about else None),
-        interests_hobbies=_parse_lines(about.interests_hobbies if about else None),
-        personal_quote=about.personal_quote if about else None,
-        ikigai=[PublicIkigaiReflection(dimension=r.dimension, content=r.content) for r in reflections],
         work_history=[
             PublicWorkHistoryEntry(
                 company=w.company, role_title=w.role_title, start_date=w.start_date, end_date=w.end_date,
-                description=w.description, achievements=w.achievements,
+                description=w.description, narrative=w.narrative, achievements=w.achievements,
+                key_metrics=w.key_metrics,
             )
             for w in history
         ],
-        competencies=[
-            PublicCompetency(
-                name=c.name, type=c.type, category=c.category, level=c.level, is_highlighted=c.is_highlighted,
-            )
-            for c in competencies
-        ],
+        skill_groups=[PublicSkillGroup(category=category, skills=skills) for category, skills in grouped.items()],
         certifications=[
             PublicCertification(name=c.name, institution=c.institution, year=c.year) for c in certifications
         ],
@@ -160,6 +180,7 @@ async def get_contact(db: AsyncSession = Depends(get_db)):
 
     return PublicContactResponse(
         contact_email=contact.contact_email if contact else None,
+        whatsapp=contact.whatsapp if contact else None,
         location=contact.location if contact else None,
         availability_status=contact.availability_status if contact else None,
         preferred_contact_method=contact.preferred_contact_method if contact else None,
@@ -176,16 +197,7 @@ async def list_projects(db: AsyncSession = Depends(get_db)):
             select(Project).where(Project.user_id == USER_ID).order_by(Project.year.desc().nullslast())
         )
     ).scalars().all()
-    return [
-        PublicProjectDetail(
-            id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
-            card_summary=p.card_summary, detailed_summary=p.detailed_summary, problem=p.problem,
-            solution=p.solution, architecture=p.architecture, tech_stack=_parse_lines(p.tech_stack),
-            metrics=p.metrics, approach_steps=p.approach_steps, results=p.results,
-            github_url=p.github_url, demo_url=p.demo_url, status=p.status, is_featured=bool(p.is_featured),
-        )
-        for p in projects
-    ]
+    return [_project_detail(p) for p in projects]
 
 
 @router.get("/projects/{project_id}", response_model=PublicProjectDetail)
@@ -195,15 +207,7 @@ async def get_project(project_id: int, db: AsyncSession = Depends(get_db)):
     ).scalar_one_or_none()
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return PublicProjectDetail(
-        id=project.id, title=project.title, category=project.category, industry=project.industry,
-        year=project.year, card_summary=project.card_summary, detailed_summary=project.detailed_summary,
-        problem=project.problem, solution=project.solution, architecture=project.architecture,
-        tech_stack=_parse_lines(project.tech_stack), metrics=project.metrics,
-        approach_steps=project.approach_steps, results=project.results,
-        github_url=project.github_url, demo_url=project.demo_url, status=project.status,
-        is_featured=bool(project.is_featured),
-    )
+    return _project_detail(project)
 
 
 @router.get("/blog", response_model=List[PublicBlogPost])
@@ -216,15 +220,7 @@ async def list_blog_posts(limit: int = Query(default=50, ge=1, le=100), db: Asyn
             .limit(limit)
         )
     ).scalars().all()
-    return [
-        PublicBlogPost(
-            id=post.id, title=post.title, slug=post.slug, excerpt=post.excerpt,
-            body_content=post.body_content, content_type=post.content_type,
-            tags=_parse_lines(post.tags), platform=post.platform, publication_url=post.publication_url,
-            published_at=post.published_at, reading_minutes=post.reading_minutes,
-        )
-        for post in posts
-    ]
+    return [_blog_post(post) for post in posts]
 
 
 @router.get("/blog/{slug}", response_model=PublicBlogPost)
@@ -238,9 +234,4 @@ async def get_blog_post(slug: str, db: AsyncSession = Depends(get_db)):
     ).scalar_one_or_none()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
-    return PublicBlogPost(
-        id=post.id, title=post.title, slug=post.slug, excerpt=post.excerpt,
-        body_content=post.body_content, content_type=post.content_type,
-        tags=_parse_lines(post.tags), platform=post.platform, publication_url=post.publication_url,
-        published_at=post.published_at, reading_minutes=post.reading_minutes,
-    )
+    return _blog_post(post)

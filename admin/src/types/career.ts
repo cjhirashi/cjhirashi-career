@@ -212,6 +212,8 @@ export interface Project {
   releases?: unknown[] | null
   status: ProjectStatus
   is_featured: boolean
+  is_anchor: boolean
+  image_url?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -464,6 +466,7 @@ export interface Publication {
   body_content?: string | null
   content_type?: string | null
   tags?: string | null
+  image_url?: string | null
   platform?: string | null
   publication_url?: string | null
   published_at?: ISODateTime | null
@@ -525,6 +528,7 @@ export interface PortalHomeRecord {
   hero_title?: string | null
   hero_subtitle?: string | null
   hero_intro?: string | null
+  stats?: unknown[] | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -533,9 +537,6 @@ export interface PortalAboutRecord {
   id: number
   user_id: number
   photo_url?: string | null
-  values?: string | null
-  interests_hobbies?: string | null
-  personal_quote?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -544,6 +545,7 @@ export interface PortalContactRecord {
   id: number
   user_id: number
   contact_email?: string | null
+  whatsapp?: string | null
   location?: string | null
   availability_status?: string | null
   preferred_contact_method?: string | null

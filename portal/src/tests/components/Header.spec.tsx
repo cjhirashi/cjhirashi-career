@@ -1,15 +1,12 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '../testUtils'
 import { Header } from '@/components/Layout/Header'
+
+vi.mock('@/api/contact')
 
 describe('Header Component', () => {
   it('renders navigation links', () => {
-    render(
-      <BrowserRouter>
-        <Header />
-      </BrowserRouter>
-    )
+    render(<Header />)
 
     expect(screen.getByText('Home')).toBeInTheDocument()
     expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
@@ -17,21 +14,13 @@ describe('Header Component', () => {
   })
 
   it('renders logo', () => {
-    render(
-      <BrowserRouter>
-        <Header />
-      </BrowserRouter>
-    )
+    render(<Header />)
 
     expect(screen.getByAltText('cjhirashi')).toBeInTheDocument()
   })
 
   it('has navigation links with correct href attributes', () => {
-    render(
-      <BrowserRouter>
-        <Header />
-      </BrowserRouter>
-    )
+    render(<Header />)
 
     const homeLink = screen.getByRole('link', { name: /home/i })
     expect(homeLink).toHaveAttribute('href', '/')

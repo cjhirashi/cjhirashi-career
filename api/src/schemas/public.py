@@ -11,17 +11,33 @@ from pydantic import BaseModel
 
 
 # ============================================================================
-# Home
+# Shared project/publication shapes
 # ============================================================================
 
 class PublicProjectCard(BaseModel):
     id: int
     title: str
     category: Optional[str] = None
+    industry: Optional[str] = None
+    year: Optional[int] = None
     card_summary: Optional[str] = None
     tech_stack: List[str] = []
+    metrics: Optional[Any] = None
+    image_url: Optional[str] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
+
+
+class PublicProjectDetail(PublicProjectCard):
+    detailed_summary: Optional[str] = None
+    problem: Optional[str] = None
+    solution: Optional[str] = None
+    architecture: Optional[str] = None
+    approach_steps: Optional[str] = None
+    results: Optional[Any] = None
+    status: Optional[str] = None
+    is_featured: bool = False
+    is_anchor: bool = False
 
 
 class PublicPublicationCard(BaseModel):
@@ -29,16 +45,36 @@ class PublicPublicationCard(BaseModel):
     title: str
     slug: Optional[str] = None
     excerpt: Optional[str] = None
+    image_url: Optional[str] = None
+    content_type: Optional[str] = None
     platform: Optional[str] = None
     published_at: Optional[datetime] = None
     reading_minutes: Optional[int] = None
     tags: List[str] = []
 
 
+class PublicBlogPost(PublicPublicationCard):
+    body_content: Optional[str] = None
+    publication_url: Optional[str] = None
+
+
+# ============================================================================
+# Home
+# ============================================================================
+
+class PublicStat(BaseModel):
+    label: str
+    value: str
+
+
 class PublicHomeResponse(BaseModel):
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
     hero_intro: Optional[str] = None
+    stats: List[PublicStat] = []
+    # The single is_anchor project, rendered as a full case-study block -
+    # None if no project is currently marked as the anchor.
+    anchor_project: Optional[PublicProjectDetail] = None
     featured_projects: List[PublicProjectCard] = []
     featured_publications: List[PublicPublicationCard] = []
 
@@ -47,26 +83,20 @@ class PublicHomeResponse(BaseModel):
 # About
 # ============================================================================
 
-class PublicIkigaiReflection(BaseModel):
-    dimension: str
-    content: Optional[str] = None
-
-
 class PublicWorkHistoryEntry(BaseModel):
     company: str
     role_title: str
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     description: Optional[str] = None
+    narrative: Optional[str] = None
     achievements: Optional[str] = None
+    key_metrics: Optional[Any] = None
 
 
-class PublicCompetency(BaseModel):
-    name: str
-    type: str
-    category: Optional[str] = None
-    level: Optional[str] = None
-    is_highlighted: Optional[bool] = None
+class PublicSkillGroup(BaseModel):
+    category: str
+    skills: List[str]
 
 
 class PublicCertification(BaseModel):
@@ -80,12 +110,8 @@ class PublicAboutResponse(BaseModel):
     bio_summary: Optional[str] = None
     unique_value_proposition: Optional[str] = None
     photo_url: Optional[str] = None
-    values: List[str] = []
-    interests_hobbies: List[str] = []
-    personal_quote: Optional[str] = None
-    ikigai: List[PublicIkigaiReflection] = []
     work_history: List[PublicWorkHistoryEntry] = []
-    competencies: List[PublicCompetency] = []
+    skill_groups: List[PublicSkillGroup] = []
     certifications: List[PublicCertification] = []
 
 
@@ -95,52 +121,10 @@ class PublicAboutResponse(BaseModel):
 
 class PublicContactResponse(BaseModel):
     contact_email: Optional[str] = None
+    whatsapp: Optional[str] = None
     location: Optional[str] = None
     availability_status: Optional[str] = None
     preferred_contact_method: Optional[str] = None
     footer_links: List[Any] = []
     linkedin_url: Optional[str] = None
     github_url: Optional[str] = None
-
-
-# ============================================================================
-# Projects
-# ============================================================================
-
-class PublicProjectDetail(BaseModel):
-    id: int
-    title: str
-    category: Optional[str] = None
-    industry: Optional[str] = None
-    year: Optional[int] = None
-    card_summary: Optional[str] = None
-    detailed_summary: Optional[str] = None
-    problem: Optional[str] = None
-    solution: Optional[str] = None
-    architecture: Optional[str] = None
-    tech_stack: List[str] = []
-    metrics: Optional[Any] = None
-    approach_steps: Optional[str] = None
-    results: Optional[Any] = None
-    github_url: Optional[str] = None
-    demo_url: Optional[str] = None
-    status: Optional[str] = None
-    is_featured: bool = False
-
-
-# ============================================================================
-# Blog
-# ============================================================================
-
-class PublicBlogPost(BaseModel):
-    id: int
-    title: str
-    slug: Optional[str] = None
-    excerpt: Optional[str] = None
-    body_content: Optional[str] = None
-    content_type: Optional[str] = None
-    tags: List[str] = []
-    platform: Optional[str] = None
-    publication_url: Optional[str] = None
-    published_at: Optional[datetime] = None
-    reading_minutes: Optional[int] = None

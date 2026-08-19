@@ -13,7 +13,7 @@ const renderReady = async () => {
   vi.mocked(contactApi.getContact).mockResolvedValue(mockContact)
   render(<Footer />)
   await waitFor(() => {
-    expect(screen.getByRole('link', { name: 'GitHub' })).toBeInTheDocument()
+    expect(screen.getByText('GitHub')).toBeInTheDocument()
   })
 }
 
@@ -22,133 +22,72 @@ describe('Footer Component', () => {
     vi.clearAllMocks()
   })
 
-  it('renders footer brand information', async () => {
+  it('renders copyright information with the current year', async () => {
     await renderReady()
 
-    expect(screen.getByText('Carlos Jiménez Hirashi')).toBeInTheDocument()
-    expect(screen.getByText(/AI Solutions Architect/)).toBeInTheDocument()
-  })
-
-  it('renders the Navegación section', async () => {
-    await renderReady()
-
-    expect(screen.getByText('Navegación')).toBeInTheDocument()
-  })
-
-  it('renders the Recursos section', async () => {
-    await renderReady()
-
-    expect(screen.getByText('Recursos')).toBeInTheDocument()
-  })
-
-  it('renders the Sígueme section when social links exist', async () => {
-    await renderReady()
-
-    expect(screen.getByText('Sígueme')).toBeInTheDocument()
-  })
-
-  it('renders navigation links in the footer', async () => {
-    await renderReady()
-
-    expect(screen.getByRole('link', { name: /^Home$/ })).toHaveAttribute('href', '/')
-    expect(screen.getByRole('link', { name: 'Sobre Mí' })).toHaveAttribute('href', '/about')
-    expect(screen.getByRole('link', { name: 'Proyectos' })).toHaveAttribute('href', '/projects')
-  })
-
-  it('renders resources links', async () => {
-    await renderReady()
-
-    expect(screen.getByRole('link', { name: 'Blog' })).toHaveAttribute('href', '/blog')
-    expect(screen.getByRole('link', { name: 'Contacto' })).toHaveAttribute('href', '/contact')
-  })
-
-  it('renders the contact email as a mailto link', async () => {
-    await renderReady()
-
-    expect(screen.getByRole('link', { name: mockContact.contact_email! })).toHaveAttribute(
-      'href',
-      `mailto:${mockContact.contact_email}`
-    )
+    const year = new Date().getFullYear()
+    expect(screen.getByText(new RegExp(`© ${year} Carlos A. Jiménez Hirashi`))).toBeInTheDocument()
   })
 
   it('renders social links from real contact data', async () => {
     await renderReady()
 
-    expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', mockContact.github_url!)
-    expect(screen.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', mockContact.linkedin_url!)
-    expect(screen.getByRole('link', { name: mockContact.footer_links[0].label })).toHaveAttribute(
+    expect(screen.getByText('GitHub').closest('a')).toHaveAttribute('href', mockContact.github_url!)
+    expect(screen.getByText('LinkedIn').closest('a')).toHaveAttribute('href', mockContact.linkedin_url!)
+    expect(screen.getByText('Email').closest('a')).toHaveAttribute('href', `mailto:${mockContact.contact_email}`)
+    expect(screen.getByText('WhatsApp').closest('a')).toHaveAttribute(
       'href',
-      mockContact.footer_links[0].url
+      expect.stringContaining('wa.me')
     )
   })
 
   it('social links open in a new tab', async () => {
     await renderReady()
 
-    const githubLink = screen.getByRole('link', { name: 'GitHub' })
+    const githubLink = screen.getByText('GitHub').closest('a')!
     expect(githubLink).toHaveAttribute('target', '_blank')
     expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer')
-  })
-
-  it('renders copyright information with the current year', async () => {
-    await renderReady()
-
-    const year = new Date().getFullYear()
-    expect(screen.getByText(new RegExp(`© ${year} Carlos Jiménez Hirashi`))).toBeInTheDocument()
-  })
-
-  it('does not render dead placeholder links', async () => {
-    await renderReady()
-
-    expect(screen.queryByRole('link', { name: /Sitemap/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Privacy/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /Terms/i })).not.toBeInTheDocument()
   })
 
   it('tracks social media clicks', async () => {
     const user = userEvent.setup()
     await renderReady()
 
-    const githubLink = screen.getByRole('link', { name: 'GitHub' })
-    await user.click(githubLink)
+    await user.click(screen.getByText('GitHub'))
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: 'social-github' }))
   })
 
-  it('omits the Sígueme section when there are no social links', async () => {
+  it('does not render Navegación/Recursos columns', async () => {
+    await renderReady()
+
+    expect(screen.queryByText('Navegación')).not.toBeInTheDocument()
+    expect(screen.queryByText('Recursos')).not.toBeInTheDocument()
+  })
+
+  it('renders no social links when contact data has none', async () => {
     vi.mocked(contactApi.getContact).mockResolvedValue({
-      ...mockContact,
-      github_url: null,
-      linkedin_url: null,
+      contact_email: null,
+      whatsapp: null,
+      location: null,
+      availability_status: null,
+      preferred_contact_method: null,
       footer_links: [],
+      linkedin_url: null,
+      github_url: null,
     })
     render(<Footer />)
 
     await waitFor(() => {
-      expect(screen.getByText('Navegación')).toBeInTheDocument()
+      expect(screen.getByText(new RegExp(`© ${new Date().getFullYear()}`))).toBeInTheDocument()
     })
-    expect(screen.queryByText('Sígueme')).not.toBeInTheDocument()
+    expect(screen.queryByText('GitHub')).not.toBeInTheDocument()
   })
 
-  it('renders with the Glass Steel section-alt treatment', () => {
+  it('renders as a footer element with a top border', () => {
     const { container } = render(<Footer />)
 
     const footer = container.querySelector('footer')
-    expect(footer).toHaveClass('section-alt')
-    expect(footer).toHaveClass('text-text-secondary')
-  })
-
-  it('displays the footer in a grid layout', () => {
-    const { container } = render(<Footer />)
-
-    const grid = container.querySelector('.grid')
-    expect(grid).toHaveClass('grid-cols-1', 'md:grid-cols-4')
-  })
-
-  it('separates footer sections with a divider', () => {
-    const { container } = render(<Footer />)
-
-    const divider = container.querySelector('.border-t.border-border')
-    expect(divider).toBeInTheDocument()
+    expect(footer).toHaveClass('border-t', 'border-border')
   })
 })

@@ -11,23 +11,35 @@ describe('AboutPage', () => {
     vi.clearAllMocks()
   })
 
-  it('renders the page heading', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
-    })
-  })
-
-  it('renders the professional tagline', async () => {
+  it('renders the professional tagline in the hero', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
       expect(screen.getByText(mockAbout.professional_tagline!)).toBeInTheDocument()
+    })
+  })
+
+  it('renders the photo when available', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    render(<AboutPage />)
+
+    await waitFor(() => {
+      const photo = screen.getByAltText('Carlos A. Jiménez Hirashi') as HTMLImageElement
+      expect(photo.src).toContain(mockAbout.photo_url)
+    })
+  })
+
+  it('renders "Hablemos" and "Ver proyectos" hero CTAs', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    render(<AboutPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('link', { name: 'Hablemos' })[0]).toHaveAttribute('href', '/contact')
+      expect(screen.getByRole('link', { name: 'Ver proyectos' })).toHaveAttribute('href', '/projects')
     })
   })
 
@@ -42,64 +54,47 @@ describe('AboutPage', () => {
     })
   })
 
-  it('renders the photo when available', async () => {
+  it('renders sections in order: Experiencia, then Habilidades Técnicas, then Certificaciones', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    const { container } = render(<AboutPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Experiencia')).toBeInTheDocument()
+    })
+
+    const headings = Array.from(container.querySelectorAll('h2')).map(h => h.textContent)
+    const experienciaIdx = headings.indexOf('Experiencia')
+    const habilidadesIdx = headings.indexOf('Habilidades Técnicas')
+    const certificacionesIdx = headings.indexOf('Certificaciones')
+
+    expect(experienciaIdx).toBeGreaterThanOrEqual(0)
+    expect(experienciaIdx).toBeLessThan(habilidadesIdx)
+    expect(habilidadesIdx).toBeLessThan(certificacionesIdx)
+  })
+
+  it('renders work_history entries with company and role', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      const photo = screen.getByAltText('Carlos Jiménez Hirashi') as HTMLImageElement
-      expect(photo.src).toContain(mockAbout.photo_url)
+      expect(screen.getByText(mockAbout.work_history[0].role_title)).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.work_history[0].company)).toBeInTheDocument()
     })
   })
 
-  it('renders all four IKIGAI dimensions with translated labels', async () => {
+  it('renders skills grouped by category', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Mi IKIGAI')).toBeInTheDocument()
-      expect(screen.getByText('Pasión')).toBeInTheDocument()
-      expect(screen.getByText('Profesión')).toBeInTheDocument()
-      expect(screen.getByText('Vocación')).toBeInTheDocument()
-      expect(screen.getByText('Misión')).toBeInTheDocument()
-    })
-  })
-
-  it('renders values as a list', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      mockAbout.values.forEach(value => {
-        expect(screen.getByText(value)).toBeInTheDocument()
-      })
-    })
-  })
-
-  it('renders interests/hobbies as badges', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      mockAbout.interests_hobbies.forEach(item => {
-        expect(screen.getByText(item)).toBeInTheDocument()
-      })
-    })
-  })
-
-  it('renders the Technical Skills section with all competencies', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Habilidades Técnicas')).toBeInTheDocument()
-      mockAbout.competencies.forEach(skill => {
-        expect(screen.getByText(skill.name)).toBeInTheDocument()
+      mockAbout.skill_groups.forEach(group => {
+        expect(screen.getByText(group.category)).toBeInTheDocument()
+        group.skills.forEach(skill => {
+          expect(screen.getByText(skill)).toBeInTheDocument()
+        })
       })
     })
   })
@@ -110,20 +105,17 @@ describe('AboutPage', () => {
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Certificaciones')).toBeInTheDocument()
       expect(screen.getByText(mockAbout.certifications[0].name)).toBeInTheDocument()
     })
   })
 
-  it('renders the experience timeline from work_history', async () => {
+  it('renders the footer CTA', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Experiencia')).toBeInTheDocument()
-      expect(screen.getByText(mockAbout.work_history[0].role_title)).toBeInTheDocument()
-      expect(screen.getByText(mockAbout.work_history[0].company)).toBeInTheDocument()
+      expect(screen.getByText('¿Un sistema que no puede fallar?')).toBeInTheDocument()
     })
   })
 
@@ -145,42 +137,21 @@ describe('AboutPage', () => {
     })
   })
 
-  it('renders the photo in a sticky container', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    const { container } = render(<AboutPage />)
-
-    await waitFor(() => {
-      expect(container.querySelector('.sticky')).toBeInTheDocument()
-    })
-  })
-
-  it('renders timeline dots for experience', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
-
-    const { container } = render(<AboutPage />)
-
-    await waitFor(() => {
-      const dots = container.querySelectorAll('.rounded-full.bg-cyan-600')
-      expect(dots.length).toBeGreaterThan(0)
-    })
-  })
-
   it('gracefully omits sections whose data is empty', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue({
       ...mockAbout,
-      values: [],
-      interests_hobbies: [],
       certifications: [],
       work_history: [],
+      skill_groups: [],
     })
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Sobre Mí')).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.professional_tagline!)).toBeInTheDocument()
     })
     expect(screen.queryByText('Certificaciones')).not.toBeInTheDocument()
     expect(screen.queryByText('Experiencia')).not.toBeInTheDocument()
+    expect(screen.queryByText('Habilidades Técnicas')).not.toBeInTheDocument()
   })
 })
