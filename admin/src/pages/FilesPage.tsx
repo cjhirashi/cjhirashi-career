@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react'
-import { Copy, Check, FileArchive, FileText, File as FileIcon, Trash2, Upload } from 'lucide-react'
-import { useFilesList, useFileMutations } from '@/hooks/useFiles'
+import { Copy, Check, FileArchive, FileText, File as FileIcon, Folder, Trash2, Upload } from 'lucide-react'
+import { useFilesList, useFileCategories, useFileMutations } from '@/hooks/useFiles'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { Modal } from '@/components/Modal'
 
 const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type }) => {
   if (type === 'document') return <FileText size={28} className="text-text-secondary" aria-hidden="true" />
@@ -14,6 +15,8 @@ const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type 
 
 const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ file, onDelete }) => {
   const [copied, setCopied] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const isPreviewableImage = file.file_type === 'image' && !!file.download_url
 
   const handleCopyLink = () => {
     if (!file.download_url) return
@@ -25,18 +28,47 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
 
   return (
     <div className="card p-4 flex flex-col gap-3">
-      <div className="aspect-video rounded-lg overflow-hidden flex items-center justify-center bg-glass">
-        {file.file_type === 'image' && file.download_url ? (
-          <img src={file.download_url} alt={file.original_filename} className="w-full h-full object-cover" />
+      <div
+        className={`aspect-video rounded-lg overflow-hidden flex items-center justify-center bg-glass ${isPreviewableImage ? 'cursor-zoom-in' : ''}`}
+        onClick={isPreviewableImage ? () => setPreviewOpen(true) : undefined}
+        role={isPreviewableImage ? 'button' : undefined}
+        tabIndex={isPreviewableImage ? 0 : undefined}
+        aria-label={isPreviewableImage ? `Ver ${file.original_filename} en grande` : undefined}
+        onKeyDown={
+          isPreviewableImage
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  setPreviewOpen(true)
+                }
+              }
+            : undefined
+        }
+      >
+        {isPreviewableImage ? (
+          <img src={file.download_url!} alt={file.original_filename} className="w-full h-full object-cover" />
         ) : (
           <FileTypeIcon type={file.file_type} />
         )}
       </div>
 
+      {isPreviewableImage && previewOpen && (
+        <Modal title={file.original_filename} onClose={() => setPreviewOpen(false)} maxWidth="max-w-4xl">
+          <img src={file.download_url!} alt={file.original_filename} className="w-full h-auto rounded-lg" />
+        </Modal>
+      )}
+
       <div className="min-w-0">
-        <p className="text-sm font-medium text-text truncate" title={file.original_filename}>
-          {file.original_filename}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-medium text-text truncate flex-1" title={file.original_filename}>
+            {file.original_filename}
+          </p>
+          {file.category && (
+            <span className="badge badge-slate flex items-center gap-1 flex-shrink-0">
+              <Folder size={10} aria-hidden="true" /> {file.category}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-text-secondary">
           {formatFileSize(file.file_size)} · {formatDateTime(file.created_at)}
         </p>
@@ -67,7 +99,12 @@ const FileCard: React.FC<{ file: FileUploadEntity; onDelete: () => void }> = ({ 
 }
 
 export const FilesPage: React.FC = () => {
-  const { data, isLoading, isError, error, refetch } = useFilesList()
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [uploadCategory, setUploadCategory] = useState('')
+  const { data, isLoading, isError, error, refetch } = useFilesList(
+    categoryFilter ? { category: categoryFilter } : {}
+  )
+  const { data: categories } = useFileCategories()
   const { uploadMutation, deleteMutation } = useFileMutations()
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -78,7 +115,7 @@ export const FilesPage: React.FC = () => {
     if (!file) return
     setUploadError(null)
     uploadMutation.mutate(
-      { file },
+      { file, options: { category: uploadCategory.trim() || undefined } },
       { onError: (err) => setUploadError(getErrorMessage(err)) }
     )
   }
@@ -90,9 +127,42 @@ export const FilesPage: React.FC = () => {
 
   return (
     <div className="card">
-      <div className="card-header flex items-center justify-between gap-3">
+      <div className="card-header flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-semibold text-text">Archivos</h2>
-        <div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="sr-only" htmlFor="category-filter">
+            Filtrar por carpeta
+          </label>
+          <select
+            id="category-filter"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="input-field text-sm py-1.5 w-auto"
+          >
+            <option value="">Todas las carpetas</option>
+            {categories?.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            list="upload-categories"
+            value={uploadCategory}
+            onChange={(e) => setUploadCategory(e.target.value)}
+            placeholder="Carpeta (opcional)"
+            aria-label="Carpeta para el próximo archivo a subir"
+            className="input-field text-sm py-1.5 w-40"
+          />
+          <datalist id="upload-categories">
+            {categories?.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -126,7 +196,7 @@ export const FilesPage: React.FC = () => {
 
         {!isLoading && !isError && (data?.length ?? 0) === 0 && (
           <p className="text-text-secondary text-sm text-center py-6">
-            No has subido ningún archivo todavía.
+            {categoryFilter ? `No hay archivos en "${categoryFilter}".` : 'No has subido ningún archivo todavía.'}
           </p>
         )}
 

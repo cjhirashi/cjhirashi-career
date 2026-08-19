@@ -140,6 +140,8 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
 
     expect(container.querySelector('.markdown-body pre code.hljs')).toBeInTheDocument()
     expect(container.querySelector('.hljs-keyword')?.textContent).toBe('const')
+    const wrapper = container.querySelector('.markdown-body pre')?.parentElement
+    expect(wrapper?.querySelector(':scope > span')?.textContent).toBe('js')
 
     const copyButton = screen.getByRole('button', { name: /copiar código/i })
     fireEvent.click(copyButton)

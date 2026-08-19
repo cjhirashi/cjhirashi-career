@@ -10,6 +10,7 @@ export interface FileUploadEntity {
   mime_type: string | null
   file_size: number
   description: string | null
+  category: string | null
   is_public: boolean
   download_url: string | null
   created_at: string

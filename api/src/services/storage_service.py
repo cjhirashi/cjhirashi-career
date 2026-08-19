@@ -4,6 +4,7 @@ Implements Single Responsibility Principle (bucket I/O only, no DB access).
 """
 import json
 import logging
+import re
 import uuid
 from typing import BinaryIO, Optional
 
@@ -55,11 +56,24 @@ def ensure_bucket() -> None:
     client.set_bucket_policy(settings.MINIO_BUCKET, json.dumps(public_read_policy))
 
 
-def upload_file(data: BinaryIO, original_filename: str, size: int, content_type: str) -> str:
+def slugify_category(category: str) -> str:
+    """Turn a free-typed category into a safe S3 key prefix (folder) - lowercase,
+    alphanumerics/hyphens only, no leading/trailing/duplicate hyphens."""
+    slug = re.sub(r"[^a-z0-9]+", "-", category.strip().lower()).strip("-")
+    return slug
+
+
+def upload_file(
+    data: BinaryIO, original_filename: str, size: int, content_type: str, category: Optional[str] = None
+) -> str:
     """Upload a file, returning the unique object key it was stored under
-    (never the original filename, to avoid collisions/overwrites)."""
+    (never the original filename, to avoid collisions/overwrites). `category`
+    becomes a real folder in the bucket (S3 key prefix), not just a DB label -
+    same "carpeta" a user sees in any S3 browser/`mc ls`, not just this app."""
     extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
-    stored_filename = f"{uuid.uuid4().hex}.{extension}" if extension else uuid.uuid4().hex
+    unique_name = f"{uuid.uuid4().hex}.{extension}" if extension else uuid.uuid4().hex
+    slug = slugify_category(category) if category else ""
+    stored_filename = f"{slug}/{unique_name}" if slug else unique_name
 
     get_client().put_object(
         settings.MINIO_BUCKET,

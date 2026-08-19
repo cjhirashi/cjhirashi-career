@@ -42,6 +42,7 @@ def _infer_file_type(content_type: str) -> FileType:
 async def upload_file(
     file: UploadFile = File(...),
     description: str = Form(None),
+    category: str = Form(None),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -58,7 +59,12 @@ async def upload_file(
         original_filename=file.filename,
         size=len(contents),
         content_type=content_type,
+        category=category,
     )
+    # The bucket key's folder is the slugified category (e.g. "Certificaciones"
+    # -> "certificaciones/") - store that same slug as the row's category so
+    # listing/filtering and the bucket's real folder structure never drift apart.
+    category_slug = storage_service.slugify_category(category) if category else None
 
     row = FileUpload(
         user_id=current_user.id,
@@ -69,6 +75,7 @@ async def upload_file(
         mime_type=content_type,
         file_size=len(contents),
         description=description,
+        category=category_slug,
         is_public=True,
         download_url=storage_service.get_public_url(stored_filename),
     )
@@ -83,15 +90,40 @@ async def upload_file(
 async def list_files(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    category: str = Query(None, description="Filter by folder/category slug"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    conditions = [FileUpload.user_id == current_user.id, FileUpload.is_active == True]  # noqa: E712
+    if category is not None:
+        conditions.append(FileUpload.category == category)
     stmt = (
         select(FileUpload)
-        .where(FileUpload.user_id == current_user.id, FileUpload.is_active == True)  # noqa: E712
+        .where(*conditions)
         .order_by(FileUpload.id.desc())
         .offset(skip)
         .limit(limit)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
+@router.get("/categories", response_model=List[str])
+async def list_categories(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Distinct folder/category slugs the user has uploaded to, for populating
+    the "carpeta" picker with what already exists instead of just free text."""
+    stmt = (
+        select(FileUpload.category)
+        .where(
+            FileUpload.user_id == current_user.id,
+            FileUpload.is_active == True,  # noqa: E712
+            FileUpload.category.is_not(None),
+        )
+        .distinct()
+        .order_by(FileUpload.category)
     )
     result = await db.execute(stmt)
     return result.scalars().all()

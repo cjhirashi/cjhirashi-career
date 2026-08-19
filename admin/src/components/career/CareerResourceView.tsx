@@ -39,13 +39,21 @@ const markdownSanitizeSchema = {
   },
 }
 
-/** Wraps a fenced code block's `<pre>` with a copy-to-clipboard button,
- * shown on hover. Used as ReactMarkdown's `pre` component override, so
- * `children` is already the syntax-highlighted `<code>` from
- * rehype-highlight. */
+/** Wraps a fenced code block's `<pre>` with a language label (from the
+ * fence's info string, e.g. ` ```js `) and a copy-to-clipboard button shown
+ * on hover. Used as ReactMarkdown's `pre` component override, so `children`
+ * is already the syntax-highlighted `<code className="language-js ...">`
+ * from rehype-highlight - the label just reads that class back out instead
+ * of re-deriving it. */
 const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children, ...props }) => {
   const [copied, setCopied] = useState(false)
   const preRef = useRef<HTMLPreElement>(null)
+
+  const codeClassName =
+    React.isValidElement<{ className?: string }>(children) && typeof children.props.className === 'string'
+      ? children.props.className
+      : ''
+  const language = codeClassName.match(/language-(\w+)/)?.[1] ?? null
 
   const handleCopy = () => {
     const text = preRef.current?.textContent ?? ''
@@ -57,9 +65,14 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
 
   return (
     <div className="relative group/code">
-      <pre ref={preRef} {...props}>
+      <pre ref={preRef} {...props} className={language ? 'pt-7' : props.className}>
         {children}
       </pre>
+      {language && (
+        <span className="absolute top-2 left-3 text-[10px] font-mono uppercase tracking-wide text-text-muted select-none">
+          {language}
+        </span>
+      )}
       <button
         type="button"
         onClick={handleCopy}

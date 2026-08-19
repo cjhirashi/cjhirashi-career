@@ -1,22 +1,35 @@
 import { axiosInstance } from './client'
 import { FileUploadEntity } from '@/types/files'
 
+export interface UploadFileOptions {
+  description?: string
+  /** Free-typed folder name - the backend slugifies it into both the row's
+   * `category` and the actual S3 key prefix (real folder in the bucket). */
+  category?: string
+}
+
 /**
  * Client for the MinIO-backed file bucket (`/files`). Mirrors the shape of
  * `api/src/routes/files.py` - upload/list/delete, always scoped server-side
  * to the authenticated user.
  */
 export const filesApi = {
-  list: async (params: { skip?: number; limit?: number } = {}): Promise<FileUploadEntity[]> => {
-    const { skip = 0, limit = 50 } = params
-    const response = await axiosInstance.get<FileUploadEntity[]>('/files', { params: { skip, limit } })
+  list: async (params: { skip?: number; limit?: number; category?: string } = {}): Promise<FileUploadEntity[]> => {
+    const { skip = 0, limit = 50, category } = params
+    const response = await axiosInstance.get<FileUploadEntity[]>('/files', { params: { skip, limit, category } })
     return response.data
   },
 
-  upload: async (file: File, description?: string): Promise<FileUploadEntity> => {
+  categories: async (): Promise<string[]> => {
+    const response = await axiosInstance.get<string[]>('/files/categories')
+    return response.data
+  },
+
+  upload: async (file: File, options: UploadFileOptions = {}): Promise<FileUploadEntity> => {
     const formData = new FormData()
     formData.append('file', file)
-    if (description) formData.append('description', description)
+    if (options.description) formData.append('description', options.description)
+    if (options.category) formData.append('category', options.category)
 
     const response = await axiosInstance.post<FileUploadEntity>('/files', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
