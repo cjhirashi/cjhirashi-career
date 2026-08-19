@@ -17,3 +17,9 @@ export const parseMetrics = (metrics: Record<string, unknown> | unknown[] | null
 
   return []
 }
+
+/** Metric values in real data range from short KPIs ("3.5 meses") to full
+ * achievement sentences ("Aprobado en la primera ronda de pruebas, sin
+ * fallas") - this draws the line between "safe to show as a big stat
+ * number" and "needs to be read as a sentence instead". */
+export const isShortMetric = (value: unknown): boolean => String(value).length <= 24

@@ -7,7 +7,7 @@ import { ProjectCard } from '@/components/Common/ProjectCard'
 import { BlogCard } from '@/components/Common/BlogCard'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
-import { parseMetrics } from '@/utils/metrics'
+import { isShortMetric, parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
@@ -22,7 +22,12 @@ export const HomePage = () => {
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
   const anchor = home?.anchor_project
-  const anchorMetrics = parseMetrics(anchor?.metrics).slice(0, 3)
+  // The bento mini-grid is fixed-size stat cells - only short KPI-style
+  // values ("3.5 meses") fit there; longer achievement sentences stay in
+  // the narrative card's prose instead of being squeezed into a square.
+  const anchorMetrics = parseMetrics(anchor?.metrics)
+    .filter(([, value]) => isShortMetric(value))
+    .slice(0, 3)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
