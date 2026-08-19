@@ -49,10 +49,10 @@ export const ProjectsPage = () => {
                   trackClick('filter-all')
                   setSelectedTech(null)
                 }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                   selectedTech === null
-                    ? 'bg-cyan-600 text-white dark:bg-cyan-500'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    ? 'bg-cyan-600 text-white shadow-glow'
+                    : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                 }`}
               >
                 All Projects
@@ -61,10 +61,10 @@ export const ProjectsPage = () => {
                 <button
                   key={tech}
                   onClick={() => handleTechFilter(tech)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                  className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                     selectedTech === tech
-                      ? 'bg-cyan-600 text-white dark:bg-cyan-500'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                      ? 'bg-cyan-600 text-white shadow-glow'
+                      : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                   }`}
                 >
                   {tech}
@@ -88,12 +88,9 @@ export const ProjectsPage = () => {
         )}
 
         {/* Download CV */}
-        <div className="mt-16 text-center">
+        <div className="card mt-16 text-center py-12 px-6">
           <h2 className="text-2xl font-bold text-text mb-6">Want to know more?</h2>
-          <button
-            onClick={() => trackClick('download-cv')}
-            className="bg-primary hover:opacity-90 text-on-primary px-8 py-3 rounded-lg font-semibold transition"
-          >
+          <button onClick={() => trackClick('download-cv')} className="btn px-8 py-3 font-semibold">
             Download Full CV
           </button>
         </div>

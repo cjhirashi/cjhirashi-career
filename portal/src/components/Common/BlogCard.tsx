@@ -16,24 +16,21 @@ export const BlogCard = ({ post }: BlogCardProps) => {
   const publishDate = post.publishedAt ? format(parseISO(post.publishedAt), 'MMM d, yyyy') : ''
 
   return (
-    <article
-      className="bg-surface-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow p-4"
-      onClick={handleClick}
-    >
+    <article className="card group hover:shadow-lg p-4" onClick={handleClick}>
       {/* Image */}
       {post.image && (
-        <div className="mb-4 h-40 bg-gradient-to-br from-cyan-100 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg overflow-hidden">
+        <div className="relative mb-4 h-40 bg-gradient-to-br from-cyan-100 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-md overflow-hidden">
           <img
             src={post.image}
             alt={post.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         </div>
       )}
 
       {/* Meta */}
-      <div className="flex items-center justify-between text-xs text-text-secondary mb-3">
+      <div className="mono flex items-center justify-between text-xs text-text-secondary mb-3">
         <time dateTime={post.publishedAt}>{publishDate}</time>
         {post.readTime && <span>{post.readTime} min read</span>}
       </div>
@@ -48,10 +45,7 @@ export const BlogCard = ({ post }: BlogCardProps) => {
       {post.tags && post.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {post.tags.slice(0, 3).map(tag => (
-            <span
-              key={tag}
-              className="inline-block bg-primary-container text-primary text-xs px-2 py-1 rounded"
-            >
+            <span key={tag} className="badge mono">
               {tag}
             </span>
           ))}
@@ -61,7 +55,7 @@ export const BlogCard = ({ post }: BlogCardProps) => {
       {/* CTA */}
       <a
         href={`/blog/${post.slug}`}
-        className="text-primary hover:opacity-80 font-medium text-sm inline-flex items-center"
+        className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium text-sm inline-flex items-center"
       >
         Read More →
       </a>

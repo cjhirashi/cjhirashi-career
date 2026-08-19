@@ -18,23 +18,18 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
   }
 
   return (
-    <div
-      className="bg-surface-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-      onClick={handleProjectClick}
-    >
+    <div className="card group overflow-hidden hover:shadow-lg" onClick={handleProjectClick}>
       {/* Thumbnail */}
       {project.thumbnail && (
         <div className="relative w-full h-48 bg-gradient-to-br from-cyan-100 to-slate-100 dark:from-slate-800 dark:to-slate-900 overflow-hidden">
           <img
             src={project.thumbnail}
             alt={project.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
           {featured && (
-            <div className="absolute top-2 right-2 bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-semibold">
-              Featured
-            </div>
+            <div className="badge badge-float absolute top-2 right-2">Featured</div>
           )}
         </div>
       )}
@@ -50,15 +45,12 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
         {project.technologies && project.technologies.length > 0 && (
           <div className="mb-4 flex flex-wrap gap-1">
             {project.technologies.slice(0, 3).map(tech => (
-              <span
-                key={tech}
-                className="inline-block bg-primary-container text-primary text-xs px-2 py-1 rounded"
-              >
+              <span key={tech} className="badge mono">
                 {tech}
               </span>
             ))}
             {project.technologies.length > 3 && (
-              <span className="inline-block bg-surface text-text-secondary text-xs px-2 py-1 rounded">
+              <span className="badge badge-secondary mono">
                 +{project.technologies.length - 3}
               </span>
             )}
@@ -73,7 +65,7 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleViewProject}
-              className="flex-1 bg-primary hover:opacity-90 text-on-primary py-2 px-3 rounded text-center text-sm font-medium transition"
+              className="btn flex-1 py-2 px-3 text-center text-sm font-medium"
             >
               View Project
             </a>
@@ -83,7 +75,7 @@ export const ProjectCard = ({ project, featured }: ProjectCardProps) => {
               href={project.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 bg-surface hover:bg-border text-text py-2 px-3 rounded text-center text-sm font-medium transition"
+              className="btn-secondary flex-1 py-2 px-3 text-center text-sm font-medium"
             >
               GitHub
             </a>

@@ -74,7 +74,7 @@ export const BlogPage = () => {
               placeholder="Search articles..."
               value={searchTerm}
               onChange={e => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+              className="w-full pl-10 pr-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
             />
           </div>
         </div>
@@ -90,10 +90,10 @@ export const BlogPage = () => {
                 <button
                   key={tag}
                   onClick={() => handleTagFilter(tag)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                  className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                     selectedTag === tag
-                      ? 'bg-cyan-600 text-white dark:bg-cyan-500'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                      ? 'bg-cyan-600 text-white shadow-glow'
+                      : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
                   }`}
                 >
                   {tag}

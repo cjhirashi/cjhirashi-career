@@ -134,18 +134,18 @@ describe('Footer Component', () => {
     expect(screen.getByText('🐦')).toBeInTheDocument()
   })
 
-  it('renders in dark theme (slate-900)', () => {
+  it('renders with the Glass Steel section-alt treatment', () => {
     const { container } = render(<Footer />)
 
     const footer = container.querySelector('footer')
-    expect(footer).toHaveClass('bg-slate-900')
-    expect(footer).toHaveClass('text-white')
+    expect(footer).toHaveClass('section-alt')
+    expect(footer).toHaveClass('text-text-secondary')
   })
 
   it('applies hover effects to navigation links', () => {
     const { container } = render(<Footer />)
 
-    const links = container.querySelectorAll('a.hover\\:text-cyan-400')
+    const links = container.querySelectorAll('a.hover\\:text-primary')
     expect(links.length).toBeGreaterThan(0)
   })
 
@@ -159,7 +159,7 @@ describe('Footer Component', () => {
   it('separates footer sections with divider', () => {
     const { container } = render(<Footer />)
 
-    const divider = container.querySelector('.border-t.border-slate-700')
+    const divider = container.querySelector('.border-t.border-border')
     expect(divider).toBeInTheDocument()
   })
 
@@ -174,7 +174,7 @@ describe('Footer Component', () => {
   it('renders proper spacing and padding', () => {
     const { container } = render(<Footer />)
 
-    const footer = container.querySelector('footer')
-    expect(footer).toHaveClass('py-12')
+    const spacer = container.querySelector('.py-12')
+    expect(spacer).toBeInTheDocument()
   })
 })

@@ -23,16 +23,16 @@ export const AboutPage = () => {
           {/* Photo */}
           <div className="content:col-span-1">
             {identity?.avatar && (
-              <div className="sticky top-20">
+              <div className="sticky top-20 card p-4">
                 <img
                   src={identity.avatar}
                   alt={identity.name}
-                  className="w-full rounded-lg shadow-lg border-4 border-primary"
+                  className="w-full rounded-md shadow-glow border-4 border-primary"
                 />
-                <div className="mt-6 bg-primary-container p-4 rounded-lg">
+                <div className="mt-6 bg-primary-light rounded-md p-4">
                   <h3 className="font-bold text-text mb-2">{identity.name}</h3>
                   <p className="text-primary font-semibold">{identity.title}</p>
-                  <p className="text-text-secondary text-sm mt-2">{identity.location}</p>
+                  <p className="text-text-secondary text-sm mt-2 mono">{identity.location}</p>
                 </div>
               </div>
             )}
@@ -46,7 +46,7 @@ export const AboutPage = () => {
                 <h2 className="text-2xl font-bold text-text mb-4">My IKIGAI</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(identity.ikigai).map(([key, value]) => (
-                    <div key={key} className="bg-primary-container p-4 rounded-lg">
+                    <div key={key} className="card p-4">
                       <p className="text-xs uppercase font-bold text-primary mb-2">
                         {key.replace(/_/g, ' ')}
                       </p>
@@ -89,13 +89,13 @@ export const AboutPage = () => {
 
         {/* Competencies */}
         {competencies && competencies.length > 0 && (
-          <section className="mb-16">
+          <section className="section-alt -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-12 mb-16">
             <h2 className="text-2xl font-bold text-text mb-8">Technical Skills</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="flex flex-wrap gap-2">
               {competencies.map((skill, index) => (
-                <div key={index} className="bg-surface border border-border px-4 py-3 rounded-lg">
-                  <p className="text-text-secondary font-medium text-sm">{skill}</p>
-                </div>
+                <span key={index} className="badge mono">
+                  {skill}
+                </span>
               ))}
             </div>
           </section>
@@ -127,10 +127,10 @@ export const AboutPage = () => {
             ].map((item, index) => (
               <div key={index} className="flex gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-3 h-3 rounded-full bg-cyan-600 mt-2"></div>
+                  <div className="w-3 h-3 rounded-full bg-cyan-600 shadow-glow mt-2"></div>
                 </div>
                 <div className="flex-grow pb-6 border-l border-border pl-6">
-                  <p className="text-sm font-bold text-primary">{item.year}</p>
+                  <p className="text-sm font-bold text-primary mono">{item.year}</p>
                   <h3 className="text-lg font-bold text-text">{item.title}</h3>
                   <p className="text-text-secondary">{item.company}</p>
                   <p className="text-text-secondary text-sm mt-1">{item.description}</p>

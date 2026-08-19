@@ -9,11 +9,13 @@ export const NotFoundPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-cyan-50 to-slate-50 dark:from-slate-900 dark:to-slate-950">
-      <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
+      <div className="card text-center p-10 sm:p-16">
         {/* 404 */}
         <div className="mb-8">
-          <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-primary">404</h1>
+          <h1 className="text-7xl sm:text-8xl md:text-9xl font-bold text-primary [text-shadow:0_0_30px_var(--primary-glow)]">
+            404
+          </h1>
           <p className="text-2xl font-bold text-text">Page Not Found</p>
         </div>
 
@@ -25,24 +27,29 @@ export const NotFoundPage = () => {
 
         {/* CTA */}
         <div className="space-y-4">
-          <Link
-            to="/"
-            onClick={handleBackHome}
-            className="inline-block bg-primary hover:opacity-90 text-on-primary px-8 py-3 rounded-lg font-semibold transition"
-          >
+          <Link to="/" onClick={handleBackHome} className="btn inline-flex px-8 py-3 font-semibold">
             Back to Home
           </Link>
 
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/about" className="text-primary hover:opacity-80 font-medium">
+            <Link
+              to="/about"
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
+            >
               About
             </Link>
             <span className="text-border">•</span>
-            <Link to="/projects" className="text-primary hover:opacity-80 font-medium">
+            <Link
+              to="/projects"
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
+            >
               Projects
             </Link>
             <span className="text-border">•</span>
-            <Link to="/contact" className="text-primary hover:opacity-80 font-medium">
+            <Link
+              to="/contact"
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-medium"
+            >
               Contact
             </Link>
           </div>

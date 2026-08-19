@@ -32,7 +32,7 @@ export const Header = () => {
   const isActive = (href: string) => location.pathname === href
 
   return (
-    <header className="sticky top-0 z-50 bg-surface-card border-b border-border shadow-sm">
+    <header className="sticky top-0 z-50 bg-bg-glass backdrop-blur-lg border-b border-border">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 gap-2">
           {/* Logo */}
@@ -41,7 +41,7 @@ export const Header = () => {
             className="flex items-center space-x-2 flex-shrink-0"
             onClick={() => handleNavClick('logo')}
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-[10px] shadow-glow flex items-center justify-center">
               <span className="text-on-primary font-bold text-sm">CJ</span>
             </div>
             <span className="hidden sm:inline text-text font-bold text-lg">Carlos Jiménez</span>
@@ -57,8 +57,8 @@ export const Header = () => {
                 className={clsx(
                   'px-3 py-2 rounded-md text-sm font-medium transition-colors',
                   isActive(link.href)
-                    ? 'text-cyan-600 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-950/40'
-                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60'
+                    ? 'text-cyan-600 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-950/40 [text-shadow:0_0_10px_var(--primary-glow)]'
+                    : 'text-slate-600 hover:text-cyan-600 hover:[text-shadow:0_0_10px_var(--primary-glow)] dark:text-slate-300 dark:hover:text-cyan-300'
                 )}
               >
                 {link.label}
@@ -73,7 +73,7 @@ export const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-md text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60"
+              className="md:hidden p-2 rounded-md text-slate-600 hover:text-cyan-600 hover:bg-bg-card dark:text-slate-300 dark:hover:text-cyan-300"
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -100,17 +100,17 @@ export const Header = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4">
+          <div className="md:hidden pb-4 border-t border-border">
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 to={link.href}
                 onClick={() => handleNavClick(link.label)}
                 className={clsx(
-                  'block px-3 py-2 rounded-md text-base font-medium transition-colors',
+                  'block px-3 py-2 mt-1 rounded-md text-base font-medium transition-colors',
                   isActive(link.href)
                     ? 'text-cyan-600 bg-cyan-50 dark:text-cyan-300 dark:bg-cyan-950/40'
-                    : 'text-slate-600 hover:text-cyan-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:bg-slate-800/60'
+                    : 'text-slate-600 hover:text-cyan-600 hover:bg-bg-card dark:text-slate-300 dark:hover:text-cyan-300'
                 )}
               >
                 {link.label}

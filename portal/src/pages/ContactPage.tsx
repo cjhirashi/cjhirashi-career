@@ -68,34 +68,43 @@ export const ContactPage = () => {
           {/* Contact Info */}
           <div className="content:col-span-1 space-y-6">
             {/* Email */}
-            <div>
+            <div className="card p-4">
               <h3 className="font-bold text-text mb-2">Email</h3>
               <a
                 href="mailto:cjhirashi@gmail.com"
-                className="text-primary hover:opacity-80 break-all"
+                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] break-all"
               >
                 cjhirashi@gmail.com
               </a>
             </div>
 
             {/* Social */}
-            <div>
+            <div className="card p-4">
               <h3 className="font-bold text-text mb-2">Follow</h3>
               <div className="space-y-2">
-                <a href="#" className="block text-primary hover:opacity-80">
+                <a
+                  href="#"
+                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                >
                   GitHub
                 </a>
-                <a href="#" className="block text-primary hover:opacity-80">
+                <a
+                  href="#"
+                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                >
                   LinkedIn
                 </a>
-                <a href="#" className="block text-primary hover:opacity-80">
+                <a
+                  href="#"
+                  className="block text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)]"
+                >
                   Twitter
                 </a>
               </div>
             </div>
 
             {/* Response Time */}
-            <div className="bg-primary-container p-4 rounded-lg">
+            <div className="card bg-primary-light p-4">
               <p className="text-xs uppercase font-bold text-primary mb-1">Response Time</p>
               <p className="text-text">Usually within 24 hours</p>
             </div>
@@ -104,7 +113,7 @@ export const ContactPage = () => {
           {/* Contact Form */}
           <div className="content:col-span-2">
             {submitted ? (
-              <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg p-8 text-center">
+              <div className="bg-green-50 dark:bg-green-950/40 backdrop-blur-lg border border-green-200 dark:border-green-900 rounded-md p-8 text-center">
                 <div className="text-4xl mb-4">✓</div>
                 <h3 className="text-xl font-bold text-green-900 dark:text-green-200 mb-2">
                   Message Sent!
@@ -114,7 +123,7 @@ export const ContactPage = () => {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="card p-6 space-y-4">
                 {/* Name */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-text mb-2">
@@ -127,7 +136,7 @@ export const ContactPage = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="Your name"
                   />
                 </div>
@@ -144,7 +153,7 @@ export const ContactPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -160,7 +169,7 @@ export const ContactPage = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="What's this about?"
                   />
                 </div>
@@ -177,7 +186,7 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-2 bg-surface-card border border-border text-text rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
                     placeholder="Your message..."
                   />
                 </div>
@@ -187,7 +196,7 @@ export const ContactPage = () => {
                   type="submit"
                   disabled={loading}
                   onClick={() => trackClick('contact-submit')}
-                  className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-on-primary font-semibold py-3 rounded-lg transition"
+                  className="btn w-full font-semibold py-3"
                 >
                   {loading ? 'Sending...' : 'Send Message'}
                 </button>

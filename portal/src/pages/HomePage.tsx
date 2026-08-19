@@ -24,68 +24,81 @@ export const HomePage = () => {
   if (identityError) return <ErrorMessage message="Failed to load profile" />
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
       {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-cyan-50 to-slate-50 dark:from-slate-900 dark:to-slate-950">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center">
-            {/* Avatar */}
-            {identity?.avatar && (
-              <div className="mb-6 flex justify-center">
-                <img
-                  src={identity.avatar}
-                  alt={identity.name}
-                  className="w-24 h-24 rounded-full border-4 border-primary shadow-lg"
-                />
-              </div>
-            )}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl hero-split">
+          {/* Copy column */}
+          <div className="text-center content:text-left">
+            <div className="mb-6 flex flex-wrap gap-2 justify-center content:justify-start">
+              <span className="badge">Available for opportunities</span>
+              <span className="badge badge-secondary">Remote-first</span>
+            </div>
 
             {/* Title and Tagline */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-text mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-4">
               {identity?.name || 'Carlos Jiménez Hirashi'}
             </h1>
             <p className="text-xl sm:text-2xl text-primary font-semibold mb-4">
               {identity?.title || 'Solutions Architect'}
             </p>
-            <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-text-secondary max-w-2xl mx-auto content:mx-0 mb-8">
               {identity?.tagline ||
                 'Transforming complex ideas into elegant, scalable solutions. Specialized in enterprise architecture and full-stack development.'}
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center content:justify-start">
               <Link
                 to="/projects"
                 onClick={() => handleCTA('view-portfolio')}
-                className="bg-primary hover:opacity-90 text-on-primary px-8 py-3 rounded-lg font-semibold transition"
+                className="btn px-8 py-3 font-semibold"
               >
                 View Portfolio
               </Link>
               <Link
                 to="/contact"
                 onClick={() => handleCTA('contact-cta')}
-                className="bg-surface hover:bg-border text-text px-8 py-3 rounded-lg font-semibold transition"
+                className="btn-secondary px-8 py-3 font-semibold"
               >
                 Get in Touch
               </Link>
+            </div>
+          </div>
+
+          {/* Visual column */}
+          <div className="flex justify-center content:justify-end">
+            <div className="card p-8 w-full max-w-sm">
+              {identity?.avatar && (
+                <div className="mb-6 flex justify-center">
+                  <img
+                    src={identity.avatar}
+                    alt={identity.name}
+                    className="w-24 h-24 rounded-full border-4 border-primary shadow-glow"
+                  />
+                </div>
+              )}
+              <p className="text-center text-text-secondary text-sm mono">
+                {identity?.location || 'Remote'}
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Quick Stats */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-surface-card">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div className="text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="card text-center p-6">
               <div className="text-4xl font-bold text-primary mb-2">10+</div>
               <p className="text-text-secondary">Years of Experience</p>
             </div>
-            <div className="text-center">
+            <div className="card text-center p-6">
               <div className="text-4xl font-bold text-primary mb-2">50+</div>
               <p className="text-text-secondary">Projects Completed</p>
             </div>
-            <div className="text-center">
+            <div className="card text-center p-6">
               <div className="text-4xl font-bold text-primary mb-2">
                 {competencies?.length || '20'}+
               </div>
@@ -96,11 +109,11 @@ export const HomePage = () => {
       </section>
 
       {/* Value Proposition */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-surface">
+      <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <h2 className="text-3xl font-bold text-text text-center mb-12">Why Work With Me</h2>
 
-          <div className="grid grid-cols-1 content:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
             {[
               {
                 title: 'Expert Architecture',
@@ -115,7 +128,7 @@ export const HomePage = () => {
                 description: 'Transform complex challenges into elegant, practical solutions.',
               },
             ].map((item, index) => (
-              <div key={index} className="bg-surface-card p-6 rounded-lg border border-border">
+              <div key={index} className="card p-6">
                 <h3 className="font-bold text-lg text-text mb-2">{item.title}</h3>
                 <p className="text-text-secondary">{item.description}</p>
               </div>
@@ -125,11 +138,14 @@ export const HomePage = () => {
       </section>
 
       {/* Featured Projects */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-surface-card">
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl font-bold text-text">Featured Projects</h2>
-            <Link to="/projects" className="text-primary hover:opacity-80 font-semibold">
+            <Link
+              to="/projects"
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+            >
               View All →
             </Link>
           </div>
@@ -148,16 +164,16 @@ export const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-800 dark:to-cyan-900">
+      <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to work together?</h2>
-          <p className="text-cyan-100 mb-8">
+          <h2 className="text-3xl font-bold text-text mb-4">Ready to work together?</h2>
+          <p className="text-text-secondary mb-8">
             Let's discuss how I can help transform your next project into reality.
           </p>
           <Link
             to="/contact"
             onClick={() => handleCTA('footer-cta')}
-            className="inline-block bg-white text-cyan-700 hover:bg-slate-100 px-8 py-3 rounded-lg font-semibold transition"
+            className="btn inline-flex px-8 py-3 font-semibold"
           >
             Start a Conversation
           </Link>

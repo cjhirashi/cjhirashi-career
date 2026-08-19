@@ -38,6 +38,30 @@ export default {
         // Semantic tokens sourced from CSS custom properties (see src/index.css).
         // These automatically adapt to the active theme (light/dark) because
         // the underlying --variable values change on [data-theme="dark"].
+        // "Glass Steel" tokens (primary source of truth):
+        'bg-primary': 'var(--bg-primary)',
+        'bg-secondary': 'var(--bg-secondary)',
+        'bg-glass': 'var(--bg-glass)',
+        'bg-card': 'var(--bg-card)',
+        'text-muted': 'var(--text-muted)',
+        'border-glass': 'var(--border-glass)',
+        'border-glass-hover': 'var(--border-glass-hover)',
+        'primary-hover': 'var(--primary-hover)',
+        'primary-light': 'var(--primary-light)',
+        'primary-glow': 'var(--primary-glow)',
+        'secondary-hover': 'var(--secondary-hover)',
+        'secondary-light': 'var(--secondary-light)',
+        'error-bg': 'var(--error-bg)',
+        'error-text': 'var(--error-text)',
+        'error-border': 'var(--error-border)',
+        'warning-bg': 'var(--warning-bg)',
+        'warning-text': 'var(--warning-text)',
+        'warning-border': 'var(--warning-border)',
+        'success-bg': 'var(--success-bg)',
+        'success-text': 'var(--success-text)',
+        'success-border': 'var(--success-border)',
+        // Legacy aliases (kept so existing className usage across the portal
+        // keeps working, now backed by the Glass Steel custom properties):
         bg: 'var(--bg)',
         surface: 'var(--surface)',
         'surface-card': 'var(--surface-card)',
@@ -49,6 +73,18 @@ export default {
         'primary-container': 'var(--primary-container)',
         secondary: 'var(--secondary)',
         'secondary-container': 'var(--secondary-container)',
+      },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+      },
+      boxShadow: {
+        glass: 'var(--shadow-glass)',
+        glow: 'var(--shadow-glow)',
+      },
+      backdropBlur: {
+        xs: '2px',
       },
     },
   },
