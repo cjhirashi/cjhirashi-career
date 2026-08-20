@@ -19,6 +19,18 @@ export function useCareerList<T = CareerEntity>(resource: string, params: ListPa
   })
 }
 
+/** Total row count for a resource, independent of pagination - shown next
+ * to the table's title. Nested under the same `careerQueryKey(resource)`
+ * prefix as the list query, so `useCareerMutations`'s invalidation (which
+ * uses `exact: false`) refreshes it too after a create/delete. */
+export function useCareerCount(resource: string, enabled = true) {
+  return useQuery({
+    queryKey: careerQueryKey(resource, { count: true }),
+    queryFn: () => careerApi.count(resource),
+    enabled,
+  })
+}
+
 export function useCareerMutations<T = CareerEntity>(resource: string) {
   const queryClient = useQueryClient()
 

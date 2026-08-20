@@ -31,12 +31,27 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockedCareerApi.list.mockResolvedValue([sampleItem] as never)
+    mockedCareerApi.count.mockResolvedValue(1)
   })
 
   it('renders the table by default', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
     expect(screen.getByRole('table')).toBeInTheDocument()
+  })
+
+  it('shows the total record count next to the title, independent of the page size', async () => {
+    mockedCareerApi.count.mockResolvedValue(45)
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('45')).toBeInTheDocument())
+  })
+
+  it('hides the count while viewing/editing a single record', async () => {
+    mockedCareerApi.count.mockResolvedValue(45)
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    await waitFor(() => expect(screen.queryByText('45')).not.toBeInTheDocument())
   })
 
   it('never renders a popup dialog - everything happens in place', async () => {

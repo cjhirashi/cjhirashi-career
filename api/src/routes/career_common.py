@@ -34,6 +34,9 @@ def build_crud_router(
     router = APIRouter(prefix=prefix, tags=tags)
     repository: CareerRepository = CareerRepository(model)
 
+    class CountResponse(BaseModel):
+        count: int
+
     @router.get("", response_model=List[response_schema], summary=f"List {entity_name}")
     async def list_items(
         skip: int = Query(0, ge=0, description="Pagination offset"),
@@ -42,6 +45,16 @@ def build_crud_router(
         db: AsyncSession = Depends(get_db),
     ):
         return await repository.list_for_user(db, current_user.id, skip=skip, limit=limit)
+
+    # Declared before "/{item_id}" - a path-param route would otherwise catch
+    # "/count" as if item_id="count".
+    @router.get("/count", response_model=CountResponse, summary=f"Count {entity_name}")
+    async def count_items(
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        count = await repository.count_for_user(db, current_user.id)
+        return CountResponse(count=count)
 
     @router.get(
         "/{item_id}", response_model=response_schema, summary=f"Get a single {entity_name}"

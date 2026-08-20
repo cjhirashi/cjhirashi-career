@@ -19,7 +19,7 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
-import { useCareerList, useCareerMutations } from '@/hooks/useCareerResource'
+import { useCareerList, useCareerMutations, useCareerCount } from '@/hooks/useCareerResource'
 import { CareerEntity } from '@/types/career'
 import { getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -537,6 +537,9 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     limit,
   })
   const { createMutation, updateMutation, deleteMutation } = useCareerMutations<CareerEntity>(config.key)
+  // Total row count, independent of pagination - not meaningful for a
+  // singleton (always 0 or 1) or a nested sub-list (already filtered).
+  const { data: totalCount } = useCareerCount(config.key, !isSingleton && !isNested)
 
   const items = useMemo(() => {
     if (!data) return []
@@ -779,7 +782,12 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     <div className={hideTitle ? '' : 'card'}>
       {!hideTitle && (
         <div className="card-header flex items-center justify-between gap-3">
-          <h2 className="font-semibold text-text">{headerTitle}</h2>
+          <h2 className="font-semibold text-text flex items-center gap-2">
+            {headerTitle}
+            {viewState === 'list' && totalCount !== undefined && (
+              <span className="badge badge-slate mono">{totalCount}</span>
+            )}
+          </h2>
           {headerActions}
         </div>
       )}

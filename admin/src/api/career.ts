@@ -26,6 +26,11 @@ export const careerApi = {
     return response.data
   },
 
+  count: async (resource: string): Promise<number> => {
+    const response = await axiosInstance.get<{ count: number }>(`${basePath(resource)}/count`)
+    return response.data.count
+  },
+
   get: async <T = CareerEntity>(resource: string, id: number): Promise<T> => {
     const response = await axiosInstance.get<T>(`${basePath(resource)}/${id}`)
     return response.data
