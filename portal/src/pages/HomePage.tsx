@@ -8,7 +8,8 @@ import { BlogCard } from '@/components/Common/BlogCard'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { Markdown } from '@/components/Common/Markdown'
-import { isShortMetric, parseMetrics } from '@/utils/metrics'
+import { MetricChips } from '@/components/Common/MetricChips'
+import { parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
@@ -29,12 +30,7 @@ export const HomePage = () => {
   const skillCategories = (about?.skill_groups ?? [])
     .map(group => group.category)
     .filter(category => category !== 'Otros')
-  // The bento mini-grid is fixed-size stat cells - only short KPI-style
-  // values ("3.5 meses") fit there; longer achievement sentences stay in
-  // the narrative card's prose instead of being squeezed into a square.
-  const anchorMetrics = parseMetrics(anchor?.metrics)
-    .filter(([, value]) => isShortMetric(value))
-    .slice(0, 3)
+  const hasAnchorMetrics = parseMetrics(anchor?.metrics).length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
@@ -152,14 +148,9 @@ export const HomePage = () => {
                 )}
               </div>
 
-              {anchorMetrics.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-border flex flex-wrap gap-x-8 gap-y-4">
-                  {anchorMetrics.map(([label, value]) => (
-                    <div key={label}>
-                      <div className="text-xl font-bold text-primary mono">{String(value)}</div>
-                      <p className="text-text-secondary text-xs">{label}</p>
-                    </div>
-                  ))}
+              {hasAnchorMetrics && (
+                <div className="mt-6 pt-6 border-t border-border">
+                  <MetricChips metrics={anchor.metrics} />
                 </div>
               )}
             </div>
