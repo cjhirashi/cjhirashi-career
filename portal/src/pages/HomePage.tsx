@@ -106,63 +106,69 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Flagship case study - bento layout: narrative card + a grid of
-          metric/image cards, matching cjhirashi.com's case-study block. */}
+      {/* Flagship case study - narrative card + image, side by side. Short
+          KPI-style metrics live as a footer row inside the narrative card
+          instead of their own grid cell, so there's no empty column when
+          the project only has one or two of them. */}
       {anchor && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-4">
-            {/* Narrative card */}
-            <div className="card p-6">
-              <div className="flex items-start justify-between gap-2 mb-4">
-                <h2 className="text-lg font-bold text-text flex items-center gap-2">
-                  <Anchor size={16} className="text-primary flex-shrink-0" />
-                  Caso ancla — {anchor.title}
-                </h2>
-                {anchor.year && <span className="text-xs text-text-muted flex-shrink-0">{anchor.year}</span>}
+          <div
+            className={`mx-auto max-w-6xl grid grid-cols-1 gap-6 ${anchor.image_url ? 'lg:grid-cols-[1.1fr_0.9fr]' : ''}`}
+          >
+            <div className="card p-8">
+              <div className="flex items-center gap-2 mb-2">
+                <Anchor size={14} className="text-primary flex-shrink-0" />
+                <span className="text-xs font-bold text-primary uppercase tracking-wide">Caso ancla</span>
+                {anchor.year && <span className="text-xs text-text-muted ml-auto flex-shrink-0">{anchor.year}</span>}
+              </div>
+              <h2 className="text-2xl font-bold text-text mb-6">{anchor.title}</h2>
+
+              <div className="space-y-5">
+                {anchor.problem && (
+                  <div>
+                    <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                      <Clock size={12} /> Problema
+                    </p>
+                    <Markdown className="text-sm">{anchor.problem}</Markdown>
+                  </div>
+                )}
+
+                {anchor.architecture && (
+                  <div>
+                    <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                      <Network size={12} /> Arquitectura
+                    </p>
+                    <Markdown className="text-sm">{anchor.architecture}</Markdown>
+                  </div>
+                )}
+
+                {anchor.solution && (
+                  <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
+                    <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                      <TrendingUp size={12} /> Resultado
+                    </p>
+                    <Markdown className="text-sm">{anchor.solution}</Markdown>
+                  </div>
+                )}
               </div>
 
-              {anchor.problem && (
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                    <Clock size={12} /> Problema
-                  </p>
-                  <Markdown className="text-sm">{anchor.problem}</Markdown>
-                </div>
-              )}
-
-              {anchor.architecture && (
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                    <Network size={12} /> Arquitectura
-                  </p>
-                  <Markdown className="text-sm">{anchor.architecture}</Markdown>
-                </div>
-              )}
-
-              {anchor.solution && (
-                <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
-                  <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                    <TrendingUp size={12} /> Resultado
-                  </p>
-                  <Markdown className="text-sm">{anchor.solution}</Markdown>
+              {anchorMetrics.length > 0 && (
+                <div className="mt-6 pt-6 border-t border-border flex flex-wrap gap-x-8 gap-y-4">
+                  {anchorMetrics.map(([label, value]) => (
+                    <div key={label}>
+                      <div className="text-xl font-bold text-primary mono">{String(value)}</div>
+                      <p className="text-text-secondary text-xs">{label}</p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Metrics + image mini-grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {anchorMetrics.map(([label, value]) => (
-                <div key={label} className="card p-6 flex flex-col items-center justify-center text-center">
-                  <div className="text-2xl font-bold mb-1 text-primary">{String(value)}</div>
-                  <p className="text-text-secondary text-xs">{label}</p>
-                </div>
-              ))}
-              {anchor.image_url && (
-                <div className="card overflow-hidden">
-                  <img src={anchor.image_url} alt={anchor.title} className="w-full h-full object-cover" />
-                </div>
-              )}
-            </div>
+            {anchor.image_url && (
+              <div className="card overflow-hidden min-h-[16rem]">
+                <img src={anchor.image_url} alt={anchor.title} className="w-full h-full object-cover" />
+              </div>
+            )}
           </div>
         </section>
       )}
