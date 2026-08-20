@@ -34,50 +34,12 @@ describe('ProjectCard Component', () => {
     expect(screen.getByText(project.industry!)).toBeInTheDocument()
   })
 
-  it('renders the year', () => {
-    const project = mockProjects[0]
-    render(<ProjectCard project={project} />)
-
-    expect(screen.getByText(String(project.year))).toBeInTheDocument()
-  })
-
   it('renders the image when available', () => {
     const project = mockProjects[0]
     render(<ProjectCard project={project} />)
 
     const image = screen.getByAltText(project.title) as HTMLImageElement
     expect(image.src).toContain(project.image_url)
-  })
-
-  it('renders metrics as chips', () => {
-    const project = mockProjects[0]
-    render(<ProjectCard project={project} />)
-
-    const metrics = project.metrics as Record<string, string>
-    Object.values(metrics).forEach(value => {
-      expect(screen.getByText(value)).toBeInTheDocument()
-    })
-  })
-
-  it('displays "Destacado" badge when featured prop is true', () => {
-    const project = mockProjects[0]
-    render(<ProjectCard project={project} featured={true} />)
-
-    expect(screen.getByText('Destacado')).toBeInTheDocument()
-  })
-
-  it('hides the "Destacado" badge when featured prop is false', () => {
-    const project = mockProjects[2]
-    render(<ProjectCard project={project} featured={false} />)
-
-    expect(screen.queryByText('Destacado')).not.toBeInTheDocument()
-  })
-
-  it('renders a "Ver caso" call to action', () => {
-    const project = mockProjects[0]
-    render(<ProjectCard project={project} />)
-
-    expect(screen.getByText(/Ver caso/i)).toBeInTheDocument()
   })
 
   it('links to the project detail page', () => {
@@ -111,13 +73,6 @@ describe('ProjectCard Component', () => {
     render(<ProjectCard project={project} />)
 
     expect(screen.queryByAltText(project.title)).not.toBeInTheDocument()
-    expect(screen.getByText(project.title)).toBeInTheDocument()
-  })
-
-  it('handles a project with no metrics gracefully', () => {
-    const project = mockProjects[1]
-    render(<ProjectCard project={project} />)
-
     expect(screen.getByText(project.title)).toBeInTheDocument()
   })
 

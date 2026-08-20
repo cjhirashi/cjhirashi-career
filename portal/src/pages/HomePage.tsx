@@ -175,7 +175,7 @@ export const HomePage = () => {
 
             <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
               {home.featured_projects.map(project => (
-                <ProjectCard key={project.id} project={project} featured />
+                <ProjectCard key={project.id} project={project} />
               ))}
             </div>
           </div>
