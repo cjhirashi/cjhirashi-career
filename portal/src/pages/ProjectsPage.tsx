@@ -50,8 +50,8 @@ export const ProjectsPage = () => {
                 }}
                 className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                   selectedFilter === null
-                    ? 'bg-cyan-600 text-white shadow-glow'
-                    : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+                    ? 'filter-chip-active'
+                    : 'filter-chip'
                 }`}
               >
                 Todos
@@ -62,8 +62,8 @@ export const ProjectsPage = () => {
                   onClick={() => handleFilter(filter)}
                   className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                     selectedFilter === filter
-                      ? 'bg-cyan-600 text-white shadow-glow'
-                      : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+                      ? 'filter-chip-active'
+                      : 'filter-chip'
                   }`}
                 >
                   {filter}

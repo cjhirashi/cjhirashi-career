@@ -52,8 +52,8 @@ export const BlogPage = () => {
               }}
               className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                 selectedCategory === null
-                  ? 'bg-cyan-600 text-white shadow-glow'
-                  : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+                  ? 'filter-chip-active'
+                  : 'filter-chip'
               }`}
             >
               Todos
@@ -64,8 +64,8 @@ export const BlogPage = () => {
                 onClick={() => handleCategoryFilter(category)}
                 className={`mono px-4 py-2 rounded-full text-sm font-medium transition ${
                   selectedCategory === category
-                    ? 'bg-cyan-600 text-white shadow-glow'
-                    : 'bg-bg-card backdrop-blur-lg border border-border text-text-secondary hover:border-border-glass-hover hover:text-primary'
+                    ? 'filter-chip-active'
+                    : 'filter-chip'
                 }`}
               >
                 {category}

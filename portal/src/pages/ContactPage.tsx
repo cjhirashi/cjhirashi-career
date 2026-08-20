@@ -147,7 +147,7 @@ export const ContactPage = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="input-field"
                     placeholder="Tu nombre"
                   />
                 </div>
@@ -163,7 +163,7 @@ export const ContactPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="input-field"
                     placeholder="tu@email.com"
                   />
                 </div>
@@ -179,7 +179,7 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-2 bg-bg-card backdrop-blur-lg border border-border text-text rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-600 dark:focus:ring-primary"
+                    className="input-field"
                     placeholder="Tu mensaje..."
                   />
                 </div>

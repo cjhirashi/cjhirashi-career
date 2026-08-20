@@ -80,10 +80,10 @@ describe('BlogPage', () => {
 
     const categoryButton = await screen.findByRole('button', { name: 'Pensamiento Sistémico' })
     await user.click(categoryButton)
-    await waitFor(() => expect(categoryButton).toHaveClass('bg-cyan-600'))
+    await waitFor(() => expect(categoryButton).toHaveClass('filter-chip-active'))
 
     await user.click(categoryButton)
-    await waitFor(() => expect(categoryButton).not.toHaveClass('bg-cyan-600'))
+    await waitFor(() => expect(categoryButton).not.toHaveClass('filter-chip-active'))
   })
 
   it('tracks category filter clicks', async () => {

@@ -92,10 +92,10 @@ describe('ProjectsPage', () => {
 
     const filterButton = await screen.findByRole('button', { name: mockProjects[0].category! })
     await user.click(filterButton)
-    await waitFor(() => expect(filterButton).toHaveClass('bg-cyan-600'))
+    await waitFor(() => expect(filterButton).toHaveClass('filter-chip-active'))
 
     await user.click(filterButton)
-    await waitFor(() => expect(filterButton).not.toHaveClass('bg-cyan-600'))
+    await waitFor(() => expect(filterButton).not.toHaveClass('filter-chip-active'))
   })
 
   it('resets to all projects via the "Todos" button', async () => {

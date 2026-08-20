@@ -13,6 +13,7 @@
  * (class strategy) is also toggled alongside the attribute for components
  * that prefer that convention.
  */
+@layer base {
 :root {
   /* Surfaces */
   --bg-primary: #f0fafb;
@@ -239,7 +240,9 @@ textarea:focus-visible {
     @apply text-black;
   }
 }
+}
 
+@layer components {
 /*
  * Glass Steel component primitives
  * ---------------------------------
@@ -265,6 +268,52 @@ textarea:focus-visible {
 .card:hover {
   transform: translateY(-4px);
   border-color: var(--border-glass-hover);
+}
+
+/* Form input/textarea - shared surface for ContactPage's form fields. */
+.input-field {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--border-glass-hover);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+/* Filter chip pill - category/tag filters (Blog, Projects). `-active`
+ * mirrors `.btn`'s solid cyan treatment; the resting state is the same
+ * "ghost glass" surface as `.btn-secondary`. */
+.filter-chip {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.filter-chip:hover {
+  border-color: var(--border-glass-hover);
+  color: var(--primary-color);
+}
+
+.filter-chip-active {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* Alternate section background, used to add depth between stacked sections
@@ -594,4 +643,5 @@ textarea:focus-visible {
   border: 1px solid var(--border);
   padding: 0.5rem;
   text-align: left;
+}
 }
