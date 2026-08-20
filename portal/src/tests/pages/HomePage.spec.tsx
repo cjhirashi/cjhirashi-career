@@ -28,6 +28,7 @@ describe('HomePage - Entry Point', () => {
   it('renders hero copy from home content', async () => {
     await renderReady()
 
+    expect(screen.getByText(mockHome.hero_name!)).toBeInTheDocument()
     expect(screen.getByText(mockHome.hero_subtitle!)).toBeInTheDocument()
     expect(screen.getByText(mockHome.hero_intro!)).toBeInTheDocument()
   })

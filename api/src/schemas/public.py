@@ -74,6 +74,7 @@ class PublicHeroCta(BaseModel):
 
 class PublicHomeResponse(BaseModel):
     hero_photo_url: Optional[str] = None
+    hero_name: Optional[str] = None
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
     hero_intro: Optional[str] = None

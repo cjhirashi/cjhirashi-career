@@ -1125,6 +1125,7 @@ export const portalHomeConfig: ResourceConfig = {
   columns: [],
   fields: [
     { name: 'hero_photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
+    { name: 'hero_name', label: 'Nombre', type: 'text', fullWidth: true },
     { name: 'hero_title', label: 'Título principal', type: 'text', fullWidth: true },
     { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
     { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },
