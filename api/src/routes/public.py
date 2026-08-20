@@ -161,6 +161,17 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         )
     ).scalars().all()
 
+    featured_competencies = (
+        await db.execute(
+            select(Competency)
+            .where(Competency.user_id == USER_ID, Competency.featured_on_home.is_(True))
+            .order_by(Competency.id)
+        )
+    ).scalars().all()
+    # Distinct categories, first-seen order - a category can have several
+    # featured competencies, it should still only produce one badge.
+    skill_categories = list(dict.fromkeys(c.category for c in featured_competencies if c.category))
+
     return PublicHomeResponse(
         hero_photo_url=home.hero_photo_url if home else None,
         hero_title=home.hero_title if home else None,
@@ -171,6 +182,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         anchor_project=_project_detail(anchor) if anchor else None,
         featured_projects=[_project_card(p) for p in projects],
         featured_publications=[_publication_card(pub) for pub in publications],
+        skill_categories=skill_categories,
     )
 
 

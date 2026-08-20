@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Anchor, BookOpen, Clock, Layers, Network, ShieldCheck, TrendingUp } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
-import { useAbout } from '@/hooks/useAbout'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
 import { BlogCard } from '@/components/Common/BlogCard'
@@ -13,7 +12,6 @@ import { parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
-  const { data: about } = useAbout()
   const { trackClick } = useTrackClick()
 
   const handleCTA = (action: string) => {
@@ -24,12 +22,6 @@ export const HomePage = () => {
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
   const anchor = home?.anchor_project
-  // "Otros" is the About page's own fallback bucket for uncategorized skills
-  // (see api/src/routes/public.py) - it's not a real area of expertise, so it
-  // doesn't belong in this compact teaser row.
-  const skillCategories = (about?.skill_groups ?? [])
-    .map(group => group.category)
-    .filter(category => category !== 'Otros')
   const hasAnchorMetrics = parseMetrics(anchor?.metrics).length > 0
 
   return (
@@ -212,16 +204,17 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Stack técnico - compact teaser of expertise areas (skill_groups'
-          categories), the full skill breakdown lives on About. */}
-      {skillCategories.length > 0 && (
+      {/* Stack técnico - categories of whichever competencies are marked
+          featured_on_home (see api/src/routes/public.py's get_home), the
+          full skill breakdown lives on About. */}
+      {home && home.skill_categories.length > 0 && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
               <Layers size={22} className="text-primary" /> Stack técnico
             </h2>
             <div className="flex flex-wrap justify-center gap-3 mb-6">
-              {skillCategories.map(category => (
+              {home.skill_categories.map(category => (
                 <span key={category} className="badge mono">
                   {category}
                 </span>

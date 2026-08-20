@@ -65,6 +65,7 @@ export interface Competency {
   aligned_differentiator_ids?: number[] | null
   proficiency_score?: number | null
   is_highlighted: boolean
+  featured_on_home: boolean
   created_at: ISODateTime
   updated_at: ISODateTime
 }

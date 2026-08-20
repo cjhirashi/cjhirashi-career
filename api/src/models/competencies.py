@@ -35,6 +35,10 @@ class Competency(Base):
     aligned_differentiator_ids = Column(JSONB, nullable=True)
     proficiency_score = Column(Integer, nullable=True)
     is_highlighted = Column(Boolean, default=False, nullable=True)
+    # Drives the Home page's "Stack técnico" teaser - only categories with at
+    # least one competency marked True appear there (see routes/public.py's
+    # get_home). Independent of is_highlighted, which has no wired use yet.
+    featured_on_home = Column(Boolean, default=False, nullable=True, index=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

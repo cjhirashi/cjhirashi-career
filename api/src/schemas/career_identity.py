@@ -125,6 +125,7 @@ class CompetencyBase(BaseModel):
     aligned_differentiator_ids: Optional[List[int]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: bool = False
+    featured_on_home: bool = False
 
 
 class CompetencyCreate(CompetencyBase):
@@ -145,6 +146,7 @@ class CompetencyUpdate(BaseModel):
     aligned_differentiator_ids: Optional[List[int]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: Optional[bool] = None
+    featured_on_home: Optional[bool] = None
 
 
 class CompetencyResponse(CompetencyBase):

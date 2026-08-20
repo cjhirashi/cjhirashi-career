@@ -64,6 +64,7 @@ export interface HomeContent {
   anchor_project: Project | null
   featured_projects: Project[]
   featured_publications: BlogPost[]
+  skill_categories: string[]
 }
 
 // About

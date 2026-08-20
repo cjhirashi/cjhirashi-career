@@ -84,6 +84,10 @@ class PublicHomeResponse(BaseModel):
     anchor_project: Optional[PublicProjectDetail] = None
     featured_projects: List[PublicProjectCard] = []
     featured_publications: List[PublicPublicationCard] = []
+    # Distinct categories among competencies marked featured_on_home - the
+    # "Stack técnico" teaser row, curated by that flag rather than showing
+    # every category (that's what About's full skill breakdown is for).
+    skill_categories: List[str] = []
 
 
 # ============================================================================

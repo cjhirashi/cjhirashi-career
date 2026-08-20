@@ -134,6 +134,7 @@ export const mockHome: HomeContent = {
   anchor_project: mockProjects[0],
   featured_projects: mockProjects.filter(p => p.is_featured),
   featured_publications: mockBlogPosts.slice(0, 1),
+  skill_categories: ['Data Science & IA', 'Cloud'],
 }
 
 export const mockAbout: AboutContent = {

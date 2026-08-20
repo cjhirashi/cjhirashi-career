@@ -2,18 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
 import { homeApi } from '@/api/home'
-import { aboutApi } from '@/api/about'
 import { trackingApi } from '@/api/tracking'
 import { HomePage } from '@/pages/HomePage'
-import { mockHome, mockAbout } from '../fixtures/mockData'
+import { mockHome } from '../fixtures/mockData'
 
 vi.mock('@/api/home')
-vi.mock('@/api/about')
 vi.mock('@/api/tracking')
 
 const renderReady = async () => {
   vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-  vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
   render(<HomePage />)
   await waitFor(() => {
     expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
@@ -72,7 +69,6 @@ describe('HomePage - Entry Point', () => {
 
   it('omits the CTA row entirely when hero_ctas is empty', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_ctas: [] })
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -124,7 +120,6 @@ describe('HomePage - Entry Point', () => {
 
   it('shows loading spinner initially', () => {
     vi.mocked(homeApi.getHome).mockImplementation(() => new Promise(() => {}))
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -133,7 +128,6 @@ describe('HomePage - Entry Point', () => {
 
   it('shows error message when home content fails to load', async () => {
     vi.mocked(homeApi.getHome).mockRejectedValue(new Error('Failed'))
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -144,7 +138,6 @@ describe('HomePage - Entry Point', () => {
 
   it('renders no H1 at all when hero_title is empty - no silent fallback to other content', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_title: null })
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     const { container } = render(<HomePage />)
 
@@ -161,7 +154,6 @@ describe('HomePage - Entry Point', () => {
       featured_projects: [],
       featured_publications: [],
     })
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -174,7 +166,6 @@ describe('HomePage - Entry Point', () => {
 
   it('renders hero section in gradient background', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
     const { container } = render(<HomePage />)
 
     await waitFor(() => {
@@ -182,24 +173,20 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('renders the skill group categories as a "Stack técnico" teaser, excluding "Otros"', async () => {
-    vi.mocked(aboutApi.getAbout).mockResolvedValue({
-      ...mockAbout,
-      skill_groups: [
-        { category: 'Frontend', skills: ['React'] },
-        { category: 'Otros', skills: ['Misc'] },
-      ],
-    })
-    await renderReady()
+  it('renders the featured competencies\' categories as a "Stack técnico" teaser', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: ['Frontend', 'Cloud'] })
 
-    expect(await screen.findByText('Stack técnico')).toBeInTheDocument()
+    render(<HomePage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Stack técnico')).toBeInTheDocument()
+    })
     expect(screen.getByText('Frontend')).toBeInTheDocument()
-    expect(screen.queryByText('Otros')).not.toBeInTheDocument()
+    expect(screen.getByText('Cloud')).toBeInTheDocument()
   })
 
-  it('omits the "Stack técnico" section when there are no skill groups', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-    vi.mocked(aboutApi.getAbout).mockResolvedValue({ ...mockAbout, skill_groups: [] })
+  it('omits the "Stack técnico" section when no competency is marked featured_on_home', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: [] })
 
     render(<HomePage />)
 

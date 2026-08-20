@@ -171,6 +171,7 @@ export const competenciesConfig: ResourceConfig = {
     { key: 'years_of_experience', label: 'Años exp.', format: 'number' },
     { key: 'proficiency_score', label: 'Score', format: 'number' },
     { key: 'is_highlighted', label: 'Destacada', format: 'boolean' },
+    { key: 'featured_on_home', label: 'En Home', format: 'boolean' },
   ],
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },
@@ -191,6 +192,12 @@ export const competenciesConfig: ResourceConfig = {
     { name: 'practice_start_date', label: 'Fecha de inicio de práctica', type: 'date' },
     { name: 'proficiency_score', label: 'Score de dominio (0-100)', type: 'number' },
     { name: 'is_highlighted', label: 'Destacada', type: 'boolean' },
+    {
+      name: 'featured_on_home',
+      label: 'Destacado en home',
+      type: 'boolean',
+      helpText: 'Su categoría aparecerá como badge en la sección "Stack técnico" del Home.',
+    },
     {
       name: 'context_libraries',
       label: 'Librerías / contexto técnico (JSON)',
