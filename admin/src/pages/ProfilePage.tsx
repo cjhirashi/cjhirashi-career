@@ -1,21 +1,11 @@
 import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { filesApi } from '@/api/files'
 
 export const ProfilePage: React.FC = () => {
   const { user, updateProfile, isLoading, error, clearError } = useAuth()
   const [fullName, setFullName] = useState(user?.full_name ?? '')
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(user?.photo_url ?? null)
-  const [uploading, setUploading] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState(user?.photo_url ?? '')
   const [success, setSuccess] = useState(false)
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,25 +13,12 @@ export const ProfilePage: React.FC = () => {
     setSuccess(false)
 
     try {
-      let photoUrl = user?.photo_url ?? undefined
-
-      if (photoFile) {
-        setUploading(true)
-        const uploaded = await filesApi.upload(photoFile, { category: 'perfil', isPublic: true })
-        photoUrl = uploaded.download_url ?? undefined
-        setUploading(false)
-      }
-
       await updateProfile({ full_name: fullName, photo_url: photoUrl })
-      setPhotoFile(null)
       setSuccess(true)
     } catch {
-      setUploading(false)
       // Error is handled by useAuth hook
     }
   }
-
-  const busy = isLoading || uploading
 
   return (
     <div>
@@ -67,10 +44,10 @@ export const ProfilePage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="form-group">
               <label className="form-label">Foto de perfil</label>
-              <div className="flex items-center gap-4">
-                {photoPreview ? (
+              <div className="flex items-center gap-4 mb-3">
+                {photoUrl ? (
                   <img
-                    src={photoPreview}
+                    src={photoUrl}
                     alt="Foto de perfil"
                     className="w-16 h-16 rounded-full object-cover shadow-glow flex-shrink-0"
                   />
@@ -79,11 +56,17 @@ export const ProfilePage: React.FC = () => {
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </div>
                 )}
-                <label className="btn-secondary cursor-pointer">
-                  Cambiar foto
-                  <input type="file" accept="image/*" onChange={handlePhotoChange} disabled={busy} className="hidden" />
-                </label>
               </div>
+              <input
+                type="text"
+                id="photoUrl"
+                name="photoUrl"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
+                disabled={isLoading}
+                className="input-field"
+                placeholder="https://..."
+              />
             </div>
 
             <div className="form-group">
@@ -96,14 +79,14 @@ export const ProfilePage: React.FC = () => {
                 name="fullName"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                disabled={busy}
+                disabled={isLoading}
                 className="input-field"
                 placeholder="Tu nombre completo"
               />
             </div>
 
-            <button type="submit" disabled={busy} className="btn-primary w-full">
-              {uploading ? 'Subiendo foto...' : isLoading ? 'Guardando...' : 'Guardar cambios'}
+            <button type="submit" disabled={isLoading} className="btn-primary w-full">
+              {isLoading ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </form>
         </div>
