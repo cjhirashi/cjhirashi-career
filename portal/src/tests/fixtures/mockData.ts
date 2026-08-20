@@ -117,6 +117,7 @@ export const mockBlogPosts: BlogPost[] = [
 ]
 
 export const mockHome: HomeContent = {
+  hero_photo_url: 'https://example.com/avatar.jpg',
   hero_title: 'Carlos Jiménez Hirashi',
   hero_subtitle: 'AI Solutions Architect',
   hero_intro: 'Transformando ideas complejas en soluciones elegantes y escalables.',

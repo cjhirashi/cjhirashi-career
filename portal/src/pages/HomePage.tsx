@@ -1,17 +1,16 @@
 import { Link } from 'react-router-dom'
 import { Anchor, BookOpen, Clock, Network, ShieldCheck, TrendingUp } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
-import { useAbout } from '@/hooks/useAbout'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
 import { BlogCard } from '@/components/Common/BlogCard'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
+import { Markdown } from '@/components/Common/Markdown'
 import { isShortMetric, parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
-  const { data: about } = useAbout()
   const { trackClick } = useTrackClick()
 
   const handleCTA = (action: string) => {
@@ -34,9 +33,9 @@ export const HomePage = () => {
       {/* Hero - single centered column: photo, role badge, headline, tagline, CTAs */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 text-center">
         <div className="mx-auto max-w-3xl flex flex-col items-center">
-          {about?.photo_url && (
+          {home?.hero_photo_url && (
             <img
-              src={about.photo_url}
+              src={home.hero_photo_url}
               alt="Carlos A. Jiménez Hirashi"
               className="w-48 h-48 sm:w-56 sm:h-56 rounded-full object-cover border-4 border-primary shadow-glow mb-6"
             />
@@ -55,7 +54,7 @@ export const HomePage = () => {
           )}
 
           {home?.hero_intro && (
-            <p className="text-lg text-text-secondary max-w-xl mb-8 whitespace-pre-wrap">{home.hero_intro}</p>
+            <Markdown className="text-lg max-w-xl mb-8">{home.hero_intro}</Markdown>
           )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -115,7 +114,7 @@ export const HomePage = () => {
                   <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
                     <Clock size={12} /> Problema
                   </p>
-                  <p className="text-text-secondary text-sm whitespace-pre-wrap">{anchor.problem}</p>
+                  <Markdown className="text-sm">{anchor.problem}</Markdown>
                 </div>
               )}
 
@@ -124,7 +123,7 @@ export const HomePage = () => {
                   <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
                     <Network size={12} /> Arquitectura
                   </p>
-                  <p className="text-text-secondary text-sm whitespace-pre-wrap">{anchor.architecture}</p>
+                  <Markdown className="text-sm">{anchor.architecture}</Markdown>
                 </div>
               )}
 
@@ -133,7 +132,7 @@ export const HomePage = () => {
                   <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
                     <TrendingUp size={12} /> Resultado
                   </p>
-                  <p className="text-text text-sm whitespace-pre-wrap">{anchor.solution}</p>
+                  <Markdown className="text-sm">{anchor.solution}</Markdown>
                 </div>
               )}
             </div>

@@ -50,6 +50,7 @@ export interface HomeStat {
 }
 
 export interface HomeContent {
+  hero_photo_url: string | null
   hero_title: string | null
   hero_subtitle: string | null
   hero_intro: string | null

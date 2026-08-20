@@ -1112,6 +1112,7 @@ export const portalHomeConfig: ResourceConfig = {
   description: 'Solo el hero de la Home - proyectos y blog destacados ya se leen de sus propias tablas.',
   columns: [],
   fields: [
+    { name: 'hero_photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
     { name: 'hero_title', label: 'Título principal', type: 'text', fullWidth: true },
     { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
     { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },

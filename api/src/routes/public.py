@@ -114,6 +114,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     ).scalars().all()
 
     return PublicHomeResponse(
+        hero_photo_url=home.hero_photo_url if home else None,
         hero_title=home.hero_title if home else None,
         hero_subtitle=home.hero_subtitle if home else None,
         hero_intro=home.hero_intro if home else None,

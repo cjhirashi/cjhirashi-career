@@ -1,10 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { format, parseISO } from 'date-fns'
 import { useBlogPostBySlug } from '@/hooks/useBlog'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
+import { Markdown } from '@/components/Common/Markdown'
 
 export const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -45,9 +44,7 @@ export const BlogPostPage = () => {
         )}
 
         {post.body_content ? (
-          <div className="markdown-content">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body_content}</ReactMarkdown>
-          </div>
+          <Markdown>{post.body_content}</Markdown>
         ) : (
           post.excerpt && <p className="text-text-secondary text-lg">{post.excerpt}</p>
         )}

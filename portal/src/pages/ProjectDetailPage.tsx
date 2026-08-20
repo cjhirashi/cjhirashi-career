@@ -3,12 +3,13 @@ import { useProjectById } from '@/hooks/useProjects'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { MetricChips } from '@/components/Common/MetricChips'
+import { Markdown } from '@/components/Common/Markdown'
 import { useTrackClick } from '@/hooks/useTracking'
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const Section = ({ title, content }: { title: string; content: string }) => (
   <div className="mb-8">
     <h2 className="text-xl font-bold text-text mb-3">{title}</h2>
-    <div className="text-text-secondary whitespace-pre-wrap">{children}</div>
+    <Markdown>{content}</Markdown>
   </div>
 )
 
@@ -74,11 +75,11 @@ export const ProjectDetailPage = () => {
           )}
         </div>
 
-        {project.detailed_summary && <Section title="Resumen">{project.detailed_summary}</Section>}
-        {project.problem && <Section title="El problema">{project.problem}</Section>}
-        {project.solution && <Section title="La solución">{project.solution}</Section>}
-        {project.architecture && <Section title="Arquitectura">{project.architecture}</Section>}
-        {project.approach_steps && <Section title="Enfoque">{project.approach_steps}</Section>}
+        {project.detailed_summary && <Section title="Resumen" content={project.detailed_summary} />}
+        {project.problem && <Section title="El problema" content={project.problem} />}
+        {project.solution && <Section title="La solución" content={project.solution} />}
+        {project.architecture && <Section title="Arquitectura" content={project.architecture} />}
+        {project.approach_steps && <Section title="Enfoque" content={project.approach_steps} />}
 
         {project.tech_stack.length > 0 && (
           <div className="mb-8">

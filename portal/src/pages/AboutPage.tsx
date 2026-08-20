@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAbout } from '@/hooks/useAbout'
 import { useTrackClick } from '@/hooks/useTracking'
 import { MetricChips } from '@/components/Common/MetricChips'
+import { Markdown } from '@/components/Common/Markdown'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { format, parseISO } from 'date-fns'
@@ -63,13 +64,13 @@ export const AboutPage = () => {
             {about?.bio_summary && (
               <div>
                 <h2 className="text-2xl font-bold text-text mb-4">Mi historia</h2>
-                <p className="text-text-secondary whitespace-pre-wrap">{about.bio_summary}</p>
+                <Markdown>{about.bio_summary}</Markdown>
               </div>
             )}
             {about?.unique_value_proposition && (
               <div>
                 <h2 className="text-2xl font-bold text-text mb-4">Propuesta de valor</h2>
-                <p className="text-text-secondary whitespace-pre-wrap">{about.unique_value_proposition}</p>
+                <Markdown>{about.unique_value_proposition}</Markdown>
               </div>
             )}
           </section>
@@ -92,15 +93,13 @@ export const AboutPage = () => {
                     <h3 className="text-lg font-bold text-text">{item.role_title}</h3>
                     <p className="text-text-secondary font-medium">{item.company}</p>
                     {(item.narrative || item.description) && (
-                      <p className="text-text-secondary text-sm mt-2 whitespace-pre-wrap">
-                        {item.narrative || item.description}
-                      </p>
+                      <Markdown className="text-sm mt-2">{item.narrative || item.description!}</Markdown>
                     )}
                     {item.achievements && (
-                      <p className="text-text-secondary text-sm mt-2 whitespace-pre-wrap">
-                        <span className="font-semibold text-text">Caso de éxito: </span>
-                        {item.achievements}
-                      </p>
+                      <div className="mt-2">
+                        <p className="text-sm font-semibold text-text">Caso de éxito:</p>
+                        <Markdown className="text-sm">{item.achievements}</Markdown>
+                      </div>
                     )}
                     {item.key_metrics != null && (
                       <div className="mt-3">

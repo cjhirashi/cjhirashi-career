@@ -18,6 +18,7 @@ class PortalHome(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
+    hero_photo_url = Column(String(1024), nullable=True)
     hero_title = Column(String(255), nullable=True)
     hero_subtitle = Column(String(500), nullable=True)
     hero_intro = Column(Text, nullable=True)

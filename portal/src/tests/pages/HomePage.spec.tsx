@@ -2,18 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '../testUtils'
 import userEvent from '@testing-library/user-event'
 import { homeApi } from '@/api/home'
-import { aboutApi } from '@/api/about'
 import { trackingApi } from '@/api/tracking'
 import { HomePage } from '@/pages/HomePage'
-import { mockHome, mockAbout } from '../fixtures/mockData'
+import { mockHome } from '../fixtures/mockData'
 
 vi.mock('@/api/home')
-vi.mock('@/api/about')
 vi.mock('@/api/tracking')
 
 const renderReady = async () => {
   vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-  vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
   render(<HomePage />)
   await waitFor(() => {
     expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
@@ -32,11 +29,11 @@ describe('HomePage - Entry Point', () => {
     expect(screen.getByText(mockHome.hero_intro!)).toBeInTheDocument()
   })
 
-  it('renders the hero photo from about content', async () => {
+  it('renders the hero photo from home content', async () => {
     await renderReady()
 
     const photo = screen.getByAltText('Carlos A. Jiménez Hirashi') as HTMLImageElement
-    expect(photo.src).toContain(mockAbout.photo_url)
+    expect(photo.src).toContain(mockHome.hero_photo_url)
   })
 
   it('renders the 4 stats', async () => {
@@ -107,7 +104,6 @@ describe('HomePage - Entry Point', () => {
 
   it('shows loading spinner initially', () => {
     vi.mocked(homeApi.getHome).mockImplementation(() => new Promise(() => {}))
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -116,7 +112,6 @@ describe('HomePage - Entry Point', () => {
 
   it('shows error message when home content fails to load', async () => {
     vi.mocked(homeApi.getHome).mockRejectedValue(new Error('Failed'))
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -127,7 +122,6 @@ describe('HomePage - Entry Point', () => {
 
   it('renders no H1 at all when hero_title is empty - no silent fallback to other content', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_title: null })
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     const { container } = render(<HomePage />)
 
@@ -144,7 +138,6 @@ describe('HomePage - Entry Point', () => {
       featured_projects: [],
       featured_publications: [],
     })
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<HomePage />)
 
@@ -157,7 +150,6 @@ describe('HomePage - Entry Point', () => {
 
   it('renders hero section in gradient background', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue(mockHome)
-    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
     const { container } = render(<HomePage />)
 
     await waitFor(() => {

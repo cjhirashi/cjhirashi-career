@@ -525,6 +525,7 @@ export interface GitHubRepo {
 export interface PortalHomeRecord {
   id: number
   user_id: number
+  hero_photo_url?: string | null
   hero_title?: string | null
   hero_subtitle?: string | null
   hero_intro?: string | null
