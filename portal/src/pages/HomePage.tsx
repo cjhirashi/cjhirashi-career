@@ -82,11 +82,9 @@ export const HomePage = () => {
       {home && home.stats.length > 0 && (
         <section className="py-8 px-4 sm:px-6 lg:px-8 border-t border-border">
           <div className="mx-auto max-w-4xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-border">
-            {home.stats.map((stat, index) => (
+            {home.stats.map(stat => (
               <div key={stat.label} className="text-center px-4">
-                <div className={`text-3xl font-bold mb-1 ${index === 1 ? 'text-amber-500' : 'text-primary'}`}>
-                  {stat.value}
-                </div>
+                <div className="text-3xl font-bold mb-1 text-primary">{stat.value}</div>
                 <p className="text-text-secondary text-xs uppercase tracking-wide">{stat.label}</p>
               </div>
             ))}
@@ -139,11 +137,9 @@ export const HomePage = () => {
 
             {/* Metrics + image mini-grid */}
             <div className="grid grid-cols-2 gap-4">
-              {anchorMetrics.map(([label, value], index) => (
+              {anchorMetrics.map(([label, value]) => (
                 <div key={label} className="card p-6 flex flex-col items-center justify-center text-center">
-                  <div className={`text-2xl font-bold mb-1 ${index === 1 ? 'text-amber-500' : 'text-primary'}`}>
-                    {String(value)}
-                  </div>
+                  <div className="text-2xl font-bold mb-1 text-primary">{String(value)}</div>
                   <p className="text-text-secondary text-xs">{label}</p>
                 </div>
               ))}
