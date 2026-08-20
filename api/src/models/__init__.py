@@ -50,6 +50,9 @@ from models.portal_contact import PortalContact
 # Dominio 4: Soporte
 from models.tag import Tag
 
+# Dominio 5: Metodologías Operativas
+from models.operational_methodology import OperationalMethodology
+
 # ----------------------------------------------------------------------------
 # LinkedIn Integration
 # ----------------------------------------------------------------------------
@@ -113,6 +116,8 @@ __all__ = [
     "PortalContact",
     # Support domain
     "Tag",
+    # Operational methodologies domain
+    "OperationalMethodology",
     # LinkedIn integration
     "LinkedInConnection",
     "LinkedInPost",

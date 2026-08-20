@@ -590,6 +590,22 @@ export interface Tag {
 }
 
 // ---------------------------------------------------------------------------
+// Dominio 5: Metodologías Operativas
+// ---------------------------------------------------------------------------
+
+export interface OperationalMethodology {
+  id: number
+  user_id: number
+  title: string
+  section?: string | null
+  subsection?: string | null
+  description?: string | null
+  content: string
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
+// ---------------------------------------------------------------------------
 // Metrics (read-only view)
 // ---------------------------------------------------------------------------
 

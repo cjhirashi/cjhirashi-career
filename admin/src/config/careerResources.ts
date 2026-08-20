@@ -8,7 +8,7 @@
 // component (see src/components/career/CareerResourceView.tsx).
 // ============================================================================
 
-import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-react'
+import { Compass, Search, Globe, Handshake, Tag, Workflow, type LucideIcon } from 'lucide-react'
 
 export type FieldType =
   | 'text'
@@ -1221,6 +1221,38 @@ export const tagsConfig: ResourceConfig = {
 }
 
 // ---------------------------------------------------------------------------
+// Dominio 5: Metodologías Operativas
+// ---------------------------------------------------------------------------
+
+export const operationalMethodologiesConfig: ResourceConfig = {
+  key: 'operational-methodologies',
+  label: 'Metodologías Operativas',
+  labelSingular: 'Metodología Operativa',
+  genderFeminine: true,
+  description:
+    'Instrucciones para el agente sobre cómo trabajar en las distintas tablas de carrera y cómo se relacionan entre ellas - protocolos y frameworks operativos, uno por registro.',
+  columns: [
+    { key: 'title', label: 'Título' },
+    { key: 'section', label: 'Sección' },
+    { key: 'subsection', label: 'Subsección' },
+  ],
+  fields: [
+    { name: 'title', label: 'Título', type: 'text', required: true, fullWidth: true },
+    { name: 'section', label: 'Sección', type: 'text' },
+    { name: 'subsection', label: 'Subsección', type: 'text' },
+    { name: 'description', label: 'Descripción breve', type: 'textarea', fullWidth: true },
+    {
+      name: 'content',
+      label: 'Instrucciones (Markdown)',
+      type: 'textarea',
+      required: true,
+      fullWidth: true,
+      helpText: 'Contenido completo de la metodología/protocolo, en Markdown.',
+    },
+  ],
+}
+
+// ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 
@@ -1232,7 +1264,7 @@ export const tagsConfig: ResourceConfig = {
 // Sidebar to render a collapsible "Carrera" section grouped exactly as
 // validated with the user - do not reshuffle keys between groups.
 
-export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' | 'support'
+export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' | 'support' | 'methodologies'
 
 export interface CareerDomainGroup {
   key: CareerDomainKey
@@ -1303,6 +1335,12 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     icon: Tag,
     resourceKeys: ['tags'],
   },
+  {
+    key: 'methodologies',
+    label: 'Metodologías Operativas',
+    icon: Workflow,
+    resourceKeys: ['operational-methodologies'],
+  },
 ]
 
 export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
@@ -1339,4 +1377,5 @@ export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   'portal-contact': portalContactConfig,
   publications: publicationsConfig,
   tags: tagsConfig,
+  'operational-methodologies': operationalMethodologiesConfig,
 }
