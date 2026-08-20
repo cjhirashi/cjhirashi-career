@@ -118,8 +118,7 @@ export const mockBlogPosts: BlogPost[] = [
 
 export const mockHome: HomeContent = {
   hero_photo_url: 'https://example.com/avatar.jpg',
-  hero_name: 'Carlos A. Jiménez Hirashi',
-  hero_title: 'AI Solutions Architect | Intelligent Automation & Agentic AI Systems',
+  hero_title: 'Carlos Jiménez Hirashi',
   hero_subtitle: 'AI Solutions Architect',
   hero_intro: 'Transformando ideas complejas en soluciones elegantes y escalables.',
   hero_ctas: [
@@ -138,6 +137,7 @@ export const mockHome: HomeContent = {
 }
 
 export const mockAbout: AboutContent = {
+  name: 'Carlos A. Jiménez Hirashi',
   professional_tagline: 'AI Solutions Architect | Intelligent Automation',
   bio_summary: 'Passionate about building scalable solutions and continuous learning.',
   unique_value_proposition: 'Diseño y programo la solución completa.',

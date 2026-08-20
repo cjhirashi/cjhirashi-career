@@ -142,7 +142,6 @@ class GitHubProfileResponse(GitHubProfileBase):
 
 class PortalHomeBase(BaseModel):
     hero_photo_url: Optional[str] = Field(None, max_length=1024)
-    hero_name: Optional[str] = Field(None, max_length=255)
     hero_title: Optional[str] = Field(None, max_length=255)
     hero_subtitle: Optional[str] = Field(None, max_length=500)
     hero_intro: Optional[str] = None
@@ -184,6 +183,7 @@ class PortalHomeResponse(PortalHomeBase):
 
 class PortalAboutBase(BaseModel):
     photo_url: Optional[str] = Field(None, max_length=1024)
+    name: Optional[str] = Field(None, max_length=255)
 
 
 class PortalAboutCreate(PortalAboutBase):

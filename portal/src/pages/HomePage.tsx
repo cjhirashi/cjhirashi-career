@@ -45,10 +45,6 @@ export const HomePage = () => {
             />
           )}
 
-          {home?.hero_name && (
-            <p className="text-2xl sm:text-3xl font-bold text-text mb-3">{home.hero_name}</p>
-          )}
-
           {home?.hero_subtitle && (
             <span className="badge mb-6 flex items-center gap-1.5 text-sm">
               <ShieldCheck size={14} /> {home.hero_subtitle}

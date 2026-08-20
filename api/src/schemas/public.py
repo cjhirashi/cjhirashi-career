@@ -74,7 +74,6 @@ class PublicHeroCta(BaseModel):
 
 class PublicHomeResponse(BaseModel):
     hero_photo_url: Optional[str] = None
-    hero_name: Optional[str] = None
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
     hero_intro: Optional[str] = None
@@ -114,6 +113,7 @@ class PublicCertification(BaseModel):
 
 
 class PublicAboutResponse(BaseModel):
+    name: Optional[str] = None
     professional_tagline: Optional[str] = None
     bio_summary: Optional[str] = None
     unique_value_proposition: Optional[str] = None

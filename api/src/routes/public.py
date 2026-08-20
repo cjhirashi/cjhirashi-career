@@ -163,7 +163,6 @@ async def get_home(db: AsyncSession = Depends(get_db)):
 
     return PublicHomeResponse(
         hero_photo_url=home.hero_photo_url if home else None,
-        hero_name=home.hero_name if home else None,
         hero_title=home.hero_title if home else None,
         hero_subtitle=home.hero_subtitle if home else None,
         hero_intro=home.hero_intro if home else None,
@@ -198,6 +197,7 @@ async def get_about(db: AsyncSession = Depends(get_db)):
         grouped.setdefault(key, []).append(c.name)
 
     return PublicAboutResponse(
+        name=about.name if about else None,
         professional_tagline=identity.professional_tagline if identity else None,
         bio_summary=identity.bio_summary if identity else None,
         unique_value_proposition=identity.unique_value_proposition if identity else None,

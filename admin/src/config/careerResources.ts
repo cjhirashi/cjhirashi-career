@@ -1125,7 +1125,6 @@ export const portalHomeConfig: ResourceConfig = {
   columns: [],
   fields: [
     { name: 'hero_photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
-    { name: 'hero_name', label: 'Nombre', type: 'text', fullWidth: true },
     { name: 'hero_title', label: 'Título principal', type: 'text', fullWidth: true },
     { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
     { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },
@@ -1160,9 +1159,12 @@ export const portalAboutConfig: ResourceConfig = {
   labelSingular: 'Sobre Mí del portal',
   genderFeminine: false,
   mode: 'singleton',
-  description: 'Solo la foto - historia, experiencia, skills y certificaciones ya viven en sus propias tablas.',
+  description: 'Solo el nombre y la foto - historia, experiencia, skills y certificaciones ya viven en sus propias tablas.',
   columns: [],
-  fields: [{ name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true }],
+  fields: [
+    { name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
+    { name: 'name', label: 'Nombre', type: 'text', fullWidth: true },
+  ],
 }
 
 export const portalContactConfig: ResourceConfig = {

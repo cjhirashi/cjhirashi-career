@@ -56,7 +56,6 @@ export interface HeroCta {
 
 export interface HomeContent {
   hero_photo_url: string | null
-  hero_name: string | null
   hero_title: string | null
   hero_subtitle: string | null
   hero_intro: string | null
@@ -91,6 +90,7 @@ export interface CertificationEntry {
 }
 
 export interface AboutContent {
+  name: string | null
   professional_tagline: string | null
   bio_summary: string | null
   unique_value_proposition: string | null

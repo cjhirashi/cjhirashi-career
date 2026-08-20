@@ -21,6 +21,16 @@ describe('AboutPage', () => {
     })
   })
 
+  it('renders the name between the photo and the tagline', async () => {
+    vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
+
+    render(<AboutPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(mockAbout.name!)).toBeInTheDocument()
+    })
+  })
+
   it('renders the photo when available', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 

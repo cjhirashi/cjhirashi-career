@@ -35,6 +35,9 @@ export const AboutPage = () => {
               className="w-40 h-40 rounded-full object-cover border-4 border-primary shadow-glow mx-auto mb-6"
             />
           )}
+          {about?.name && (
+            <p className="text-2xl sm:text-3xl font-bold text-text mb-3">{about.name}</p>
+          )}
           {about?.professional_tagline && (
             <p className="text-lg text-primary font-semibold mb-4">{about.professional_tagline}</p>
           )}
