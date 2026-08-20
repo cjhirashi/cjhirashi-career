@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timedelta
 
 from schemas.user import (
-    LoginRequest, LoginResponse, UserResponse, UserCreate,
+    LoginRequest, LoginResponse, UserResponse, UserCreate, UserUpdate,
     TokenRefreshRequest, TokenRefreshResponse, LogoutResponse,
     PasswordChangeRequest, PasswordResetRequest
 )
@@ -206,6 +206,36 @@ async def logout():
     """
     logger.info("User logout requested")
     return LogoutResponse(message="Logout successful. Please delete your token client-side.")
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_profile(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update the current user's own profile (name, photo, etc.) - only the
+    fields actually sent are changed, everything else is left as-is.
+
+    Args:
+        payload: Fields to update
+        current_user: Currently authenticated user
+        db: Database session
+
+    Returns:
+        The updated user
+    """
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+
+    db.add(current_user)
+    await db.commit()
+    await db.refresh(current_user)
+
+    logger.info(f"Profile updated for user: {current_user.id}")
+
+    return current_user
 
 
 @router.post("/change-password")

@@ -19,6 +19,7 @@ class UserBase(BaseModel):
     phone: Optional[str] = Field(None, max_length=20, description="Phone number")
     country: Optional[str] = Field(None, max_length=100, description="Country")
     professional_title: Optional[str] = Field(None, max_length=255, description="Professional title")
+    photo_url: Optional[str] = Field(None, max_length=1024, description="Profile photo URL")
 
 
 # ============================================================================
@@ -36,6 +37,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = Field(None, max_length=20)
     country: Optional[str] = Field(None, max_length=100)
     professional_title: Optional[str] = Field(None, max_length=255)
+    photo_url: Optional[str] = Field(None, max_length=1024)
 
 
 class UserResponse(UserBase):

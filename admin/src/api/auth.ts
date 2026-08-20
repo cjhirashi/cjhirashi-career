@@ -42,6 +42,11 @@ export const authApi = {
     await axiosInstance.post('/auth/logout')
   },
 
+  updateProfile: async (data: { full_name?: string; photo_url?: string }): Promise<User> => {
+    const response = await axiosInstance.patch<User>('/auth/me', data)
+    return response.data
+  },
+
   changePassword: async (
     currentPassword: string,
     newPassword: string

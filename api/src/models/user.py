@@ -31,6 +31,7 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     country = Column(String(100), nullable=True)
     professional_title = Column(String(255), nullable=True)
+    photo_url = Column(String(1024), nullable=True)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False, index=True)

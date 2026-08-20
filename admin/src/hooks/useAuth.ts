@@ -117,6 +117,26 @@ export const useAuth = () => {
     }
   }, [logoutState])
 
+  const handleUpdateProfile = useCallback(
+    async (data: { full_name?: string; photo_url?: string }) => {
+      setLoading(true)
+      clearError()
+
+      try {
+        const updatedUser = await authApi.updateProfile(data)
+        setUser(updatedUser)
+        return updatedUser
+      } catch (err: any) {
+        const message = err.response?.data?.detail || 'Profile update failed'
+        setError(message)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    [setLoading, clearError, setUser, setError]
+  )
+
   const handleChangePassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
       setLoading(true)
@@ -147,6 +167,7 @@ export const useAuth = () => {
     register: handleRegister,
     logout: handleLogout,
     refreshAccessToken: handleRefreshToken,
+    updateProfile: handleUpdateProfile,
     changePassword: handleChangePassword,
     clearError,
     isTokenExpired,

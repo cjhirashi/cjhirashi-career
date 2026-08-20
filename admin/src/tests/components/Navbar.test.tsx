@@ -77,6 +77,14 @@ describe('Navbar', () => {
       render(<Navbar onLogout={mockLogout} />)
       expect(screen.getByText('U')).toBeInTheDocument()
     })
+
+    it('should show the profile photo instead of the initial when photo_url is set', () => {
+      useAuthStore.setState({ user: { ...mockUser, photo_url: 'https://example.com/photo.jpg' } })
+      render(<Navbar onLogout={mockLogout} />)
+      expect(screen.queryByText('D')).not.toBeInTheDocument()
+      const images = screen.getAllByRole('img')
+      expect(images.some((img) => img.getAttribute('src') === 'https://example.com/photo.jpg')).toBe(true)
+    })
   })
 
   describe('theme toggle', () => {
@@ -179,6 +187,14 @@ describe('Navbar', () => {
 
       const passwordLink = screen.getByRole('link', { name: /Change Password/i })
       expect(passwordLink).toHaveAttribute('href', '/change-password')
+    })
+
+    it('should have a profile link', () => {
+      render(<Navbar onLogout={mockLogout} />)
+      fireEvent.click(getUserMenuButton())
+
+      const profileLink = screen.getByRole('link', { name: 'Mi Perfil' })
+      expect(profileLink).toHaveAttribute('href', '/profile')
     })
   })
 

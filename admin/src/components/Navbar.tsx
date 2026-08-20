@@ -72,9 +72,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 'hover:bg-glass focus:outline-none focus:ring-2 focus:ring-cyan-500'
               )}
             >
-              <div className="w-8 h-8 bg-cyan-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-glow">
-                {user?.username?.charAt(0).toUpperCase() || 'U'}
-              </div>
+              {user?.photo_url ? (
+                <img
+                  src={user.photo_url}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0 shadow-glow"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-cyan-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-glow">
+                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              )}
               <div className="text-sm text-text hidden sm:block text-left">
                 <p className="font-medium">{user?.full_name || user?.username}</p>
                 <p className="text-xs text-text-secondary">{user?.email}</p>
@@ -105,6 +113,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <ThemeToggle />
                 </div>
                 <nav className="p-2 space-y-1">
+                  <Link
+                    to="/profile"
+                    onClick={() => setDropdownOpen(false)}
+                    className="block px-4 py-2 text-sm text-text hover:bg-glass rounded-lg transition-colors"
+                  >
+                    Mi Perfil
+                  </Link>
                   <Link
                     to="/change-password"
                     onClick={() => setDropdownOpen(false)}
