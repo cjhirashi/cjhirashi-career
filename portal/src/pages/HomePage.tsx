@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Anchor, BookOpen, Clock, Network, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Anchor, BookOpen, Clock, Layers, Network, ShieldCheck, TrendingUp } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
+import { useAbout } from '@/hooks/useAbout'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
 import { BlogCard } from '@/components/Common/BlogCard'
@@ -11,6 +12,7 @@ import { isShortMetric, parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
+  const { data: about } = useAbout()
   const { trackClick } = useTrackClick()
 
   const handleCTA = (action: string) => {
@@ -21,6 +23,12 @@ export const HomePage = () => {
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
   const anchor = home?.anchor_project
+  // "Otros" is the About page's own fallback bucket for uncategorized skills
+  // (see api/src/routes/public.py) - it's not a real area of expertise, so it
+  // doesn't belong in this compact teaser row.
+  const skillCategories = (about?.skill_groups ?? [])
+    .map(group => group.category)
+    .filter(category => category !== 'Otros')
   // The bento mini-grid is fixed-size stat cells - only short KPI-style
   // values ("3.5 meses") fit there; longer achievement sentences stay in
   // the narrative card's prose instead of being squeezed into a square.
@@ -206,6 +214,40 @@ export const HomePage = () => {
           </div>
         </section>
       )}
+
+      {/* Stack técnico - compact teaser of expertise areas (skill_groups'
+          categories), the full skill breakdown lives on About. */}
+      {skillCategories.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
+              <Layers size={22} className="text-primary" /> Stack técnico
+            </h2>
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              {skillCategories.map(category => (
+                <span key={category} className="badge mono">
+                  {category}
+                </span>
+              ))}
+            </div>
+            <Link
+              to="/about"
+              onClick={() => trackClick('home-ver-stack-completo')}
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+            >
+              Ver más en Sobre Mí →
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Footer CTA */}
+      <section className="section-alt py-16 px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-text mb-6">¿Hablamos de tu próximo sistema?</h2>
+        <Link to="/contact" onClick={() => trackClick('home-footer-cta')} className="btn inline-flex px-8 py-3 font-semibold">
+          Hablemos
+        </Link>
+      </section>
     </div>
   )
 }
