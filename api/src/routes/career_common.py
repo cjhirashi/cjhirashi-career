@@ -8,7 +8,7 @@ authentication and enforces row-level user isolation via
 always taken from the authenticated user, never from the request body or
 query string.
 """
-from typing import List, Type
+from typing import List, Optional, Type
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -41,10 +41,15 @@ def build_crud_router(
     async def list_items(
         skip: int = Query(0, ge=0, description="Pagination offset"),
         limit: int = Query(20, ge=1, le=100, description="Page size"),
+        sort_by: Optional[str] = Query(None, description="Column name to sort by"),
+        sort_dir: str = Query("asc", pattern="^(asc|desc)$"),
+        search: Optional[str] = Query(None, description="Case-insensitive search across text columns"),
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
-        return await repository.list_for_user(db, current_user.id, skip=skip, limit=limit)
+        return await repository.list_for_user(
+            db, current_user.id, skip=skip, limit=limit, sort_by=sort_by, sort_dir=sort_dir, search=search
+        )
 
     # Declared before "/{item_id}" - a path-param route would otherwise catch
     # "/count" as if item_id="count".

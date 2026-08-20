@@ -619,6 +619,40 @@ export interface WeeklySearchMetrics {
   rejections: number
 }
 
+/** Aggregated snapshot across the 12 Operativa de Búsqueda tables - see
+ * `GET /career/metrics/search-overview` (api/src/routes/career_metrics.py).
+ * Everything here is computed live per request, nothing is stored on its own. */
+export interface SearchOverview {
+  funnel: { label: string; value: number }[]
+  vacancies_by_evaluation: { label: string; count: number }[]
+  vacancies_by_track: { label: string; count: number }[]
+  fit_percentage_avg: number | null
+  fit_percentage_min: number | null
+  fit_percentage_max: number | null
+  market_segments: {
+    channel_name: string | null
+    market_type: string | null
+    priority: number | null
+    applications_made: number
+    responses_received: number
+    interviews_achieved: number
+  }[]
+  networking_by_status: { label: string; count: number }[]
+  networking_by_category: { label: string; count: number }[]
+  companies_by_tier: { label: string; count: number }[]
+  companies_by_status: { label: string; count: number }[]
+  fit_scoring_factors: { factor_name: string; weight_percentage: number | null }[]
+  active_search_plan: {
+    period_start: ISODate | null
+    period_end: ISODate | null
+    plan_status: string
+    completion_percentage: number
+    target_cvs_sent: number
+    target_interviews: number
+    target_offers: number
+  } | null
+}
+
 /** Any career-domain entity always has at least these two columns. */
 export interface CareerEntity {
   id: number

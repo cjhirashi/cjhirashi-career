@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { careerApi, ListParams } from '@/api/career'
-import { CareerEntity, WeeklySearchMetrics } from '@/types/career'
+import { CareerEntity, SearchOverview, WeeklySearchMetrics } from '@/types/career'
 
 /**
  * Generic React Query wrapper around `careerApi` for a single career-domain
@@ -12,10 +12,10 @@ export const careerQueryKey = (resource: string, extra?: unknown) =>
   extra === undefined ? (['career', resource] as const) : (['career', resource, extra] as const)
 
 export function useCareerList<T = CareerEntity>(resource: string, params: ListParams = {}) {
-  const { skip = 0, limit = 20 } = params
+  const { skip = 0, limit = 20, sortBy, sortDir, search } = params
   return useQuery({
-    queryKey: careerQueryKey(resource, { skip, limit }),
-    queryFn: () => careerApi.list<T>(resource, { skip, limit }),
+    queryKey: careerQueryKey(resource, { skip, limit, sortBy, sortDir, search }),
+    queryFn: () => careerApi.list<T>(resource, { skip, limit, sortBy, sortDir, search }),
   })
 }
 
@@ -64,5 +64,17 @@ export function useWeeklyMetrics(limit = 12) {
   return useQuery<WeeklySearchMetrics[]>({
     queryKey: careerQueryKey('metrics-weekly', { limit }),
     queryFn: () => careerApi.weeklyMetrics(limit),
+  })
+}
+
+/**
+ * Aggregated snapshot across the 12 Operativa de Búsqueda tables
+ * (`GET /career/metrics/search-overview`) - powers the search-strategy
+ * dashboard's charts. Computed live server-side, no mutations here.
+ */
+export function useSearchOverview() {
+  return useQuery<SearchOverview>({
+    queryKey: careerQueryKey('metrics-search-overview'),
+    queryFn: () => careerApi.searchOverview(),
   })
 }

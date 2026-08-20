@@ -28,7 +28,15 @@ describe('CareerResourcePage', () => {
 
   it('renders the resource label and table for a known resource key', async () => {
     renderAt('/career/vacancies')
-    await waitFor(() => expect(mockedCareerApi.list).toHaveBeenCalledWith('vacancies', { skip: 0, limit: 20 }))
+    await waitFor(() =>
+      expect(mockedCareerApi.list).toHaveBeenCalledWith('vacancies', {
+        skip: 0,
+        limit: 20,
+        sortBy: undefined,
+        sortDir: 'asc',
+        search: undefined,
+      })
+    )
     expect(screen.getByText('Vacantes')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
   })
@@ -48,6 +56,14 @@ describe('CareerResourcePage', () => {
   it('renders the singleton form (no table) for the identity resource', async () => {
     mockedCareerApi.list.mockResolvedValue([] as never)
     renderAt('/career/identity')
-    await waitFor(() => expect(mockedCareerApi.list).toHaveBeenCalledWith('identity', { skip: 0, limit: 1 }))
+    await waitFor(() =>
+      expect(mockedCareerApi.list).toHaveBeenCalledWith('identity', {
+        skip: 0,
+        limit: 1,
+        sortBy: undefined,
+        sortDir: undefined,
+        search: undefined,
+      })
+    )
   })
 })

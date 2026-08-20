@@ -20,28 +20,37 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
     title: 'Métricas',
     body: 'Vista de métricas del portafolio público y del panel. Por ahora son cifras de referencia — se llenan solas conforme haya tráfico e interacciones reales.',
   },
+  '/search-metrics': {
+    title: 'Métricas de Búsqueda',
+    body: 'Visualización gráfica de la Operativa de Búsqueda: embudo de vacantes a ofertas, triage de vacantes (fit %, evaluación, track), segmentos de mercado, networking, empresas diana, el rubro de Factores de Fit y el avance del plan de búsqueda activo. Todo se calcula en vivo desde las 12 tablas del dominio — no es información que se edite aquí.',
+  },
   '/files': {
     title: 'Archivos',
     body: 'Sube cualquier archivo (imágenes, documentos) y obtén un link público para referenciarlo donde quieras, por ejemplo dentro de un campo Markdown con ![descripción](link). "Copiar link" copia la URL pública; "Eliminar" borra el archivo del bucket de forma permanente.',
   },
 }
 
-/** Generic, always-accurate instructions for any of the 30 career-domain
- * resources, generated from its own config instead of requiring 30
- * hand-written descriptions (none of the resources set one). */
+/** Instructions for any of the 30+ career-domain resources: leads with the
+ * resource's own `description` (what the table is actually for - see
+ * careerResources.ts, sourced from the Metodologías Operativas) and appends
+ * a generic action hint derived from its config, instead of requiring a
+ * hand-written action sentence per resource too. */
 const getCareerResourceInstructions = (resourceKey: string): PageInstructions | null => {
   const resource = CAREER_RESOURCES[resourceKey]
   if (!resource) return null
+
+  const intro = resource.description ? `${resource.description} ` : ''
+
   if (resource.mode === 'singleton') {
     return {
       title: resource.label,
-      body: `Este es tu único registro de ${resource.labelSingular.toLowerCase()}. Edítalo con el botón de la tarjeta cuando cambie tu información — no se crean registros adicionales.`,
+      body: `${intro}Este es tu único registro de ${resource.labelSingular.toLowerCase()}. Edítalo con el botón de la tarjeta cuando cambie tu información — no se crean registros adicionales.`,
     }
   }
   const newLabel = `${resource.genderFeminine ? 'Nueva' : 'Nuevo'} ${resource.labelSingular}`
   return {
     title: resource.label,
-    body: `Usa "${newLabel}" para agregar un registro. Desde la tabla puedes editar o eliminar cualquiera existente — los cambios se guardan de inmediato.`,
+    body: `${intro}Usa "${newLabel}" para agregar un registro. Desde la tabla puedes editar o eliminar cualquiera existente — los cambios se guardan de inmediato.`,
   }
 }
 

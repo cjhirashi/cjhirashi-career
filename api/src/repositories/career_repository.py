@@ -9,8 +9,7 @@ once and is parametrized by the SQLAlchemy model.
 """
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
-from sqlalchemy import func as sa_func
-from sqlalchemy import select
+from sqlalchemy import String, Text, func as sa_func, inspect, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import Base
@@ -23,6 +22,14 @@ class CareerRepository(Generic[ModelType]):
 
     def __init__(self, model: Type[ModelType]):
         self.model = model
+        # Computed once per model (not per request): every real column name
+        # (for validating `sort_by`) and the string/text ones among them
+        # (for the free-text `search` filter below).
+        column_attrs = list(inspect(model).mapper.column_attrs)
+        self._column_names = {attr.key for attr in column_attrs}
+        self._text_columns = [
+            attr.key for attr in column_attrs if isinstance(attr.columns[0].type, (String, Text))
+        ]
 
     async def list_for_user(
         self,
@@ -30,15 +37,30 @@ class CareerRepository(Generic[ModelType]):
         user_id: int,
         skip: int = 0,
         limit: int = 20,
+        sort_by: Optional[str] = None,
+        sort_dir: str = "asc",
+        search: Optional[str] = None,
     ) -> Sequence[ModelType]:
-        """Return a page of rows belonging to `user_id`, newest first."""
-        stmt = (
-            select(self.model)
-            .where(self.model.user_id == user_id)
-            .order_by(self.model.id.desc())
-            .offset(skip)
-            .limit(limit)
-        )
+        """Return a page of rows belonging to `user_id`.
+
+        `sort_by` defaults to newest-first (`id desc`) when absent or not a
+        real column on this model - never trusted blindly, since it comes
+        straight from the query string. `search` does a case-insensitive
+        OR-match across every string/text column of the model.
+        """
+        stmt = select(self.model).where(self.model.user_id == user_id)
+
+        if search and self._text_columns:
+            like = f"%{search}%"
+            stmt = stmt.where(or_(*(getattr(self.model, col).ilike(like) for col in self._text_columns)))
+
+        if sort_by and sort_by in self._column_names:
+            column = getattr(self.model, sort_by)
+            stmt = stmt.order_by(column.desc() if sort_dir == "desc" else column.asc())
+        else:
+            stmt = stmt.order_by(self.model.id.desc())
+
+        stmt = stmt.offset(skip).limit(limit)
         result = await db.execute(stmt)
         return result.scalars().all()
 

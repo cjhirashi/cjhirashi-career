@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen, Linkedin } from 'lucide-react'
+import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen, Linkedin, LineChart } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -25,6 +25,13 @@ const menuItems = [
 // added to a domain's `resourceKeys` like the other 30 - it's spliced into
 // the "Presencia Digital" accordion's rendering below instead, by key.
 const LINKEDIN_DOMAIN_KEY = 'digital'
+
+// Same idea for the search-strategy dashboard: not a generic /career/:key
+// CRUD resource (it's an aggregated, read-only view over several of the 12
+// Operativa de Búsqueda tables at /search-metrics), so it's spliced into
+// that domain's accordion the same way, rendered first (as an overview)
+// rather than after the 12 resource links.
+const SEARCH_METRICS_DOMAIN_KEY = 'search'
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
@@ -130,6 +137,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
                 {isOpen && isDomainExpanded && (
                   <div className="mt-1 space-y-0.5 mb-1">
+                    {domain.key === SEARCH_METRICS_DOMAIN_KEY && (
+                      <Link
+                        to="/search-metrics"
+                        onClick={closeMobileDrawer}
+                        aria-current={isActive('/search-metrics') ? 'page' : undefined}
+                        className={clsx(
+                          'flex items-center gap-1.5 pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                          isActive('/search-metrics')
+                            ? 'text-primary bg-primary-light'
+                            : 'text-text-secondary hover:bg-glass hover:text-text'
+                        )}
+                      >
+                        <LineChart size={13} className="flex-shrink-0" aria-hidden="true" />
+                        Métricas de Búsqueda
+                      </Link>
+                    )}
                     {domain.resourceKeys.map((resourceKey) => {
                       const resource = CAREER_RESOURCES[resourceKey]
                       if (!resource) return null

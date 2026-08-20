@@ -33,3 +33,12 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 })
+
+// jsdom has no ResizeObserver - needed by recharts' <ResponsiveContainer>
+// (SearchMetricsPage's charts) to measure its container.
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = ResizeObserverMock

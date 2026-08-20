@@ -1,5 +1,5 @@
 import { axiosInstance } from './client'
-import { CareerEntity, GitHubRepo, WeeklySearchMetrics } from '@/types/career'
+import { CareerEntity, GitHubRepo, SearchOverview, WeeklySearchMetrics } from '@/types/career'
 
 /**
  * Generic client for the career-domain (v2) CRUD REST API.
@@ -13,15 +13,24 @@ import { CareerEntity, GitHubRepo, WeeklySearchMetrics } from '@/types/career'
 export interface ListParams {
   skip?: number
   limit?: number
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
+  search?: string
 }
 
 const basePath = (resource: string) => `/career/${resource}`
 
 export const careerApi = {
   list: async <T = CareerEntity>(resource: string, params: ListParams = {}): Promise<T[]> => {
-    const { skip = 0, limit = 20 } = params
+    const { skip = 0, limit = 20, sortBy, sortDir, search } = params
     const response = await axiosInstance.get<T[]>(basePath(resource), {
-      params: { skip, limit },
+      params: {
+        skip,
+        limit,
+        sort_by: sortBy || undefined,
+        sort_dir: sortDir || undefined,
+        search: search || undefined,
+      },
     })
     return response.data
   },
@@ -63,6 +72,11 @@ export const careerApi = {
 
   githubRepos: async (): Promise<GitHubRepo[]> => {
     const response = await axiosInstance.get<GitHubRepo[]>('/career/github-profile/repos')
+    return response.data
+  },
+
+  searchOverview: async (): Promise<SearchOverview> => {
+    const response = await axiosInstance.get<SearchOverview>('/career/metrics/search-overview')
     return response.data
   },
 }

@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
+  ArrowUpDown,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -8,7 +11,9 @@ import {
   Maximize,
   Pencil,
   Plus,
+  Search,
   Trash2,
+  X,
   ZoomIn,
   ZoomOut,
 } from 'lucide-react'
@@ -529,12 +534,45 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 }) => {
   const isSingleton = config.mode === 'singleton'
   const isNested = !!parentFilter
+  // Search/sort only apply to a resource's own top-level list - a nested
+  // sub-list (e.g. applications shown inside a vacancy) is already a small,
+  // pre-filtered slice, and a singleton has no list to sort/search at all.
+  const supportsListControls = !isSingleton && !isNested
   const [skip, setSkip] = useState(0)
   const limit = isNested ? 100 : isSingleton ? 1 : pageSize
+
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const toggleSort = (key: string) => {
+    setSkip(0)
+    setSortBy((current) => {
+      if (current !== key) {
+        setSortDir('asc')
+        return key
+      }
+      setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))
+      return key
+    })
+  }
+
+  // Any change to search/sort invalidates the current page offset.
+  useEffect(() => {
+    setSkip(0)
+  }, [search, sortBy, sortDir])
 
   const { data, isLoading, isError, error, refetch } = useCareerList<CareerEntity>(config.key, {
     skip: isNested || isSingleton ? 0 : skip,
     limit,
+    sortBy: supportsListControls ? sortBy : undefined,
+    sortDir: supportsListControls ? sortDir : undefined,
+    search: supportsListControls ? search || undefined : undefined,
   })
   const { createMutation, updateMutation, deleteMutation } = useCareerMutations<CareerEntity>(config.key)
   // Total row count, independent of pagination - not meaningful for a
@@ -823,6 +861,60 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
         {viewState === 'list' && (
           <>
+            {supportsListControls && (
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder={`Buscar en ${config.label.toLowerCase()}...`}
+                    className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchInput('')}
+                      aria-label="Limpiar búsqueda"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {isCards && config.columns.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <select
+                      value={sortBy ?? ''}
+                      onChange={(e) => toggleSort(e.target.value)}
+                      className="input-field py-1.5 text-sm"
+                      aria-label="Ordenar por"
+                    >
+                      <option value="">Orden por defecto</option>
+                      {config.columns.map((col) => (
+                        <option key={col.key} value={col.key}>
+                          {col.label}
+                        </option>
+                      ))}
+                    </select>
+                    {sortBy && (
+                      <button
+                        type="button"
+                        onClick={() => setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))}
+                        className="btn-secondary btn-small"
+                        aria-label={sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
+                        title={sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
+                      >
+                        {sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {isLoading && <LoadingSpinner fullScreen={false} message="Cargando..." />}
 
             {isError && (
@@ -836,7 +928,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
             {!isLoading && !isError && items.length === 0 && (
               <p className="text-text-secondary text-sm text-center py-6">
-                No hay {config.label.toLowerCase()} todavía.
+                {search ? 'Sin resultados para esa búsqueda.' : `No hay ${config.label.toLowerCase()} todavía.`}
               </p>
             )}
 
@@ -860,11 +952,32 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-border text-left text-text-secondary">
-                      {config.columns.map((col) => (
-                        <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
-                          {col.label}
-                        </th>
-                      ))}
+                      {config.columns.map((col) =>
+                        supportsListControls ? (
+                          <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => toggleSort(col.key)}
+                              className="flex items-center gap-1 hover:text-text"
+                            >
+                              {col.label}
+                              {sortBy === col.key ? (
+                                sortDir === 'asc' ? (
+                                  <ArrowUp size={12} />
+                                ) : (
+                                  <ArrowDown size={12} />
+                                )
+                              ) : (
+                                <ArrowUpDown size={12} className="opacity-30" />
+                              )}
+                            </button>
+                          </th>
+                        ) : (
+                          <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
+                            {col.label}
+                          </th>
+                        )
+                      )}
                       <th className="px-6 py-2 font-medium text-right">Acciones</th>
                     </tr>
                   </thead>

@@ -99,6 +99,8 @@ export const differentiatorsConfig: ResourceConfig = {
   label: 'Diferenciadores',
   labelSingular: 'Diferenciador',
   genderFeminine: false,
+  description:
+    'Tus pilares de ventaja competitiva verificable (5-7 activos máximo) - nunca adjetivos sueltos, cada uno necesita evidencia real en "Evidencia" para pasar a tu narrativa comunicable. Es la raíz de la que se derivan tus roles objetivo.',
   columns: [
     { key: 'pillar_name', label: 'Pilar' },
     { key: 'is_active', label: 'Activo', format: 'boolean' },
@@ -118,6 +120,8 @@ export const identityConfig: ResourceConfig = {
   labelSingular: 'Identidad',
   genderFeminine: true,
   mode: 'singleton',
+  description:
+    'Tu narrativa comunicable: tagline, bio y propuesta de valor. Se redacta al final, como resultado de Reflexiones IKIGAI, Diferenciadores y Roles Objetivo - nunca al revés. También es la base del elevator pitch hablado, que no se guarda en ningún campo.',
   columns: [],
   fields: [
     { name: 'professional_tagline', label: 'Tagline profesional', type: 'text', fullWidth: true },
@@ -136,6 +140,8 @@ export const identityReflectionsConfig: ResourceConfig = {
   label: 'Reflexiones IKIGAI',
   labelSingular: 'Reflexión',
   genderFeminine: true,
+  description:
+    'Una reflexión honesta por cada una de las 4 dimensiones IKIGAI (lo que amas, sabes, el mundo necesita, paga), con evidencia concreta. Es la raíz de todo el dominio de Identidad: sin las 4 alineadas hay riesgo de burnout, insatisfacción, superfluidad o expertise insuficiente.',
   columns: [
     { key: 'dimension', label: 'Dimensión', format: 'badge' },
     { key: 'content', label: 'Contenido', format: 'truncate' },
@@ -163,6 +169,8 @@ export const competenciesConfig: ResourceConfig = {
   label: 'Competencias',
   labelSingular: 'Competencia',
   genderFeminine: true,
+  description:
+    'Tu inventario de habilidades técnicas, transferibles y de negocio, siempre respaldado por evidencia real en "Descripción de profundidad" - nunca aspiracional. Marca "Destacado en home" para decidir qué categorías aparecen como badge en el Home público.',
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'type', label: 'Tipo', format: 'badge' },
@@ -222,6 +230,8 @@ export const certificationsConfig: ResourceConfig = {
   label: 'Certificaciones',
   labelSingular: 'Certificación',
   genderFeminine: true,
+  description:
+    'Evidencia formal de un tercero (institución externa) de que una competencia es real - a diferencia de Competencias, que es en gran parte autoevaluación. Enlázala siempre a "ID de competencia relacionada" para no dejarla aislada.',
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'institution', label: 'Institución' },
@@ -241,6 +251,8 @@ export const targetRolesConfig: ResourceConfig = {
   label: 'Roles Objetivo',
   labelSingular: 'Rol objetivo',
   genderFeminine: false,
+  description:
+    'Los roles que persigues, priorizados y validados con datos reales de mercado (salario, vacantes activas, fecha de validación). Cada rol activo debe estar sustentado por al menos 2-3 pilares de Diferenciadores - si no, es aspiracional, no objetivo real.',
   columns: [
     { key: 'role_name', label: 'Rol' },
     { key: 'priority_order', label: 'Prioridad', format: 'number' },
@@ -275,6 +287,8 @@ export const workHistoryConfig: ResourceConfig = {
   label: 'Historial Laboral',
   labelSingular: 'Experiencia laboral',
   genderFeminine: true,
+  description:
+    'El historial cronológico completo de tu trayectoria: qué implicó cada rol, cómo lo viviste, qué aprendiste. Es la base de la que se destilan Logros y, de ahí, tus Historias STAR - cada rol/etapa se registra aquí primero, nunca se salta directo a una historia.',
   columns: [
     { key: 'company', label: 'Empresa' },
     { key: 'role_title', label: 'Puesto' },
@@ -309,6 +323,8 @@ export const achievementsConfig: ResourceConfig = {
   label: 'Logros',
   labelSingular: 'Logro',
   genderFeminine: false,
+  description:
+    'Logros cuantificables extraídos de tu Historial Laboral, con métricas de impacto verificables - un logro sin cifra es indistinguible de una responsabilidad narrada. Controla en qué audiencias es visible cada uno (CV, entrevista, portal público).',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'evidence_type', label: 'Tipo de evidencia', format: 'badge' },
@@ -355,6 +371,8 @@ export const starStoriesConfig: ResourceConfig = {
   label: 'Historias STAR',
   labelSingular: 'Historia STAR',
   genderFeminine: true,
+  description:
+    'Tu repertorio de máximo 4 historias activas (60-90 segundos), listas para decirse en voz alta bajo presión, cubriendo 4 ángulos distintos (éxito, conflicto, proyecto complejo, error/aprendizaje). Si un logro nuevo es más fuerte, reemplaza a la más débil - nunca se acumula una quinta.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'duration_seconds', label: 'Duración (s)', format: 'number' },
@@ -379,6 +397,8 @@ export const careerReviewsConfig: ResourceConfig = {
   label: 'Revisiones de Carrera',
   labelSingular: 'Revisión',
   genderFeminine: true,
+  description:
+    'Bitácora cronológica de decisiones, hallazgos y aprendizajes de tu evolución de carrera - le da al sistema memoria de proceso, no solo de resultado final. Registra aquí cada hito antes de propagarlo a Identidad o Análisis de Brechas.',
   columns: [
     { key: 'review_date', label: 'Fecha', format: 'date' },
     { key: 'review_type', label: 'Tipo', format: 'badge' },
@@ -423,6 +443,8 @@ export const roleGapAnalysisConfig: ResourceConfig = {
   label: 'Análisis de Brechas',
   labelSingular: 'Brecha',
   genderFeminine: true,
+  description:
+    'Brechas contra los requisitos reales de mercado de cada Rol Objetivo, con severidad, viabilidad y plan de cierre. Cuando Competencias o Certificaciones cierran una brecha, actualízala aquí explícitamente a "Completada" - no lo dejes implícito.',
   columns: [
     { key: 'gap_name', label: 'Brecha' },
     { key: 'severity', label: 'Severidad', format: 'badge' },
@@ -475,6 +497,8 @@ export const projectsConfig: ResourceConfig = {
   labelSingular: 'Proyecto',
   genderFeminine: false,
   variant: 'cards',
+  description:
+    'Tu portafolio de evidencia técnica verificable - 3-5 proyectos bien documentados superan a 10 mediocres. "Ancla" marca el ÚNICO caso de estudio completo del Home (solo uno a la vez); "Destacado" controla el grid de proyectos destacados.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'category', label: 'Categoría' },
@@ -554,6 +578,8 @@ export const fitScoringFactorsConfig: ResourceConfig = {
   label: 'Factores de Fit',
   labelSingular: 'Factor de fit',
   genderFeminine: false,
+  description:
+    'El rubro con el que calculas manualmente el % de fit de cada vacante - los pesos de todos los factores activos deben sumar 100%. Mantenerlo estable evita evaluar el mismo tipo de vacante con criterios distintos en momentos distintos.',
   columns: [
     { key: 'factor_name', label: 'Factor' },
     { key: 'weight_percentage', label: 'Peso %', format: 'number' },
@@ -572,6 +598,8 @@ export const marketSegmentsConfig: ResourceConfig = {
   label: 'Segmentos de Mercado',
   labelSingular: 'Segmento',
   genderFeminine: false,
+  description:
+    'Los canales de búsqueda (visibles y ocultos) y su prioridad. El mercado oculto (referencias, contacto directo) suele concentrar la mayoría del esfuerzo real, sobre todo en roles senior - revisa periódicamente qué canal convierte mejor y ajusta la prioridad.',
   columns: [
     { key: 'channel_name', label: 'Canal' },
     { key: 'market_type', label: 'Tipo', format: 'badge' },
@@ -605,6 +633,8 @@ export const roleNarrativesConfig: ResourceConfig = {
   label: 'Narrativas de Rol',
   labelSingular: 'Narrativa',
   genderFeminine: true,
+  description:
+    'La capa intermedia entre tu identidad general y los documentos de aplicación: traduce tu posicionamiento vigente a la narrativa específica de cada rol objetivo. De aquí se alimentan CVs, cartas de presentación y entrevistas.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'usage_context', label: 'Contexto de uso' },
@@ -625,6 +655,8 @@ export const searchPlansConfig: ResourceConfig = {
   label: 'Planes de Búsqueda',
   labelSingular: 'Plan',
   genderFeminine: false,
+  description:
+    'El plan ejecutable con timeline, metas cuantitativas y avance real de un periodo de búsqueda. Cierra cada plan con "Aprendizajes" antes de abrir el siguiente periodo - sin eso, el plan nuevo repite los mismos errores sin aprender de los datos ya generados.',
   columns: [
     { key: 'period_start', label: 'Inicio', format: 'date' },
     { key: 'period_end', label: 'Fin', format: 'date' },
@@ -667,6 +699,8 @@ export const networkingContactsConfig: ResourceConfig = {
   label: 'Contactos',
   labelSingular: 'Contacto',
   genderFeminine: false,
+  description:
+    'Tu matriz de contactos profesionales, categorizados por tipo (reclutador, par técnico, hiring manager) porque el mensaje correcto para uno es el peor para otro. Regla central: aportar valor antes de pedir algo (framework 70-20-10).',
   columns: [
     { key: 'name', label: 'Nombre' },
     { key: 'role_title', label: 'Puesto' },
@@ -713,6 +747,8 @@ export const targetCompaniesConfig: ResourceConfig = {
   label: 'Empresas Diana',
   labelSingular: 'Empresa diana',
   genderFeminine: true,
+  description:
+    'Empresas objetivo con su tier, rango salarial y el contacto ("weak tie") que las hace accesibles. Prioriza las que ya tienen un contacto asignado - convierten mucho mejor que una aplicación fría sin ningún vínculo.',
   columns: [
     { key: 'company_name', label: 'Empresa' },
     { key: 'tier', label: 'Tier', format: 'number' },
@@ -739,6 +775,8 @@ export const vacanciesConfig: ResourceConfig = {
   label: 'Vacantes',
   labelSingular: 'Vacante',
   genderFeminine: true,
+  description:
+    'Triage de cada oportunidad antes de invertir tiempo en materiales: rol objetivo, % de fit real (calculado con Factores de Fit), rango salarial. Solo si pasa el filtro (60-70% de encaje) avanza a construir CV/carta y aplicar.',
   columns: [
     { key: 'company', label: 'Empresa' },
     { key: 'exact_role', label: 'Rol' },
@@ -777,6 +815,8 @@ export const cvVersionsConfig: ResourceConfig = {
   label: 'Versiones de CV',
   labelSingular: 'Versión de CV',
   genderFeminine: true,
+  description:
+    'Cada dato aquí tiene fuente obligatoria en otra tabla (Identidad, Historial, Logros, Competencias) - nunca redactado de memoria ni con nivel inflado. Un CV ya aprobado no se actualiza automáticamente si su fuente cambia después.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
@@ -825,6 +865,8 @@ export const coverLetterVersionsConfig: ResourceConfig = {
   label: 'Cartas de Presentación',
   labelSingular: 'Carta',
   genderFeminine: true,
+  description:
+    'Estructura de 3 partes: apertura específica al rol+empresa (nunca genérica), fundamento de experiencia con un ejemplo concreto de Logros, cierre. Nunca repite el CV literalmente - lo complementa.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
@@ -852,6 +894,8 @@ export const applicationsConfig: ResourceConfig = {
   label: 'Aplicaciones',
   labelSingular: 'Aplicación',
   genderFeminine: true,
+  description:
+    'Una fila por cada postulación real enviada, enlazando la vacante, el CV y la carta usados. "Estado actual" debe mantenerse vivo - un estado desactualizado rompe el análisis de qué está funcionando.',
   columns: [
     { key: 'vacancy_id', label: 'ID vacante', format: 'number' },
     { key: 'applied_at', label: 'Aplicado el', format: 'datetime' },
@@ -895,6 +939,8 @@ export const applicationInteractionsConfig: ResourceConfig = {
   label: 'Interacciones de Aplicación',
   labelSingular: 'Interacción',
   genderFeminine: true,
+  description:
+    'Cada paso posterior a una aplicación (respuesta, llamada, prueba técnica), uno por fila - nunca se sobreescribe la anterior. Es el detalle día a día debajo del estado agregado de Aplicaciones.',
   columns: [
     { key: 'interaction_at', label: 'Fecha', format: 'datetime' },
     { key: 'channel', label: 'Canal' },
@@ -915,6 +961,8 @@ export const interviewsConfig: ResourceConfig = {
   label: 'Entrevistas',
   labelSingular: 'Entrevista',
   genderFeminine: true,
+  description:
+    'Registro y preparación de cada entrevista. Distingue lo generalizable (debería mejorar tus Historias STAR) de lo específico de esa empresa puntual, que se queda registrado solo aquí.',
   columns: [
     { key: 'interview_type', label: 'Tipo' },
     { key: 'scheduled_at', label: 'Programada', format: 'datetime' },
@@ -975,6 +1023,8 @@ export const contactInteractionsConfig: ResourceConfig = {
   label: 'Interacciones de Contacto',
   labelSingular: 'Interacción',
   genderFeminine: true,
+  description:
+    'Cada mensaje o intercambio real con un contacto, uno por uno - el detalle día a día debajo del estado agregado de Contactos. Marca "Generó oportunidad" cuando una interacción concreta derive en algo real.',
   columns: [
     { key: 'interaction_at', label: 'Fecha', format: 'datetime' },
     { key: 'channel', label: 'Canal' },
@@ -998,6 +1048,8 @@ export const networkingActivitiesConfig: ResourceConfig = {
   label: 'Actividades de Networking',
   labelSingular: 'Actividad',
   genderFeminine: true,
+  description:
+    'Catálogo de actividades recurrentes de aportar valor (comentar posts, compartir contenido), clasificadas en el framework 70-20-10. "Veces realizada" mide disciplina real, no intención - actualízalo cada vez que ejecutes la actividad.',
   columns: [
     { key: 'activity_type', label: 'Actividad' },
     { key: 'category', label: 'Categoría', format: 'badge' },
@@ -1033,6 +1085,8 @@ export const publicationsConfig: ResourceConfig = {
   label: 'Publicaciones',
   labelSingular: 'Publicación',
   genderFeminine: true,
+  description:
+    'El blog del Portal Público. "Destacado en home" decide si aparece en la tarjeta destacada de Home; "Tags" es la fuente única de la que se derivan los hashtags cuando la publicación también se cruza a LinkedIn (LinkedIn · Publicar).',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'platform', label: 'Plataforma' },
@@ -1079,6 +1133,8 @@ export const linkedinProfileConfig: ResourceConfig = {
   labelSingular: 'Perfil de LinkedIn',
   genderFeminine: false,
   mode: 'singleton',
+  description:
+    'Traducción de tu identidad al formato de LinkedIn (headline ~120 caracteres, About 200-300 palabras). Nunca se redacta de forma independiente: el cambio siempre empieza en Identidad y se traduce aquí después.',
   columns: [],
   fields: [
     { name: 'headline', label: 'Headline', type: 'text', fullWidth: true },
@@ -1112,6 +1168,8 @@ export const githubProfileConfig: ResourceConfig = {
   labelSingular: 'Perfil de GitHub',
   genderFeminine: false,
   mode: 'singleton',
+  description:
+    'Traducción ultra-comprimida (headline ~160 caracteres) del mismo diferenciador que LinkedIn, más un README de perfil en Markdown con más detalle técnico. Debe decir lo mismo que LinkedIn sobre qué te hace valioso.',
   columns: [],
   fields: [
     { name: 'headline', label: 'Título', type: 'text', fullWidth: true },
@@ -1207,6 +1265,8 @@ export const tagsConfig: ResourceConfig = {
   label: 'Etiquetas',
   labelSingular: 'Etiqueta',
   genderFeminine: true,
+  description:
+    'Catálogo editorial de vocabulario controlado - sin relación técnica (FK) con ninguna otra tabla. Existe para evitar variantes sueltas del mismo concepto en campos de texto libre como los tags de Publicaciones.',
   columns: [
     { key: 'tag_name', label: 'Nombre' },
     { key: 'entity_type', label: 'Tipo de entidad' },
