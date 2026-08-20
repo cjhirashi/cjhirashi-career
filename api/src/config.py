@@ -46,7 +46,7 @@ class Settings(BaseSettings):
 
     # File Uploads
     UPLOADS_DIR: str = "/app/uploads"
-    MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10 MB
+    MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_EXTENSIONS: List[str] = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif"]
 
     # MinIO (object storage bucket - required)
@@ -99,6 +99,11 @@ class Settings(BaseSettings):
             for url in self.CORS_ORIGINS_STR.replace(",", " ").split()
             if url.strip()
         ]
+
+    @property
+    def MAX_UPLOAD_SIZE(self) -> int:
+        """Max upload size in bytes, derived from MAX_UPLOAD_SIZE_MB (.env)."""
+        return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
     @property
     def uploads_path(self) -> Path:

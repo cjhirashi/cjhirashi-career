@@ -211,22 +211,59 @@ class TestSettingsConfiguration:
             assert isinstance(path, Path)
 
     def test_max_upload_size_valid(self):
-        """Verificar que MAX_UPLOAD_SIZE tiene valor válido."""
+        """Verificar que MAX_UPLOAD_SIZE_MB tiene valor válido y se convierte a bytes.
+
+        MAX_UPLOAD_SIZE_MB=10 se pasa explícito (no se deja el default de la
+        clase) porque el entorno real donde corren estos tests ya trae
+        MAX_UPLOAD_SIZE_MB=50 desde .env - BaseSettings SIEMPRE lee variables
+        de entorno del proceso aunque `env_file=None`, así que confiar en el
+        default aquí haría el test dependiente del entorno."""
         class TestSettings(BaseSettings):
             DATABASE_URL: str = Field(..., description="PostgreSQL connection string")
             SECRET_KEY: str = Field(..., min_length=32, description="JWT secret key")
-            MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10 MB
+            MAX_UPLOAD_SIZE_MB: int = 10
+
+            @property
+            def MAX_UPLOAD_SIZE(self) -> int:
+                return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
             class Config:
                 env_file = None
 
         settings = TestSettings(
             DATABASE_URL="postgresql://localhost/db",
-            SECRET_KEY="a" * 32
+            SECRET_KEY="a" * 32,
+            MAX_UPLOAD_SIZE_MB=10,
         )
 
-        # 10 MB por defecto
         assert settings.MAX_UPLOAD_SIZE == 10 * 1024 * 1024
         assert settings.MAX_UPLOAD_SIZE > 0
+
+    def test_max_upload_size_mb_reads_from_env(self):
+        """Regresión: MAX_UPLOAD_SIZE_MB debe leerse del entorno (.env usa este
+        nombre exacto) y MAX_UPLOAD_SIZE debe reflejar ese valor en bytes -
+        antes el campo real se llamaba MAX_UPLOAD_SIZE (sin _MB) y el .env
+        nunca se aplicaba, quedando siempre en el default de 10 MB."""
+        class TestSettings(BaseSettings):
+            DATABASE_URL: str = Field(..., description="PostgreSQL connection string")
+            SECRET_KEY: str = Field(..., min_length=32, description="JWT secret key")
+            MAX_UPLOAD_SIZE_MB: int = 10
+
+            @property
+            def MAX_UPLOAD_SIZE(self) -> int:
+                return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024
+
+            class Config:
+                env_file = None
+
+        settings = TestSettings(
+            DATABASE_URL="postgresql://localhost/db",
+            SECRET_KEY="a" * 32,
+            MAX_UPLOAD_SIZE_MB=50,
+        )
+
+        assert settings.MAX_UPLOAD_SIZE_MB == 50
+        assert settings.MAX_UPLOAD_SIZE == 50 * 1024 * 1024
 
     def test_allowed_extensions_valid(self):
         """Verificar que ALLOWED_EXTENSIONS tiene extensiones válidas."""
