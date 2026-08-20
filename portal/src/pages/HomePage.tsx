@@ -140,8 +140,8 @@ export const HomePage = () => {
               )}
 
               {anchor.solution && (
-                <div className="rounded-lg p-4 bg-amber-500/10 border border-amber-500/20">
-                  <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
+                  <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
                     <TrendingUp size={12} /> Resultado
                   </p>
                   <Markdown className="text-sm">{anchor.solution}</Markdown>
