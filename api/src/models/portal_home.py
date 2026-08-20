@@ -7,7 +7,6 @@ block reads the single `projects.is_anchor` row. One row per user.
 Career domain (v2) - Presencia Digital.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -22,13 +21,24 @@ class PortalHome(Base):
     hero_title = Column(String(255), nullable=True)
     hero_subtitle = Column(String(500), nullable=True)
     hero_intro = Column(Text, nullable=True)
-    # [{label, value}, ...] - the 4 hero stats (e.g. "Años en Sistemas
-    # Críticos" / "20+"). A free list rather than 4 fixed columns so the
-    # count/labels can change without a migration.
-    stats = Column(JSONB, nullable=True)
-    # [{label, url}, ...] - the hero's CTA buttons (text + link, fully
-    # admin-controlled - not tied to is_anchor/is_featured project data).
-    hero_ctas = Column(JSONB, nullable=True)
+
+    # Up to 2 CTA buttons (text + link) - fixed slots instead of a JSON list
+    # so the admin form is 2 plain fields per button, not hand-written JSON.
+    # The first slot renders as the primary button, the second as secondary.
+    cta1_label = Column(String(100), nullable=True)
+    cta1_url = Column(String(1024), nullable=True)
+    cta2_label = Column(String(100), nullable=True)
+    cta2_url = Column(String(1024), nullable=True)
+
+    # Up to 4 hero stats (name + value), same fixed-slot reasoning as the CTAs.
+    stat1_label = Column(String(100), nullable=True)
+    stat1_value = Column(String(50), nullable=True)
+    stat2_label = Column(String(100), nullable=True)
+    stat2_value = Column(String(50), nullable=True)
+    stat3_label = Column(String(100), nullable=True)
+    stat3_value = Column(String(50), nullable=True)
+    stat4_label = Column(String(100), nullable=True)
+    stat4_value = Column(String(50), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

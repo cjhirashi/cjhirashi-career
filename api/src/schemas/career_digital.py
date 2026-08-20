@@ -145,8 +145,18 @@ class PortalHomeBase(BaseModel):
     hero_title: Optional[str] = Field(None, max_length=255)
     hero_subtitle: Optional[str] = Field(None, max_length=500)
     hero_intro: Optional[str] = None
-    stats: Optional[List[Any]] = None
-    hero_ctas: Optional[List[Any]] = None
+    cta1_label: Optional[str] = Field(None, max_length=100)
+    cta1_url: Optional[str] = Field(None, max_length=1024)
+    cta2_label: Optional[str] = Field(None, max_length=100)
+    cta2_url: Optional[str] = Field(None, max_length=1024)
+    stat1_label: Optional[str] = Field(None, max_length=100)
+    stat1_value: Optional[str] = Field(None, max_length=50)
+    stat2_label: Optional[str] = Field(None, max_length=100)
+    stat2_value: Optional[str] = Field(None, max_length=50)
+    stat3_label: Optional[str] = Field(None, max_length=100)
+    stat3_value: Optional[str] = Field(None, max_length=50)
+    stat4_label: Optional[str] = Field(None, max_length=100)
+    stat4_value: Optional[str] = Field(None, max_length=50)
 
 
 class PortalHomeCreate(PortalHomeBase):

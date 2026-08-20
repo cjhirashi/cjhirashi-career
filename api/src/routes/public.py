@@ -34,7 +34,7 @@ from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
-    PublicBlogPost,
+    PublicBlogPost, PublicHeroCta, PublicStat,
 )
 
 router = APIRouter(prefix="/public", tags=["Public Portal"])
@@ -88,6 +88,23 @@ def _blog_post(pub: Publication) -> PublicBlogPost:
     )
 
 
+def _hero_ctas(home: Optional[PortalHome]) -> List[PublicHeroCta]:
+    if not home:
+        return []
+    slots = [(home.cta1_label, home.cta1_url), (home.cta2_label, home.cta2_url)]
+    return [PublicHeroCta(label=label, url=url) for label, url in slots if label and url]
+
+
+def _stats(home: Optional[PortalHome]) -> List[PublicStat]:
+    if not home:
+        return []
+    slots = [
+        (home.stat1_label, home.stat1_value), (home.stat2_label, home.stat2_value),
+        (home.stat3_label, home.stat3_value), (home.stat4_label, home.stat4_value),
+    ]
+    return [PublicStat(label=label, value=value) for label, value in slots if label and value]
+
+
 @router.get("/home", response_model=PublicHomeResponse)
 async def get_home(db: AsyncSession = Depends(get_db)):
     # No fallback to Identity here on purpose: what's in the Portal · Home
@@ -118,8 +135,8 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         hero_title=home.hero_title if home else None,
         hero_subtitle=home.hero_subtitle if home else None,
         hero_intro=home.hero_intro if home else None,
-        hero_ctas=(home.hero_ctas if home and home.hero_ctas else []),
-        stats=(home.stats if home and home.stats else []),
+        hero_ctas=_hero_ctas(home),
+        stats=_stats(home),
         anchor_project=_project_detail(anchor) if anchor else None,
         featured_projects=[_project_card(p) for p in projects],
         featured_publications=[_publication_card(pub) for pub in publications],

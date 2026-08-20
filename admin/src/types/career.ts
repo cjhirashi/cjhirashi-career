@@ -529,8 +529,18 @@ export interface PortalHomeRecord {
   hero_title?: string | null
   hero_subtitle?: string | null
   hero_intro?: string | null
-  hero_ctas?: unknown[] | null
-  stats?: unknown[] | null
+  cta1_label?: string | null
+  cta1_url?: string | null
+  cta2_label?: string | null
+  cta2_url?: string | null
+  stat1_label?: string | null
+  stat1_value?: string | null
+  stat2_label?: string | null
+  stat2_value?: string | null
+  stat3_label?: string | null
+  stat3_value?: string | null
+  stat4_label?: string | null
+  stat4_value?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
