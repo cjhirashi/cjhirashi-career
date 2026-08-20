@@ -26,6 +26,9 @@ class PortalHome(Base):
     # Críticos" / "20+"). A free list rather than 4 fixed columns so the
     # count/labels can change without a migration.
     stats = Column(JSONB, nullable=True)
+    # [{label, url}, ...] - the hero's CTA buttons (text + link, fully
+    # admin-controlled - not tied to is_anchor/is_featured project data).
+    hero_ctas = Column(JSONB, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

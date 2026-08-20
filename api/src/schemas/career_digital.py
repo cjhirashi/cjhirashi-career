@@ -146,6 +146,7 @@ class PortalHomeBase(BaseModel):
     hero_subtitle: Optional[str] = Field(None, max_length=500)
     hero_intro: Optional[str] = None
     stats: Optional[List[Any]] = None
+    hero_ctas: Optional[List[Any]] = None
 
 
 class PortalHomeCreate(PortalHomeBase):

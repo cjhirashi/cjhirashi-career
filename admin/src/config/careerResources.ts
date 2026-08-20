@@ -1117,6 +1117,13 @@ export const portalHomeConfig: ResourceConfig = {
     { name: 'hero_subtitle', label: 'Subtítulo', type: 'text', fullWidth: true },
     { name: 'hero_intro', label: 'Texto de introducción', type: 'textarea', fullWidth: true },
     {
+      name: 'hero_ctas',
+      label: 'Botones del hero (JSON)',
+      type: 'json',
+      fullWidth: true,
+      helpText: 'Lista de objetos: [{"label","url"}, ...] - el primero se ve como botón principal, el resto secundarios. "url" puede ser una ruta interna ("/proyectos") o un link externo.',
+    },
+    {
       name: 'stats',
       label: 'Estadísticas (JSON)',
       type: 'json',

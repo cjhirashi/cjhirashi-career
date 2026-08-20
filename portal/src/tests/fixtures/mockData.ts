@@ -121,6 +121,10 @@ export const mockHome: HomeContent = {
   hero_title: 'Carlos Jiménez Hirashi',
   hero_subtitle: 'AI Solutions Architect',
   hero_intro: 'Transformando ideas complejas en soluciones elegantes y escalables.',
+  hero_ctas: [
+    { label: 'Ver Caso Bioterio', url: '/projects/1' },
+    { label: 'Ver proyectos', url: '/projects' },
+  ],
   stats: [
     { label: 'Años en Sistemas Críticos', value: '20+' },
     { label: 'Proyectos Completados', value: '15' },

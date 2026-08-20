@@ -118,6 +118,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         hero_title=home.hero_title if home else None,
         hero_subtitle=home.hero_subtitle if home else None,
         hero_intro=home.hero_intro if home else None,
+        hero_ctas=(home.hero_ctas if home and home.hero_ctas else []),
         stats=(home.stats if home and home.stats else []),
         anchor_project=_project_detail(anchor) if anchor else None,
         featured_projects=[_project_card(p) for p in projects],

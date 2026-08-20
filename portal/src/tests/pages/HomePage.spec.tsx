@@ -55,11 +55,27 @@ describe('HomePage - Entry Point', () => {
     expect(screen.getByText(mockHome.anchor_project!.problem!)).toBeInTheDocument()
   })
 
-  it('renders a "Ver Caso" CTA linking to the anchor project', async () => {
+  it('renders hero CTA buttons from hero_ctas, first as primary and rest as secondary', async () => {
     await renderReady()
 
-    const anchorLink = screen.getByRole('link', { name: new RegExp(`Ver Caso ${mockHome.anchor_project!.title}`) })
-    expect(anchorLink).toHaveAttribute('href', `/projects/${mockHome.anchor_project!.id}`)
+    const primary = screen.getByRole('link', { name: mockHome.hero_ctas[0].label })
+    expect(primary).toHaveAttribute('href', mockHome.hero_ctas[0].url)
+    expect(primary.className).toContain('btn ')
+
+    const secondary = screen.getByRole('link', { name: mockHome.hero_ctas[1].label })
+    expect(secondary).toHaveAttribute('href', mockHome.hero_ctas[1].url)
+    expect(secondary.className).toContain('btn-secondary')
+  })
+
+  it('omits the CTA row entirely when hero_ctas is empty', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, hero_ctas: [] })
+
+    render(<HomePage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('link', { name: 'Ver proyectos' })).not.toBeInTheDocument()
   })
 
   it('renders featured projects section', async () => {

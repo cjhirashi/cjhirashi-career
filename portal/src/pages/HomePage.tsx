@@ -57,24 +57,30 @@ export const HomePage = () => {
             <Markdown className="text-lg max-w-xl mb-8">{home.hero_intro}</Markdown>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {anchor && (
-              <Link
-                to={`/projects/${anchor.id}`}
-                onClick={() => handleCTA('anchor-case')}
-                className="btn px-8 py-3 font-semibold"
-              >
-                Ver Caso {anchor.title.split(/\s[-–—]\s/)[0].trim()} →
-              </Link>
-            )}
-            <Link
-              to="/projects"
-              onClick={() => handleCTA('view-projects')}
-              className={anchor ? 'btn-secondary px-8 py-3 font-semibold' : 'btn px-8 py-3 font-semibold'}
-            >
-              Ver proyectos
-            </Link>
-          </div>
+          {home && home.hero_ctas.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {home.hero_ctas.map((cta, index) => {
+                const className = index === 0 ? 'btn px-8 py-3 font-semibold' : 'btn-secondary px-8 py-3 font-semibold'
+                const onClick = () => handleCTA(`cta-${index}-${cta.label}`)
+                return cta.url.startsWith('/') ? (
+                  <Link key={cta.label} to={cta.url} onClick={onClick} className={className}>
+                    {cta.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={cta.label}
+                    href={cta.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onClick}
+                    className={className}
+                  >
+                    {cta.label}
+                  </a>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 

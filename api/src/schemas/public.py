@@ -67,11 +67,17 @@ class PublicStat(BaseModel):
     value: str
 
 
+class PublicHeroCta(BaseModel):
+    label: str
+    url: str
+
+
 class PublicHomeResponse(BaseModel):
     hero_photo_url: Optional[str] = None
     hero_title: Optional[str] = None
     hero_subtitle: Optional[str] = None
     hero_intro: Optional[str] = None
+    hero_ctas: List[PublicHeroCta] = []
     stats: List[PublicStat] = []
     # The single is_anchor project, rendered as a full case-study block -
     # None if no project is currently marked as the anchor.

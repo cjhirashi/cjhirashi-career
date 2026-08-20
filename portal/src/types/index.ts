@@ -49,11 +49,17 @@ export interface HomeStat {
   value: string
 }
 
+export interface HeroCta {
+  label: string
+  url: string
+}
+
 export interface HomeContent {
   hero_photo_url: string | null
   hero_title: string | null
   hero_subtitle: string | null
   hero_intro: string | null
+  hero_ctas: HeroCta[]
   stats: HomeStat[]
   anchor_project: Project | null
   featured_projects: Project[]
