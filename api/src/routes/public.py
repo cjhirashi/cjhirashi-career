@@ -41,6 +41,14 @@ router = APIRouter(prefix="/public", tags=["Public Portal"])
 
 USER_ID = settings.PUBLIC_PORTAL_USER_ID
 
+# `Publication.platform` is free text (LinkedIn, Blog propio, Medium...) - the
+# same article can have one row per platform it was cross-posted to (e.g. one
+# "portfolio_web" row and one "linkedin" row sharing the same slug). Only the
+# "portfolio_web" row is an actual page on this portal; the rest are
+# cross-post records for other channels and must not be listed/linked here,
+# or two rows sharing a slug make the detail lookup ambiguous.
+PORTAL_BLOG_PLATFORM = "portfolio_web"
+
 
 def _parse_lines(text: Optional[str]) -> List[str]:
     """Splits a "one item per line" Markdown-list field (see careerResources.ts's
@@ -136,6 +144,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
                 Publication.user_id == USER_ID,
                 Publication.featured_on_home.is_(True),
                 Publication.status == "published",
+                Publication.platform == PORTAL_BLOG_PLATFORM,
             )
             .order_by(Publication.published_at.desc().nullslast())
             .limit(3)
@@ -246,7 +255,11 @@ async def list_blog_posts(limit: int = Query(default=50, ge=1, le=100), db: Asyn
     posts = (
         await db.execute(
             select(Publication)
-            .where(Publication.user_id == USER_ID, Publication.status == "published")
+            .where(
+                Publication.user_id == USER_ID,
+                Publication.status == "published",
+                Publication.platform == PORTAL_BLOG_PLATFORM,
+            )
             .order_by(Publication.published_at.desc().nullslast())
             .limit(limit)
         )
@@ -259,7 +272,10 @@ async def get_blog_post(slug: str, db: AsyncSession = Depends(get_db)):
     post = (
         await db.execute(
             select(Publication).where(
-                Publication.user_id == USER_ID, Publication.slug == slug, Publication.status == "published"
+                Publication.user_id == USER_ID,
+                Publication.slug == slug,
+                Publication.status == "published",
+                Publication.platform == PORTAL_BLOG_PLATFORM,
             )
         )
     ).scalar_one_or_none()
