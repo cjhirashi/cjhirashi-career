@@ -487,7 +487,14 @@ class ProjectBase(BaseModel):
     solution: Optional[str] = None
     architecture: Optional[str] = None
     tech_stack: Optional[str] = None
-    metrics: Optional[Union[List[Any], Dict[str, Any]]] = None
+    metric1_label: Optional[str] = Field(None, max_length=100)
+    metric1_value: Optional[str] = Field(None, max_length=500)
+    metric2_label: Optional[str] = Field(None, max_length=100)
+    metric2_value: Optional[str] = Field(None, max_length=500)
+    metric3_label: Optional[str] = Field(None, max_length=100)
+    metric3_value: Optional[str] = Field(None, max_length=500)
+    metric4_label: Optional[str] = Field(None, max_length=100)
+    metric4_value: Optional[str] = Field(None, max_length=500)
     approach_steps: Optional[str] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = Field(None, max_length=500)
@@ -516,7 +523,14 @@ class ProjectUpdate(BaseModel):
     solution: Optional[str] = None
     architecture: Optional[str] = None
     tech_stack: Optional[str] = None
-    metrics: Optional[Union[List[Any], Dict[str, Any]]] = None
+    metric1_label: Optional[str] = None
+    metric1_value: Optional[str] = None
+    metric2_label: Optional[str] = None
+    metric2_value: Optional[str] = None
+    metric3_label: Optional[str] = None
+    metric3_value: Optional[str] = None
+    metric4_label: Optional[str] = None
+    metric4_value: Optional[str] = None
     approach_steps: Optional[str] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = None

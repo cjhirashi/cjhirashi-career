@@ -64,10 +64,20 @@ def _parse_lines(text: Optional[str]) -> List[str]:
     return lines
 
 
+def _project_metrics(p: Project) -> List[PublicStat]:
+    # A metric's name is optional (some are standalone achievement lines with
+    # no natural label) - only the value decides whether a slot is shown.
+    slots = [
+        (p.metric1_label, p.metric1_value), (p.metric2_label, p.metric2_value),
+        (p.metric3_label, p.metric3_value), (p.metric4_label, p.metric4_value),
+    ]
+    return [PublicStat(label=label or "", value=value) for label, value in slots if value]
+
+
 def _project_card(p: Project) -> PublicProjectCard:
     return PublicProjectCard(
         id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
-        card_summary=p.card_summary, tech_stack=_parse_lines(p.tech_stack), metrics=p.metrics,
+        card_summary=p.card_summary, tech_stack=_parse_lines(p.tech_stack), metrics=_project_metrics(p),
         image_url=p.image_url, github_url=p.github_url, demo_url=p.demo_url,
     )
 

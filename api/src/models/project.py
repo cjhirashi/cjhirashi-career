@@ -27,7 +27,17 @@ class Project(Base):
     solution = Column(Text, nullable=True)
     architecture = Column(Text, nullable=True)
     tech_stack = Column(Text, nullable=True)
-    metrics = Column(JSONB, nullable=True)
+    # Up to 4 metrics (name + value) - fixed slots instead of a JSON blob so
+    # the admin form is 2 plain fields per metric, not hand-written JSON.
+    # None are required; an unused slot is just left blank.
+    metric1_label = Column(String(100), nullable=True)
+    metric1_value = Column(String(500), nullable=True)
+    metric2_label = Column(String(100), nullable=True)
+    metric2_value = Column(String(500), nullable=True)
+    metric3_label = Column(String(100), nullable=True)
+    metric3_value = Column(String(500), nullable=True)
+    metric4_label = Column(String(100), nullable=True)
+    metric4_value = Column(String(500), nullable=True)
     approach_steps = Column(Text, nullable=True)
     results = Column(JSONB, nullable=True)
     github_url = Column(String(500), nullable=True)

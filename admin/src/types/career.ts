@@ -202,7 +202,14 @@ export interface Project {
   solution?: string | null
   architecture?: string | null
   tech_stack?: string | null
-  metrics?: Record<string, unknown> | null
+  metric1_label?: string | null
+  metric1_value?: string | null
+  metric2_label?: string | null
+  metric2_value?: string | null
+  metric3_label?: string | null
+  metric3_value?: string | null
+  metric4_label?: string | null
+  metric4_value?: string | null
   approach_steps?: string | null
   results?: Record<string, unknown> | null
   github_url?: string | null
