@@ -9,10 +9,13 @@ one always goes through this API (get_presigned_url), never a bare bucket
 URL: the bucket policy only grants anonymous access under `public/`.
 """
 import io
-from typing import List
+import logging
+import re
+from typing import List, Tuple
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
+from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +29,54 @@ from schemas.file_upload import FileUploadResponse
 from services import storage_service
 from config import settings
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/files", tags=["Files"])
+
+# Uploaded photos routinely come straight off a phone/camera (several MB,
+# far larger than anything the portal/admin ever displays) with no
+# optimization step anywhere in the pipeline - re-encode on upload instead
+# of serving whatever was dropped in, byte for byte.
+MAX_IMAGE_DIMENSION = 1920
+JPEG_QUALITY = 85
+
+
+def _has_real_transparency(image: Image.Image) -> bool:
+    """True only if the image actually uses transparency (some pixel with
+    alpha < 255) - not merely if its color mode has an alpha channel. Photos
+    exported from phones/editors routinely carry an RGBA mode with a fully
+    opaque alpha channel that's never used, which would otherwise wrongly
+    keep them as bloated PNG instead of converting to JPEG."""
+    if image.mode not in ("RGBA", "LA") and not (image.mode == "P" and "transparency" in image.info):
+        return False
+    alpha = image.convert("RGBA").split()[-1]
+    return alpha.getextrema()[0] < 255
+
+
+def _optimize_image(contents: bytes, filename: str) -> Tuple[bytes, str, str]:
+    """Resize (long edge capped at MAX_IMAGE_DIMENSION) and re-encode an
+    uploaded image. Photos (no alpha channel) become JPEG - far smaller than
+    PNG for photographic content at visually equivalent quality. Images with
+    real transparency (logos, icons) stay PNG, just resized/optimized.
+    Returns (new_bytes, new_content_type, new_filename). Raises on anything
+    Pillow can't decode (e.g. SVG) - the caller falls back to the original
+    bytes in that case."""
+    image = Image.open(io.BytesIO(contents))
+    image = ImageOps.exif_transpose(image)  # honor camera rotation before resizing
+
+    if max(image.size) > MAX_IMAGE_DIMENSION:
+        image.thumbnail((MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION), Image.LANCZOS)
+
+    has_alpha = _has_real_transparency(image)
+    base_name = re.sub(r"\.\w+$", "", filename) or "image"
+    buffer = io.BytesIO()
+
+    if has_alpha:
+        image.convert("RGBA").save(buffer, format="PNG", optimize=True)
+        return buffer.getvalue(), "image/png", f"{base_name}.png"
+
+    image.convert("RGB").save(buffer, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+    return buffer.getvalue(), "image/jpeg", f"{base_name}.jpg"
 
 
 def _infer_file_type(content_type: str) -> FileType:
@@ -60,9 +110,20 @@ async def upload_file(
         )
 
     content_type = file.content_type or "application/octet-stream"
+    stored_filename_for_key = file.filename
+
+    if content_type.startswith("image/"):
+        try:
+            contents, content_type, stored_filename_for_key = _optimize_image(contents, file.filename)
+        except (UnidentifiedImageError, OSError) as exc:
+            # Pillow can't decode some things sent as "image/*" (SVG is the
+            # common case) - store the original bytes rather than fail the
+            # upload over a format we're not able to optimize.
+            logger.warning("Could not optimize '%s' as an image (%s), storing it unmodified", file.filename, exc)
+
     stored_filename = storage_service.upload_file(
         data=io.BytesIO(contents),
-        original_filename=file.filename,
+        original_filename=stored_filename_for_key,
         size=len(contents),
         content_type=content_type,
         category=category,
