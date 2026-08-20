@@ -116,17 +116,29 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_anchor.is_(True)))
     ).scalar_one_or_none()
 
+    # The Home is a highlight reel, not the full catalog - cap both sections
+    # at 3 cards each (matches the reference cjhirashi.com layout) even if
+    # more records end up marked as featured; the full sets still live on
+    # /projects and /blog.
     projects = (
-        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_featured.is_(True)))
+        await db.execute(
+            select(Project)
+            .where(Project.user_id == USER_ID, Project.is_featured.is_(True))
+            .order_by(Project.year.desc().nullslast())
+            .limit(3)
+        )
     ).scalars().all()
 
     publications = (
         await db.execute(
-            select(Publication).where(
+            select(Publication)
+            .where(
                 Publication.user_id == USER_ID,
                 Publication.featured_on_home.is_(True),
                 Publication.status == "published",
             )
+            .order_by(Publication.published_at.desc().nullslast())
+            .limit(3)
         )
     ).scalars().all()
 
