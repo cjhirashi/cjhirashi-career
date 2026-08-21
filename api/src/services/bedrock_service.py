@@ -1,31 +1,35 @@
 """
-Agent Bedrock - the Admin Panel's in-process AI assistant.
+Agent Bedrock - el asistente de IA del Admin Panel, corriendo dentro del
+mismo proceso del API REST.
 
-Per the project's architecture (docs/04-SOLUTION-STRATEGY.md Decisión 5,
-docs/06-RUNTIME-VIEW.md Escenario 4): Bedrock has no container, no port, no
-auth of its own - it's invoked in-process by the API REST, inheriting the
-JWT of whichever Admin Panel session called it. This module is that
-invocation, built on Amazon Bedrock AgentCore Harness (not a hand-rolled
-Converse loop): `invoke_harness` handles the model call, tool-use
-orchestration signaling and session memory server-side (keyed by
-`runtimeSessionId`) - this module only needs to execute the `inline_function`
-tools when the harness pauses for one, and feed the result back. The tools
-themselves operate directly on `CareerRepository` (the exact same class
-every generic CRUD route already uses) plus the Qdrant knowledge base
-(`qdrant_service.py`).
+Según la arquitectura del proyecto (docs/04-SOLUTION-STRATEGY.md Decisión
+5, docs/06-RUNTIME-VIEW.md Escenario 4): Bedrock no tiene contenedor
+propio, ni puerto, ni autenticación propia - se invoca en el mismo proceso
+del API REST, heredando el JWT de la sesión del Admin Panel que lo llamó.
+Este módulo ES esa invocación, construida sobre Amazon Bedrock AgentCore
+Harness (no un loop de Converse hecho a mano): `invoke_harness` se encarga
+de la llamada al modelo, de la señalización de orquestación de uso de
+herramientas y de la memoria de sesión del lado de AWS (indexada por
+`runtimeSessionId`) - este módulo solo necesita ejecutar las herramientas
+`inline_function` cuando el harness se pausa a pedir una, y devolverle el
+resultado. Las herramientas en sí operan directo sobre `CareerRepository`
+(la misma clase exacta que ya usa cada ruta CRUD genérica) y sobre la base
+de conocimiento en Qdrant (`qdrant_service.py`).
 
-The agent's capabilities - full read/write/create/delete on any of the
-~30 career-domain resources, and semantic search over its knowledge base -
-are a deliberate product decision (not something this module restricts):
-every write goes straight through `CareerRepository`, no separate
-"proposal" step.
+Las capacidades del agente - lectura/escritura/creación/eliminación
+completa sobre cualquiera de los ~30 recursos del dominio de carrera, y
+búsqueda semántica sobre su base de conocimiento - son una decisión de
+producto deliberada (no algo que este módulo restrinja): cada escritura
+pasa directo por `CareerRepository`, sin un paso intermedio de
+"propuesta".
 
-Model switching: the model is not a per-invocation parameter, it's part of
-the harness resource's own config. `switch_model` calls the control-plane
-`UpdateHarness`, which creates a new immutable harness version and moves the
-harness's DEFAULT endpoint to it - `get_current_model` always reflects the
-live value by reading the harness back, rather than caching it locally,
-since the harness itself is the single source of truth here.
+Cambio de modelo: el modelo no es un parámetro por invocación, es parte de
+la configuración propia del recurso Harness. `switch_model` llama al plano
+de control `UpdateHarness`, que crea una nueva versión inmutable del
+harness y mueve el endpoint DEFAULT del harness a esa versión -
+`get_current_model` siempre refleja el valor real leyendo el harness de
+nuevo, en vez de guardarlo en caché localmente, ya que el harness mismo es
+la única fuente de verdad aquí.
 """
 import asyncio
 import json
@@ -45,6 +49,25 @@ logger = logging.getLogger(__name__)
 class BedrockError(Exception):
     """Raised for any Bedrock/agent failure - callers turn this into an HTTP error."""
 
+
+# ---------------------------------------------------------------------------
+# Configuración de la conexión con AWS - tres clientes boto3 separados, cada
+# uno habla con un servicio distinto de Bedrock. Los tres se crean de forma
+# perezosa (solo cuando se usan por primera vez) y se guardan como singleton
+# a nivel de módulo, para que cada petición reutilice la misma conexión en
+# vez de reconectar cada vez:
+#   - `bedrock-runtime`           -> _embedding_client: SOLO Titan
+#     Embeddings (embed_text). No tiene nada que ver con el agente de chat.
+#   - `bedrock-agentcore`         -> _runtime_client: esta es la conexión
+#     real con el agente que preguntaste - invoke_harness (el chat) y las
+#     llamadas de lectura/escritura de memoria pasan todas por aquí.
+#   - `bedrock-agentcore-control` -> _control_client: la API *administrativa*
+#     del recurso Harness en sí (leer/cambiar su modelo, consultar su id de
+#     memoria) - no se usa para los turnos de chat, solo para configuración.
+# Los tres se autentican igual, con el access key/secret plano de IAM que
+# viene de `.env` (settings.AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY) - sin
+# SSO, sin rol asumido, solo una credencial estática de usuario de servicio.
+# ---------------------------------------------------------------------------
 
 _embedding_client = None
 _runtime_client = None
@@ -109,6 +132,12 @@ def _harness_id() -> str:
 
 
 def _get_repository(resource_key: str) -> CareerRepository:
+    """Una instancia de `CareerRepository` por recurso, reutilizada entre
+    llamadas (es barato de construir, pero no hay razón para reconstruirlo
+    en cada llamada a herramienta). Es exactamente la misma clase de
+    repositorio que ya usa cada ruta CRUD genérica `/career/{key}` - las
+    herramientas del agente de más abajo no reimplementan el acceso a
+    datos, solo llaman a esto."""
     if resource_key not in RESOURCE_REGISTRY:
         raise BedrockError(f"Unknown resource_key: {resource_key}")
     if resource_key not in _repositories:
@@ -136,12 +165,13 @@ async def embed_text(text: str) -> List[float]:
 
 
 # ---------------------------------------------------------------------------
-# Model switching
+# Cambio de modelo
 # ---------------------------------------------------------------------------
 
 async def get_current_model() -> str:
-    """The model id currently active on the harness (read live - the harness
-    itself is the source of truth, this service never caches it)."""
+    """El id del modelo activo actualmente en el harness (lectura en vivo -
+    el harness es la fuente de verdad, este servicio nunca lo guarda en
+    caché)."""
     client = _get_control_client()
 
     def _get():
@@ -155,11 +185,11 @@ async def get_current_model() -> str:
 
 
 async def switch_model(model_id: str) -> None:
-    """Point the harness at a different model. `model_id` must be one of
-    `settings.BEDROCK_AVAILABLE_MODELS` - those are the only ones whose IAM
-    access (and, for Anthropic models, Marketplace agreement) has already
-    been provisioned; picking an arbitrary model here would just fail with
-    AccessDeniedException on the next chat turn."""
+    """Apunta el harness a otro modelo. `model_id` debe ser uno de
+    `settings.BEDROCK_AVAILABLE_MODELS` - son los únicos cuyo acceso IAM (y,
+    para modelos de Anthropic, el acuerdo de Marketplace) ya está
+    aprovisionado; elegir un modelo arbitrario aquí solo fallaría con
+    AccessDeniedException en el siguiente turno de chat."""
     if model_id not in settings.BEDROCK_AVAILABLE_MODELS:
         raise BedrockError(f"Model not in the allow-list: {model_id}")
 
@@ -178,20 +208,21 @@ async def switch_model(model_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Memory - read-only views into what AgentCore Memory has stored for a user.
-# Namespace templates confirmed live via `get_memory` against the real
-# managed memory instance (its default strategies), not guessed:
-#   semantic facts:   /actors/{actorId}/facts/
-#   session summaries: /actors/{actorId}/summaries/{sessionId}/
+# Memoria - vistas de solo lectura de lo que AgentCore Memory tiene
+# guardado de un usuario. Las plantillas de namespace se confirmaron en
+# vivo con `get_memory` contra la instancia real de memoria administrada
+# (sus estrategias por default), no se adivinaron:
+#   hechos semánticos:      /actors/{actorId}/facts/
+#   resúmenes de sesión:    /actors/{actorId}/summaries/{sessionId}/
 # ---------------------------------------------------------------------------
 
 _memory_id: Optional[str] = None
 
 
 async def _get_memory_id() -> str:
-    """The managed memory instance's id, read once from the harness and
-    cached - unlike the model, this isn't something switch_model-style
-    operations change at runtime."""
+    """El id de la instancia de memoria administrada, leído una vez del
+    harness y guardado en caché - a diferencia del modelo, esto no es algo
+    que operaciones tipo switch_model cambien en tiempo de ejecución."""
     global _memory_id
     if _memory_id is not None:
         return _memory_id
@@ -210,10 +241,11 @@ async def _get_memory_id() -> str:
 
 
 async def list_memory_events(user_id: int, session_id: str, max_results: int = 50) -> List[Dict[str, Any]]:
-    """Raw short-term memory events (messages, tool calls) for one
-    conversation - the technical record behind what `bedrockChatStore`
-    already shows as chat bubbles, useful to confirm what actually made it
-    into the harness's memory versus what the UI renders."""
+    """Eventos crudos de memoria de corto plazo (mensajes, llamadas a
+    herramientas) de una conversación - el registro técnico detrás de lo
+    que `bedrockChatStore` ya muestra como burbujas de chat, útil para
+    confirmar qué llegó realmente a la memoria del harness versus lo que
+    renderiza la UI."""
     runtime = _get_runtime_client()
     memory_id = await _get_memory_id()
 
@@ -234,10 +266,11 @@ async def list_memory_events(user_id: int, session_id: str, max_results: int = 5
 
 
 async def retrieve_memory_records(user_id: int, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
-    """Semantic search over the durable facts AgentCore's SEMANTIC strategy
-    has extracted about this user across every past conversation - this is
-    the "what do you actually remember about me" view, distinct from the
-    raw per-session event log above."""
+    """Búsqueda semántica sobre los hechos durables que la estrategia
+    SEMANTIC de AgentCore ha extraído de este usuario a través de todas sus
+    conversaciones pasadas - esta es la vista de "qué recuerdas
+    realmente de mí", distinta del registro crudo de eventos por sesión de
+    arriba."""
     runtime = _get_runtime_client()
     memory_id = await _get_memory_id()
 
@@ -256,13 +289,14 @@ async def retrieve_memory_records(user_id: int, query: str, top_k: int = 10) -> 
 
 
 async def create_manual_memory(user_id: int, text: str) -> None:
-    """Manually seed a fact into the agent's long-term memory - Carlos
-    telling it something directly, rather than it being extracted from a
-    real conversation. Written as a synthetic USER-role event under a
-    dedicated session id (so it doesn't get mixed into any real
-    conversation's raw transcript); AgentCore's SEMANTIC strategy picks it
-    up asynchronously the same way it would a real message, and it becomes
-    retrievable via retrieve_memory_records once processed."""
+    """Siembra manualmente un hecho en la memoria de largo plazo del agente
+    - Carlos diciéndole algo directamente, en vez de que se extraiga de una
+    conversación real. Se escribe como un evento sintético con rol USER
+    bajo un session id dedicado (para que no se mezcle con la transcripción
+    cruda de ninguna conversación real); la estrategia SEMANTIC de
+    AgentCore lo recoge de forma asíncrona igual que haría con un mensaje
+    real, y queda disponible vía retrieve_memory_records una vez
+    procesado."""
     import uuid
     from datetime import datetime, timezone
 
@@ -286,7 +320,12 @@ async def create_manual_memory(user_id: int, text: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Tools exposed to the harness (inline_function tools)
+# Herramientas expuestas al harness (herramientas inline_function). Esta es
+# la lista que se le manda a AWS en cada invoke_harness (ver `tools` en
+# chat_stream) - el modelo decide solo, en base al nombre/descripción de
+# cada una, cuál usar y con qué argumentos (definidos en su inputSchema,
+# formato JSON Schema estándar). La ejecución real de cada una vive en
+# `_execute_tool`, más abajo.
 # ---------------------------------------------------------------------------
 
 _RESOURCE_KEY_PARAM = {
@@ -474,11 +513,12 @@ _WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_r
 
 
 async def _active_tools(db) -> List[Dict[str, Any]]:
-    """Built-in tools plus every enabled `BedrockCustomTool` (MCP servers
-    Carlos registered from the app - see routes/bedrock.py's /tools
-    endpoints), as `remote_mcp` tool entries. This is how new capabilities
-    get added without a code deploy: register an MCP server URL, its tools
-    are available on the next turn."""
+    """Las herramientas propias más cada `BedrockCustomTool` habilitada
+    (servidores MCP que Carlos registró desde la app - ver los endpoints
+    /tools de routes/bedrock.py), como entradas de tipo `remote_mcp`. Así
+    es como se agregan capacidades nuevas sin un deploy de código: se
+    registra la URL de un servidor MCP y sus herramientas quedan
+    disponibles en el siguiente turno."""
     from sqlalchemy import select
 
     from models.bedrock_custom_tool import BedrockCustomTool
@@ -542,6 +582,18 @@ async def delete_custom_tool(db, tool_id: int) -> bool:
     await db.delete(tool)
     await db.commit()
     return True
+
+
+# ---------------------------------------------------------------------------
+# Motor de ejecución de herramientas - `_execute_tool` es el despachador que
+# `chat_stream` llama cada vez que el harness se pausa con
+# `stop_reason == "tool_use"` (cada herramienta `inline_function` definida
+# arriba corresponde a un `if` aquí, según su nombre). Todo esto corre
+# LOCALMENTE, en este proceso - el harness nunca toca la base de datos ni
+# Qdrant directamente, solo decide *qué* herramienta llamar y *con qué
+# argumentos*; esta función es la que realmente hace el trabajo y devuelve
+# el resultado.
+# ---------------------------------------------------------------------------
 
 
 def _serialize(obj: Any) -> Dict[str, Any]:
@@ -728,8 +780,9 @@ async def _execute_tool(db, user_id: int, name: str, tool_input: Dict[str, Any],
 
 
 # ---------------------------------------------------------------------------
-# Audit log - read + restore. Writing happens in _execute_tool/_record_audit
-# above; this is Carlos's side of it (Bitácora page).
+# Bitácora (audit log) - lectura + restauración. La escritura pasa en
+# _execute_tool/_record_audit más arriba; esto es el lado de Carlos (la
+# página Bitácora).
 # ---------------------------------------------------------------------------
 
 async def list_audit_log(db, user_id: int, limit: int = 50, offset: int = 0) -> List["AuditLog"]:  # noqa: F821
@@ -748,10 +801,11 @@ async def list_audit_log(db, user_id: int, limit: int = 50, offset: int = 0) -> 
 
 
 async def restore_audit_entry(db, user_id: int, audit_id: int) -> Dict[str, Any]:
-    """Undo a delete the agent made: re-creates the record from the audit
-    entry's `old_values` (the full row captured right before the delete).
-    Only meaningful for `delete` entries - a create/update has nothing to
-    "restore" to that isn't already the current row."""
+    """Deshace un delete que hizo el agente: recrea el registro a partir de
+    `old_values` de la entrada de bitácora (la fila completa capturada
+    justo antes del delete). Solo tiene sentido para entradas `delete` - un
+    create/update no tiene a qué "restaurarse" que no sea ya la fila
+    actual."""
     from sqlalchemy import select
 
     from models.audit_log import AuditLog
@@ -798,6 +852,15 @@ def _invalid_fields_error(repo: CareerRepository, fields: Dict[str, Any]) -> Opt
         "error": f"Unknown field(s) {unknown} for this resource.",
         "valid_fields": sorted(valid),
     }
+
+
+# ---------------------------------------------------------------------------
+# System prompt - quién es el agente y cómo debe comportarse. Se envía de
+# nuevo en cada llamada a `invoke_harness` (ver chat_stream), no se
+# configura una sola vez en el recurso Harness - eso es lo que permite que
+# Carlos lo edite desde la app (/bedrock/instructions) y que aplique en el
+# siguiente mensaje, sin llamada al plano de control de AWS ni redeploy.
+# ---------------------------------------------------------------------------
 
 
 def default_system_prompt() -> str:
@@ -869,6 +932,18 @@ async def set_system_prompt(db, text: Optional[str]) -> str:
         row.system_prompt = text
     await db.commit()
     return await get_system_prompt(db)
+
+
+# ---------------------------------------------------------------------------
+# Parseo de la respuesta en streaming + registro de costo -
+# `invoke_harness` SIEMPRE devuelve un stream de eventos (nunca un JSON
+# único, ni siquiera para una respuesta de puro texto sin uso de
+# herramientas), porque así está diseñada la API de AgentCore Harness.
+# `_consume_stream` es lo que convierte ese stream crudo de AWS en el dict
+# simple que usa el resto de este módulo; `_record_usage` es un tema
+# aparte (facturación) que solo lee su input del campo `usage` de ese mismo
+# dict.
+# ---------------------------------------------------------------------------
 
 
 def _consume_stream(stream) -> Dict[str, Any]:
@@ -949,10 +1024,11 @@ async def _record_usage(user_id: int, session_id: str, model_id: str, usage: Dic
 
 
 # ---------------------------------------------------------------------------
-# Conversations - server-side history, so it's the same on every device
-# instead of living in one browser's localStorage. `session_id` here is the
-# exact same id passed to invoke_harness as runtimeSessionId (see
-# chat_stream) - one row per conversation, not a second id to keep in sync.
+# Conversaciones - historial guardado del lado del servidor, para que sea
+# el mismo en cualquier dispositivo en vez de vivir en el localStorage de
+# un solo navegador. El `session_id` de aquí es exactamente el mismo id que
+# se le pasa a invoke_harness como runtimeSessionId (ver chat_stream) - una
+# fila por conversación, no un segundo id que mantener sincronizado.
 # ---------------------------------------------------------------------------
 
 def _conversation_title_from(text: str) -> str:
@@ -1057,6 +1133,15 @@ async def delete_conversation(db, user_id: int, session_id: str) -> bool:
     return True
 
 
+# ---------------------------------------------------------------------------
+# EL LOOP DEL AGENTE - esta es la conexión real con el agente que Carlos
+# preguntó. `chat_stream` es la única función que le habla a
+# `invoke_harness`; todo lo de arriba (herramientas, system prompt,
+# memoria, repositorios) existe para ser usado DESDE aquí. `chat` es solo
+# un envoltorio delgado para quien no necesita ver el progreso paso a paso.
+# ---------------------------------------------------------------------------
+
+
 async def chat(db, user_id: int, session_id: str, message: str) -> Dict[str, Any]:
     """Run one chat turn against the harness. The harness owns the
     conversation history server-side (keyed by `session_id`) - callers only
@@ -1099,6 +1184,13 @@ async def chat_stream(db, user_id: int, session_id: str, message: str):
     that into a terminal SSE event rather than raising mid-stream, since the
     HTTP response's headers/status are already committed by then).
     """
+    # Paso 1 - reunir todo lo que este turno necesita ANTES de llamar a
+    # AWS: qué cliente usar, qué modelo está activo (solo para el registro
+    # de costo - el modelo ya viene incluido en el harness, ver
+    # switch_model), la lista de herramientas actual (las propias + las
+    # MCP habilitadas) y el system prompt activo (el override de Carlos o
+    # el default). Todo se lee de nuevo en cada turno, nada queda en caché
+    # salvo la conexión del cliente en sí.
     runtime = _get_runtime_client()
     harness_arn = settings.BEDROCK_HARNESS_ARN
     if not harness_arn:
@@ -1110,36 +1202,62 @@ async def chat_stream(db, user_id: int, session_id: str, message: str):
     affected_resources: List[str] = []
     total_usage = {"inputTokens": 0, "outputTokens": 0}
 
-    # Server-side conversation history (so it's the same from any device -
-    # see models/bedrock_conversation.py). Saved as-you-go, not best-effort:
-    # losing chat history silently is exactly the kind of thing this exists
-    # to prevent, so a failure here surfaces as a real error to the caller.
+    # Paso 2 - guardar el mensaje del usuario en NUESTRA PROPIA base de
+    # datos (esto es distinto de AgentCore Memory, que el harness maneja
+    # del lado de AWS solo para el recuerdo propio del modelo - esta copia
+    # es lo que alimenta el "Historial de conversaciones" de la UI y hace
+    # que sea igual en cualquier dispositivo). Se guarda al momento, no es
+    # best-effort: perder el historial de chat en silencio es justo lo que
+    # esto existe para evitar, así que un fallo aquí sí se muestra como un
+    # error real a quien llamó.
     conversation = await _get_or_create_conversation(db, user_id, session_id, message)
     await _append_message(db, conversation, "user", message)
 
+    # Paso 3 - este closure es LA llamada de red real a AWS: cada
+    # `invoke_harness` de este turno (puede haber varias, una por cada
+    # vuelta de uso de herramienta más abajo) pasa por aquí. Nota lo que
+    # NO se envía: el historial completo de la conversación.
+    # `runtimeSessionId=session_id` es lo que le dice al harness "esto es
+    # continuación de la sesión X" - él busca e inyecta ese historial de su
+    # lado, así que esta llamada solo lleva lo nuevo desde la anterior (el
+    # mensaje del usuario la primera vez, y el resultado de una herramienta
+    # en cada vuelta siguiente).
     def _invoke(messages: List[Dict[str, Any]]):
         return runtime.invoke_harness(
             harnessArn=harness_arn,
             runtimeSessionId=session_id,
-            # Scopes AgentCore Memory per real user instead of the implicit
-            # shared "default_actor" - required for the per-user memory
-            # viewer (list_memory_events/retrieve_memory_records below) to
-            # mean anything.
+            # Aísla AgentCore Memory por usuario real en vez del
+            # "default_actor" compartido implícito - necesario para que el
+            # visor de memoria por usuario (list_memory_events/
+            # retrieve_memory_records más abajo) tenga sentido.
             actorId=str(user_id),
             tools=tools,
             systemPrompt=[{"text": system_prompt}],
             messages=messages,
         )
 
+    # `next_messages` es lo que realmente entra a la SIGUIENTE llamada de
+    # `_invoke` - empieza siendo solo el mensaje nuevo del usuario, y se
+    # REEMPLAZA (no se le agrega) después de cada vuelta de uso de
+    # herramienta, ya que el harness recuerda todo lo anterior vía
+    # `runtimeSessionId`.
     next_messages: List[Dict[str, Any]] = [{"role": "user", "content": [{"text": message}]}]
     yield {"type": "status", "message": "Pensando..."}
 
-    # 10, not 6: measured for real, a create on an unfamiliar resource can
-    # take 4+ round trips just from field-name trial and error (see
-    # describe_resource_schema/_invalid_fields_error, which cut that down
-    # but don't eliminate it) - 6 was tight enough to occasionally exhaust
-    # itself on a single, otherwise-successful write.
+    # Paso 4 - el loop de vueltas (round trips). Cada iteración es UNA
+    # llamada a `invoke_harness`; el modelo puede pedir usar una o varias
+    # herramientas, nosotros las ejecutamos localmente y le devolvemos el
+    # resultado en la siguiente vuelta, hasta que responda con texto final
+    # (`stop_reason != "tool_use"`) o se agote el límite de vueltas.
+    #
+    # 10, no 6: medido en la práctica, un create sobre un recurso poco
+    # conocido puede tomar 4+ vueltas solo por prueba y error de nombres de
+    # campo (ver describe_resource_schema/_invalid_fields_error, que
+    # reducen esto pero no lo eliminan) - 6 era tan justo que a veces se
+    # agotaba en una sola escritura que de otro modo hubiera funcionado.
     for _ in range(10):
+        # Paso 4a - la llamada real (ver Paso 3) más el parseo del stream
+        # de respuesta a un dict simple.
         try:
             response = await asyncio.to_thread(_invoke, next_messages)
             result = _consume_stream(response["stream"])
@@ -1151,15 +1269,28 @@ async def chat_stream(db, user_id: int, session_id: str, message: str):
         total_usage["inputTokens"] += result["usage"]["inputTokens"]
         total_usage["outputTokens"] += result["usage"]["outputTokens"]
 
+        # Paso 4b - salida normal: el modelo ya no pide más herramientas,
+        # esto es la respuesta final. Se guarda en nuestra base de datos
+        # (mismo motivo que el mensaje del usuario en el Paso 2) y se
+        # entrega como evento "done" - aquí termina el turno.
         if result["stop_reason"] != "tool_use":
             await _record_usage(user_id, session_id, model_id, total_usage)
             await _append_message(db, conversation, "assistant", result["text"])
             yield {"type": "done", "reply": result["text"], "affected_resources": affected_resources}
             return
 
+        # Paso 4c - el modelo pidió una o más herramientas. Primero se
+        # avisa al frontend (evento "status") qué se está haciendo, para
+        # que el usuario vea progreso real en vez de un spinner ciego.
         for t in result["tool_uses"]:
             yield {"type": "status", "message": _TOOL_STATUS_MESSAGES.get(t["name"], f"Usando {t['name']}...")}
 
+        # Paso 4d - se ejecuta cada herramienta localmente (ver
+        # `_execute_tool` arriba) y se arma el `toolResult` que AWS espera
+        # como respuesta - un error de ejecución NO rompe el turno, se le
+        # devuelve al modelo como resultado con status="error" para que
+        # decida cómo seguir (reintentar con otros datos, avisarle a
+        # Carlos, etc.).
         assistant_content = [
             {"toolUse": {"toolUseId": t["toolUseId"], "name": t["name"], "input": t["input"]}}
             for t in result["tool_uses"]
@@ -1184,10 +1315,17 @@ async def chat_stream(db, user_id: int, session_id: str, message: str):
                 }
             )
 
+        # Paso 4e - se arma el mensaje para la SIGUIENTE vuelta: lo que el
+        # modelo "dijo" (que pidió usar la herramienta) seguido de lo que
+        # nosotros "respondemos" (el resultado) - el ciclo vuelve al Paso
+        # 4a con esto como `next_messages`.
         next_messages = [
             {"role": "assistant", "content": assistant_content},
             {"role": "user", "content": tool_result_content},
         ]
 
+    # Se agotaron las 10 vueltas sin que el modelo diera una respuesta
+    # final - se registra el uso igual (para no perder el costo ya
+    # incurrido) y se informa el error al frontend.
     await _record_usage(user_id, session_id, model_id, total_usage)
     yield {"type": "error", "message": "Too many tool-use round-trips without a final answer"}
