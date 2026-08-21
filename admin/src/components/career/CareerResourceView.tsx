@@ -8,6 +8,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Eye,
+  EyeOff,
+  FileDown,
   Maximize,
   Pencil,
   Plus,
@@ -25,8 +28,9 @@ import rehypeHighlight from 'rehype-highlight'
 import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations, useCareerCount } from '@/hooks/useCareerResource'
+import { careerApi } from '@/api/career'
 import { CareerEntity } from '@/types/career'
-import { getErrorMessage } from '@/utils/errors'
+import { getBlobErrorMessage, getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ResourceForm } from './ResourceForm'
 import { GitHubReposPanel } from './GitHubReposPanel'
@@ -358,15 +362,13 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
   }
 }
 
-/** Every field the record has, in full - not just the table's summary
- * columns - grouped into "Información" plus an automatic "Metadatos"
- * section for whichever of id/created_at/updated_at the record actually
- * carries (not every career table has all three, see types/career.ts). */
-const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[]; resourceKey?: string }> = ({
-  item,
-  fields,
-  resourceKey,
-}) => {
+/** Automatic "Metadatos" section for whichever of id/created_at/updated_at
+ * the record actually carries (not every career table has all three, see
+ * types/career.ts) - its own component so PDF-exportable resources can
+ * place it after the print preview instead of right after "Información"
+ * (see the `showMeta` prop on `RecordView` below and where CareerResourceView
+ * renders this separately for that case). */
+const RecordMetadata: React.FC<{ item: CareerEntity }> = ({ item }) => {
   const metaEntries = useMemo(() => {
     const entries: { label: string; value: string }[] = []
     if (typeof item.id === 'number') entries.push({ label: 'ID', value: String(item.id) })
@@ -376,6 +378,34 @@ const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[]; resource
     return entries
   }, [item])
 
+  if (metaEntries.length === 0) return null
+
+  return (
+    <div className="pt-4 border-t border-border">
+      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Metadatos</h3>
+      <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {metaEntries.map((entry) => (
+          <div key={entry.label}>
+            <dt className="text-xs text-text-secondary mb-1">{entry.label}</dt>
+            <dd className="text-sm text-text">{entry.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+/** Every field the record has, in full - not just the table's summary
+ * columns - under an "Información" heading, plus (by default) the
+ * "Metadatos" section right after it. Pass `showMeta={false}` to suppress
+ * that and render `<RecordMetadata>` separately instead - used for
+ * PDF-exportable resources, which place it after the print preview. */
+const RecordView: React.FC<{
+  item: CareerEntity
+  fields: FieldConfig[]
+  resourceKey?: string
+  showMeta?: boolean
+}> = ({ item, fields, resourceKey, showMeta = true }) => {
   return (
     <div className="space-y-6">
       <div>
@@ -392,19 +422,7 @@ const RecordView: React.FC<{ item: CareerEntity; fields: FieldConfig[]; resource
         </dl>
       </div>
 
-      {metaEntries.length > 0 && (
-        <div className="pt-4 border-t border-border">
-          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Metadatos</h3>
-          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {metaEntries.map((entry) => (
-              <div key={entry.label}>
-                <dt className="text-xs text-text-secondary mb-1">{entry.label}</dt>
-                <dd className="text-sm text-text">{entry.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
+      {showMeta && <RecordMetadata item={item} />}
 
       {resourceKey === 'github-profile' && <GitHubReposPanel />}
     </div>
@@ -600,16 +618,67 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   // list/view/edit/create state the rest of this component uses.
   const [isEditingSingleton, setIsEditingSingleton] = useState(false)
 
+  // PDF-exportable resources only (`config.pdfExportField` set, see
+  // careerResources.ts) - "Generar PDF" (download) and the auto-loading
+  // print preview below. Scoped to the single record shown in the detail
+  // view, so plain component state is enough (no per-row tracking needed).
+  const isPdfExportable = Boolean(config.pdfExportField)
+  const [pdfDownloading, setPdfDownloading] = useState(false)
+  const [pdfError, setPdfError] = useState<string | null>(null)
+
+  // Print preview: renders the *actual* generated PDF (same endpoint as
+  // "Generar PDF", just embedded instead of downloaded) in an <iframe> -
+  // guarantees the preview is pixel-identical to the real PDF, since it IS
+  // the real PDF, rather than a second hand-maintained approximation of
+  // WeasyPrint's CSS living in this component too. Loads automatically when
+  // opening a PDF-exportable record's detail view (replacing the raw
+  // `pdfExportField` text there - see the render below), `pdfPreviewVisible`
+  // is just a show/hide toggle over whatever's already been fetched, so
+  // toggling it off and back on doesn't re-trigger WeasyPrint.
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [pdfPreviewLoading, setPdfPreviewLoading] = useState(false)
+  const [pdfPreviewVisible, setPdfPreviewVisible] = useState(true)
+
+  const closePdfPreview = () => {
+    setPdfPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current)
+      return null
+    })
+    setPdfPreviewVisible(true)
+  }
+
+  // Revoke on unmount too, not just on explicit close - otherwise
+  // navigating away (or a hot reload in dev) leaks the blob URL.
+  useEffect(() => () => closePdfPreview(), [])
+
+  const fetchPdfPreview = async (item: CareerEntity) => {
+    setPdfError(null)
+    setPdfPreviewLoading(true)
+    try {
+      const { blob } = await careerApi.generateResourcePdf(config.key, item.id)
+      setPdfPreviewUrl(URL.createObjectURL(blob))
+    } catch (err) {
+      setPdfError(await getBlobErrorMessage(err))
+    } finally {
+      setPdfPreviewLoading(false)
+    }
+  }
+
   const backToList = () => {
     setViewState('list')
     setActiveItem(null)
     setFormError(null)
+    setPdfError(null)
+    closePdfPreview()
   }
 
   const openView = (item: CareerEntity) => {
     setActiveItem(item)
     setFormError(null)
+    setPdfError(null)
+    closePdfPreview()
     setViewState('view')
+    if (isPdfExportable) fetchPdfPreview(item)
   }
 
   const openCreate = () => {
@@ -621,6 +690,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   const openEdit = (item: CareerEntity) => {
     setActiveItem(item)
     setFormError(null)
+    closePdfPreview()
     setViewState('edit')
   }
 
@@ -647,6 +717,40 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     })
   }
 
+  /** PDF-exportable resources only: POST /career/{key}/{id}/pdf, then force
+   * a "Save As" download of the returned PDF blob - same
+   * fetch-blob/createObjectURL/synthetic-`<a>` pattern as
+   * `filesApi.downloadBlob` (see FilesPage's handleDownload). Filename
+   * comes from the response's `Content-Disposition` header when the
+   * backend sends one, otherwise falls back to `${title}.pdf`. */
+  const handleGeneratePdf = async (item: CareerEntity) => {
+    setPdfError(null)
+    setPdfDownloading(true)
+    try {
+      const { blob, filename } = await careerApi.generateResourcePdf(config.key, item.id)
+      const fallbackName = `${String(item.title ?? config.labelSingular)}.pdf`
+      const objectUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = filename || fallbackName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (err) {
+      setPdfError(await getBlobErrorMessage(err))
+    } finally {
+      setPdfDownloading(false)
+    }
+  }
+
+  /** Just a show/hide toggle - the preview itself is already fetched
+   * automatically by `openView` (see above), so toggling it back on after
+   * hiding it doesn't call WeasyPrint again. */
+  const handleTogglePdfPreview = () => {
+    setPdfPreviewVisible((visible) => !visible)
+  }
+
   const handleSubmit = (payload: Record<string, unknown>) => {
     setFormError(null)
     if (viewState === 'edit' && activeItem) {
@@ -656,6 +760,11 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
           onSuccess: (updated) => {
             setActiveItem(updated)
             setViewState('view')
+            // `openEdit` already cleared the previous preview - reload it
+            // for the just-saved content, same as opening the record fresh
+            // would (openView does this too; this handler is the other
+            // place that lands on `viewState === 'view'`).
+            if (isPdfExportable) fetchPdfPreview(updated)
           },
           onError: (err) => setFormError(getErrorMessage(err)),
         }
@@ -665,6 +774,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         onSuccess: (created) => {
           setActiveItem(created)
           setViewState('view')
+          if (isPdfExportable) fetchPdfPreview(created)
         },
         onError: (err) => setFormError(getErrorMessage(err)),
       })
@@ -793,6 +903,30 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         </button>
         {viewState === 'view' && activeItem && (
           <>
+            {isPdfExportable && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleTogglePdfPreview}
+                  disabled={pdfPreviewLoading}
+                  className="btn-icon"
+                  aria-label={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
+                  title={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
+                >
+                  {pdfPreviewVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGeneratePdf(activeItem)}
+                  disabled={pdfDownloading}
+                  className="btn-icon"
+                  aria-label="Generar PDF"
+                  title="Generar PDF"
+                >
+                  <FileDown size={16} />
+                </button>
+              </>
+            )}
             <button
               type="button"
               onClick={() => openEdit(activeItem)}
@@ -838,7 +972,53 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
       )}
 
       <div className={hideTitle ? '' : 'card-body'}>
-        {viewState === 'view' && activeItem && <RecordView item={activeItem} fields={config.fields} resourceKey={config.key} />}
+        {viewState === 'view' && pdfError && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
+            <p className="text-red-800 dark:text-red-300 text-sm font-medium">{pdfError}</p>
+          </div>
+        )}
+        {/* The `pdfExportField` (e.g. `content`) is excluded here - a
+            PDF-exportable resource shows the rendered PDF preview in its
+            place below (auto-loaded by openView) instead of that field's
+            raw Markdown text. */}
+        {viewState === 'view' && activeItem && (
+          <RecordView
+            item={activeItem}
+            fields={isPdfExportable ? config.fields.filter((f) => f.name !== config.pdfExportField) : config.fields}
+            resourceKey={config.key}
+            showMeta={!isPdfExportable}
+          />
+        )}
+
+        {viewState === 'view' && isPdfExportable && pdfPreviewVisible && pdfPreviewLoading && (
+          <div className="mt-4">
+            <LoadingSpinner fullScreen={false} message="Generando vista previa..." />
+          </div>
+        )}
+
+        {viewState === 'view' && isPdfExportable && pdfPreviewVisible && pdfPreviewUrl && (
+          <div className="mt-4">
+            <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-2">
+              Vista previa de impresión
+            </h3>
+            <iframe
+              src={pdfPreviewUrl}
+              title="Vista previa de impresión"
+              className="w-full rounded-xl border border-border"
+              style={{ height: '85vh' }}
+            />
+          </div>
+        )}
+
+        {/* Metadatos (ID/Creado/Última actualización) goes after the print
+            preview for PDF-exportable resources, instead of RecordView's
+            default position right after "Información" - see `showMeta`
+            above. */}
+        {viewState === 'view' && isPdfExportable && activeItem && (
+          <div className="mt-4">
+            <RecordMetadata item={activeItem} />
+          </div>
+        )}
 
         {(viewState === 'edit' || viewState === 'create') && (
           <>

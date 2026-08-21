@@ -8,6 +8,7 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+
 class CVVersion(Base):
     """
     A CV version tailored to a target role.
@@ -29,10 +30,10 @@ class CVVersion(Base):
     title = Column(String(255), nullable=False)
     length_pages = Column(Integer, nullable=True)
     status = Column(String(30), default="draft", nullable=True, index=True)
-    executive_summary = Column(Text, nullable=True)
-    key_competencies = Column(Text, nullable=True)
-    key_experience = Column(JSONB, nullable=True)
-    featured_achievement = Column(Text, nullable=True)
+    # Free-form Markdown - replaces the old executive_summary/key_competencies/
+    # key_experience/featured_achievement fields (2026-08-21 migration) so the
+    # content can be restructured freely instead of fitting 4 rigid slots.
+    content = Column(Text, nullable=True)
     target_vacancy_ids = Column(JSONB, nullable=True)
     file_upload_id = Column(Integer, nullable=True)
 

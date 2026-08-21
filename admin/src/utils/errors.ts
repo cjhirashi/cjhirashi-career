@@ -61,6 +61,32 @@ export const getErrorMessage = (error: unknown): string => {
   return 'An unknown error occurred'
 }
 
+/** Same as `getErrorMessage`, but for requests made with `responseType:
+ * 'blob'` (file/PDF downloads): on error, axios still hands back the body
+ * as a `Blob` instead of parsed JSON (it doesn't know the *error* response
+ * isn't the binary payload the success path expects), so
+ * `error.response.data.detail` is always undefined there and callers would
+ * otherwise only ever see the generic per-status-code fallback. Reads that
+ * Blob as text and, if it parses as JSON with a `detail`, surfaces the same
+ * backend message the non-blob API calls already show. */
+export const getBlobErrorMessage = async (error: unknown): Promise<string> => {
+  if (error instanceof AxiosError && error.response?.data instanceof Blob) {
+    const blob = error.response.data as Blob
+    if (blob.type.includes('json') || blob.type === '' || blob.type.includes('text')) {
+      try {
+        const text = await blob.text()
+        const parsed = JSON.parse(text)
+        if (typeof parsed?.detail === 'string') return parsed.detail
+        if (typeof parsed?.message === 'string') return parsed.message
+      } catch {
+        // Body wasn't valid JSON (or wasn't text at all) - fall through to
+        // the normal status-code-based fallback below.
+      }
+    }
+  }
+  return getErrorMessage(error)
+}
+
 // Extract validation errors from AxiosError
 export const getValidationErrors = (
   error: unknown

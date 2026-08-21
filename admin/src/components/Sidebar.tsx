@@ -1,7 +1,22 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { ChevronDown, Menu, LayoutDashboard, BarChart3, FolderOpen, Linkedin, LineChart } from 'lucide-react'
+import {
+  ChevronDown,
+  Menu,
+  LayoutDashboard,
+  BarChart3,
+  FolderOpen,
+  Linkedin,
+  LineChart,
+  Bot,
+  Workflow,
+  Brain,
+  FileText,
+  Plug,
+  ScrollText,
+  ClipboardList,
+} from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
 interface SidebarProps {
@@ -32,6 +47,23 @@ const LINKEDIN_DOMAIN_KEY = 'digital'
 // that domain's accordion the same way, rendered first (as an overview)
 // rather than after the 12 resource links.
 const SEARCH_METRICS_DOMAIN_KEY = 'search'
+
+// "Agente IA" - Agent Bedrock's own admin surface (cost, its knowledge base,
+// what it remembers, its system prompt, its tools). Not a CAREER_DOMAINS
+// entry: none of these are generic /career/:key CRUD resources except
+// Metodologías Operativas, which is reused here via its existing route
+// rather than duplicated. Uses the same expandedDomain toggle mechanism as
+// the domains above, just with a key that isn't in CAREER_DOMAINS.
+const AGENT_DOMAIN_KEY = 'agent'
+const AGENT_LINKS = [
+  { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
+  { label: 'Metodologías Operativas', path: '/career/operational-methodologies', icon: Workflow },
+  { label: 'Memoria', path: '/agent/memory', icon: Brain },
+  { label: 'Instrucciones', path: '/agent/instructions', icon: FileText },
+  { label: 'Herramientas', path: '/agent/tools', icon: Plug },
+  { label: 'Bitácora', path: '/agent/audit-log', icon: ScrollText },
+  { label: 'Tareas', path: '/agent/tasks', icon: ClipboardList },
+]
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
@@ -194,6 +226,59 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
               </div>
             )
           })}
+        </div>
+
+        {/* Agente IA - see AGENT_LINKS above. Same accordion mechanism as
+            the career domains, just not one of them. */}
+        <div className="pt-2 mt-2 border-t border-border space-y-1">
+          {(() => {
+            const isAgentExpanded = expandedDomain === AGENT_DOMAIN_KEY
+            return (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleDomainToggle(AGENT_DOMAIN_KEY)}
+                  className="sidebar-item w-full justify-between"
+                  title={isOpen ? undefined : 'Agente IA'}
+                  aria-expanded={isAgentExpanded}
+                >
+                  <span className="flex items-center gap-3 min-w-0">
+                    <Bot size={20} className="flex-shrink-0" aria-hidden="true" />
+                    {isOpen && <span className="text-sm font-medium truncate">Agente IA</span>}
+                  </span>
+                  {isOpen && (
+                    <ChevronDown
+                      size={16}
+                      className={clsx('flex-shrink-0 transition-transform', isAgentExpanded && 'rotate-180')}
+                    />
+                  )}
+                </button>
+
+                {isOpen && isAgentExpanded && (
+                  <div className="mt-1 space-y-0.5 mb-1">
+                    {AGENT_LINKS.map((link) => {
+                      const active = isActive(link.path)
+                      return (
+                        <Link
+                          key={link.path}
+                          to={link.path}
+                          onClick={closeMobileDrawer}
+                          aria-current={active ? 'page' : undefined}
+                          className={clsx(
+                            'flex items-center gap-1.5 pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                            active ? 'text-primary bg-primary-light' : 'text-text-secondary hover:bg-glass hover:text-text'
+                          )}
+                        >
+                          <link.icon size={13} className="flex-shrink-0" aria-hidden="true" />
+                          {link.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </div>
       </nav>
 

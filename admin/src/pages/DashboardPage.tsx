@@ -89,13 +89,13 @@ export const DashboardPage: React.FC = () => {
             <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(metricsErrorObj)}</p>
           )}
 
-          {!metricsLoading && !metricsError && (!weeklyMetrics || weeklyMetrics.length === 0) && (
+          {!metricsLoading && !metricsError && (!Array.isArray(weeklyMetrics) || weeklyMetrics.length === 0) && (
             <p className="text-slate-600 dark:text-slate-400 text-sm text-center py-6">
               Aún no hay actividad de búsqueda registrada.
             </p>
           )}
 
-          {!metricsLoading && !metricsError && weeklyMetrics && weeklyMetrics.length > 0 && (
+          {!metricsLoading && !metricsError && Array.isArray(weeklyMetrics) && weeklyMetrics.length > 0 && (
             <div className="overflow-x-auto -mx-6">
               <table className="min-w-full text-sm">
                 <thead>

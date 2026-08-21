@@ -126,6 +126,10 @@ class Settings(BaseSettings):
     QDRANT_URL: str = "http://qdrant:6333"
     QDRANT_COLLECTION: str = "career_knowledge"
 
+    # PDF Generator (renders a CVVersion's Markdown `content` into a PDF -
+    # internal-only container, see routes/career_search.py's /pdf endpoint)
+    PDF_GENERATOR_URL: str = "http://pdf_generator:8080"
+
     # LinkedIn OAuth (Share on LinkedIn + Sign In with LinkedIn using OpenID
     # Connect - both self-serve products, no LinkedIn app review required)
     LINKEDIN_CLIENT_ID: str = ""

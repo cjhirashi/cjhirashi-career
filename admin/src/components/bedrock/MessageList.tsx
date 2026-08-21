@@ -35,7 +35,12 @@ const Bubble: React.FC<{ message: BedrockChatMessage }> = ({ message }) => {
   )
 }
 
-const TypingIndicator: React.FC = () => (
+/** Live progress for the in-flight turn - the backend streams a status
+ * event ("Creando el registro...") before each tool call (see
+ * bedrock_service.chat_stream), so this reflects what the agent is
+ * actually doing right now instead of a generic "thinking" animation that
+ * looks the same whether it's about to finish or stuck. */
+const TypingIndicator: React.FC<{ statusMessage: string | null }> = ({ statusMessage }) => (
   <div className="flex gap-2">
     <div
       className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
@@ -43,10 +48,13 @@ const TypingIndicator: React.FC = () => (
     >
       <Sparkles size={14} className="text-primary" aria-hidden="true" />
     </div>
-    <div className="rounded-2xl px-3 py-2 bg-glass flex items-center gap-1">
-      <span className="typing-dot" />
-      <span className="typing-dot" style={{ animationDelay: '0.15s' }} />
-      <span className="typing-dot" style={{ animationDelay: '0.3s' }} />
+    <div className="rounded-2xl px-3 py-2 bg-glass flex flex-col gap-1">
+      <div className="flex items-center gap-1">
+        <span className="typing-dot" />
+        <span className="typing-dot" style={{ animationDelay: '0.15s' }} />
+        <span className="typing-dot" style={{ animationDelay: '0.3s' }} />
+      </div>
+      {statusMessage && <p className="text-[11px] text-text-secondary">{statusMessage}</p>}
     </div>
   </div>
 )
@@ -54,14 +62,15 @@ const TypingIndicator: React.FC = () => (
 interface MessageListProps {
   messages: BedrockChatMessage[]
   isSending: boolean
+  statusMessage: string | null
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ messages, isSending }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, isSending, statusMessage }) => {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length, isSending])
+  }, [messages.length, isSending, statusMessage])
 
   if (messages.length === 0 && !isSending) {
     return (
@@ -84,7 +93,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isSending })
       {messages.map((message) => (
         <Bubble key={message.id} message={message} />
       ))}
-      {isSending && <TypingIndicator />}
+      {isSending && <TypingIndicator statusMessage={statusMessage} />}
       <div ref={bottomRef} />
     </div>
   )

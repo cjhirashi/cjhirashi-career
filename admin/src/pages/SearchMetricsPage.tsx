@@ -16,7 +16,6 @@ import { Target, TrendingUp, Handshake, Building2, Scale, ClipboardList } from '
 import { useSearchOverview } from '@/hooks/useCareerResource'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
-import { BedrockCostPanel } from '@/components/bedrock/BedrockCostPanel'
 
 /** Fixed palette reusing the app's theme tokens (adapts light/dark
  * automatically, same as badges elsewhere) plus a few neutral fallbacks for
@@ -278,9 +277,6 @@ export const SearchMetricsPage: React.FC = () => {
               )}
             </SectionCard>
           </div>
-
-          {/* Agent Bedrock - independent of the search-overview data above */}
-          <BedrockCostPanel />
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { PrivateRoute } from '@/components/PrivateRoute'
 import { Layout } from '@/components/Layout'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Pages
 import { LoginPage } from '@/pages/LoginPage'
@@ -16,6 +17,12 @@ import { ProfilePage } from '@/pages/ProfilePage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
 import { FilesPage } from '@/pages/FilesPage'
 import { LinkedInPage } from '@/pages/LinkedInPage'
+import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
+import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
+import { AgentToolsPage } from '@/pages/AgentToolsPage'
+import { AgentMemoryPage } from '@/pages/AgentMemoryPage'
+import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
+import { AgentTasksPage } from '@/pages/AgentTasksPage'
 
 // Lazy: the only page that pulls in recharts (~100kB gzipped) - loading it
 // eagerly like the rest would add that weight to every page's first load,
@@ -35,6 +42,7 @@ const queryClient = new QueryClient({
 
 export const App: React.FC = () => {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
@@ -134,12 +142,78 @@ export const App: React.FC = () => {
             }
           />
 
+          {/* Agent Bedrock administration - metrics, methodologies (reuses
+              /career/operational-methodologies, not duplicated here),
+              memory, instructions, and MCP tools. See Sidebar.tsx's
+              "Agente IA" section. */}
+          <Route
+            path="/agent/metrics"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentMetricsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/memory"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentMemoryPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/instructions"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentInstructionsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/tools"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentToolsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/audit-log"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentAuditLogPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/tasks"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentTasksPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
           {/* Fallback - redirect to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
     </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

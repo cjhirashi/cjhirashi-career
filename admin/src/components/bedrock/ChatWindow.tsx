@@ -1,10 +1,11 @@
 import React from 'react'
 import { AxiosError } from 'axios'
-import { Sparkles, Trash2 } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
 import { MessageList } from './MessageList'
 import { PromptInput } from './PromptInput'
 import { ModelSelector } from './ModelSelector'
+import { ConversationHistory } from './ConversationHistory'
 
 const NotConfigured: React.FC = () => (
   <div className="card p-6 flex flex-col items-center text-center gap-3 flex-1 justify-center">
@@ -23,7 +24,19 @@ const NotConfigured: React.FC = () => (
 )
 
 export const ChatWindow: React.FC = () => {
-  const { messages, isSending, error, send, clearConversation } = useBedrockChat()
+  const {
+    sessionId,
+    messages,
+    conversations,
+    isSending,
+    statusMessage,
+    error,
+    send,
+    newConversation,
+    switchConversation,
+    renameConversation,
+    deleteConversation,
+  } = useBedrockChat()
   // Reuses the model-status query as a lightweight "is Bedrock configured?"
   // probe - a 503 here means the whole feature is off, not just this query.
   const { isError, error: modelError } = useBedrockModel()
@@ -36,19 +49,17 @@ export const ChatWindow: React.FC = () => {
     <div className="flex-1 flex flex-col gap-3 min-h-0">
       <div className="flex items-center justify-between gap-2 flex-shrink-0">
         <ModelSelector />
-        <button
-          type="button"
-          onClick={clearConversation}
-          disabled={messages.length === 0}
-          aria-label="Nueva conversación"
-          title="Nueva conversación"
-          className="p-1.5 rounded-lg text-text-secondary hover:bg-glass hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
-        >
-          <Trash2 size={15} aria-hidden="true" />
-        </button>
+        <ConversationHistory
+          conversations={conversations}
+          activeSessionId={sessionId}
+          onSelect={switchConversation}
+          onNew={newConversation}
+          onRename={renameConversation}
+          onDelete={deleteConversation}
+        />
       </div>
 
-      <MessageList messages={messages} isSending={isSending} />
+      <MessageList messages={messages} isSending={isSending} statusMessage={statusMessage} />
 
       {error && <p className="text-red-600 dark:text-red-400 text-xs flex-shrink-0">{error}</p>}
 

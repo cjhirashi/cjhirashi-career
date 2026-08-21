@@ -142,6 +142,8 @@ services:
       # Qdrant (base de conocimiento local de Agent Bedrock)
       QDRANT_URL: ${QDRANT_URL}
       QDRANT_COLLECTION: ${QDRANT_COLLECTION}
+      # PDF Generator (render de CVVersion.content a PDF)
+      PDF_GENERATOR_URL: ${PDF_GENERATOR_URL}
       # MinIO (bucket de archivos)
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -161,6 +163,8 @@ services:
       minio:
         condition: service_healthy
       qdrant:
+        condition: service_started
+      pdf_generator:
         condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
@@ -183,10 +187,17 @@ services:
     restart: unless-stopped
     networks:
       - network-cjhirashi-srv
-    depends_on:
-      - api_rest
+    # No depends_on api_rest: pdf_generator doesn't call it (it's a stateless
+    # renderer). The real dependency is the other way around - api_rest is
+    # the one calling pdf_generator (see its own depends_on below) - so a
+    # depends_on here would make the two services circular, which Docker
+    # Compose rejects outright.
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      # 127.0.0.1 (not "localhost"): Alpine's wget resolves "localhost" to
+      # ::1 first and uvicorn only binds the IPv4 0.0.0.0 address, so the
+      # IPv6 attempt fails with "connection refused" and wget never falls
+      # back to IPv4, marking the container permanently unhealthy.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 5s
       retries: 3

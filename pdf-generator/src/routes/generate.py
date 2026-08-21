@@ -4,9 +4,10 @@ import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
-from src.models import CVRequest, CoverLetterRequest
+from src.models import CVRequest, CoverLetterRequest, MarkdownDocumentRequest
 from src.services.cv_generator import CVGenerator
 from src.services.cover_letter_generator import CoverLetterGenerator
+from src.services.markdown_document_generator import MarkdownDocumentGenerator
 from src.services.pdf_service import PDFService
 from src.utils.validators import InputValidator
 from src.utils.formatters import DataFormatter
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/generate", tags=["PDF Generation"])
 # Initialize services
 cv_generator = CVGenerator()
 cover_letter_generator = CoverLetterGenerator()
+markdown_document_generator = MarkdownDocumentGenerator()
 pdf_service = PDFService()
 validator = InputValidator()
 formatter = DataFormatter()
@@ -163,3 +165,53 @@ async def generate_cover_letter(request: CoverLetterRequest):
     except Exception as e:
         logger.error(f"Error generating Cover Letter: {str(e)}")
         raise HTTPException(status_code=500, detail="Error generating Cover Letter")
+
+
+@router.post("/markdown-document")
+async def generate_markdown_document(request: MarkdownDocumentRequest):
+    """Generate a PDF from free-form Markdown content (WeasyPrint).
+
+    Independent of /cv and /cover-letter: no rigid schema, the caller is
+    responsible for the full content of the document as Markdown.
+
+    Args:
+        request: Markdown document generation request
+
+    Returns:
+        StreamingResponse with PDF data
+    """
+    try:
+        logger.info(f"Processing Markdown document generation request: {request.title}")
+
+        if not request.content or not request.content.strip():
+            raise HTTPException(
+                status_code=400, detail="Content is required and cannot be empty"
+            )
+
+        # Generate PDF
+        pdf_buffer = markdown_document_generator.generate_document(
+            title=request.title,
+            content=request.content,
+        )
+
+        # Get filename
+        filename = markdown_document_generator.get_document_filename(request.title)
+        pdf_size = pdf_service.get_pdf_size(pdf_buffer)
+
+        logger.info(f"Markdown document generated: {filename} ({pdf_size} bytes)")
+
+        # Return PDF as streaming response
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        logger.warning(f"Validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error generating Markdown document: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating document")

@@ -360,10 +360,7 @@ export interface CVVersion {
   title: string
   length_pages?: number | null
   status: VersionStatus
-  executive_summary?: string | null
-  key_competencies?: string | null
-  key_experience?: unknown[] | null
-  featured_achievement?: string | null
+  content?: string | null
   target_vacancy_ids?: number[] | null
   file_upload_id?: number | null
   created_at: ISODateTime

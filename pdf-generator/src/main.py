@@ -51,6 +51,7 @@ async def root():
                 "health": "/health",
                 "generate_cv": "POST /generate/cv",
                 "generate_cover_letter": "POST /generate/cover-letter",
+                "generate_markdown_document": "POST /generate/markdown-document",
             },
         },
     )

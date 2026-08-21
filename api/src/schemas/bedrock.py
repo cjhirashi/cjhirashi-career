@@ -1,8 +1,9 @@
 """
-Pydantic schemas - Agent Bedrock chat, model switching, and usage metrics.
+Pydantic schemas - Agent Bedrock chat, model switching, usage metrics,
+instructions, custom tools, and memory.
 """
-from datetime import date
-from typing import List
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -21,11 +22,6 @@ class BedrockChatRequest(BaseModel):
 
     session_id: str
     message: str
-
-
-class BedrockChatResponse(BaseModel):
-    reply: str
-    affected_resources: List[str] = []
 
 
 class BedrockModelOption(BaseModel):
@@ -69,3 +65,100 @@ class BedrockUsageMetricsResponse(BaseModel):
     by_model: List[BedrockUsageByModel]
     by_day: List[BedrockUsageByDay]
     total_estimated_cost_usd: float
+
+
+class BedrockInstructionsResponse(BaseModel):
+    system_prompt: str
+    is_default: bool
+
+
+class BedrockInstructionsUpdateRequest(BaseModel):
+    """`system_prompt=None` (or omitted) resets to the built-in default."""
+
+    system_prompt: Optional[str] = None
+
+
+class BedrockCustomToolCreateRequest(BaseModel):
+    name: str
+    url: str
+    headers: Optional[Dict[str, str]] = None
+
+
+class BedrockCustomToolResponse(BaseModel):
+    id: int
+    name: str
+    url: str
+    headers: Optional[Dict[str, str]] = None
+    is_enabled: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BedrockMemoryRecordResponse(BaseModel):
+    """Loosely typed on purpose - passes through whatever AgentCore Memory's
+    API returns (memoryRecordId, content, score, createdAt, ...) rather than
+    re-modeling its full response shape for a read-only diagnostic view."""
+
+    memoryRecordId: Optional[str] = None
+    content: Optional[Dict[str, Any]] = None
+    score: Optional[float] = None
+    createdAt: Optional[Any] = None
+    namespaces: Optional[List[str]] = None
+
+    class Config:
+        extra = "allow"
+
+
+class BedrockMemoryEventResponse(BaseModel):
+    """Same rationale as BedrockMemoryRecordResponse - passes through the
+    real Event shape (eventId, eventTimestamp, payload, ...)."""
+
+    eventId: Optional[str] = None
+    eventTimestamp: Optional[Any] = None
+    payload: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        extra = "allow"
+
+
+class BedrockManualMemoryRequest(BaseModel):
+    text: str
+
+
+class BedrockConversationResponse(BaseModel):
+    session_id: str
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BedrockConversationMessageResponse(BaseModel):
+    id: int
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BedrockConversationRenameRequest(BaseModel):
+    title: str
+
+
+class BedrockAuditLogResponse(BaseModel):
+    id: int
+    action: str
+    resource_type: str
+    resource_id: Optional[int] = None
+    old_values: Optional[Dict[str, Any]] = None
+    new_values: Optional[Dict[str, Any]] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

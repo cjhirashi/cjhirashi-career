@@ -331,10 +331,7 @@ class CVVersionBase(BaseModel):
     title: str = Field(..., max_length=255)
     length_pages: Optional[int] = None
     status: VersionStatusLiteral = "draft"
-    executive_summary: Optional[str] = None
-    key_competencies: Optional[str] = None
-    key_experience: Optional[List[Any]] = None
-    featured_achievement: Optional[str] = None
+    content: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
     file_upload_id: Optional[int] = None
 
@@ -348,10 +345,7 @@ class CVVersionUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
     length_pages: Optional[int] = None
     status: Optional[VersionStatusLiteral] = None
-    executive_summary: Optional[str] = None
-    key_competencies: Optional[str] = None
-    key_experience: Optional[List[Any]] = None
-    featured_achievement: Optional[str] = None
+    content: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
     file_upload_id: Optional[int] = None
 

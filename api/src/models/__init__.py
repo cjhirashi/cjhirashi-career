@@ -55,6 +55,10 @@ from models.operational_methodology import OperationalMethodology
 
 # Agent Bedrock
 from models.bedrock_usage_log import BedrockUsageLog
+from models.bedrock_settings import BedrockSettings
+from models.bedrock_custom_tool import BedrockCustomTool
+from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+from models.bedrock_task import BedrockTask
 
 # ----------------------------------------------------------------------------
 # LinkedIn Integration
@@ -123,6 +127,11 @@ __all__ = [
     "OperationalMethodology",
     # Agent Bedrock
     "BedrockUsageLog",
+    "BedrockSettings",
+    "BedrockCustomTool",
+    "BedrockConversation",
+    "BedrockConversationMessage",
+    "BedrockTask",
     # LinkedIn integration
     "LinkedInConnection",
     "LinkedInPost",

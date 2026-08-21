@@ -36,11 +36,19 @@ def build_crud_router(
     update_schema: Type[BaseModel],
     response_schema: Type[BaseModel],
     entity_name: str,
+    vectorize: bool = True,
 ) -> APIRouter:
-    """Create an APIRouter with standard CRUD endpoints for `model`."""
+    """Create an APIRouter with standard CRUD endpoints for `model`.
+
+    `vectorize=False` opts this resource out of the Qdrant knowledge-base
+    indexing that otherwise happens automatically on every write (see
+    `CareerRepository._index_for_search`) - use it for PDF-content tables
+    (e.g. `cv-versions`): the agent should read those straight from
+    Postgres, never from a copy in the vector store.
+    """
     router = APIRouter(prefix=prefix, tags=tags)
     resource_key = prefix.lstrip("/")
-    repository: CareerRepository = CareerRepository(model, resource_key=resource_key)
+    repository: CareerRepository = CareerRepository(model, resource_key=resource_key, vectorize=vectorize)
     RESOURCE_REGISTRY[resource_key] = model
 
     class CountResponse(BaseModel):

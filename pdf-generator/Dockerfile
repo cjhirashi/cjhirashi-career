@@ -20,9 +20,17 @@ FROM python:3.11-alpine
 WORKDIR /app
 
 # Install only runtime dependencies
+# pango/gdk-pixbuf/fontconfig/ttf-dejavu are required by WeasyPrint at
+# runtime (it dynamically loads Pango/Cairo/HarfBuzz/GDK-Pixbuf via cffi;
+# these are not pip packages). See:
+# https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
 RUN apk add --no-cache \
     libffi \
-    openssl
+    openssl \
+    pango \
+    gdk-pixbuf \
+    fontconfig \
+    ttf-dejavu
 
 # Copy Python packages from base stage
 COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages

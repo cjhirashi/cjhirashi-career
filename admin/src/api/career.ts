@@ -20,6 +20,24 @@ export interface ListParams {
 
 const basePath = (resource: string) => `/career/${resource}`
 
+/** Pulls a filename out of a `Content-Disposition: attachment; filename="..."`
+ * header (also accepts the unquoted / `filename*=UTF-8''...` RFC 5987 forms).
+ * Returns null if the header is missing or unparseable, so the caller can
+ * fall back to a filename of its own. */
+const filenameFromContentDisposition = (headerValue: unknown): string | null => {
+  if (typeof headerValue !== 'string') return null
+  const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match) {
+    try {
+      return decodeURIComponent(utf8Match[1].trim())
+    } catch {
+      return utf8Match[1].trim()
+    }
+  }
+  const plainMatch = headerValue.match(/filename="?([^";]+)"?/i)
+  return plainMatch ? plainMatch[1].trim() : null
+}
+
 export const careerApi = {
   list: async <T = CareerEntity>(resource: string, params: ListParams = {}): Promise<T[]> => {
     const { skip = 0, limit = 20, sortBy, sortDir, search } = params
@@ -78,5 +96,23 @@ export const careerApi = {
   searchOverview: async (): Promise<SearchOverview> => {
     const response = await axiosInstance.get<SearchOverview>('/career/metrics/search-overview')
     return response.data
+  },
+
+  /** Renders a CV version's `content` (Markdown) into a PDF via the PDF
+   * Generator, proxied through the API - `cv-versions`-only, so it lives
+   * here as a one-off instead of a generic `careerApi` verb. Raw bytes,
+   * authenticated the normal way (JWT header via axiosInstance), same
+   * blob-download shape as `filesApi.downloadBlob`. */
+  generateResourcePdf: async (
+    resourceKey: string,
+    id: number
+  ): Promise<{ blob: Blob; filename: string | null }> => {
+    const response = await axiosInstance.post(`${basePath(resourceKey)}/${id}/pdf`, null, {
+      responseType: 'blob',
+    })
+    return {
+      blob: response.data,
+      filename: filenameFromContentDisposition(response.headers?.['content-disposition']),
+    }
   },
 }

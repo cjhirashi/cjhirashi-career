@@ -75,6 +75,13 @@ class CoverLetterRequest(BaseModel):
         populate_by_name = True
 
 
+class MarkdownDocumentRequest(BaseModel):
+    """Request model for free-form Markdown document generation."""
+
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field(...)
+
+
 class PDFResponse(BaseModel):
     """Response model for PDF generation."""
 

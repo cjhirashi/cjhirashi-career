@@ -5,9 +5,20 @@ Aggregates CRUD routers for: fit_scoring_factors, market_segments,
 role_narratives, search_plans, networking_contacts, target_companies,
 vacancies, cv_versions, cover_letter_versions, applications,
 application_interactions, interviews, contact_interactions,
-networking_activities.
+networking_activities. Also hand-writes cv_versions' one non-CRUD endpoint
+(PDF export), on top of the CRUD router `build_crud_router` gives it.
 """
-from fastapi import APIRouter
+import re
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from database import get_db
+from middleware.auth import get_current_user
+from models.user import User
+from repositories.career_repository import CareerRepository
+from services.pdf_service import PDFGeneratorError, generate_markdown_document
 
 from models.fit_scoring_factor import FitScoringFactor
 from models.market_segment import MarketSegment
@@ -91,7 +102,53 @@ router.include_router(build_crud_router(
     prefix="/cv-versions", tags=["Career - Search"], model=CVVersion,
     create_schema=CVVersionCreate, update_schema=CVVersionUpdate,
     response_schema=CVVersionResponse, entity_name="CV version",
+    # PDF-content table: the agent should read a CV version's Markdown
+    # `content` straight from Postgres, not from a copy in Qdrant.
+    vectorize=False,
 ))
+
+# Repository instance dedicated to the endpoint below - separate from the one
+# `build_crud_router` builds internally (not exposed outside that factory),
+# but identical in behaviour: `get_for_user` enforces the same row-level
+# ownership check (404 if the row doesn't belong to `current_user`) as every
+# other cv-versions endpoint.
+_cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions", vectorize=False)
+
+
+@router.post(
+    "/cv-versions/{cv_version_id}/pdf",
+    tags=["Career - Search"],
+    summary="Render a CV version's Markdown content into a downloadable PDF",
+)
+async def generate_cv_version_pdf(
+    cv_version_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    cv_version = await _cv_version_repo.get_for_user(db, current_user.id, cv_version_id)
+    if cv_version is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="CV version not found")
+
+    if not cv_version.content or not cv_version.content.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La versión de CV no tiene contenido para generar el PDF",
+        )
+
+    try:
+        pdf_bytes = await generate_markdown_document(cv_version.title, cv_version.content)
+    except PDFGeneratorError as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+
+    safe_title = re.sub(r"[^a-zA-Z0-9]+", "-", cv_version.title.strip()).strip("-") or "cv"
+    filename = f"{safe_title}.pdf"
+
+    return StreamingResponse(
+        iter([pdf_bytes]),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
 
 router.include_router(build_crud_router(
     prefix="/cover-letter-versions", tags=["Career - Search"], model=CoverLetterVersion,

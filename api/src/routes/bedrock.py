@@ -6,9 +6,11 @@ other authenticated route in this API uses. Bedrock never gets a distinct
 authorization scope - it operates with whatever the calling Admin Panel
 session already has (see docs/01-INTRODUCTION.md, Security Model).
 """
+import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,8 +20,18 @@ from middleware.auth import get_current_user
 from models.bedrock_usage_log import BedrockUsageLog
 from models.user import User
 from schemas.bedrock import (
+    BedrockAuditLogResponse,
     BedrockChatRequest,
-    BedrockChatResponse,
+    BedrockConversationMessageResponse,
+    BedrockConversationRenameRequest,
+    BedrockConversationResponse,
+    BedrockCustomToolCreateRequest,
+    BedrockCustomToolResponse,
+    BedrockInstructionsResponse,
+    BedrockInstructionsUpdateRequest,
+    BedrockManualMemoryRequest,
+    BedrockMemoryEventResponse,
+    BedrockMemoryRecordResponse,
     BedrockModelOption,
     BedrockModelStatusResponse,
     BedrockModelSwitchRequest,
@@ -46,7 +58,20 @@ def _require_configured() -> None:
         )
 
 
-@router.post("/chat", response_model=BedrockChatResponse, summary="Chat with Agent Bedrock")
+async def _sse_chat_events(db: AsyncSession, user_id: int, session_id: str, message: str):
+    """Formats `bedrock_service.chat_stream`'s events as Server-Sent Events -
+    lets the client show live progress ("Creando el registro...") instead of
+    a plain spinner for however long a tool-use turn actually takes (AWS
+    round trips add up fast, see chat_stream's docstring)."""
+    try:
+        async for event in bedrock_service.chat_stream(db, user_id, session_id, message):
+            yield f"data: {json.dumps(event)}\n\n"
+    except BedrockError as e:
+        logger.error("Bedrock chat failed: %s", e)
+        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+
+@router.post("/chat", summary="Chat with Agent Bedrock (Server-Sent Events: status/done/error)")
 async def chat(
     payload: BedrockChatRequest,
     current_user: User = Depends(get_current_user),
@@ -59,13 +84,11 @@ async def chat(
             detail=f"session_id must be at least {_MIN_SESSION_ID_LENGTH} characters",
         )
 
-    try:
-        result = await bedrock_service.chat(db, current_user.id, payload.session_id, payload.message)
-    except BedrockError as e:
-        logger.error("Bedrock chat failed: %s", e)
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
-
-    return BedrockChatResponse(**result)
+    return StreamingResponse(
+        _sse_chat_events(db, current_user.id, payload.session_id, payload.message),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.get("/model", response_model=BedrockModelStatusResponse, summary="Get the active chat model and the switchable allow-list")
@@ -168,3 +191,192 @@ async def get_usage_metrics(
     total_cost = sum(m.estimated_cost_usd for m in by_model)
 
     return BedrockUsageMetricsResponse(by_model=by_model, by_day=by_day, total_estimated_cost_usd=total_cost)
+
+
+# ---------------------------------------------------------------------------
+# Instructions (system prompt)
+# ---------------------------------------------------------------------------
+
+@router.get("/instructions", response_model=BedrockInstructionsResponse, summary="Get the agent's current system prompt")
+async def get_instructions(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    prompt = await bedrock_service.get_system_prompt(db)
+    default = bedrock_service.default_system_prompt()
+    return BedrockInstructionsResponse(system_prompt=prompt, is_default=prompt == default)
+
+
+@router.put("/instructions", response_model=BedrockInstructionsResponse, summary="Set (or clear) the agent's system prompt override")
+async def update_instructions(
+    payload: BedrockInstructionsUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    text = payload.system_prompt.strip() if payload.system_prompt else None
+    prompt = await bedrock_service.set_system_prompt(db, text)
+    default = bedrock_service.default_system_prompt()
+    return BedrockInstructionsResponse(system_prompt=prompt, is_default=prompt == default)
+
+
+# ---------------------------------------------------------------------------
+# Custom tools (MCP integrations)
+# ---------------------------------------------------------------------------
+
+@router.get("/tools", response_model=list[BedrockCustomToolResponse], summary="List registered MCP tool servers")
+async def list_tools(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await bedrock_service.list_custom_tools(db)
+
+
+@router.post("/tools", response_model=BedrockCustomToolResponse, status_code=status.HTTP_201_CREATED, summary="Register a new MCP tool server")
+async def create_tool(
+    payload: BedrockCustomToolCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        return await bedrock_service.create_custom_tool(db, payload.name, payload.url, payload.headers)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.put("/tools/{tool_id}/enabled", response_model=BedrockCustomToolResponse, summary="Enable or disable a registered MCP tool server")
+async def set_tool_enabled(
+    tool_id: int,
+    is_enabled: bool,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    tool = await bedrock_service.set_custom_tool_enabled(db, tool_id, is_enabled)
+    if tool is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
+    return tool
+
+
+@router.delete("/tools/{tool_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove a registered MCP tool server")
+async def delete_tool(
+    tool_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    deleted = await bedrock_service.delete_custom_tool(db, tool_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
+
+
+# ---------------------------------------------------------------------------
+# Memory (read-only)
+# ---------------------------------------------------------------------------
+
+@router.get("/memory/events", response_model=list[BedrockMemoryEventResponse], summary="Raw short-term memory events for one conversation")
+async def get_memory_events(
+    session_id: str = Query(..., description="A conversation's session_id"),
+    current_user: User = Depends(get_current_user),
+):
+    _require_configured()
+    try:
+        return await bedrock_service.list_memory_events(current_user.id, session_id)
+    except BedrockError as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+
+
+@router.get("/memory/records", response_model=list[BedrockMemoryRecordResponse], summary="Semantic search over durable facts the agent has learned about you")
+async def get_memory_records(
+    query: str = Query(..., min_length=1, description="What to search for, e.g. 'preferencias de vacantes'"),
+    top_k: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+):
+    _require_configured()
+    try:
+        return await bedrock_service.retrieve_memory_records(current_user.id, query, top_k)
+    except BedrockError as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+
+
+@router.post("/memory/manual", status_code=status.HTTP_201_CREATED, summary="Manually seed a fact into the agent's long-term memory")
+async def add_manual_memory(
+    payload: BedrockManualMemoryRequest,
+    current_user: User = Depends(get_current_user),
+):
+    _require_configured()
+    try:
+        await bedrock_service.create_manual_memory(current_user.id, payload.text)
+    except BedrockError as e:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+    return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Conversations (server-side history, same on every device)
+# ---------------------------------------------------------------------------
+
+@router.get("/conversations", response_model=list[BedrockConversationResponse], summary="List this user's conversations")
+async def list_conversations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await bedrock_service.list_conversations(db, current_user.id)
+
+
+@router.get("/conversations/{session_id}/messages", response_model=list[BedrockConversationMessageResponse], summary="Get one conversation's messages")
+async def get_conversation_messages(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await bedrock_service.get_conversation_messages(db, current_user.id, session_id)
+
+
+@router.put("/conversations/{session_id}", summary="Rename a conversation")
+async def rename_conversation(
+    session_id: str,
+    payload: BedrockConversationRenameRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    renamed = await bedrock_service.rename_conversation(db, current_user.id, session_id, payload.title)
+    if not renamed:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+    return {"status": "ok"}
+
+
+@router.delete("/conversations/{session_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Delete a conversation")
+async def delete_conversation(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    deleted = await bedrock_service.delete_conversation(db, current_user.id, session_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+
+
+# ---------------------------------------------------------------------------
+# Audit log (bitácora) - every create/update/delete the agent has made,
+# with the full before/after record state. See services/bedrock_service.py's
+# _record_audit - this is read-only plus a one-click restore for deletes.
+# ---------------------------------------------------------------------------
+
+@router.get("/audit-log", response_model=list[BedrockAuditLogResponse], summary="The agent's change history")
+async def get_audit_log(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await bedrock_service.list_audit_log(db, current_user.id, limit, offset)
+
+
+@router.post("/audit-log/{audit_id}/restore", summary="Restore a record the agent deleted")
+async def restore_audit_entry(
+    audit_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        return await bedrock_service.restore_audit_entry(db, current_user.id, audit_id)
+    except BedrockError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

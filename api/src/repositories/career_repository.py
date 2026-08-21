@@ -7,6 +7,7 @@ readable/writable by another user. Rather than duplicating that
 row-level-isolation logic 30 times, this generic repository implements it
 once and is parametrized by the SQLAlchemy model.
 """
+import asyncio
 import logging
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
@@ -19,17 +20,33 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 logger = logging.getLogger(__name__)
 
+# Keeps a strong reference to fire-and-forget indexing tasks so they aren't
+# garbage-collected mid-flight (a well-known asyncio.create_task gotcha) -
+# self-removes once each task finishes, so this set never actually grows.
+_background_tasks: set = set()
+
+
+def _fire_and_forget(coro) -> None:
+    task = asyncio.create_task(coro)
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+
 
 class CareerRepository(Generic[ModelType]):
     """Generic CRUD repository enforcing per-user row-level isolation."""
 
-    def __init__(self, model: Type[ModelType], resource_key: Optional[str] = None):
+    def __init__(self, model: Type[ModelType], resource_key: Optional[str] = None, vectorize: bool = True):
         self.model = model
         # The router-prefix form of the resource (e.g. "operational-methodologies",
         # hyphenated - matches the frontend's CAREER_RESOURCES keys and what
         # Agent Bedrock's tools use), not `model.__tablename__` (underscored).
         # Only set by `build_crud_router`; without it, indexing is skipped.
         self.resource_key = resource_key
+        # False for PDF-content tables (e.g. `cv_versions`) - Carlos wants
+        # the agent to read those straight from Postgres, never copied into
+        # the Qdrant knowledge base. See `build_crud_router`'s `vectorize`
+        # param, which is what actually sets this per resource.
+        self.vectorize = vectorize
         # Computed once per model (not per request): every real column name
         # (for validating `sort_by`) and the string/text ones among them
         # (for the free-text `search` filter below).
@@ -111,7 +128,12 @@ class CareerRepository(Generic[ModelType]):
         await db.flush()
         await db.refresh(obj)
         await db.commit()
-        await self._index_for_search(obj, user_id)
+        # Fire-and-forget, not awaited: indexing is best-effort and can be
+        # noticeably slower than the write itself (a real embedding call to
+        # Bedrock over however much text the record has), so awaiting it
+        # here would make the client wait - and risk a client-side timeout -
+        # for something that was never allowed to fail the write anyway.
+        _fire_and_forget(self._index_for_search(obj, user_id))
         return obj
 
     async def update_for_user(
@@ -128,7 +150,7 @@ class CareerRepository(Generic[ModelType]):
         await db.flush()
         await db.refresh(obj)
         await db.commit()
-        await self._index_for_search(obj, user_id)
+        _fire_and_forget(self._index_for_search(obj, user_id))
         return obj
 
     async def delete_for_user(self, db: AsyncSession, user_id: int, item_id: int) -> bool:
@@ -138,7 +160,7 @@ class CareerRepository(Generic[ModelType]):
             return False
         await db.delete(obj)
         await db.commit()
-        await self._remove_from_search(item_id)
+        _fire_and_forget(self._remove_from_search(item_id))
         return True
 
     def _record_to_text(self, obj: ModelType) -> str:
@@ -155,8 +177,10 @@ class CareerRepository(Generic[ModelType]):
         """Best-effort: (re)index this record in Qdrant for Agent Bedrock's
         knowledge base. Never lets an indexing failure fail the real write -
         logs and moves on. Skipped entirely if this repository wasn't built
-        with a `resource_key` (see `build_crud_router`)."""
-        if not self.resource_key:
+        with a `resource_key` (see `build_crud_router`), or if `vectorize`
+        is False for this resource (PDF-content tables - the agent reads
+        those straight from Postgres instead)."""
+        if not self.resource_key or not self.vectorize:
             return
         try:
             from services import bedrock_service, qdrant_service
@@ -184,7 +208,7 @@ class CareerRepository(Generic[ModelType]):
 
     async def _remove_from_search(self, item_id: int) -> None:
         """Best-effort counterpart to `_index_for_search`, called after a real delete."""
-        if not self.resource_key:
+        if not self.resource_key or not self.vectorize:
             return
         try:
             from services import qdrant_service

@@ -8,7 +8,7 @@
 // component (see src/components/career/CareerResourceView.tsx).
 // ============================================================================
 
-import { Compass, Search, Globe, Handshake, Tag, Workflow, type LucideIcon } from 'lucide-react'
+import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-react'
 
 export type FieldType =
   | 'text'
@@ -64,6 +64,13 @@ export interface ResourceConfig {
   fields: FieldConfig[]
   /** UI hint only - CareerResourceView still uses the same fetch/mutate logic. */
   variant?: 'table' | 'cards'
+  /** Marks this resource as PDF-exportable: the named field (its Markdown
+   * "content") is hidden from the plain INFORMACIÓN field list in the
+   * record viewer and replaced there by an embedded, auto-loaded preview of
+   * the actual generated PDF instead - see CareerResourceView's
+   * `pdfExportField` handling. Requires a real `POST /career/{key}/{id}/pdf`
+   * endpoint on the backend (see `careerApi.generateResourcePdf`). */
+  pdfExportField?: string
 }
 
 const badgeByEvaluation = (value: unknown) => {
@@ -836,14 +843,6 @@ export const cvVersionsConfig: ResourceConfig = {
         { value: 'final', label: 'Final' },
       ],
     },
-    { name: 'featured_achievement', label: 'Logro destacado', type: 'text', fullWidth: true },
-    { name: 'executive_summary', label: 'Resumen ejecutivo', type: 'textarea', fullWidth: true },
-    {
-      name: 'key_competencies',
-      label: 'Competencias clave',
-      type: 'textarea',
-      fullWidth: true,
-    },
     {
       name: 'target_vacancy_ids',
       label: 'IDs de vacantes objetivo (separados por coma)',
@@ -851,13 +850,14 @@ export const cvVersionsConfig: ResourceConfig = {
       fullWidth: true,
     },
     {
-      name: 'key_experience',
-      label: 'Experiencia clave (JSON)',
-      type: 'json',
+      name: 'content',
+      label: 'Contenido',
+      type: 'textarea',
       fullWidth: true,
-      helpText: 'Estructura anidada (empresa, logros, métricas por experiencia) - editada como JSON crudo.',
+      helpText: 'Markdown - se usa tal cual para generar el PDF (ver botón "Generar PDF").',
     },
   ],
+  pdfExportField: 'content',
 }
 
 export const coverLetterVersionsConfig: ResourceConfig = {
@@ -1324,7 +1324,11 @@ export const operationalMethodologiesConfig: ResourceConfig = {
 // Sidebar to render a collapsible "Carrera" section grouped exactly as
 // validated with the user - do not reshuffle keys between groups.
 
-export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' | 'support' | 'methodologies'
+// 'methodologies' isn't a CAREER_DOMAINS entry - operational-methodologies
+// lives under the "Agente IA" sidebar section instead (see Sidebar.tsx),
+// since it's the agent's own knowledge base, not a career-domain resource
+// Carlos browses the same way as the other 29.
+export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' | 'support'
 
 export interface CareerDomainGroup {
   key: CareerDomainKey
@@ -1394,12 +1398,6 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     label: 'Soporte',
     icon: Tag,
     resourceKeys: ['tags'],
-  },
-  {
-    key: 'methodologies',
-    label: 'Metodologías Operativas',
-    icon: Workflow,
-    resourceKeys: ['operational-methodologies'],
   },
 ]
 
