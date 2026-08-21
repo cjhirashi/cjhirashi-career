@@ -104,10 +104,12 @@ CREATE TABLE IF NOT EXISTS certifications (
     description TEXT,
     syllabus TEXT,
     document_url VARCHAR(1000),
+    status VARCHAR(30) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
     related_competency_id INTEGER REFERENCES competencies(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_certifications_status ON certifications(status);
 CREATE INDEX IF NOT EXISTS idx_certifications_user_id ON certifications(user_id);
 
 CREATE TABLE IF NOT EXISTS target_roles (

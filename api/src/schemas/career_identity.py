@@ -163,6 +163,9 @@ class CompetencyResponse(CompetencyBase):
 # Certification
 # ============================================================================
 
+CertificationStatusLiteral = Literal["pending", "in_progress", "completed"]
+
+
 class CertificationBase(BaseModel):
     name: str = Field(..., max_length=255)
     institution: Optional[str] = Field(None, max_length=255)
@@ -170,6 +173,7 @@ class CertificationBase(BaseModel):
     description: Optional[str] = None
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
+    status: CertificationStatusLiteral = "pending"
     related_competency_id: Optional[int] = None
 
 
@@ -184,6 +188,7 @@ class CertificationUpdate(BaseModel):
     description: Optional[str] = None
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
+    status: Optional[CertificationStatusLiteral] = None
     related_competency_id: Optional[int] = None
 
 

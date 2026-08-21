@@ -243,11 +243,22 @@ export const certificationsConfig: ResourceConfig = {
     { key: 'name', label: 'Nombre' },
     { key: 'institution', label: 'Institución' },
     { key: 'year', label: 'Año', format: 'number' },
+    { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
   ],
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },
     { name: 'institution', label: 'Institución', type: 'text' },
     { name: 'year', label: 'Año', type: 'number' },
+    {
+      name: 'status',
+      label: 'Estado',
+      type: 'select',
+      options: [
+        { value: 'pending', label: 'Pendiente' },
+        { value: 'in_progress', label: 'En proceso' },
+        { value: 'completed', label: 'Completado' },
+      ],
+    },
     { name: 'related_competency_id', label: 'ID de competencia relacionada', type: 'number' },
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
     { name: 'syllabus', label: 'Temario', type: 'textarea', fullWidth: true, helpText: 'Markdown.' },
