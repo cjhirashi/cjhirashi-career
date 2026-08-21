@@ -19,6 +19,8 @@ class Certification(Base):
     institution = Column(String(255), nullable=True)
     year = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)
+    syllabus = Column(Text, nullable=True)
+    document_url = Column(String(1000), nullable=True)
     related_competency_id = Column(Integer, ForeignKey("competencies.id", ondelete="SET NULL"), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

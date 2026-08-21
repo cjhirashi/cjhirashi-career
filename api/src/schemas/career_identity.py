@@ -168,6 +168,8 @@ class CertificationBase(BaseModel):
     institution: Optional[str] = Field(None, max_length=255)
     year: Optional[int] = None
     description: Optional[str] = None
+    syllabus: Optional[str] = None
+    document_url: Optional[str] = Field(None, max_length=1000)
     related_competency_id: Optional[int] = None
 
 
@@ -180,6 +182,8 @@ class CertificationUpdate(BaseModel):
     institution: Optional[str] = None
     year: Optional[int] = None
     description: Optional[str] = None
+    syllabus: Optional[str] = None
+    document_url: Optional[str] = Field(None, max_length=1000)
     related_competency_id: Optional[int] = None
 
 

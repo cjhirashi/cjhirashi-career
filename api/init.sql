@@ -102,6 +102,8 @@ CREATE TABLE IF NOT EXISTS certifications (
     institution VARCHAR(255),
     year INTEGER,
     description TEXT,
+    syllabus TEXT,
+    document_url VARCHAR(1000),
     related_competency_id INTEGER REFERENCES competencies(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL

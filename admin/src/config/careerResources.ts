@@ -250,6 +250,14 @@ export const certificationsConfig: ResourceConfig = {
     { name: 'year', label: 'Año', type: 'number' },
     { name: 'related_competency_id', label: 'ID de competencia relacionada', type: 'number' },
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
+    { name: 'syllabus', label: 'Temario', type: 'textarea', fullWidth: true, helpText: 'Markdown.' },
+    {
+      name: 'document_url',
+      label: 'URL del documento',
+      type: 'text',
+      fullWidth: true,
+      helpText: 'Link al documento (PDF o imagen) de la certificación.',
+    },
   ],
 }
 
