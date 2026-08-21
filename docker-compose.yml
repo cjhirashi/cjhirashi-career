@@ -12,9 +12,10 @@
 #   - MCP Server (8004:8000) - Interface MCP para agentes IA
 #
 # Servicios Internos (red Docker):
-#   - API REST (8001) - Orquestación central
+#   - API REST (8001) - Orquestación central (incluye Agent Bedrock - no es
+#     un contenedor propio, se invoca en-proceso vía boto3, ver CLAUDE.md)
 #   - PDF Generator (8080) - Generación de documentos
-#   - Agent Bedrock (interno) - Asistente IA
+#   - Qdrant (6333) - Base de conocimiento vectorial de Agent Bedrock
 #   - PostgreSQL (5432) - Base de datos
 
 version: '3.9'
@@ -132,9 +133,15 @@ services:
       APP_VERSION: ${APP_VERSION}
       DEBUG: ${DEBUG}
       UPLOADS_DIR: ${UPLOADS_DIR}
-      # AWS Bedrock (para Agent Bedrock)
+      # AWS Bedrock (Agent Bedrock - chat vía AgentCore Harness + embeddings)
       BEDROCK_REGION: ${BEDROCK_REGION}
-      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID}
+      BEDROCK_HARNESS_ARN: ${BEDROCK_HARNESS_ARN}
+      BEDROCK_EMBEDDING_MODEL_ID: ${BEDROCK_EMBEDDING_MODEL_ID}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # Qdrant (base de conocimiento local de Agent Bedrock)
+      QDRANT_URL: ${QDRANT_URL}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION}
       # MinIO (bucket de archivos)
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
@@ -153,6 +160,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      qdrant:
+        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 30s
@@ -183,26 +192,23 @@ services:
       retries: 3
 
   # =========================================================================
-  # Agent Bedrock — Asistente IA (AWS Bedrock)
+  # Qdrant — Base de Conocimiento Vectorial de Agent Bedrock
   # =========================================================================
-  # Responsabilidad: Asistencia IA dentro de Admin Panel
+  # Responsabilidad: búsqueda semántica sobre las metodologías operativas y
+  #   los registros de las ~30 tablas de carrera (ver services/qdrant_service.py
+  #   y repositories/career_repository.py, que la mantiene sincronizada).
+  #   Instancia privada de este proyecto (no compartida con otros proyectos
+  #   de Charlie, ej. Synapse, que corre su propio Qdrant aislado).
   #
-  # ESTADO: Pendiente de implementación (placeholder comentado)
-  # bedrock_agent:
-  #   build:
-  #     context: ./agents/bedrock
-  #     dockerfile: Dockerfile
-  #   container_name: bedrock_agent
-  #   restart: unless-stopped
-  #   networks:
-  #     - network-cjhirashi-srv
-  #   env_file: .env
-  #   environment:
-  #     AWS_REGION: ${BEDROCK_REGION}
-  #     AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-  #     AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  #   depends_on:
-  #     - api_rest
+  # INTERNO: No expuesto (accesible solo desde red Docker)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    networks:
+      - network-cjhirashi-srv
+    volumes:
+      - /mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/qdrant:/qdrant/storage:rw
 
   # =========================================================================
   # PostgreSQL — Base de Datos Centralizada (única fuente de verdad)

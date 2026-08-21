@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { Sparkles, MessageCircle, BookOpen, X } from 'lucide-react'
+import { MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
+import { ChatWindow } from '@/components/bedrock/ChatWindow'
 
 type RightPanelTab = 'chat' | 'instructions'
 
@@ -75,10 +76,9 @@ interface SidebarRightProps {
 
 /**
  * Right-hand panel with two modes, switched by a Glass Steel pill:
- * - "Chat": reserved for the future in-Admin AI assistant (AWS Bedrock, see
- *   CLAUDE.md "Agent Bedrock"). The backend for that assistant does not
- *   exist yet, so this stays a static "coming soon" placeholder - no chat
- *   input, no fake interactivity.
+ * - "Chat": Agent Bedrock, the in-Admin AI assistant (see CLAUDE.md "Agent
+ *   Bedrock" and `components/bedrock/ChatWindow.tsx`) - full read/write
+ *   access to the career-domain tables, backed by AWS Bedrock AgentCore.
  * - "Instrucciones": contextual help for whatever page is currently open,
  *   derived from the route (career-domain resources pull their blurb from
  *   their own config, so this never goes stale as resources are added).
@@ -142,20 +142,7 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
 
       {/* Body */}
       {activeTab === 'chat' ? (
-        <div className="card p-6 flex flex-col items-center text-center gap-3 flex-1 justify-center">
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'var(--primary-light)' }}
-          >
-            <Sparkles className="text-primary" size={22} aria-hidden="true" />
-          </div>
-          <h2 className="font-semibold text-text">Asistente IA</h2>
-          <span className="badge badge-cyan">Próximamente</span>
-          <p className="text-text-secondary text-sm">
-            El asistente impulsado por IA para ayudarte a gestionar tu carrera todavía no está disponible en este
-            panel.
-          </p>
-        </div>
+        <ChatWindow />
       ) : (
         <div className="card p-5 flex-1 overflow-y-auto">
           <div className="flex items-center gap-2 mb-3">

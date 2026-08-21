@@ -8,7 +8,7 @@ authentication and enforces row-level user isolation via
 always taken from the authenticated user, never from the request body or
 query string.
 """
-from typing import List, Optional, Type
+from typing import Dict, List, Optional, Type
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -18,6 +18,13 @@ from database import Base, get_db
 from middleware.auth import get_current_user
 from models.user import User
 from repositories.career_repository import CareerRepository
+
+# resource_key -> SQLAlchemy model, populated automatically below as each
+# `build_crud_router(...)` call registers itself - never maintained by hand.
+# This is what lets Agent Bedrock's tools (services/bedrock_service.py)
+# operate any of the ~30 career-domain resources generically, the same way
+# CareerResourceView.tsx's CAREER_RESOURCES does on the frontend.
+RESOURCE_REGISTRY: Dict[str, Type[Base]] = {}
 
 
 def build_crud_router(
@@ -32,7 +39,9 @@ def build_crud_router(
 ) -> APIRouter:
     """Create an APIRouter with standard CRUD endpoints for `model`."""
     router = APIRouter(prefix=prefix, tags=tags)
-    repository: CareerRepository = CareerRepository(model)
+    resource_key = prefix.lstrip("/")
+    repository: CareerRepository = CareerRepository(model, resource_key=resource_key)
+    RESOURCE_REGISTRY[resource_key] = model
 
     class CountResponse(BaseModel):
         count: int

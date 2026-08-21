@@ -24,6 +24,14 @@ pyjwt==2.8.0
 bcrypt==4.1.2
 cryptography==41.0.7
 
+# Agent Bedrock (chat + embeddings) and its Qdrant knowledge base.
+# boto3/botocore pinned to a version with cross-region inference profile
+# support (GetInferenceProfile etc.) - 1.34.162 predates it and silently
+# lacks those operations (AttributeError, not a clean "not supported" error).
+boto3==1.43.76
+botocore==1.43.76
+qdrant-client==1.11.3
+
 # Testing
 pytest==7.4.3
 pytest-cov==4.1.0

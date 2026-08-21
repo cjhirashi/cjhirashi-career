@@ -53,6 +53,9 @@ from models.tag import Tag
 # Dominio 5: Metodologías Operativas
 from models.operational_methodology import OperationalMethodology
 
+# Agent Bedrock
+from models.bedrock_usage_log import BedrockUsageLog
+
 # ----------------------------------------------------------------------------
 # LinkedIn Integration
 # ----------------------------------------------------------------------------
@@ -118,6 +121,8 @@ __all__ = [
     "Tag",
     # Operational methodologies domain
     "OperationalMethodology",
+    # Agent Bedrock
+    "BedrockUsageLog",
     # LinkedIn integration
     "LinkedInConnection",
     "LinkedInPost",

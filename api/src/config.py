@@ -4,7 +4,7 @@ Loads environment variables and defines global configuration.
 """
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from typing import List
+from typing import Any, Dict, List
 from pathlib import Path
 
 
@@ -72,9 +72,59 @@ class Settings(BaseSettings):
     DEFAULT_LIMIT: int = 20
     MAX_LIMIT: int = 100
 
-    # AWS Bedrock (Optional)
+    # AWS Bedrock (Optional) - chat model + embeddings for the Bedrock Chat
+    # assistant's knowledge base (Qdrant). Static IAM keys, not an instance
+    # role: this runs on a VPS, not on AWS compute.
     BEDROCK_REGION: str = "us-east-1"
-    BEDROCK_MODEL_ID: str = "claude-3-sonnet-20240229"
+    # "us." prefix = cross-region inference profile, required for this model
+    # (on-demand invocation by the bare model id is rejected by Bedrock -
+    # confirmed against the real profile definition, which fans out to
+    # us-east-1/us-east-2/us-west-2; the IAM policy must allow InvokeModel/
+    # Converse on the profile ARN AND on the foundation-model ARN in all 3
+    # of those regions, not just BEDROCK_REGION).
+    BEDROCK_EMBEDDING_MODEL_ID: str = "amazon.titan-embed-text-v2:0"
+    # ARN of the AgentCore Harness resource the chat model runs on (see
+    # docs/09-DECISIONS - Bedrock uses Harness, not a hand-rolled Converse
+    # loop). The chat model itself is NOT read from BEDROCK_MODEL_ID above -
+    # it's whatever model is currently configured on this harness, switchable
+    # at runtime via POST /bedrock/model (see services/bedrock_service.py).
+    BEDROCK_HARNESS_ARN: str = ""
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+
+    # Models the harness is allowed to switch to from the app. Each entry's
+    # IAM access (and, for Anthropic models, AWS Marketplace Foundation Model
+    # Agreement) must already be provisioned on the harness execution role
+    # before it's listed here - adding a model is an infrastructure change,
+    # not a runtime toggle. Prices are official Bedrock on-demand USD rates
+    # per million tokens, confirmed 2026-08-21 (not estimates).
+    BEDROCK_AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
+        "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+            "label": "Claude Sonnet 4.5",
+            "price_input_per_million": 3.00,
+            "price_output_per_million": 15.00,
+        },
+        "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
+            "label": "Claude Haiku 4.5",
+            "price_input_per_million": 1.00,
+            "price_output_per_million": 5.00,
+        },
+        "us.amazon.nova-pro-v1:0": {
+            "label": "Amazon Nova Pro",
+            "price_input_per_million": 0.80,
+            "price_output_per_million": 3.20,
+        },
+        "deepseek.v3.2": {
+            "label": "DeepSeek V3.2",
+            "price_input_per_million": 0.62,
+            "price_output_per_million": 1.85,
+        },
+    }
+
+    # Qdrant (Bedrock Chat's local knowledge base - operational_methodologies
+    # + every career-domain record, kept in sync by CareerRepository)
+    QDRANT_URL: str = "http://qdrant:6333"
+    QDRANT_COLLECTION: str = "career_knowledge"
 
     # LinkedIn OAuth (Share on LinkedIn + Sign In with LinkedIn using OpenID
     # Connect - both self-serve products, no LinkedIn app review required)

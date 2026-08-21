@@ -7,6 +7,7 @@ readable/writable by another user. Rather than duplicating that
 row-level-isolation logic 30 times, this generic repository implements it
 once and is parametrized by the SQLAlchemy model.
 """
+import logging
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
 from sqlalchemy import String, Text, func as sa_func, inspect, or_, select
@@ -16,12 +17,19 @@ from database import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 
+logger = logging.getLogger(__name__)
+
 
 class CareerRepository(Generic[ModelType]):
     """Generic CRUD repository enforcing per-user row-level isolation."""
 
-    def __init__(self, model: Type[ModelType]):
+    def __init__(self, model: Type[ModelType], resource_key: Optional[str] = None):
         self.model = model
+        # The router-prefix form of the resource (e.g. "operational-methodologies",
+        # hyphenated - matches the frontend's CAREER_RESOURCES keys and what
+        # Agent Bedrock's tools use), not `model.__tablename__` (underscored).
+        # Only set by `build_crud_router`; without it, indexing is skipped.
+        self.resource_key = resource_key
         # Computed once per model (not per request): every real column name
         # (for validating `sort_by`) and the string/text ones among them
         # (for the free-text `search` filter below).
@@ -30,6 +38,7 @@ class CareerRepository(Generic[ModelType]):
         self._text_columns = [
             attr.key for attr in column_attrs if isinstance(attr.columns[0].type, (String, Text))
         ]
+        self._indexable_columns = [c for c in self._column_names if c not in ("id", "user_id")]
 
     async def list_for_user(
         self,
@@ -102,6 +111,7 @@ class CareerRepository(Generic[ModelType]):
         await db.flush()
         await db.refresh(obj)
         await db.commit()
+        await self._index_for_search(obj, user_id)
         return obj
 
     async def update_for_user(
@@ -118,6 +128,7 @@ class CareerRepository(Generic[ModelType]):
         await db.flush()
         await db.refresh(obj)
         await db.commit()
+        await self._index_for_search(obj, user_id)
         return obj
 
     async def delete_for_user(self, db: AsyncSession, user_id: int, item_id: int) -> bool:
@@ -127,4 +138,62 @@ class CareerRepository(Generic[ModelType]):
             return False
         await db.delete(obj)
         await db.commit()
+        await self._remove_from_search(item_id)
         return True
+
+    def _record_to_text(self, obj: ModelType) -> str:
+        """Flatten a record into `column: value` lines for embedding - every
+        column except `id`/`user_id`, skipping empty values."""
+        lines = []
+        for col in self._indexable_columns:
+            value = getattr(obj, col, None)
+            if value not in (None, "", []):
+                lines.append(f"{col}: {value}")
+        return "\n".join(lines)
+
+    async def _index_for_search(self, obj: ModelType, user_id: int) -> None:
+        """Best-effort: (re)index this record in Qdrant for Agent Bedrock's
+        knowledge base. Never lets an indexing failure fail the real write -
+        logs and moves on. Skipped entirely if this repository wasn't built
+        with a `resource_key` (see `build_crud_router`)."""
+        if not self.resource_key:
+            return
+        try:
+            from services import bedrock_service, qdrant_service
+
+            text = self._record_to_text(obj)
+            if not text:
+                return
+            vector = await bedrock_service.embed_text(text)
+            resource_type = "methodology" if self.resource_key == "operational-methodologies" else "career_record"
+            await qdrant_service.upsert_point(
+                user_id=user_id,
+                resource_type=resource_type,
+                resource_key=self.resource_key,
+                record_id=obj.id,
+                text=text,
+                vector=vector,
+            )
+        except Exception:
+            logger.warning(
+                "Bedrock knowledge-base indexing failed for %s#%s - continuing without it",
+                self.resource_key,
+                getattr(obj, "id", "?"),
+                exc_info=True,
+            )
+
+    async def _remove_from_search(self, item_id: int) -> None:
+        """Best-effort counterpart to `_index_for_search`, called after a real delete."""
+        if not self.resource_key:
+            return
+        try:
+            from services import qdrant_service
+
+            await qdrant_service.delete_point(resource_key=self.resource_key, record_id=item_id)
+        except Exception:
+            logger.warning(
+                "Bedrock knowledge-base cleanup failed for %s#%s - continuing without it",
+                self.resource_key,
+                item_id,
+                exc_info=True,
+            )

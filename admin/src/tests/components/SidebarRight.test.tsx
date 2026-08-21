@@ -17,11 +17,11 @@ describe('SidebarRight', () => {
     expect(screen.queryByText('Asistente IA')).not.toBeInTheDocument()
   })
 
-  it('should switch to the chat placeholder when the chat tab is pressed', () => {
+  it('should switch to the Agent Bedrock chat window when the chat tab is pressed', () => {
     renderAt('/dashboard')
     fireEvent.click(screen.getByTitle('Chat del asistente'))
-    expect(screen.getByText('Asistente IA')).toBeInTheDocument()
-    expect(screen.getByText('Próximamente')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Escribe un mensaje...')).toBeInTheDocument()
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
   })
 
   it('should switch back to instructions when that tab is pressed again', () => {
