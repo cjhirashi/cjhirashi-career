@@ -72,52 +72,84 @@ class Settings(BaseSettings):
     DEFAULT_LIMIT: int = 20
     MAX_LIMIT: int = 100
 
-    # AWS Bedrock (Optional) - chat model + embeddings for the Bedrock Chat
-    # assistant's knowledge base (Qdrant). Static IAM keys, not an instance
-    # role: this runs on a VPS, not on AWS compute.
+    # AWS Bedrock — Harness local (Converse API) + Titan Embeddings + Titan Image.
+    # Ver docs/BEDROCK-SYSTEM.md y ADR-008. BEDROCK_HARNESS_ARN es legacy AgentCore.
     BEDROCK_REGION: str = "us-east-1"
-    # "us." prefix = cross-region inference profile, required for this model
-    # (on-demand invocation by the bare model id is rejected by Bedrock -
-    # confirmed against the real profile definition, which fans out to
-    # us-east-1/us-east-2/us-west-2; the IAM policy must allow InvokeModel/
-    # Converse on the profile ARN AND on the foundation-model ARN in all 3
-    # of those regions, not just BEDROCK_REGION).
+    BEDROCK_USE_LOCAL_HARNESS: bool = True
+    BEDROCK_DEFAULT_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.amazon.nova-pro-v1:0"
+    BEDROCK_IMAGE_MODEL_ID: str = "amazon.titan-image-generator-v2:0"
+    BEDROCK_MAX_IMAGES_PER_DAY: int = 20
+    BEDROCK_MAX_TOOL_RESULT_CHARS: int = 8000
+    BEDROCK_HISTORY_WINDOW: int = 20
+    BEDROCK_MAX_ROUND_TRIPS: int = 6
+    BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3
+    BEDROCK_DAILY_BUDGET_USD: float = 5.0
     BEDROCK_EMBEDDING_MODEL_ID: str = "amazon.titan-embed-text-v2:0"
-    # ARN of the AgentCore Harness resource the chat model runs on (see
-    # docs/09-DECISIONS - Bedrock uses Harness, not a hand-rolled Converse
-    # loop). The chat model itself is NOT read from BEDROCK_MODEL_ID above -
-    # it's whatever model is currently configured on this harness, switchable
-    # at runtime via POST /bedrock/model (see services/bedrock_service.py).
     BEDROCK_HARNESS_ARN: str = ""
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
 
-    # Models the harness is allowed to switch to from the app. Each entry's
-    # IAM access (and, for Anthropic models, AWS Marketplace Foundation Model
-    # Agreement) must already be provisioned on the harness execution role
-    # before it's listed here - adding a model is an infrastructure change,
-    # not a runtime toggle. Prices are official Bedrock on-demand USD rates
-    # per million tokens, confirmed 2026-08-21 (not estimates).
     BEDROCK_AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
-        "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
-            "label": "Claude Sonnet 4.5",
-            "price_input_per_million": 3.00,
-            "price_output_per_million": 15.00,
+        "amazon.nova-micro-v1:0": {
+            "label": "Nova Micro",
+            "tier": "economy",
+            "price_input_per_million": 0.035,
+            "price_output_per_million": 0.14,
+        },
+        "amazon.nova-lite-v1:0": {
+            "label": "Nova Lite",
+            "tier": "economy",
+            "price_input_per_million": 0.06,
+            "price_output_per_million": 0.24,
+        },
+        "deepseek.v3.2": {
+            "label": "DeepSeek V3.2",
+            "tier": "economy",
+            "price_input_per_million": 0.62,
+            "price_output_per_million": 1.85,
+        },
+        "cohere.command-r-v1:0": {
+            "label": "Command R",
+            "tier": "economy",
+            "price_input_per_million": 0.15,
+            "price_output_per_million": 0.60,
         },
         "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
             "label": "Claude Haiku 4.5",
+            "tier": "standard",
             "price_input_per_million": 1.00,
             "price_output_per_million": 5.00,
         },
         "us.amazon.nova-pro-v1:0": {
             "label": "Amazon Nova Pro",
+            "tier": "standard",
             "price_input_per_million": 0.80,
             "price_output_per_million": 3.20,
         },
-        "deepseek.v3.2": {
-            "label": "DeepSeek V3.2",
-            "price_input_per_million": 0.62,
-            "price_output_per_million": 1.85,
+        "meta.llama3-3-70b-instruct-v1:0": {
+            "label": "Llama 3.3 70B",
+            "tier": "standard",
+            "price_input_per_million": 0.72,
+            "price_output_per_million": 0.72,
+        },
+        "mistral.mistral-large-2402-v1:0": {
+            "label": "Mistral Large",
+            "tier": "standard",
+            "price_input_per_million": 2.00,
+            "price_output_per_million": 6.00,
+        },
+        "us.amazon.nova-premier-v1:0": {
+            "label": "Nova Premier",
+            "tier": "premium",
+            "price_input_per_million": 2.50,
+            "price_output_per_million": 10.00,
+        },
+        "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+            "label": "Claude Sonnet 4.5",
+            "tier": "premium",
+            "price_input_per_million": 3.00,
+            "price_output_per_million": 15.00,
         },
     }
 
@@ -136,6 +168,14 @@ class Settings(BaseSettings):
     LINKEDIN_CLIENT_SECRET: str = ""
     LINKEDIN_REDIRECT_URI: str = ""
     LINKEDIN_FRONTEND_URL: str = ""
+
+    # Job discovery (Indeed via Adzuna; other boards are public, no key)
+    ADZUNA_APP_ID: str = ""
+    ADZUNA_APP_KEY: str = ""
+    ADZUNA_COUNTRY: str = "mx"
+    JOB_DISCOVERY_TIMEOUT_SECONDS: float = 8.0
+    JOB_DISCOVERY_MAX_RESULTS: int = 50
+    JOB_DISCOVERY_USER_AGENT: str = "Portafolio-cjhirashi/1.0 (job-discovery; +https://cjhirashi.com)"
 
     # Public Portal - this is a single-owner portfolio, so the unauthenticated
     # /public/* routes (routes/public.py) always serve this one user's data.

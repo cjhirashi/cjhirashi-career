@@ -4,10 +4,11 @@ import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
-from src.models import CVRequest, CoverLetterRequest, MarkdownDocumentRequest
+from src.models import CVRequest, CoverLetterRequest, MarkdownDocumentRequest, HtmlTemplateRequest
 from src.services.cv_generator import CVGenerator
 from src.services.cover_letter_generator import CoverLetterGenerator
 from src.services.markdown_document_generator import MarkdownDocumentGenerator
+from src.services.html_template_generator import HtmlTemplateGenerator
 from src.services.pdf_service import PDFService
 from src.utils.validators import InputValidator
 from src.utils.formatters import DataFormatter
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/generate", tags=["PDF Generation"])
 cv_generator = CVGenerator()
 cover_letter_generator = CoverLetterGenerator()
 markdown_document_generator = MarkdownDocumentGenerator()
+html_template_generator = HtmlTemplateGenerator()
 pdf_service = PDFService()
 validator = InputValidator()
 formatter = DataFormatter()
@@ -215,3 +217,29 @@ async def generate_markdown_document(request: MarkdownDocumentRequest):
     except Exception as e:
         logger.error(f"Error generating Markdown document: {str(e)}")
         raise HTTPException(status_code=500, detail="Error generating document")
+
+
+@router.post("/html-template")
+async def generate_html_template(request: HtmlTemplateRequest):
+    """Generate a PDF from custom HTML body + optional CSS (WeasyPrint)."""
+    try:
+        logger.info("Processing HTML template PDF: %s", request.title)
+        pdf_buffer = html_template_generator.generate(
+            title=request.title,
+            html_body=request.html_body,
+            css_content=request.css_content,
+        )
+        filename = html_template_generator.get_filename(request.title)
+        pdf_size = pdf_service.get_pdf_size(pdf_buffer)
+        logger.info("HTML template PDF generated: %s (%s bytes)", filename, pdf_size)
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    except ValueError as e:
+        logger.warning("Validation error: %s", e)
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("Error generating HTML template PDF: %s", e)
+        raise HTTPException(status_code=500, detail="Error generating HTML template PDF")

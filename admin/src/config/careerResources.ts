@@ -793,6 +793,21 @@ export const targetCompaniesConfig: ResourceConfig = {
     { name: 'priority', label: 'Prioridad', type: 'text' },
     { name: 'status', label: 'Estado', type: 'text' },
     { name: 'notes', label: 'Notas', type: 'textarea', fullWidth: true },
+    {
+      name: 'career_board_provider',
+      label: 'Board de empleos',
+      type: 'select',
+      options: [
+        { value: 'greenhouse', label: 'Greenhouse' },
+        { value: 'lever', label: 'Lever' },
+      ],
+    },
+    {
+      name: 'career_board_token',
+      label: 'Token / slug del board',
+      type: 'text',
+      helpText: 'Ej. stripe en boards.greenhouse.io/stripe o jobs.lever.co/stripe',
+    },
   ],
 }
 

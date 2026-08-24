@@ -10,7 +10,7 @@ networking_activities. Also hand-writes cv_versions' one non-CRUD endpoint
 """
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -122,6 +122,7 @@ _cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions", vecto
 )
 async def generate_cv_version_pdf(
     cv_version_id: int,
+    template_id: int | None = Query(None, description="Optional PDF output template id"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -136,7 +137,23 @@ async def generate_cv_version_pdf(
         )
 
     try:
-        pdf_bytes = await generate_markdown_document(cv_version.title, cv_version.content)
+        if template_id is not None:
+            from models.pdf_output_template import PdfOutputTemplate
+            from services.pdf_service import generate_html_template_pdf
+            from services.pdf_template_render import render_template_html
+
+            tpl = await db.get(PdfOutputTemplate, template_id)
+            if tpl is None or tpl.user_id != current_user.id or not tpl.is_active:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PDF template not found")
+            html = render_template_html(
+                tpl.html_template,
+                {"title": cv_version.title, "content": cv_version.content, "body": cv_version.content},
+            )
+            pdf_bytes = await generate_html_template_pdf(
+                title=cv_version.title, html_body=html, css_content=tpl.css_content
+            )
+        else:
+            pdf_bytes = await generate_markdown_document(cv_version.title, cv_version.content)
     except PDFGeneratorError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 

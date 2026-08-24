@@ -44,11 +44,30 @@ export const BedrockCostPanel: React.FC = () => {
           </p>
         ) : (
           <>
-            <div className="stat-card inline-block">
-              <p className="text-text-secondary text-sm font-medium">Total (30 días)</p>
-              <p className="text-3xl font-bold mono mt-2" style={{ color: 'var(--primary-color)' }}>
-                {formatUSD(usage.total_estimated_cost_usd)}
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="stat-card">
+                <p className="text-text-secondary text-sm font-medium">Total (30 días)</p>
+                <p className="text-2xl font-bold mono mt-2" style={{ color: 'var(--primary-color)' }}>
+                  {formatUSD(usage.total_estimated_cost_usd)}
+                </p>
+              </div>
+              {usage.daily_budget_usd != null && (
+                <>
+                  <div className="stat-card">
+                    <p className="text-text-secondary text-sm font-medium">Gasto hoy</p>
+                    <p className="text-2xl font-bold mono mt-2 text-text">
+                      {formatUSD(usage.daily_spent_usd ?? 0)}
+                    </p>
+                    <p className="text-xs text-text-muted mt-1">de {formatUSD(usage.daily_budget_usd)} presupuesto</p>
+                  </div>
+                  <div className="stat-card">
+                    <p className="text-text-secondary text-sm font-medium">Restante hoy</p>
+                    <p className="text-2xl font-bold mono mt-2 text-text">
+                      {formatUSD(usage.daily_remaining_usd ?? 0)}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
 
             <ResponsiveContainer width="100%" height={200}>

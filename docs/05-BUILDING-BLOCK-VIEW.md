@@ -338,6 +338,7 @@ Ver el diagrama de capas en [Nivel 2 — Descomposición de la API REST](#-nivel
 | `IdentityService` | `identity` |
 | `CompetencyEvidenceService` | `competencies`, `evidence` |
 | `JobSearchService` | `job_strategies`, `vacancies`, `networking`, `interviews` |
+| `JobDiscoveryService` | Adaptadores de portales (Get on Board, Indeed vía Adzuna, LinkedIn search URLs, Remotive, RemoteOK, Greenhouse/Lever). Preview-then-save hacia `vacancies`. Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md). |
 | `MetricsService` | `mcp_agent_metrics`, `portal_visits`, `portal_interactions` — agregación de lectura para el dashboard |
 | `EventTrackingService` | `portal_visits`, `portal_interactions` — ingesta de eventos del script de tracking del Portal Público |
 | `AuditService` | `audit_logs` — escritura transversal (invocada por los demás servicios tras cada mutación) y lectura filtrada |

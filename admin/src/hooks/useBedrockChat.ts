@@ -3,14 +3,26 @@ import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
 import { careerQueryKey } from '@/hooks/useCareerResource'
 import { useBedrockChatStore } from '@/stores/bedrockChatStore'
+import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { getErrorMessage } from '@/utils/errors'
-import { BedrockChatMessage } from '@/types/bedrock'
+import {
+  BedrockChatMessage,
+  BedrockChatAttachment,
+  BedrockChatSurface,
+  BedrockPageContext,
+  BedrockSessionType,
+} from '@/types/bedrock'
 
-const conversationsKey = ['bedrock', 'conversations'] as const
+const conversationsKey = (sessionType?: BedrockSessionType) =>
+  sessionType ? (['bedrock', 'conversations', sessionType] as const) : (['bedrock', 'conversations'] as const)
+
 const messagesKey = (sessionId: string) => ['bedrock', 'conversations', sessionId, 'messages'] as const
 
-export function useBedrockConversations() {
-  return useQuery({ queryKey: conversationsKey, queryFn: bedrockApi.listConversations })
+export function useBedrockConversations(sessionType?: BedrockSessionType) {
+  return useQuery({
+    queryKey: conversationsKey(sessionType),
+    queryFn: () => bedrockApi.listConversations(sessionType),
+  })
 }
 
 export function useBedrockConversationMessages(sessionId: string) {
@@ -20,36 +32,51 @@ export function useBedrockConversationMessages(sessionId: string) {
   })
 }
 
+export interface UseBedrockChatOptions {
+  chatSurface?: BedrockChatSurface
+  pageContext?: BedrockPageContext | null
+}
+
 /**
  * Chat state + actions. Conversations/messages are server-persisted (see
- * api/bedrock.ts) - this hook is what wires the ephemeral send/status/error
- * state in `bedrockChatStore` to that React Query data, plus the one bit of
- * cross-cutting invalidation (career tables the agent just wrote to).
+ * api/bedrock.ts) - this hook wires ephemeral send/status/error state in
+ * `bedrockChatStore` to React Query data and sends harness context
+ * (page_context, model_id, chat_surface, agent_profile_id) on each turn.
  */
-export function useBedrockChat() {
+export function useBedrockChat(options: UseBedrockChatOptions = {}) {
+  const chatSurface = options.chatSurface ?? 'contextual'
+  const pageContext = options.pageContext ?? null
+  const sessionType: BedrockSessionType = chatSurface === 'general' ? 'general' : 'contextual'
+
   const queryClient = useQueryClient()
-  const activeSessionId = useBedrockChatStore((s) => s.activeSessionId)
+  const activeSessionId = useBedrockChatStore((s) => s.getActiveSessionId(sessionType))
+  const getSessionPrefs = useBedrockChatStore((s) => s.getSessionPrefs)
   const isSending = useBedrockChatStore((s) => s.isSending)
   const statusMessage = useBedrockChatStore((s) => s.statusMessage)
   const error = useBedrockChatStore((s) => s.error)
   const newConversation = useBedrockChatStore((s) => s.newConversation)
   const switchConversation = useBedrockChatStore((s) => s.switchConversation)
 
-  const { data: conversations = [] } = useBedrockConversations()
+  const { data: conversations = [] } = useBedrockConversations(sessionType)
   const { data: messages = [] } = useBedrockConversationMessages(activeSessionId)
+  const { data: modelStatus } = useBedrockModel()
 
-  const send = async (text: string) => {
+  const send = async (text: string, attachments?: BedrockChatAttachment[]) => {
     const trimmed = text.trim()
-    if (!trimmed || isSending) return
+    if ((!trimmed && !attachments?.length) || isSending) return
 
-    // Optimistic: show the user's own bubble immediately rather than
-    // waiting for the whole turn (which can take minutes, see
-    // bedrock.ts's CHAT_TIMEOUT_MS) - replaced by the real, DB-backed list
-    // once the turn finishes and messagesKey is invalidated below.
+    const prefs = getSessionPrefs(activeSessionId)
+    const modelId =
+      prefs.modelIdOverride ??
+      resolveRecommendedModel(pageContext, modelStatus?.current_model_id)
+
+    const displayContent =
+      trimmed || (attachments?.length ? `[${attachments.length} adjunto(s)]` : '')
+
     const optimisticMessage: BedrockChatMessage = {
       id: -Date.now(),
       role: 'user',
-      content: trimmed,
+      content: displayContent,
       created_at: new Date().toISOString(),
     }
     queryClient.setQueryData<BedrockChatMessage[]>(messagesKey(activeSessionId), (old = []) => [
@@ -60,13 +87,27 @@ export function useBedrockChat() {
     useBedrockChatStore.setState({ isSending: true, statusMessage: null, error: null })
 
     try {
-      const { affected_resources } = await bedrockApi.chat(activeSessionId, trimmed, (message) => {
-        useBedrockChatStore.setState({ statusMessage: message })
-      })
+      const { affected_resources } = await bedrockApi.chat(
+        {
+          session_id: activeSessionId,
+          message: trimmed || '(adjuntos)',
+          chat_surface: chatSurface,
+          page_context: chatSurface === 'contextual' ? pageContext : null,
+          model_id: modelId,
+          agent_profile_id:
+            chatSurface === 'contextual' ? prefs.agentProfileIdOverride ?? null : null,
+          attachments: attachments ?? null,
+        },
+        {
+          onStatus: (message) => {
+            useBedrockChatStore.setState({ statusMessage: message })
+          },
+        }
+      )
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: messagesKey(activeSessionId) }),
-        queryClient.invalidateQueries({ queryKey: conversationsKey }),
+        queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) }),
       ])
       affected_resources.forEach((resource) => {
         queryClient.invalidateQueries({ queryKey: careerQueryKey(resource), exact: false })
@@ -78,29 +119,33 @@ export function useBedrockChat() {
   }
 
   const renameMutation = useMutation({
-    mutationFn: ({ sessionId, title }: { sessionId: string; title: string }) => bedrockApi.renameConversation(sessionId, title),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationsKey }),
+    mutationFn: ({ sessionId, title }: { sessionId: string; title: string }) =>
+      bedrockApi.renameConversation(sessionId, title),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) }),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (sessionId: string) => bedrockApi.deleteConversation(sessionId),
     onSuccess: (_data, sessionId) => {
-      queryClient.invalidateQueries({ queryKey: conversationsKey })
+      queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) })
       queryClient.removeQueries({ queryKey: messagesKey(sessionId) })
-      if (sessionId === activeSessionId) newConversation()
+      if (sessionId === activeSessionId) newConversation(sessionType)
     },
   })
 
   return {
     sessionId: activeSessionId,
+    sessionType,
+    chatSurface,
+    pageContext,
     messages,
     conversations,
     isSending,
     statusMessage,
     error,
     send,
-    newConversation,
-    switchConversation,
+    newConversation: () => newConversation(sessionType),
+    switchConversation: (sessionId: string) => switchConversation(sessionId, sessionType),
     renameConversation: (sessionId: string, title: string) => renameMutation.mutate({ sessionId, title }),
     deleteConversation: (sessionId: string) => deleteMutation.mutate(sessionId),
   }

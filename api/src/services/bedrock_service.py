@@ -1,35 +1,9 @@
 """
-Agent Bedrock - el asistente de IA del Admin Panel, corriendo dentro del
-mismo proceso del API REST.
+Agent Bedrock — fachada del asistente IA del Admin Panel.
 
-Según la arquitectura del proyecto (docs/04-SOLUTION-STRATEGY.md Decisión
-5, docs/06-RUNTIME-VIEW.md Escenario 4): Bedrock no tiene contenedor
-propio, ni puerto, ni autenticación propia - se invoca en el mismo proceso
-del API REST, heredando el JWT de la sesión del Admin Panel que lo llamó.
-Este módulo ES esa invocación, construida sobre Amazon Bedrock AgentCore
-Harness (no un loop de Converse hecho a mano): `invoke_harness` se encarga
-de la llamada al modelo, de la señalización de orquestación de uso de
-herramientas y de la memoria de sesión del lado de AWS (indexada por
-`runtimeSessionId`) - este módulo solo necesita ejecutar las herramientas
-`inline_function` cuando el harness se pausa a pedir una, y devolverle el
-resultado. Las herramientas en sí operan directo sobre `CareerRepository`
-(la misma clase exacta que ya usa cada ruta CRUD genérica) y sobre la base
-de conocimiento en Qdrant (`qdrant_service.py`).
-
-Las capacidades del agente - lectura/escritura/creación/eliminación
-completa sobre cualquiera de los ~30 recursos del dominio de carrera, y
-búsqueda semántica sobre su base de conocimiento - son una decisión de
-producto deliberada (no algo que este módulo restrinja): cada escritura
-pasa directo por `CareerRepository`, sin un paso intermedio de
-"propuesta".
-
-Cambio de modelo: el modelo no es un parámetro por invocación, es parte de
-la configuración propia del recurso Harness. `switch_model` llama al plano
-de control `UpdateHarness`, que crea una nueva versión inmutable del
-harness y mueve el endpoint DEFAULT del harness a esa versión -
-`get_current_model` siempre refleja el valor real leyendo el harness de
-nuevo, en vez de guardarlo en caché localmente, ya que el harness mismo es
-la única fuente de verdad aquí.
+El loop de chat vive en `services/bedrock/` (Harness local Converse API).
+Este módulo conserva herramientas CRUD, bitácora, conversaciones PG y
+embeddings Titan usados por el harness y por CareerRepository.
 """
 import asyncio
 import json
@@ -70,8 +44,6 @@ class BedrockError(Exception):
 # ---------------------------------------------------------------------------
 
 _embedding_client = None
-_runtime_client = None
-_control_client = None
 _repositories: Dict[str, CareerRepository] = {}
 
 
@@ -93,42 +65,6 @@ def _get_embedding_client():
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         )
     return _embedding_client
-
-
-def _get_runtime_client():
-    """`bedrock-agentcore` data-plane client - `invoke_harness`."""
-    global _runtime_client
-    _require_configured()
-    if _runtime_client is None:
-        _runtime_client = boto3.client(
-            "bedrock-agentcore",
-            region_name=settings.BEDROCK_REGION,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
-    return _runtime_client
-
-
-def _get_control_client():
-    """`bedrock-agentcore-control` control-plane client - `get_harness`/`update_harness`."""
-    global _control_client
-    _require_configured()
-    if _control_client is None:
-        _control_client = boto3.client(
-            "bedrock-agentcore-control",
-            region_name=settings.BEDROCK_REGION,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
-    return _control_client
-
-
-def _harness_id() -> str:
-    """The harness ARN's last path segment is its id - `get_harness`/
-    `update_harness` take the id, `invoke_harness` takes the full ARN."""
-    if not settings.BEDROCK_HARNESS_ARN:
-        raise BedrockError("Bedrock is not configured (missing BEDROCK_HARNESS_ARN)")
-    return settings.BEDROCK_HARNESS_ARN.rsplit("/", 1)[-1]
 
 
 def _get_repository(resource_key: str) -> CareerRepository:
@@ -169,154 +105,33 @@ async def embed_text(text: str) -> List[float]:
 # ---------------------------------------------------------------------------
 
 async def get_current_model() -> str:
-    """El id del modelo activo actualmente en el harness (lectura en vivo -
-    el harness es la fuente de verdad, este servicio nunca lo guarda en
-    caché)."""
-    client = _get_control_client()
+    """Modelo activo — Harness local lee PG; legacy lee AgentCore harness."""
+    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock.settings_loader import get_active_model_id
+    from database import AsyncSessionLocal
 
-    def _get():
-        return client.get_harness(harnessId=_harness_id())
+    if use_local_harness():
+        async with AsyncSessionLocal() as db:
+            return await get_active_model_id(db)
 
-    try:
-        harness = await asyncio.to_thread(_get)
-    except Exception as e:
-        raise BedrockError(f"Failed to read current model: {e}") from e
-    return harness["harness"]["model"]["bedrockModelConfig"]["modelId"]
+    raise BedrockError("Harness local desactivado. Configure BEDROCK_USE_LOCAL_HARNESS=true y credenciales AWS.")
 
 
 async def switch_model(model_id: str) -> None:
-    """Apunta el harness a otro modelo. `model_id` debe ser uno de
-    `settings.BEDROCK_AVAILABLE_MODELS` - son los únicos cuyo acceso IAM (y,
-    para modelos de Anthropic, el acuerdo de Marketplace) ya está
-    aprovisionado; elegir un modelo arbitrario aquí solo fallaría con
-    AccessDeniedException en el siguiente turno de chat."""
+    """Cambia modelo activo — PG (local) o UpdateHarness (legacy)."""
     if model_id not in settings.BEDROCK_AVAILABLE_MODELS:
         raise BedrockError(f"Model not in the allow-list: {model_id}")
 
-    client = _get_control_client()
+    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock.settings_loader import set_active_model_id
+    from database import AsyncSessionLocal
 
-    def _update():
-        return client.update_harness(
-            harnessId=_harness_id(),
-            model={"bedrockModelConfig": {"modelId": model_id, "apiFormat": "converse_stream"}},
-        )
+    if use_local_harness():
+        async with AsyncSessionLocal() as db:
+            await set_active_model_id(db, model_id)
+        return
 
-    try:
-        await asyncio.to_thread(_update)
-    except Exception as e:
-        raise BedrockError(f"Failed to switch model: {e}") from e
-
-
-# ---------------------------------------------------------------------------
-# Memoria - vistas de solo lectura de lo que AgentCore Memory tiene
-# guardado de un usuario. Las plantillas de namespace se confirmaron en
-# vivo con `get_memory` contra la instancia real de memoria administrada
-# (sus estrategias por default), no se adivinaron:
-#   hechos semánticos:      /actors/{actorId}/facts/
-#   resúmenes de sesión:    /actors/{actorId}/summaries/{sessionId}/
-# ---------------------------------------------------------------------------
-
-_memory_id: Optional[str] = None
-
-
-async def _get_memory_id() -> str:
-    """El id de la instancia de memoria administrada, leído una vez del
-    harness y guardado en caché - a diferencia del modelo, esto no es algo
-    que operaciones tipo switch_model cambien en tiempo de ejecución."""
-    global _memory_id
-    if _memory_id is not None:
-        return _memory_id
-    client = _get_control_client()
-
-    def _get():
-        return client.get_harness(harnessId=_harness_id())
-
-    try:
-        harness = await asyncio.to_thread(_get)
-    except Exception as e:
-        raise BedrockError(f"Failed to read memory id: {e}") from e
-    arn = harness["harness"]["memory"]["managedMemoryConfiguration"]["arn"]
-    _memory_id = arn.rsplit("/", 1)[-1]
-    return _memory_id
-
-
-async def list_memory_events(user_id: int, session_id: str, max_results: int = 50) -> List[Dict[str, Any]]:
-    """Eventos crudos de memoria de corto plazo (mensajes, llamadas a
-    herramientas) de una conversación - el registro técnico detrás de lo
-    que `bedrockChatStore` ya muestra como burbujas de chat, útil para
-    confirmar qué llegó realmente a la memoria del harness versus lo que
-    renderiza la UI."""
-    runtime = _get_runtime_client()
-    memory_id = await _get_memory_id()
-
-    def _list():
-        return runtime.list_events(
-            memoryId=memory_id,
-            actorId=str(user_id),
-            sessionId=session_id,
-            maxResults=max_results,
-            includePayloads=True,
-        )
-
-    try:
-        response = await asyncio.to_thread(_list)
-    except Exception as e:
-        raise BedrockError(f"Failed to list memory events: {e}") from e
-    return response.get("events", [])
-
-
-async def retrieve_memory_records(user_id: int, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
-    """Búsqueda semántica sobre los hechos durables que la estrategia
-    SEMANTIC de AgentCore ha extraído de este usuario a través de todas sus
-    conversaciones pasadas - esta es la vista de "qué recuerdas
-    realmente de mí", distinta del registro crudo de eventos por sesión de
-    arriba."""
-    runtime = _get_runtime_client()
-    memory_id = await _get_memory_id()
-
-    def _retrieve():
-        return runtime.retrieve_memory_records(
-            memoryId=memory_id,
-            namespace=f"/actors/{user_id}/facts/",
-            searchCriteria={"searchQuery": query, "topK": top_k},
-        )
-
-    try:
-        response = await asyncio.to_thread(_retrieve)
-    except Exception as e:
-        raise BedrockError(f"Failed to retrieve memory records: {e}") from e
-    return response.get("memoryRecordSummaries", [])
-
-
-async def create_manual_memory(user_id: int, text: str) -> None:
-    """Siembra manualmente un hecho en la memoria de largo plazo del agente
-    - Carlos diciéndole algo directamente, en vez de que se extraiga de una
-    conversación real. Se escribe como un evento sintético con rol USER
-    bajo un session id dedicado (para que no se mezcle con la transcripción
-    cruda de ninguna conversación real); la estrategia SEMANTIC de
-    AgentCore lo recoge de forma asíncrona igual que haría con un mensaje
-    real, y queda disponible vía retrieve_memory_records una vez
-    procesado."""
-    import uuid
-    from datetime import datetime, timezone
-
-    runtime = _get_runtime_client()
-    memory_id = await _get_memory_id()
-    session_id = f"manual-memory-{uuid.uuid4().hex}"
-
-    def _create():
-        return runtime.create_event(
-            memoryId=memory_id,
-            actorId=str(user_id),
-            sessionId=session_id,
-            eventTimestamp=datetime.now(timezone.utc),
-            payload=[{"conversational": {"content": {"text": text}, "role": "USER"}}],
-        )
-
-    try:
-        await asyncio.to_thread(_create)
-    except Exception as e:
-        raise BedrockError(f"Failed to create manual memory: {e}") from e
+    raise BedrockError("Harness local desactivado. Configure BEDROCK_USE_LOCAL_HARNESS=true y credenciales AWS.")
 
 
 # ---------------------------------------------------------------------------
@@ -935,95 +750,6 @@ async def set_system_prompt(db, text: Optional[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Parseo de la respuesta en streaming + registro de costo -
-# `invoke_harness` SIEMPRE devuelve un stream de eventos (nunca un JSON
-# único, ni siquiera para una respuesta de puro texto sin uso de
-# herramientas), porque así está diseñada la API de AgentCore Harness.
-# `_consume_stream` es lo que convierte ese stream crudo de AWS en el dict
-# simple que usa el resto de este módulo; `_record_usage` es un tema
-# aparte (facturación) que solo lee su input del campo `usage` de ese mismo
-# dict.
-# ---------------------------------------------------------------------------
-
-
-def _consume_stream(stream) -> Dict[str, Any]:
-    """Drain one `invoke_harness` event stream into a plain result: the
-    accumulated text, any tool-use blocks (keyed by content-block index, to
-    stay correct if the model requests more than one tool in the same turn),
-    the stop reason, and the token usage for this one call."""
-    text = ""
-    stop_reason: Optional[str] = None
-    usage = {"inputTokens": 0, "outputTokens": 0}
-    tool_uses: Dict[int, Dict[str, Any]] = {}
-
-    for event in stream:
-        index = event.get("contentBlockIndex")
-
-        if "contentBlockStart" in event:
-            start = event["contentBlockStart"].get("start", {})
-            if "toolUse" in start:
-                tool_uses[index] = {
-                    "toolUseId": start["toolUse"]["toolUseId"],
-                    "name": start["toolUse"]["name"],
-                    "input_raw": "",
-                }
-
-        if "contentBlockDelta" in event:
-            delta = event["contentBlockDelta"].get("delta", {})
-            if "text" in delta:
-                text += delta["text"]
-            if "toolUse" in delta and index in tool_uses:
-                tool_uses[index]["input_raw"] += delta["toolUse"].get("input", "")
-
-        if "messageStop" in event:
-            stop_reason = event["messageStop"].get("stopReason")
-
-        if "metadata" in event:
-            event_usage = event["metadata"].get("usage", {})
-            usage["inputTokens"] += event_usage.get("inputTokens", 0)
-            usage["outputTokens"] += event_usage.get("outputTokens", 0)
-
-    parsed_tool_uses = []
-    for tool_use in tool_uses.values():
-        raw = tool_use.pop("input_raw")
-        tool_use["input"] = json.loads(raw) if raw else {}
-        parsed_tool_uses.append(tool_use)
-
-    return {"text": text, "stop_reason": stop_reason, "usage": usage, "tool_uses": parsed_tool_uses}
-
-
-async def _record_usage(user_id: int, session_id: str, model_id: str, usage: Dict[str, int]) -> None:
-    """Best-effort: persist token usage for the cost dashboard. Never lets a
-    logging failure fail the chat turn that already succeeded."""
-    try:
-        from database import AsyncSessionLocal
-        from models.bedrock_usage_log import BedrockUsageLog
-
-        pricing = settings.BEDROCK_AVAILABLE_MODELS.get(model_id, {})
-        input_tokens = usage["inputTokens"]
-        output_tokens = usage["outputTokens"]
-        cost = (
-            input_tokens * pricing.get("price_input_per_million", 0) / 1_000_000
-            + output_tokens * pricing.get("price_output_per_million", 0) / 1_000_000
-        )
-
-        async with AsyncSessionLocal() as db:
-            db.add(
-                BedrockUsageLog(
-                    user_id=user_id,
-                    session_id=session_id,
-                    model_id=model_id,
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
-                    estimated_cost_usd=cost,
-                )
-            )
-            await db.commit()
-    except Exception:
-        logger.warning("Failed to record Bedrock usage log - continuing without it", exc_info=True)
-
-
-# ---------------------------------------------------------------------------
 # Conversaciones - historial guardado del lado del servidor, para que sea
 # el mismo en cualquier dispositivo en vez de vivir en el localStorage de
 # un solo navegador. El `session_id` de aquí es exactamente el mismo id que
@@ -1173,159 +899,17 @@ _TOOL_STATUS_MESSAGES = {
 }
 
 
-async def chat_stream(db, user_id: int, session_id: str, message: str):
-    """Same turn as `chat`, but yields progress as it happens instead of
-    only returning a final answer - a tool-use turn can take a while for
-    real (AWS round trips, cold starts), and with nothing but a spinner
-    that looks indistinguishable from actually being stuck. Yields
-    `{"type": "status", "message": str}` before each tool call and
-    `{"type": "done", "reply": str, "affected_resources": [...]}` at the end
-    (or `{"type": "error", "message": str}` on failure - the route turns
-    that into a terminal SSE event rather than raising mid-stream, since the
-    HTTP response's headers/status are already committed by then).
-    """
-    # Paso 1 - reunir todo lo que este turno necesita ANTES de llamar a
-    # AWS: qué cliente usar, qué modelo está activo (solo para el registro
-    # de costo - el modelo ya viene incluido en el harness, ver
-    # switch_model), la lista de herramientas actual (las propias + las
-    # MCP habilitadas) y el system prompt activo (el override de Carlos o
-    # el default). Todo se lee de nuevo en cada turno, nada queda en caché
-    # salvo la conexión del cliente en sí.
-    runtime = _get_runtime_client()
-    harness_arn = settings.BEDROCK_HARNESS_ARN
-    if not harness_arn:
-        raise BedrockError("Bedrock is not configured (missing BEDROCK_HARNESS_ARN)")
+async def chat_stream(db, user_id: int, session_id: str, message: str, turn_request=None):
+    """Loop agente — Harness local (Converse) o legacy AgentCore."""
+    from services.bedrock.agent_loop import chat_stream as local_chat_stream, use_local_harness
+    from services.bedrock.agent_loop import ChatTurnRequest
 
-    model_id = await get_current_model()
-    tools = await _active_tools(db)
-    system_prompt = await get_system_prompt(db)
-    affected_resources: List[str] = []
-    total_usage = {"inputTokens": 0, "outputTokens": 0}
+    if use_local_harness():
+        req = turn_request or ChatTurnRequest(session_id=session_id, message=message)
+        async for event in local_chat_stream(db, user_id, req):
+            yield event
+        return
 
-    # Paso 2 - guardar el mensaje del usuario en NUESTRA PROPIA base de
-    # datos (esto es distinto de AgentCore Memory, que el harness maneja
-    # del lado de AWS solo para el recuerdo propio del modelo - esta copia
-    # es lo que alimenta el "Historial de conversaciones" de la UI y hace
-    # que sea igual en cualquier dispositivo). Se guarda al momento, no es
-    # best-effort: perder el historial de chat en silencio es justo lo que
-    # esto existe para evitar, así que un fallo aquí sí se muestra como un
-    # error real a quien llamó.
-    conversation = await _get_or_create_conversation(db, user_id, session_id, message)
-    await _append_message(db, conversation, "user", message)
-
-    # Paso 3 - este closure es LA llamada de red real a AWS: cada
-    # `invoke_harness` de este turno (puede haber varias, una por cada
-    # vuelta de uso de herramienta más abajo) pasa por aquí. Nota lo que
-    # NO se envía: el historial completo de la conversación.
-    # `runtimeSessionId=session_id` es lo que le dice al harness "esto es
-    # continuación de la sesión X" - él busca e inyecta ese historial de su
-    # lado, así que esta llamada solo lleva lo nuevo desde la anterior (el
-    # mensaje del usuario la primera vez, y el resultado de una herramienta
-    # en cada vuelta siguiente).
-    def _invoke(messages: List[Dict[str, Any]]):
-        return runtime.invoke_harness(
-            harnessArn=harness_arn,
-            runtimeSessionId=session_id,
-            # Aísla AgentCore Memory por usuario real en vez del
-            # "default_actor" compartido implícito - necesario para que el
-            # visor de memoria por usuario (list_memory_events/
-            # retrieve_memory_records más abajo) tenga sentido.
-            actorId=str(user_id),
-            tools=tools,
-            systemPrompt=[{"text": system_prompt}],
-            messages=messages,
-        )
-
-    # `next_messages` es lo que realmente entra a la SIGUIENTE llamada de
-    # `_invoke` - empieza siendo solo el mensaje nuevo del usuario, y se
-    # REEMPLAZA (no se le agrega) después de cada vuelta de uso de
-    # herramienta, ya que el harness recuerda todo lo anterior vía
-    # `runtimeSessionId`.
-    next_messages: List[Dict[str, Any]] = [{"role": "user", "content": [{"text": message}]}]
-    yield {"type": "status", "message": "Pensando..."}
-
-    # Paso 4 - el loop de vueltas (round trips). Cada iteración es UNA
-    # llamada a `invoke_harness`; el modelo puede pedir usar una o varias
-    # herramientas, nosotros las ejecutamos localmente y le devolvemos el
-    # resultado en la siguiente vuelta, hasta que responda con texto final
-    # (`stop_reason != "tool_use"`) o se agote el límite de vueltas.
-    #
-    # 10, no 6: medido en la práctica, un create sobre un recurso poco
-    # conocido puede tomar 4+ vueltas solo por prueba y error de nombres de
-    # campo (ver describe_resource_schema/_invalid_fields_error, que
-    # reducen esto pero no lo eliminan) - 6 era tan justo que a veces se
-    # agotaba en una sola escritura que de otro modo hubiera funcionado.
-    for _ in range(10):
-        # Paso 4a - la llamada real (ver Paso 3) más el parseo del stream
-        # de respuesta a un dict simple.
-        try:
-            response = await asyncio.to_thread(_invoke, next_messages)
-            result = _consume_stream(response["stream"])
-        except Exception as e:
-            await _record_usage(user_id, session_id, model_id, total_usage)
-            yield {"type": "error", "message": f"Bedrock request failed: {e}"}
-            return
-
-        total_usage["inputTokens"] += result["usage"]["inputTokens"]
-        total_usage["outputTokens"] += result["usage"]["outputTokens"]
-
-        # Paso 4b - salida normal: el modelo ya no pide más herramientas,
-        # esto es la respuesta final. Se guarda en nuestra base de datos
-        # (mismo motivo que el mensaje del usuario en el Paso 2) y se
-        # entrega como evento "done" - aquí termina el turno.
-        if result["stop_reason"] != "tool_use":
-            await _record_usage(user_id, session_id, model_id, total_usage)
-            await _append_message(db, conversation, "assistant", result["text"])
-            yield {"type": "done", "reply": result["text"], "affected_resources": affected_resources}
-            return
-
-        # Paso 4c - el modelo pidió una o más herramientas. Primero se
-        # avisa al frontend (evento "status") qué se está haciendo, para
-        # que el usuario vea progreso real en vez de un spinner ciego.
-        for t in result["tool_uses"]:
-            yield {"type": "status", "message": _TOOL_STATUS_MESSAGES.get(t["name"], f"Usando {t['name']}...")}
-
-        # Paso 4d - se ejecuta cada herramienta localmente (ver
-        # `_execute_tool` arriba) y se arma el `toolResult` que AWS espera
-        # como respuesta - un error de ejecución NO rompe el turno, se le
-        # devuelve al modelo como resultado con status="error" para que
-        # decida cómo seguir (reintentar con otros datos, avisarle a
-        # Carlos, etc.).
-        assistant_content = [
-            {"toolUse": {"toolUseId": t["toolUseId"], "name": t["name"], "input": t["input"]}}
-            for t in result["tool_uses"]
-        ]
-        tool_result_content = []
-        for t in result["tool_uses"]:
-            try:
-                tool_result = await _execute_tool(db, user_id, t["name"], t["input"], session_id)
-                status = "success"
-                if t["name"] in _WRITE_TOOLS:
-                    affected_resources.append(t["input"]["resource_key"])
-            except Exception as e:
-                tool_result = {"error": str(e)}
-                status = "error"
-            tool_result_content.append(
-                {
-                    "toolResult": {
-                        "toolUseId": t["toolUseId"],
-                        "content": [{"text": json.dumps(tool_result)}],
-                        "status": status,
-                    }
-                }
-            )
-
-        # Paso 4e - se arma el mensaje para la SIGUIENTE vuelta: lo que el
-        # modelo "dijo" (que pidió usar la herramienta) seguido de lo que
-        # nosotros "respondemos" (el resultado) - el ciclo vuelve al Paso
-        # 4a con esto como `next_messages`.
-        next_messages = [
-            {"role": "assistant", "content": assistant_content},
-            {"role": "user", "content": tool_result_content},
-        ]
-
-    # Se agotaron las 10 vueltas sin que el modelo diera una respuesta
-    # final - se registra el uso igual (para no perder el costo ya
-    # incurrido) y se informa el error al frontend.
-    await _record_usage(user_id, session_id, model_id, total_usage)
-    yield {"type": "error", "message": "Too many tool-use round-trips without a final answer"}
+    raise BedrockError(
+        "AgentCore Harness eliminado. Use BEDROCK_USE_LOCAL_HARNESS=true (ver docs/BEDROCK-SYSTEM.md)."
+    )

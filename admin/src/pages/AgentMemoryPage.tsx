@@ -35,7 +35,7 @@ const RecordsSection: React.FC = () => {
   return (
     <SectionCard
       title="Hechos que recuerda"
-      subtitle="Búsqueda semántica sobre lo que el agente ha aprendido de tus conversaciones (memoria de largo plazo)"
+      subtitle="Búsqueda semántica sobre la base de conocimiento Qdrant (registros de carrera + hechos manuales)"
       icon={Brain}
     >
       <form
@@ -61,17 +61,17 @@ const RecordsSection: React.FC = () => {
       {isError && <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>}
       {!isLoading && submittedQuery && data?.length === 0 && (
         <p className="text-text-secondary text-sm text-center py-4">
-          No se encontró nada. Esto puede pasar si la conversación fue muy reciente - AWS extrae hechos de forma
-          asíncrona, no al instante.
+          No se encontró nada en Qdrant para esa búsqueda.
         </p>
       )}
       {data && data.length > 0 && (
         <div className="space-y-2">
           {data.map((record, i) => (
             <div key={record.memoryRecordId ?? i} className="p-3 rounded-xl bg-glass">
-              <pre className="text-xs whitespace-pre-wrap break-words text-text">
-                {JSON.stringify(record.content ?? record, null, 2)}
-              </pre>
+              <p className="text-sm text-text whitespace-pre-wrap break-words">
+                {(record.content as { text?: string } | undefined)?.text ??
+                  JSON.stringify(record.content ?? record, null, 2)}
+              </p>
               {typeof record.score === 'number' && (
                 <p className="text-[11px] text-text-muted mt-1">relevancia: {record.score.toFixed(2)}</p>
               )}
@@ -102,7 +102,7 @@ const ManualMemorySection: React.FC = () => {
   return (
     <SectionCard
       title="Cargar una memoria manualmente"
-      subtitle="Dile directamente al agente algo que debe recordar, sin tener que pasar por una conversación - AWS lo procesa de forma asíncrona, igual que un hecho extraído de un chat real"
+      subtitle="Dile directamente al agente algo que debe recordar — se indexa en Qdrant al instante"
       icon={Plus}
     >
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -118,7 +118,7 @@ const ManualMemorySection: React.FC = () => {
         )}
         {savedAt && !manualMemory.isPending && (
           <p className="text-xs text-text-secondary">
-            Guardado - puede tardar unos minutos en aparecer en la búsqueda de "Hechos que recuerda".
+            Guardado — ya debería aparecer en la búsqueda de "Hechos que recuerda".
           </p>
         )}
         <button
@@ -152,7 +152,7 @@ const EventsSection: React.FC = () => {
   return (
     <SectionCard
       title="Eventos crudos de una conversación"
-      subtitle="El registro técnico exacto que el harness guardó en memoria - útil para confirmar qué se recordó de verdad"
+      subtitle="Historial PG de la conversación (Harness local) — mensajes user/assistant"
       icon={Brain}
     >
       {conversations.length === 0 ? (
@@ -221,7 +221,7 @@ export const AgentMemoryPage: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-text">Memoria del Agente</h1>
         <p className="text-text-secondary mt-2">
-          Lo que Agent Bedrock recuerda de sus conversaciones, gestionado por AWS Bedrock AgentCore Memory.
+          Base de conocimiento Qdrant + historial de conversaciones en PostgreSQL (Harness local).
         </p>
       </div>
       <div className="space-y-6">

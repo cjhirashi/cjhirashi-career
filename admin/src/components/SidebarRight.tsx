@@ -4,6 +4,7 @@ import { clsx } from 'clsx'
 import { MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { ChatWindow } from '@/components/bedrock/ChatWindow'
+import { useChatPageContext } from '@/hooks/useChatPageContext'
 
 type RightPanelTab = 'chat' | 'instructions'
 
@@ -24,6 +25,10 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
   '/search-metrics': {
     title: 'Métricas de Búsqueda',
     body: 'Visualización gráfica de la Operativa de Búsqueda: embudo de vacantes a ofertas, triage de vacantes (fit %, evaluación, track), segmentos de mercado, networking, empresas diana, el rubro de Factores de Fit y el avance del plan de búsqueda activo. Todo se calcula en vivo desde las 12 tablas del dominio — no es información que se edite aquí.',
+  },
+  '/job-discovery': {
+    title: 'Descubrir vacantes',
+    body: 'Busca vacantes en Indeed (vía Adzuna), Get on Board, Remotive y RemoteOK. LinkedIn solo genera la URL oficial de búsqueda: ábrela e importa cada jobs/view. Marca las que quieras y gúardalas como vacantes pending_review. No se scrapean Indeed ni LinkedIn.',
   },
   '/files': {
     title: 'Archivos',
@@ -78,7 +83,7 @@ interface SidebarRightProps {
  * Right-hand panel with two modes, switched by a Glass Steel pill:
  * - "Chat": Agent Bedrock, the in-Admin AI assistant (see CLAUDE.md "Agent
  *   Bedrock" and `components/bedrock/ChatWindow.tsx`) - full read/write
- *   access to the career-domain tables, backed by AWS Bedrock AgentCore.
+ *   access to the career-domain tables, backed by Harness local (Converse API).
  * - "Instrucciones": contextual help for whatever page is currently open,
  *   derived from the route (career-domain resources pull their blurb from
  *   their own config, so this never goes stale as resources are added).
@@ -94,6 +99,7 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('instructions')
   const location = useLocation()
   const instructions = getPageInstructions(location.pathname)
+  const pageContext = useChatPageContext()
 
   return (
     <aside
@@ -142,7 +148,7 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
 
       {/* Body */}
       {activeTab === 'chat' ? (
-        <ChatWindow />
+        <ChatWindow chatSurface="contextual" pageContext={pageContext} />
       ) : (
         <div className="card p-5 flex-1 overflow-y-auto">
           <div className="flex items-center gap-2 mb-3">

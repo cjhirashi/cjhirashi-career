@@ -37,3 +37,23 @@ async def generate_markdown_document(title: str, content: str) -> bytes:
         raise PDFGeneratorError(f"El servicio de generación de PDF respondió con un error ({response.status_code})")
 
     return response.content
+
+
+async def generate_html_template_pdf(title: str, html_body: str, css_content: str | None = None) -> bytes:
+    """POSTs to pdf_generator `/generate/html-template` — WeasyPrint con HTML/CSS custom."""
+    url = f"{settings.PDF_GENERATOR_URL}/generate/html-template"
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                url,
+                json={"title": title, "html_body": html_body, "css_content": css_content},
+            )
+    except httpx.RequestError as e:
+        logger.error(f"PDF Generator unreachable at {url}: {e}")
+        raise PDFGeneratorError("El servicio de generación de PDF no está disponible") from e
+
+    if response.status_code != 200:
+        logger.error(f"PDF Generator returned {response.status_code}: {response.text}")
+        raise PDFGeneratorError(f"El servicio de generación de PDF respondió con un error ({response.status_code})")
+
+    return response.content

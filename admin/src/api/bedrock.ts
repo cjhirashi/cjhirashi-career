@@ -3,22 +3,22 @@ import { useAuthStore } from '@/stores/authStore'
 import {
   BedrockAuditLogEntry,
   BedrockChatMessage,
+  BedrockChatRequest,
   BedrockConversation,
   BedrockCustomTool,
   BedrockInstructions,
   BedrockMemoryEvent,
   BedrockMemoryRecord,
   BedrockModelStatus,
+  BedrockSessionType,
   BedrockUsageMetrics,
 } from '@/types/bedrock'
 
 /**
- * Client for Agent Bedrock (chat, model switching, usage/cost metrics).
+ * Client for Agent Bedrock (Harness local Converse API).
  *
- * `chat` only ever sends the newest message plus a `sessionId` - the
- * AgentCore Harness backing this owns the conversation history server-side
- * (see api/src/services/bedrock_service.py), so there's no message history
- * to resend on every turn like a plain Converse-API chat would need.
+ * `chat` sends the newest message plus session/context metadata — historial
+ * en PostgreSQL (`services/bedrock/history_manager.py`).
  *
  * `chat` uses `fetch` directly, not `axiosInstance` - it needs to read the
  * response as a live Server-Sent Events stream (status updates as the agent
@@ -40,10 +40,43 @@ export interface BedrockChatResult {
   affected_resources: string[]
 }
 
+export interface BedrockDelegationStartEvent {
+  agent_profile_id: string
+  label: string
+  task_preview: string
+}
+
+export interface BedrockDelegationEndEvent {
+  agent_profile_id: string
+  success: boolean
+  summary_preview: string
+}
+
+/** Callbacks for SSE events emitted during a chat turn. */
+export interface BedrockChatStreamCallbacks {
+  onStatus?: (message: string) => void
+  onDelegationStart?: (event: BedrockDelegationStartEvent) => void
+  onDelegationEnd?: (event: BedrockDelegationEndEvent) => void
+}
+
+function normalizeCallbacks(
+  callbacks?: BedrockChatStreamCallbacks | ((message: string) => void)
+): BedrockChatStreamCallbacks {
+  if (typeof callbacks === 'function') return { onStatus: callbacks }
+  return callbacks ?? {}
+}
+
 export const bedrockApi = {
-  /** Streams the turn's progress via `onStatus` (e.g. "Creando el
-   * registro...") as the agent works, then resolves with the final reply. */
-  chat: async (sessionId: string, message: string, onStatus?: (message: string) => void): Promise<BedrockChatResult> => {
+  /**
+   * Streams the turn's progress via callbacks as the agent works, then
+   * resolves with the final reply. Accepts the full BedrockChatRequest
+   * payload (chat_surface, page_context, model_id, agent_profile_id, …).
+   */
+  chat: async (
+    payload: BedrockChatRequest,
+    callbacks?: BedrockChatStreamCallbacks | ((message: string) => void)
+  ): Promise<BedrockChatResult> => {
+    const { onStatus, onDelegationStart, onDelegationEnd } = normalizeCallbacks(callbacks)
     const accessToken = useAuthStore.getState().accessToken
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS)
@@ -56,7 +89,15 @@ export const bedrockApi = {
           'Content-Type': 'application/json',
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify({ session_id: sessionId, message }),
+        body: JSON.stringify({
+          session_id: payload.session_id,
+          message: payload.message,
+          chat_surface: payload.chat_surface ?? 'contextual',
+          page_context: payload.page_context ?? null,
+          model_id: payload.model_id ?? null,
+          agent_profile_id: payload.agent_profile_id ?? null,
+          attachments: payload.attachments ?? null,
+        }),
         signal: controller.signal,
       })
     } catch (err) {
@@ -97,9 +138,27 @@ export const bedrockApi = {
           const line = raw.trim()
           if (!line.startsWith('data: ')) continue
           const event = JSON.parse(line.slice('data: '.length))
-          if (event.type === 'status') onStatus?.(event.message)
-          else if (event.type === 'done') result = { reply: event.reply, affected_resources: event.affected_resources }
-          else if (event.type === 'error') streamError = event.message
+          if (event.type === 'status') {
+            onStatus?.(event.message)
+          } else if (event.type === 'delegation_start') {
+            onDelegationStart?.({
+              agent_profile_id: event.agent_profile_id,
+              label: event.label,
+              task_preview: event.task_preview,
+            })
+            onStatus?.(`Delegando a ${event.label}…`)
+          } else if (event.type === 'delegation_end') {
+            onDelegationEnd?.({
+              agent_profile_id: event.agent_profile_id,
+              success: event.success,
+              summary_preview: event.summary_preview,
+            })
+            onStatus?.('Especialista terminó')
+          } else if (event.type === 'done') {
+            result = { reply: event.reply, affected_resources: event.affected_resources }
+          } else if (event.type === 'error') {
+            streamError = event.message
+          }
         }
       }
     } finally {
@@ -202,8 +261,9 @@ export const bedrockApi = {
   // Conversations - server-persisted, same on every device (see
   // models/bedrock_conversation.py). Messages are written by the backend
   // itself as part of /bedrock/chat, not by these calls.
-  listConversations: async (): Promise<BedrockConversation[]> => {
+  listConversations: async (sessionType?: BedrockSessionType): Promise<BedrockConversation[]> => {
     const response = await axiosInstance.get<BedrockConversation[]>('/bedrock/conversations', {
+      params: sessionType ? { session_type: sessionType } : undefined,
       timeout: CONTROL_PLANE_TIMEOUT_MS,
     })
     return response.data

@@ -33,6 +33,46 @@ export interface BedrockUsageMetrics {
   by_model: BedrockUsageByModel[]
   by_day: BedrockUsageByDay[]
   total_estimated_cost_usd: number
+  daily_budget_usd?: number
+  daily_spent_usd?: number
+  daily_remaining_usd?: number
+}
+
+/** Where the chat UI lives — general full-page vs contextual sidebar. */
+export type BedrockChatSurface = 'contextual' | 'general'
+
+/** Session bucket stored on the server (see bedrock_conversation.session_type). */
+export type BedrockSessionType = 'contextual' | 'general'
+
+/**
+ * Page context sent with contextual chat turns so the harness can tailor
+ * prompts and model selection (mirror of BedrockChatRequest.page_context).
+ */
+export interface BedrockPageContext {
+  route: string
+  page_title?: string
+  resource_key?: string
+  domain_key?: string
+  /** Named chat profile key — resolved to a model id via chatSectionProfiles.ts */
+  chat_profile?: string
+}
+
+/** Full payload for POST /bedrock/chat (mirror of schemas/bedrock.py). */
+export interface BedrockChatAttachment {
+  file_id: number
+  filename: string
+  mime_type?: string
+  url?: string
+}
+
+export interface BedrockChatRequest {
+  session_id: string
+  message: string
+  chat_surface?: BedrockChatSurface
+  page_context?: BedrockPageContext | null
+  model_id?: string | null
+  agent_profile_id?: string | null
+  attachments?: BedrockChatAttachment[] | null
 }
 
 // Server-persisted conversation history (see models/bedrock_conversation.py)
@@ -40,6 +80,7 @@ export interface BedrockUsageMetrics {
 export interface BedrockConversation {
   session_id: string
   title: string
+  session_type: BedrockSessionType
   created_at: string
   updated_at: string
 }

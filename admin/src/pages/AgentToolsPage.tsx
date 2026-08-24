@@ -6,12 +6,17 @@ import { getErrorMessage } from '@/utils/errors'
 
 const BUILTIN_TOOLS = [
   { name: 'describe_resource_schema', description: 'Consulta los nombres de campo reales de un recurso antes de crear/editar.' },
-  { name: 'search_knowledge_base', description: 'Búsqueda semántica sobre metodologías operativas y registros de carrera.' },
+  { name: 'search_knowledge_base', description: 'Búsqueda semántica Qdrant (metodologías + registros de carrera).' },
   { name: 'list_career_record', description: 'Lista/busca registros de un recurso.' },
   { name: 'get_career_record', description: 'Obtiene un registro completo por id.' },
   { name: 'create_career_record', description: 'Crea un registro nuevo.' },
   { name: 'update_career_record', description: 'Actualiza un registro existente.' },
   { name: 'delete_career_record', description: 'Elimina un registro.' },
+  { name: 'list_pdf_templates', description: 'Lista plantillas PDF HTML del usuario.' },
+  { name: 'generate_pdf', description: 'Genera PDF desde plantilla con variables.' },
+  { name: 'generate_image', description: 'Genera imagen IA (Titan) y sube a MinIO.' },
+  { name: 'create_linkedin_post', description: 'Publica o programa post en LinkedIn.' },
+  { name: 'delegate_to_specialist', description: 'Orquestador delega a un perfil especialista (chat general).' },
 ]
 
 export const AgentToolsPage: React.FC = () => {

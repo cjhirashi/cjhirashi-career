@@ -21,6 +21,7 @@
 - [Escenario 3 — Carlos Edita una Competencia](#-escenario-3--carlos-edita-una-competencia)
 - [Escenario 4 — Carlos Usa Agent Bedrock](#-escenario-4--carlos-usa-agent-bedrock)
 - [Escenario 5 — Agente Externo Opera vía MCP Server](#-escenario-5--agente-externo-opera-vía-mcp-server)
+- [Escenario 6 — Descubrimiento de vacantes](#-escenario-6--descubrimiento-de-vacantes)
 - [Métricas en Tiempo Real](#-métricas-en-tiempo-real)
 - [Comparación de Escenarios](#-comparación-de-escenarios)
 
@@ -202,6 +203,25 @@ sequenceDiagram
 2. El MCP Server ejecuta la herramienta solicitada, leyendo y, si corresponde, escribiendo el contexto de carrera necesario en la API REST.
 3. Cada operación de escritura queda registrada en `audit_logs` con canal `mcp_server`, y cada solicitud atendida por el MCP Server queda registrada en `mcp_agent_metrics` — es la única fuente que permite a Carlos Jiménez Hirashi observar la actividad autónoma de agentes externos desde el Admin Panel (ver [Métricas en Tiempo Real](#-métricas-en-tiempo-real)).
 4. El resultado se retorna directamente al agente externo — Carlos Jiménez Hirashi no participa en este flujo en tiempo real, pero puede observarlo después vía el dashboard de métricas o el registro de auditoría.
+
+## 🔎 Escenario 6 — Descubrimiento de vacantes
+
+Carlos o Agent Bedrock buscan vacantes. `POST /career/job-discoveries/run` no escribe `vacancies`. Indeed se resuelve vía Adzuna; LinkedIn solo devuelve URLs oficiales de búsqueda. Las vacantes concretas se persisten con `POST /career/job-discoveries/save` (o `import-url` + save). Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md).
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin_o_Bedrock
+    participant API as API_REST
+    participant Adapters as Adaptadores
+    participant DB as PostgreSQL
+
+    Admin->>API: POST /career/job-discoveries/run
+    API->>Adapters: gather GetOnBoard Indeed LinkedIn
+    Adapters-->>API: JobListing preview
+    API-->>Admin: listings plus errors
+    Admin->>API: POST /career/job-discoveries/save
+    API->>DB: INSERT vacancies pending_review
+```
 
 ## 📡 Métricas en Tiempo Real
 

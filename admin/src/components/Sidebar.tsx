@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Linkedin,
   LineChart,
+  Search,
   Bot,
   Workflow,
   Brain,
@@ -16,6 +17,7 @@ import {
   Plug,
   ScrollText,
   ClipboardList,
+  MessageCircle,
 } from 'lucide-react'
 import { CAREER_DOMAINS, CAREER_RESOURCES } from '@/config/careerResources'
 
@@ -56,6 +58,8 @@ const SEARCH_METRICS_DOMAIN_KEY = 'search'
 // the domains above, just with a key that isn't in CAREER_DOMAINS.
 const AGENT_DOMAIN_KEY = 'agent'
 const AGENT_LINKS = [
+  { label: 'Chat General', path: '/agent/chat', icon: MessageCircle },
+  { label: 'Plantillas PDF', path: '/agent/pdf-templates', icon: FileText },
   { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
   { label: 'Metodologías Operativas', path: '/career/operational-methodologies', icon: Workflow },
   { label: 'Memoria', path: '/agent/memory', icon: Brain },
@@ -170,6 +174,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                 {isOpen && isDomainExpanded && (
                   <div className="mt-1 space-y-0.5 mb-1">
                     {domain.key === SEARCH_METRICS_DOMAIN_KEY && (
+                      <>
+                      <Link
+                        to="/job-discovery"
+                        onClick={closeMobileDrawer}
+                        aria-current={isActive('/job-discovery') ? 'page' : undefined}
+                        className={clsx(
+                          'flex items-center gap-1.5 pl-12 pr-4 py-1.5 rounded-xl text-sm truncate transition-colors',
+                          isActive('/job-discovery')
+                            ? 'text-primary bg-primary-light'
+                            : 'text-text-secondary hover:bg-glass hover:text-text'
+                        )}
+                      >
+                        <Search size={13} className="flex-shrink-0" aria-hidden="true" />
+                        Descubrir vacantes
+                      </Link>
                       <Link
                         to="/search-metrics"
                         onClick={closeMobileDrawer}
@@ -184,6 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                         <LineChart size={13} className="flex-shrink-0" aria-hidden="true" />
                         Métricas de Búsqueda
                       </Link>
+                      </>
                     )}
                     {domain.resourceKeys.map((resourceKey) => {
                       const resource = CAREER_RESOURCES[resourceKey]

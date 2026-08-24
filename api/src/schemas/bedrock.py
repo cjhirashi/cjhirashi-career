@@ -16,12 +16,15 @@ _ALLOW_MODEL_ID = ConfigDict(protected_namespaces=())
 
 
 class BedrockChatRequest(BaseModel):
-    """The harness owns conversation history server-side, keyed by
-    `session_id` (client-generated, >=33 chars - see bedrockChatStore.ts) -
-    the client only ever sends the newest message, never the full history."""
+    """Harness local: historial en PG; cliente envía mensaje + contexto opcional."""
 
     session_id: str
     message: str
+    chat_surface: str = "contextual"
+    page_context: Optional[Dict[str, Any]] = None
+    model_id: Optional[str] = None
+    agent_profile_id: Optional[str] = None
+    attachments: Optional[List[Dict[str, Any]]] = None
 
 
 class BedrockModelOption(BaseModel):
@@ -31,6 +34,7 @@ class BedrockModelOption(BaseModel):
     label: str
     price_input_per_million: float
     price_output_per_million: float
+    tier: Optional[str] = None
 
 
 class BedrockModelStatusResponse(BaseModel):
@@ -65,6 +69,15 @@ class BedrockUsageMetricsResponse(BaseModel):
     by_model: List[BedrockUsageByModel]
     by_day: List[BedrockUsageByDay]
     total_estimated_cost_usd: float
+    daily_budget_usd: Optional[float] = None
+    daily_spent_usd: Optional[float] = None
+    daily_remaining_usd: Optional[float] = None
+
+
+class BedrockBudgetStatusResponse(BaseModel):
+    daily_budget_usd: float
+    daily_spent_usd: float
+    daily_remaining_usd: float
 
 
 class BedrockInstructionsResponse(BaseModel):
@@ -130,6 +143,7 @@ class BedrockManualMemoryRequest(BaseModel):
 class BedrockConversationResponse(BaseModel):
     session_id: str
     title: str
+    session_type: str = "contextual"
     created_at: datetime
     updated_at: datetime
 

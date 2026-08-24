@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from httpx import AsyncClient, ASGITransport
 from database import Base, get_db
 from config import settings
-from models import User, Identity, Competency, Evidence
+from models import User, Identity, Competency
 from services.auth_service import AuthService
 from app import app
 
@@ -152,35 +152,13 @@ async def test_competency(db_session: AsyncSession, test_user: User):
 
 
 # ============================================================================
-# EVIDENCE FIXTURES
+# EVIDENCE FIXTURES (legacy v1 — removed; kept as no-op stub for old tests)
 # ============================================================================
 
 @pytest.fixture
 async def test_evidence(db_session: AsyncSession, test_user: User):
-    """Crear una evidencia de prueba."""
-    from datetime import datetime, timezone
-    from models.evidence import EvidenceType
-
-    evidence = Evidence(
-        user_id=test_user.id,
-        evidence_type=EvidenceType.PROJECT,
-        title="API REST con FastAPI",
-        description="Desarrollo de API REST escalable",
-        organization="Tech Corp",
-        position_title="Senior Developer",
-        start_date=datetime(2022, 1, 1, tzinfo=timezone.utc),
-        end_date=datetime(2023, 12, 31, tzinfo=timezone.utc),
-        project_url="https://github.com/example/project",
-        is_current=False,
-        situation="Necesidad de refactorizar API legacy",
-        task="Diseñar nueva arquitectura",
-        action="Implementé FastAPI con SQLAlchemy",
-        result="Mejora 40% en performance"
-    )
-    db_session.add(evidence)
-    await db_session.flush()
-    await db_session.refresh(evidence)
-    return evidence
+    """Stub — Evidence model replaced by Achievement/StarStory in v2."""
+    pytest.skip("Evidence model removed in career v2")
 
 
 # ============================================================================

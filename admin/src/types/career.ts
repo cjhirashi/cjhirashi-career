@@ -327,6 +327,8 @@ export interface TargetCompany {
   priority?: string | null
   status?: string | null
   notes?: string | null
+  career_board_provider?: 'greenhouse' | 'lever' | null
+  career_board_token?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -655,4 +657,42 @@ export interface CareerEntity {
   id: number
   user_id: number
   [key: string]: unknown
+}
+
+export type JobListingKind = 'job' | 'search_url'
+
+export interface JobListing {
+  company: string
+  exact_role: string
+  vacancy_url: string
+  source: string
+  listing_kind: JobListingKind
+  via?: string | null
+  found_date?: string | null
+  location?: string | null
+  salary_text?: string | null
+  remote?: boolean | null
+  snippet?: string | null
+  external_id?: string | null
+  already_saved: boolean
+}
+
+export interface JobProviderStatus {
+  id: string
+  label: string
+  enabled: boolean
+  reason?: string | null
+  listing_kind: JobListingKind
+}
+
+export interface JobDiscoveryRunResponse {
+  query: string
+  location?: string | null
+  listings: JobListing[]
+  errors: { provider: string; message: string }[]
+}
+
+export interface JobDiscoverySaveResponse {
+  created: { id: number; vacancy_url: string; company: string; exact_role: string }[]
+  skipped: { vacancy_url?: string | null; reason: string }[]
 }

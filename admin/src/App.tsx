@@ -23,12 +23,17 @@ import { AgentToolsPage } from '@/pages/AgentToolsPage'
 import { AgentMemoryPage } from '@/pages/AgentMemoryPage'
 import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
 import { AgentTasksPage } from '@/pages/AgentTasksPage'
+import { AgentGeneralChatPage } from '@/pages/AgentGeneralChatPage'
+import { AgentPdfTemplatesPage } from '@/pages/AgentPdfTemplatesPage'
 
 // Lazy: the only page that pulls in recharts (~100kB gzipped) - loading it
 // eagerly like the rest would add that weight to every page's first load,
 // not just this one.
 const SearchMetricsPage = React.lazy(() =>
   import('@/pages/SearchMetricsPage').then((m) => ({ default: m.SearchMetricsPage }))
+)
+const JobDiscoveryPage = React.lazy(() =>
+  import('@/pages/JobDiscoveryPage').then((m) => ({ default: m.JobDiscoveryPage }))
 )
 
 const queryClient = new QueryClient({
@@ -79,6 +84,19 @@ export const App: React.FC = () => {
                 <Layout>
                   <Suspense fallback={<LoadingSpinner fullScreen={false} message="Cargando métricas..." />}>
                     <SearchMetricsPage />
+                  </Suspense>
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/job-discovery"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <Suspense fallback={<LoadingSpinner fullScreen={false} message="Cargando descubrimiento..." />}>
+                    <JobDiscoveryPage />
                   </Suspense>
                 </Layout>
               </PrivateRoute>
@@ -146,6 +164,26 @@ export const App: React.FC = () => {
               /career/operational-methodologies, not duplicated here),
               memory, instructions, and MCP tools. See Sidebar.tsx's
               "Agente IA" section. */}
+          <Route
+            path="/agent/chat"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentGeneralChatPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/pdf-templates"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentPdfTemplatesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
           <Route
             path="/agent/metrics"
             element={

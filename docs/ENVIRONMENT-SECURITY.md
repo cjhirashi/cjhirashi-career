@@ -187,6 +187,7 @@ Cuando levantes el sistema por primera vez:
   ☐ POSTGRES_PASSWORD: 20+ caracteres aleatorios
   ☐ SECRET_KEY: 32+ caracteres aleatorios (use `openssl rand -hex 16`)
   ☐ BEDROCK_REGION/MODEL_ID: agregar si usas AWS Bedrock
+  ☐ ADZUNA_APP_ID / ADZUNA_APP_KEY: requeridas para buscar Indeed
 ☐ Verificar .gitignore contiene .env.local
 ☐ Verificar git status NO muestra .env.local
 ☐ docker compose --env-file .env.local up -d

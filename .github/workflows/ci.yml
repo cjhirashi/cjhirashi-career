@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt pytest pytest-asyncio httpx aiosqlite
+      - run: pytest tests/unit/bedrock -q --tb=short
+        env:
+          DATABASE_URL: sqlite+aiosqlite:///:memory:
+          SECRET_KEY: test-secret-key-minimum-32-characters-long
+          QDRANT_URL: http://localhost:6333
+          MINIO_ENDPOINT: localhost:9000
+          MINIO_ROOT_USER: minio
+          MINIO_ROOT_PASSWORD: minio123456789012345678
+          MINIO_BUCKET: test
+          MINIO_PUBLIC_URL: http://localhost:9000/test
+
+  admin-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build

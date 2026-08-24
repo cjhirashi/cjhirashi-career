@@ -1,9 +1,13 @@
 import React from 'react'
 import { AxiosError } from 'axios'
-import { Sparkles } from 'lucide-react'
+import { MapPin, Sparkles } from 'lucide-react'
 import { useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
+import { useBedrockChatStore } from '@/stores/bedrockChatStore'
+import { getAgentProfileLabel } from '@/config/agentProfiles'
+import { CHAT_PROFILE_LABELS, resolveChatProfileKey, resolveRecommendedModel } from '@/config/chatSectionProfiles'
+import { BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
 import { MessageList } from './MessageList'
-import { PromptInput } from './PromptInput'
+import { ChatComposer } from './ChatComposer'
 import { ModelSelector } from './ModelSelector'
 import { ConversationHistory } from './ConversationHistory'
 
@@ -23,7 +27,73 @@ const NotConfigured: React.FC = () => (
   </div>
 )
 
-export const ChatWindow: React.FC = () => {
+interface ContextChipsProps {
+  chatSurface: BedrockChatSurface
+  pageContext?: BedrockPageContext | null
+  sessionId: string
+}
+
+/** Shows where the user is chatting from and which model/profile apply. */
+const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, sessionId }) => {
+  const { data: modelStatus } = useBedrockModel()
+  const sessionPrefs = useBedrockChatStore((s) => s.getSessionPrefs(sessionId))
+
+  if (chatSurface === 'general') {
+    return (
+      <div className="flex flex-wrap gap-1.5 flex-shrink-0">
+        <span className="badge badge-cyan text-[10px]">Chat general</span>
+        <span className="badge badge-slate text-[10px]">Orquestador</span>
+      </div>
+    )
+  }
+
+  if (!pageContext) return null
+
+  const profileKey = resolveChatProfileKey(pageContext)
+  const modelId =
+    sessionPrefs.modelIdOverride ??
+    resolveRecommendedModel(pageContext, modelStatus?.current_model_id)
+  const modelLabel =
+    modelStatus?.available_models.find((m) => m.model_id === modelId)?.label ?? modelId
+  const agentLabel = sessionPrefs.agentProfileIdOverride
+    ? getAgentProfileLabel(sessionPrefs.agentProfileIdOverride)
+    : null
+
+  return (
+    <div className="flex flex-wrap gap-1.5 flex-shrink-0" aria-label="Contexto del chat">
+      {pageContext.page_title && (
+        <span className="inline-flex items-center gap-1 badge badge-slate text-[10px]">
+          <MapPin size={10} aria-hidden="true" />
+          {pageContext.page_title}
+        </span>
+      )}
+      {profileKey && CHAT_PROFILE_LABELS[profileKey] && (
+        <span className="badge badge-slate text-[10px]">{CHAT_PROFILE_LABELS[profileKey]}</span>
+      )}
+      <span className="badge badge-cyan text-[10px]">{modelLabel}</span>
+      {agentLabel && <span className="badge badge-slate text-[10px]">{agentLabel}</span>}
+    </div>
+  )
+}
+
+export interface ChatWindowProps {
+  /** `contextual` for sidebar, `general` for full-page orchestrator chat. */
+  chatSurface?: BedrockChatSurface
+  /** Current page context — required for contextual chat harness routing. */
+  pageContext?: BedrockPageContext | null
+  /** Show popover history controls in the header (false when page has its own list). */
+  showHistoryControls?: boolean
+}
+
+/**
+ * Bedrock chat panel: messages, context chips, composer with model/agent
+ * pickers, and optional conversation history popover.
+ */
+export const ChatWindow: React.FC<ChatWindowProps> = ({
+  chatSurface = 'contextual',
+  pageContext = null,
+  showHistoryControls = true,
+}) => {
   const {
     sessionId,
     messages,
@@ -36,11 +106,9 @@ export const ChatWindow: React.FC = () => {
     switchConversation,
     renameConversation,
     deleteConversation,
-  } = useBedrockChat()
-  // Reuses the model-status query as a lightweight "is Bedrock configured?"
-  // probe - a 503 here means the whole feature is off, not just this query.
-  const { isError, error: modelError } = useBedrockModel()
+  } = useBedrockChat({ chatSurface, pageContext })
 
+  const { isError, error: modelError } = useBedrockModel()
   const isNotConfigured = isError && (modelError as AxiosError)?.response?.status === 503
 
   if (isNotConfigured) return <NotConfigured />
@@ -49,21 +117,31 @@ export const ChatWindow: React.FC = () => {
     <div className="flex-1 flex flex-col gap-3 min-h-0">
       <div className="flex items-center justify-between gap-2 flex-shrink-0">
         <ModelSelector />
-        <ConversationHistory
-          conversations={conversations}
-          activeSessionId={sessionId}
-          onSelect={switchConversation}
-          onNew={newConversation}
-          onRename={renameConversation}
-          onDelete={deleteConversation}
-        />
+        {showHistoryControls && (
+          <ConversationHistory
+            conversations={conversations}
+            activeSessionId={sessionId}
+            onSelect={switchConversation}
+            onNew={newConversation}
+            onRename={renameConversation}
+            onDelete={deleteConversation}
+          />
+        )}
       </div>
+
+      <ContextChips chatSurface={chatSurface} pageContext={pageContext} sessionId={sessionId} />
 
       <MessageList messages={messages} isSending={isSending} statusMessage={statusMessage} />
 
       {error && <p className="text-red-600 dark:text-red-400 text-xs flex-shrink-0">{error}</p>}
 
-      <PromptInput onSend={send} disabled={isSending} />
+      <ChatComposer
+        sessionId={sessionId}
+        chatSurface={chatSurface}
+        pageContext={pageContext}
+        onSend={send}
+        disabled={isSending}
+      />
     </div>
   )
 }

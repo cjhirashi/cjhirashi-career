@@ -27,8 +27,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Instalar http-server para servir archivos estaticos
-RUN npm install -g http-server
+# Instalar http-server y wget (healthcheck compose + Dockerfile)
+RUN npm install -g http-server && apk add --no-cache wget
 
 # Copiar bundle compilado
 COPY --from=build /app/dist ./dist

@@ -179,6 +179,10 @@ describe('Sidebar', () => {
 
       const vacanciesLink = screen.getByRole('link', { name: 'Vacantes' })
       expect(vacanciesLink).toHaveAttribute('href', '/career/vacancies')
+      expect(screen.getByRole('link', { name: 'Descubrir vacantes' })).toHaveAttribute(
+        'href',
+        '/job-discovery'
+      )
     })
 
     it('should include LinkedIn inside the "Presencia Digital" domain, not as a top-level item', () => {

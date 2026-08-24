@@ -294,6 +294,17 @@ docs = httpx.get(
 print(docs.json())
 ```
 
+## 🔎 Job Discovery (JWT)
+
+Preview-then-save. `run` e `import-url` no escriben `vacancies`.
+
+- `GET /career/job-discoveries/providers`
+- `POST /career/job-discoveries/run` — body: `query`, `location`, `providers` (`indeed`, `linkedin`, `getonboard`, `remotive`, `remoteok`), `include_company_boards`, `target_role_id`
+- `POST /career/job-discoveries/import-url` — body: `{ "url": "https://www.linkedin.com/jobs/view/…" }`
+- `POST /career/job-discoveries/save` — persiste listings `listing_kind=job` como vacantes `pending_review`
+
+Indeed usa Adzuna (`ADZUNA_APP_ID` / `ADZUNA_APP_KEY`). LinkedIn solo devuelve URLs de `linkedin.com/jobs/search`. Ver [ADR-011](../docs/09-DECISIONS/011-job-discovery-adapters.md).
+
 ## 🗺️ Endpoints en Diseño (No Implementados)
 
 Los siguientes dominios tienen **modelo de datos y schema Pydantic definidos** (ver [DATABASE.md](./DATABASE.md)), pero **no tienen rutas HTTP registradas** en `src/app.py` todavía. No están disponibles en ningún ambiente:

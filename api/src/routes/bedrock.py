@@ -35,6 +35,7 @@ from schemas.bedrock import (
     BedrockModelOption,
     BedrockModelStatusResponse,
     BedrockModelSwitchRequest,
+    BedrockBudgetStatusResponse,
     BedrockUsageByDay,
     BedrockUsageByModel,
     BedrockUsageMetricsResponse,
@@ -46,11 +47,20 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bedrock", tags=["Bedrock"])
 
-# AgentCore Harness requires runtimeSessionId to be at least 33 characters.
-_MIN_SESSION_ID_LENGTH = 33
+# AgentCore legacy exigía session_id >= 33 chars; Harness local acepta UUID.
+_MIN_SESSION_ID_LENGTH_LEGACY = 33
 
 
 def _require_configured() -> None:
+    from services.bedrock.agent_loop import use_local_harness
+
+    if use_local_harness():
+        if not settings.AWS_ACCESS_KEY_ID:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Agent Bedrock is not configured (missing AWS credentials)",
+            )
+        return
     if not settings.AWS_ACCESS_KEY_ID or not settings.BEDROCK_HARNESS_ARN:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -58,13 +68,21 @@ def _require_configured() -> None:
         )
 
 
-async def _sse_chat_events(db: AsyncSession, user_id: int, session_id: str, message: str):
-    """Formats `bedrock_service.chat_stream`'s events as Server-Sent Events -
-    lets the client show live progress ("Creando el registro...") instead of
-    a plain spinner for however long a tool-use turn actually takes (AWS
-    round trips add up fast, see chat_stream's docstring)."""
+async def _sse_chat_events(db: AsyncSession, user_id: int, payload: BedrockChatRequest):
+    """SSE desde chat_stream — soporta Harness local y legacy."""
+    from services.bedrock.agent_loop import ChatTurnRequest
+
+    turn = ChatTurnRequest(
+        session_id=payload.session_id,
+        message=payload.message,
+        chat_surface=payload.chat_surface,
+        page_context=payload.page_context,
+        model_id=payload.model_id,
+        agent_profile_id=payload.agent_profile_id,
+        attachments=payload.attachments,
+    )
     try:
-        async for event in bedrock_service.chat_stream(db, user_id, session_id, message):
+        async for event in bedrock_service.chat_stream(db, user_id, payload.session_id, payload.message, turn_request=turn):
             yield f"data: {json.dumps(event)}\n\n"
     except BedrockError as e:
         logger.error("Bedrock chat failed: %s", e)
@@ -78,14 +96,16 @@ async def chat(
     db: AsyncSession = Depends(get_db),
 ):
     _require_configured()
-    if len(payload.session_id) < _MIN_SESSION_ID_LENGTH:
+    from services.bedrock.agent_loop import use_local_harness
+
+    if not use_local_harness() and len(payload.session_id) < _MIN_SESSION_ID_LENGTH_LEGACY:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"session_id must be at least {_MIN_SESSION_ID_LENGTH} characters",
+            detail=f"session_id must be at least {_MIN_SESSION_ID_LENGTH_LEGACY} characters",
         )
 
     return StreamingResponse(
-        _sse_chat_events(db, current_user.id, payload.session_id, payload.message),
+        _sse_chat_events(db, current_user.id, payload),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
@@ -190,7 +210,37 @@ async def get_usage_metrics(
 
     total_cost = sum(m.estimated_cost_usd for m in by_model)
 
-    return BedrockUsageMetricsResponse(by_model=by_model, by_day=by_day, total_estimated_cost_usd=total_cost)
+    daily_budget = float(settings.BEDROCK_DAILY_BUDGET_USD)
+    from services.bedrock.budget import get_daily_spend_usd, get_remaining_budget_usd
+
+    daily_spent = await get_daily_spend_usd(db, user_id)
+    daily_remaining = await get_remaining_budget_usd(db, user_id, daily_budget)
+
+    return BedrockUsageMetricsResponse(
+        by_model=by_model,
+        by_day=by_day,
+        total_estimated_cost_usd=total_cost,
+        daily_budget_usd=daily_budget,
+        daily_spent_usd=daily_spent,
+        daily_remaining_usd=daily_remaining,
+    )
+
+
+@router.get("/budget", response_model=BedrockBudgetStatusResponse, summary="Daily inference budget status")
+async def get_budget_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock.budget import get_daily_spend_usd, get_remaining_budget_usd
+
+    daily_budget = float(settings.BEDROCK_DAILY_BUDGET_USD)
+    spent = await get_daily_spend_usd(db, current_user.id)
+    remaining = await get_remaining_budget_usd(db, current_user.id, daily_budget)
+    return BedrockBudgetStatusResponse(
+        daily_budget_usd=daily_budget,
+        daily_spent_usd=spent,
+        daily_remaining_usd=remaining,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -271,14 +321,38 @@ async def delete_tool(
 # Memory (read-only)
 # ---------------------------------------------------------------------------
 
+@router.get("/knowledge/search", summary="Búsqueda semántica Qdrant (Harness local)")
+async def search_knowledge(
+    q: str = Query(..., min_length=1),
+    top_k: int = Query(5, ge=1, le=20),
+    current_user: User = Depends(get_current_user),
+):
+    from services.bedrock.embeddings import embed_text
+    from services import qdrant_service
+
+    vector = await embed_text(q)
+    results = await qdrant_service.search(user_id=current_user.id, vector=vector, top_k=top_k)
+    return {"results": results}
+
+
 @router.get("/memory/events", response_model=list[BedrockMemoryEventResponse], summary="Raw short-term memory events for one conversation")
 async def get_memory_events(
     session_id: str = Query(..., description="A conversation's session_id"),
     current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     _require_configured()
+    from services.bedrock.agent_loop import use_local_harness
+
     try:
-        return await bedrock_service.list_memory_events(current_user.id, session_id)
+        if use_local_harness():
+            from services.bedrock import local_memory
+
+            return await local_memory.list_memory_events(db, current_user.id, session_id)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
+        )
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 
@@ -290,8 +364,17 @@ async def get_memory_records(
     current_user: User = Depends(get_current_user),
 ):
     _require_configured()
+    from services.bedrock.agent_loop import use_local_harness
+
     try:
-        return await bedrock_service.retrieve_memory_records(current_user.id, query, top_k)
+        if use_local_harness():
+            from services.bedrock import local_memory
+
+            return await local_memory.retrieve_memory_records(current_user.id, query, top_k)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
+        )
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 
@@ -302,8 +385,18 @@ async def add_manual_memory(
     current_user: User = Depends(get_current_user),
 ):
     _require_configured()
+    from services.bedrock.agent_loop import use_local_harness
+
     try:
-        await bedrock_service.create_manual_memory(current_user.id, payload.text)
+        if use_local_harness():
+            from services.bedrock import local_memory
+
+            await local_memory.create_manual_memory(current_user.id, payload.text)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
+            )
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
     return {"status": "ok"}
@@ -315,9 +408,15 @@ async def add_manual_memory(
 
 @router.get("/conversations", response_model=list[BedrockConversationResponse], summary="List this user's conversations")
 async def list_conversations(
+    session_type: str | None = Query(None, description="Filter: contextual | general"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    from services.bedrock.history_manager import list_conversations as list_conv_local
+    from services.bedrock.agent_loop import use_local_harness
+
+    if use_local_harness():
+        return await list_conv_local(db, current_user.id, session_type)
     return await bedrock_service.list_conversations(db, current_user.id)
 
 

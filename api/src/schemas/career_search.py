@@ -238,6 +238,8 @@ class TargetCompanyBase(BaseModel):
     priority: Optional[str] = Field(None, max_length=10)
     status: Optional[str] = Field(None, max_length=30)
     notes: Optional[str] = None
+    career_board_provider: Optional[Literal["greenhouse", "lever"]] = None
+    career_board_token: Optional[str] = Field(None, max_length=100)
 
 
 class TargetCompanyCreate(TargetCompanyBase):
@@ -256,6 +258,8 @@ class TargetCompanyUpdate(BaseModel):
     priority: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
+    career_board_provider: Optional[Literal["greenhouse", "lever"]] = None
+    career_board_token: Optional[str] = Field(None, max_length=100)
 
 
 class TargetCompanyResponse(TargetCompanyBase):

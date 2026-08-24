@@ -82,6 +82,14 @@ class MarkdownDocumentRequest(BaseModel):
     content: str = Field(...)
 
 
+class HtmlTemplateRequest(BaseModel):
+    """Request model for custom HTML/CSS template PDF generation."""
+
+    title: str = Field(..., min_length=1, max_length=200)
+    html_body: str = Field(..., min_length=1)
+    css_content: Optional[str] = None
+
+
 class PDFResponse(BaseModel):
     """Response model for PDF generation."""
 
