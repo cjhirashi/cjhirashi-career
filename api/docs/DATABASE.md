@@ -1,252 +1,369 @@
-# API REST — Portafolio-cjhirashi — Esquema de Base de Datos
+# API REST — Esquema de base de datos
 
-**DATABASE SCHEMA REFERENCE**
+**Ubicación:** `api/docs/DATABASE.md`
+
+**Última actualización:** 2026-08-24
+
+Esquema PostgreSQL del portafolio-cjhirashi: gestión de carrera, Agent Bedrock, integraciones y analítica.
 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1.svg?logo=postgresql&logoColor=white)
 ![ORM](https://img.shields.io/badge/ORM-SQLAlchemy%202.0%20async-red.svg)
-![Tablas](https://img.shields.io/badge/tablas-15%20modelos-informational)
+![Migraciones](https://img.shields.io/badge/Alembic-8%20revisiones-green.svg)
 
 ---
 
-Esquema relacional de PostgreSQL para Portafolio-cjhirashi: gestión de carrera, identidad profesional, competencias, evidencia, procesos de contratación y métricas de actividad. Todas las tablas se relacionan a `users` mediante `user_id` con `ON DELETE CASCADE`.
+## Tabla de contenidos
+
+- [Fuente de verdad del esquema](#fuente-de-verdad-del-esquema)
+- [IDs prefijados](#ids-prefijados)
+- [Diagrama por dominios](#diagrama-por-domínios)
+- [Dominio: usuarios y auth](#dominio-usuarios-y-auth)
+- [Dominio: carrera — identidad](#dominio-carrera--identidad)
+- [Dominio: carrera — búsqueda](#dominio-carrera--búsqueda)
+- [Dominio: carrera — presencia digital](#dominio-carrera--presencia-digital)
+- [Dominio: soporte y metodologías](#dominio-soporte-y-metodologías)
+- [Dominio: Agent Bedrock](#dominio-agent-bedrock)
+- [Dominio: LinkedIn](#dominio-linkedin)
+- [Dominio: archivos y analítica](#dominio-archivos-y-analítica)
+- [Vistas SQL](#vistas-sql)
+- [Migraciones Alembic](#migraciones-alembic)
+- [Qdrant (externo)](#qdrant-externo)
+- [Consultas útiles](#consultas-útiles)
+- [Backups](#backups)
 
 ---
 
-## 📋 Tabla de Contenidos
+## Fuente de verdad del esquema
 
-- [Estado de las Tablas](#-estado-de-las-tablas)
-- [Diagrama de Relaciones](#-diagrama-de-relaciones)
-- [Tabla: users](#tabla-users)
-- [Tabla: documents](#tabla-documents)
-- [Tabla: identities](#tabla-identities)
-- [Tabla: competencies](#tabla-competencies)
-- [Tabla: evidence](#tabla-evidence)
-- [Tabla: job_strategies](#tabla-job_strategies)
-- [Tabla: vacancies](#tabla-vacancies)
-- [Tabla: interviews](#tabla-interviews)
-- [Tabla: networking_contacts](#tabla-networking_contacts)
-- [Otras Tablas de Soporte](#-otras-tablas-de-soporte)
-- [Consultas Comunes](#-consultas-comunes)
-- [Migraciones](#-migraciones)
-- [Backups](#-backups)
+| Mecanismo | Rol actual |
+|-----------|------------|
+| **Modelos SQLAlchemy** (`src/models/*.py`) | Diseño canónico de tablas y columnas |
+| **Alembic** (`alembic/versions/*.py`) | **Fuente de verdad para despliegues** — aplicar con `alembic upgrade head` |
+| **`init_db()`** (`create_all`) | Fallback en startup; no altera tablas existentes |
+| **`init.sql`** (legado) | Prototipo antiguo (`users` + `documents`); **no usar en instalaciones nuevas** |
+
+**Recomendación:** usar solo Alembic en entornos nuevos. El archivo legado `api/init.sql` puede coexistir en volúmenes Docker antiguos pero no refleja el esquema actual.
+
+Modelos importados vía cadena de routers → `models/__init__.py` registra todas las tablas en `Base.metadata`.
 
 ---
 
-## ⚠️ Estado de las Tablas
+## IDs prefijados
 
-Existen **dos mecanismos** de creación de esquema que actualmente están desincronizados:
+Todas las tablas de carrera y usuarios usan **VARCHAR(20)** como PK con formato `{prefijo}-{n}`.
 
-1. **`init.sql`** — Se monta en `docker-entrypoint-initdb.d/` y se ejecuta una única vez cuando el volumen de PostgreSQL está vacío. Crea solo `users` (5 columnas) y `documents` — el esquema original del prototipo "MCP Tools API".
-2. **`Base.metadata.create_all()`** (en `src/database.py`, invocado en el `lifespan` de `app.py`) — Crea tablas para todo modelo SQLAlchemy que haya sido **importado** en el proceso Python en ese momento. Como `src/app.py` solo importa `routes.auth` y `routes.documents` (que a su vez importan `models.user` y `models.document`), en la práctica **solo `users` y `documents` quedan garantizadas**; las 13 tablas restantes no se crean automáticamente porque `models/__init__.py` (que sí importa los 15 modelos) nunca es importado por la aplicación en ejecución.
+**Fuente:** `src/services/id_generator.py` — secuencias PostgreSQL `{prefijo}_id_seq` + listener `before_insert`.
 
-**Consecuencia práctica**: si `init.sql` ya creó `users` con su esquema de 5 columnas (`id`, `username`, `email`, `password_hash`, `created_at`), y el modelo `User` actual espera columnas adicionales (`full_name`, `phone`, `country`, `professional_title`, `is_active`, `is_verified`, `updated_at`, `last_login`), `create_all()` **no las agregará** — solo crea tablas nuevas, no altera existentes. Cualquier ruta que lea/escriba esas columnas (por ejemplo `routes/auth_enhanced.py`, no registrado actualmente) fallaría contra una base inicializada con `init.sql`.
+| Prefijo | Tabla | Ejemplo |
+|---------|-------|---------|
+| `usr` | users | `usr-1` |
+| `ach` | achievements | `ach-17` |
+| `vac` | vacancies | `vac-5` |
+| `cmp` | competencies | `cmp-42` |
+| `cvv` | cv_versions | `cvv-3` |
+| `pdt` | pdf_output_templates | `pdt-1` |
+| `bco` | bedrock_conversations | `bco-12` |
+| `lnp` | linkedin_posts | `lnp-3` |
+| … | (ver `TABLE_PREFIXES` en código) | |
 
-**Referencia de columnas de esta guía**: se documenta el esquema según los **modelos SQLAlchemy** (`src/models/*.py`), que representan el diseño de datos vigente del proyecto, no necesariamente el estado exacto de una base ya inicializada con el `init.sql` legado.
+**FK `user_id`:** VARCHAR(20) referenciando `users(id)` con `ON DELETE CASCADE` en tablas de carrera y telemetría.
 
-## 🗺️ Diagrama de Relaciones
+Migración relevante: `d1e2f3a4b5c6_prefixed_ids_and_notes.py`, `e3f4a5b6c7d8_fix_system_table_user_ids.py`.
+
+---
+
+## Diagrama por dominios
 
 ```mermaid
 erDiagram
-    users ||--o{ documents : "1:N"
-    users ||--|| identities : "1:1"
-    users ||--o{ competencies : "1:N"
-    users ||--o{ evidence : "1:N"
-    users ||--o{ job_strategies : "1:N"
-    users ||--o{ vacancies : "1:N"
-    users ||--o{ interviews : "1:N"
-    users ||--o{ networking_contacts : "1:N"
-    users ||--o{ refresh_tokens : "1:N"
-    users ||--o{ file_uploads : "1:N"
-    users ||--o{ events : "1:N"
-    users ||--o{ audit_logs : "1:N"
-    users ||--|| metrics : "1:1"
-    users ||--o{ user_sessions : "1:N"
+    users ||--o{ achievements : owns
+    users ||--o{ vacancies : owns
+    users ||--o{ projects : owns
+    users ||--o{ bedrock_conversations : owns
+    users ||--o{ file_uploads : owns
+    users ||--o| linkedin_connections : has
+    users ||--o{ linkedin_posts : owns
+    users ||--o{ refresh_tokens : has
+
+    vacancies ||--o{ applications : tracks
+    applications ||--o{ application_interactions : has
+    applications ||--o{ interviews : has
+
+    bedrock_conversations ||--o{ bedrock_conversation_messages : contains
 ```
 
-## Tabla: users
+Todas las entidades de carrera cuelgan de `users` con aislamiento estricto por `user_id`.
 
-Autenticación y perfil base del usuario.
+---
 
-| Columna | Tipo | Restricciones | Descripción |
-|---------|------|----------------|-------------|
-| id | SERIAL | PK | Identificador |
-| username | VARCHAR(255) | UNIQUE, NOT NULL | Nombre de usuario |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | Email |
-| password_hash | VARCHAR(255) | NOT NULL | Hash bcrypt |
-| full_name | VARCHAR(255) | NULL | Nombre completo |
-| phone | VARCHAR(20) | NULL | Teléfono |
-| country | VARCHAR(100) | NULL | País |
-| professional_title | VARCHAR(255) | NULL | Título profesional |
-| is_active | BOOLEAN | NOT NULL, default true | Habilita/deshabilita login |
-| is_verified | BOOLEAN | NOT NULL, default false | Verificación de email |
-| created_at | TIMESTAMPTZ | NOT NULL | Fecha de creación |
-| updated_at | TIMESTAMPTZ | NOT NULL | Última modificación |
-| last_login | TIMESTAMPTZ | NULL | Último login exitoso |
+## Dominio: usuarios y auth
 
-**Índices**: `username`, `email`, `is_active`, `created_at`
+Documentación API: [sections/auth/README.md](./sections/auth/README.md)
 
-## Tabla: documents
+### `users`
 
-Documentos de carrera (CVs, cartas de presentación) en formato JSON flexible. **Único dominio, además de `users`, con endpoints REST implementados.**
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | VARCHAR(20) PK | Prefijo `usr-` |
+| `username`, `email` | VARCHAR UNIQUE | Login |
+| `password_hash` | VARCHAR | bcrypt |
+| `full_name`, `phone`, `country`, `professional_title` | VARCHAR | Perfil |
+| `photo_url` | VARCHAR | URL avatar |
+| `is_active`, `is_verified` | BOOLEAN | Estado |
+| `created_at`, `updated_at`, `last_login` | TIMESTAMPTZ | Auditoría |
 
-| Columna | Tipo | Restricciones | Descripción |
-|---------|------|----------------|-------------|
-| id | SERIAL | PK | Identificador |
-| user_id | INTEGER | FK → users(id), CASCADE | Propietario |
-| type | VARCHAR(50) | NOT NULL | `cv`, `cover_letter`, etc. |
-| title | VARCHAR(255) | NULL | Título descriptivo |
-| data | JSONB | NOT NULL | Contenido del documento |
-| created_at | TIMESTAMPTZ | NOT NULL | Fecha de creación |
-| updated_at | TIMESTAMPTZ | NOT NULL, auto-update | Última modificación |
+**Modelo:** `src/models/user.py`
 
-**Índices**: `user_id`, `type`
-**Trigger**: `update_documents_updated_at` — actualiza `updated_at` en cada `UPDATE`
+### `refresh_tokens`
 
-**Ejemplo de `data` para type="cv":**
-```json
-{
-  "nombre": "Juan Pérez",
-  "email": "juan@example.com",
-  "experiencia": [{ "empresa": "Tech Corp", "puesto": "Senior Developer", "años": "2020-2024" }],
-  "habilidades": ["Python", "FastAPI", "React"]
-}
-```
+Tokens de refresh JWT rotativos. FK → `users(id)`.
 
-## Tabla: identities
+**Modelo:** `src/models/refresh_token.py`
 
-Identidad profesional (IKIGAI, propuesta de valor, narrativa). Relación 1:1 con `users`.
+### `user_sessions`
 
-| Grupo de columnas | Campos |
-|---|---|
-| IKIGAI | `passion`, `mission`, `vocation`, `profession` |
-| Diferenciadores | `key_strengths`, `unique_value_prop` |
-| Narrativa | `professional_narrative`, `career_objective` |
-| Propuesta de valor | `value_proposition`, `elevator_pitch` |
-| Perfil extendido | `bio`, `about_me` |
-| SEO / Branding | `keywords`, `tagline` |
+Sesiones por dispositivo (tracking). FK → `users(id)`.
 
-**FK**: `user_id` → `users(id)`, `UNIQUE` (garantiza 1:1)
+**Modelo:** `src/models/user_session.py`
 
-## Tabla: competencies
+---
 
-Competencias profesionales clasificadas por tipo y nivel.
+## Dominio: carrera — identidad
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| competency_type | ENUM | `technical`, `transferable`, `business` |
-| proficiency_level | ENUM | `beginner`, `intermediate`, `advanced`, `expert` |
-| proficiency_score | FLOAT | 0–100 |
-| years_of_experience | FLOAT | Años de experiencia |
-| is_verified / endorsement_count | BOOLEAN / INTEGER | Validación social |
+Documentación API: [sections/career-identity/README.md](./sections/career-identity/README.md)
 
-**FK**: `user_id` → `users(id)`, CASCADE
-**Índices**: `user_id`, `competency_type`, `category`, `is_featured`
+| Tabla | Modelo | Prefijo |
+|-------|--------|---------|
+| `differentiators` | `Differentiator` | `dif` |
+| `identity` | `Identity` | `idn` |
+| `identity_reflections` | `IdentityReflection` | `idr` |
+| `competencies` | `Competency` | `cmp` |
+| `certifications` | `Certification` | `crt` |
+| `target_roles` | `TargetRole` | `trl` |
+| `work_history` | `WorkHistory` | `wkh` |
+| `achievements` | `Achievement` | `ach` |
+| `star_stories` | `StarStory` | `sts` |
+| `career_reviews` | `CareerReview` | `crv` |
+| `role_gap_analysis` | `RoleGapAnalysis` | `rga` |
+| `projects` | `Project` | `prj` |
 
-## Tabla: evidence
+Campos comunes: `user_id`, `notes` (texto libre añadido en migración prefijada), timestamps, columnas específicas por entidad.
 
-Evidencia de logros: proyectos, posiciones, casos STAR, publicaciones.
+---
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| evidence_type | ENUM | `project`, `position`, `achievement`, `case_study`, `publication`, `certification`, `volunteer`, `other` |
-| situation / task / action / result | TEXT | Estructura método STAR |
-| metrics | JSON | Resultados cuantificables |
-| is_public / is_featured | BOOLEAN | Visibilidad y destacado |
+## Dominio: carrera — búsqueda
 
-**FK**: `user_id` → `users(id)`, CASCADE
+Documentación API: [sections/career-search/README.md](./sections/career-search/README.md)
 
-## Tabla: job_strategies
+| Tabla | Modelo | Prefijo |
+|-------|--------|---------|
+| `fit_scoring_factors` | `FitScoringFactor` | `fsf` |
+| `market_segments` | `MarketSegment` | `mks` |
+| `role_narratives` | `RoleNarrative` | `rna` |
+| `search_plans` | `SearchPlan` | `spl` |
+| `networking_contacts` | `NetworkingContact` | `nwc` |
+| `target_companies` | `TargetCompany` | `tco` |
+| `vacancies` | `Vacancy` | `vac` |
+| `cv_versions` | `CVVersion` | `cvv` |
+| `cover_letter_versions` | `CoverLetterVersion` | `clv` |
+| `applications` | `Application` | `apl` |
+| `application_interactions` | `ApplicationInteraction` | `ain` |
+| `interviews` | `Interview` | `ivw` |
+| `contact_interactions` | `ContactInteraction` | `cni` |
+| `networking_activities` | `NetworkingActivity` | `nwa` |
 
-Estrategia de búsqueda de empleo por usuario (industrias, roles objetivo, timeline).
+**Nota:** `cv_versions` tiene `vectorize=False` — no se indexa en Qdrant (contenido leído directo de PG).
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| status | ENUM | `active`, `paused`, `completed`, `archived` |
-| target_job_title / target_industry / target_role_level | VARCHAR | Posición objetivo |
-| target_salary_min / target_salary_max | INTEGER | Rango salarial |
-| applications_count / interviews_count / offers_count | INTEGER | Métricas de seguimiento |
+**Job discovery** no persiste en tablas propias; el preview vive en memoria (`preview_store`) hasta `POST /save` crea filas en `vacancies`.
 
-## Tabla: vacancies
+---
 
-Seguimiento de oportunidades laborales concretas.
+## Dominio: carrera — presencia digital
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| status | ENUM | `interested`, `applied`, `rejected`, `accepted`, `archived` |
-| match_score | FLOAT | 0–100, score de compatibilidad con el perfil |
-| required_skills / matched_skills / missing_skills | VARCHAR | Análisis de brecha de habilidades |
-| salary_min / salary_max / currency | FLOAT/VARCHAR | Compensación |
+Documentación API: [sections/career-digital/README.md](./sections/career-digital/README.md)
 
-## Tabla: interviews
+| Tabla | Modelo | Prefijo |
+|-------|--------|---------|
+| `publications` | `Publication` | `pub` |
+| `linkedin_profile` | `LinkedInProfile` | `lnr` |
+| `github_profile` | `GitHubProfile` | `ghp` |
+| `portal_home` | `PortalHome` | `phm` |
+| `portal_about` | `PortalAbout` | `pab` |
+| `portal_contact` | `PortalContact` | `pco` |
 
-Preparación y seguimiento de entrevistas.
+Alimentan endpoints `/public/*` filtrados por `PUBLIC_PORTAL_USER_ID`.
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| interview_type | ENUM | `phone_screening`, `video_call`, `in_person`, `technical_test`, `case_study`, `panel_interview`, `final`, `other` |
-| feedback | ENUM | `pending`, `positive`, `neutral`, `negative`, `advance`, `rejected`, `accepted` |
-| performance_score | FLOAT | 0–100 |
-| salary_offered / salary_discussed | FLOAT/BOOLEAN | Negociación |
+---
 
-## Tabla: networking_contacts
+## Dominio: soporte y metodologías
 
-Contactos profesionales y relación de networking.
+| Tabla | Modelo | Prefijo | API |
+|-------|--------|---------|-----|
+| `tags` | `Tag` | `tag` | [career-support](./sections/career-support/README.md) |
+| `operational_methodologies` | `OperationalMethodology` | `opm` | [career-methodologies](./sections/career-methodologies/README.md) |
 
-| Columna clave | Tipo | Descripción |
-|---|---|---|
-| relationship_type | ENUM | `mentor`, `mentee`, `colleague`, `friend`, `client`, `vendor`, `recruiter`, `industry_contact`, `other` |
-| status | ENUM | `active`, `inactive`, `blocked` |
-| relationship_strength | INTEGER | Escala 1–5 |
+Metodologías se indexan en Qdrant para `search_knowledge_base` del agente.
 
-## 📦 Otras Tablas de Soporte
+---
 
-| Tabla | Propósito | Notas |
-|-------|-----------|-------|
-| `refresh_tokens` | Rotación de tokens JWT | Diseñada para uso con `auth_enhanced.py` (no registrado aún) |
-| `file_uploads` | Metadatos de archivos subidos | `file_size`, `mime_type`, `download_count` |
-| `events` | Tracking de actividad del usuario | 18 tipos de evento (`EventType`), usado para analítica |
-| `audit_logs` | Auditoría de acciones (create/update/delete/login) | Incluye `old_values`/`new_values` en JSON |
-| `metrics` | Métricas precomputadas del perfil (1:1 con `users`) | "Read-only, calculado periódicamente desde Events y Evidence" (comentario del modelo) |
-| `user_sessions` | Sesiones activas por dispositivo | `device_type`, `ip_address`, `session_duration_seconds` |
+## Dominio: Agent Bedrock
 
-## 🔍 Consultas Comunes
+Documentación API: [sections/bedrock/README.md](./sections/bedrock/README.md)
 
-```sql
--- Documentos de un usuario, más recientes primero
-SELECT * FROM documents WHERE user_id = 1 ORDER BY created_at DESC;
+| Tabla | Modelo | Propósito |
+|-------|--------|-----------|
+| `bedrock_settings` | `BedrockSettings` | Modelo activo, presupuesto, límites runtime |
+| `bedrock_conversations` | `BedrockConversation` | Sesiones de chat (`session_type`: general/contextual) |
+| `bedrock_conversation_messages` | `BedrockConversationMessage` | Historial user/assistant |
+| `bedrock_usage_logs` | `BedrockUsageLog` | Tokens y costo por turno |
+| `bedrock_usage_round_logs` | `BedrockUsageRoundLog` | Tokens por ronda Converse dentro de un turno |
+| `bedrock_agent_profile_prompts` | `BedrockAgentProfilePrompt` | Suffix de prompt por perfil (override PG) |
+| `bedrock_custom_tools` | `BedrockCustomTool` | Servidores MCP remotos registrados |
+| `bedrock_tasks` | `BedrockTask` | Tareas del agente |
+| `pdf_output_templates` | `PdfOutputTemplate` | Plantillas HTML para PDF |
 
--- Documentos por tipo
-SELECT * FROM documents WHERE user_id = 1 AND type = 'cv';
+Migración harness local: `a1b2c3d4e5f6_bedrock_local_harness.py`
 
--- Búsqueda dentro del JSON de un documento
-SELECT * FROM documents WHERE user_id = 1 AND data->>'nombre' LIKE '%Juan%';
+---
 
--- Total de documentos por tipo (agregación global)
-SELECT type, COUNT(*) AS total FROM documents GROUP BY type ORDER BY total DESC;
-```
+## Dominio: LinkedIn
 
-## 🔄 Migraciones
+Documentación API: [sections/linkedin/README.md](./sections/linkedin/README.md)
 
-El proyecto tiene Alembic configurado (`alembic.ini`) pero **sin migraciones generadas todavía**. Flujo previsto:
+| Tabla | Modelo | Propósito |
+|-------|--------|-----------|
+| `linkedin_connections` | `LinkedInConnection` | Tokens OAuth, expiry |
+| `linkedin_posts` | `LinkedInPost` | Cola publicados/programados |
+
+---
+
+## Dominio: archivos y analítica
+
+| Tabla | Modelo | Propósito |
+|-------|--------|-----------|
+| `file_uploads` | `FileUpload` | Metadatos MinIO (path, mime, category, is_public) |
+| `audit_logs` | `AuditLog` | Cambios del agente (old/new values JSON) |
+| `events` | `Event` | Tracking de actividad (18 tipos) |
+| `metrics` | `Metrics` | Métricas precomputadas por usuario |
+
+**Nota:** la tabla legacy `documents` (JSONB CV/cartas del prototipo MCP Tools) **ya no tiene router activo** — el contenido de CV migró a `cv_versions` y plantillas PDF.
+
+---
+
+## Vistas SQL
+
+| Vista | Uso |
+|-------|-----|
+| `search_metrics_view` | `GET /career/metrics/weekly` |
+
+Definida en migraciones o scripts SQL; agrega métricas semanales de búsqueda.
+
+---
+
+## Migraciones Alembic
+
+**Directorio:** `api/alembic/versions/`
+
+| Revisión | Descripción |
+|----------|-------------|
+| `ca159800797a` | Consolidación contenido CV |
+| `7e2f1a9c4b3d` | Syllabus y document_url en certifications |
+| `9c4d7e1f2a8b` | Status en certifications |
+| `a1b2c3d4e5f6` | Bedrock harness local (tablas + columnas) |
+| `b7c8d9e0f1a2` | Job discovery + company boards |
+| `c2d3e4f5a6b7` | Bedrock agent profile prompts |
+| `d1e2f3a4b5c6` | IDs prefijados + campo notes |
+| `e3f4a5b6c7d8` | Fix user_id en tablas telemetría |
 
 ```bash
 cd api/
-alembic revision --autogenerate -m "Descripción del cambio"
-alembic upgrade head
+alembic upgrade head          # aplicar todas
+alembic current               # ver revisión activa
+alembic revision --autogenerate -m "descripción"  # nueva migración
 ```
 
-> Antes de la primera migración real, se recomienda decidir si `init.sql` se retira en favor de Alembic como única fuente de verdad del esquema, para evitar la desincronización descrita en [Estado de las Tablas](#-estado-de-las-tablas).
-
-## 💾 Backups
+En Docker:
 
 ```bash
-# Backup completo
-docker exec mcp_postgres pg_dump -U mcpuser mcp_db > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Restaurar
-docker exec -i mcp_postgres psql -U mcpuser mcp_db < backup_20260816_100000.sql
+docker exec api_rest alembic upgrade head
 ```
 
 ---
 
-**Relacionado**: [ARCHITECTURE.md](./ARCHITECTURE.md) · [API.md](./API.md) · [SETUP.md](./SETUP.md)
+## Qdrant (externo)
+
+No es PostgreSQL — colección vectorial separada para:
+
+- Registros de carrera indexados (`CareerRepository._index_for_search`)
+- Metodologías operativas
+- Memoria manual del agente (`POST /bedrock/memory/manual`)
+
+Config: `QDRANT_HOST`, `QDRANT_PORT`, `QDRANT_COLLECTION` en `.env`.
+
+Embeddings: Titan via `bedrock_service.embed_text()`.
+
+---
+
+## Consultas útiles
+
+```sql
+-- Usuario y conteo de vacantes
+SELECT u.id, u.username, COUNT(v.id) AS vacancies
+FROM users u
+LEFT JOIN vacancies v ON v.user_id = u.id
+GROUP BY u.id, u.username;
+
+-- Gasto Bedrock hoy (UTC)
+SELECT SUM(estimated_cost_usd) AS spent_usd
+FROM bedrock_usage_logs
+WHERE user_id = 'usr-1'
+  AND created_at >= date_trunc('day', NOW() AT TIME ZONE 'UTC');
+
+-- Conversaciones recientes
+SELECT session_id, title, session_type, updated_at
+FROM bedrock_conversations
+WHERE user_id = 'usr-1'
+ORDER BY updated_at DESC
+LIMIT 10;
+
+-- Secuencia de IDs (ej. achievements)
+SELECT nextval('ach_id_seq');
+```
+
+---
+
+## Backups
+
+```bash
+# Backup completo
+docker exec postgres_db pg_dump -U portafolio_admin portafolio_db \
+  > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restaurar
+docker exec -i postgres_db psql -U portafolio_admin portafolio_db \
+  < backup_20260824_120000.sql
+```
+
+Ajustar usuario/BD según `.env` del proyecto (`POSTGRES_USER`, `POSTGRES_DB`).
+
+---
+
+## Mapa modelo → documentación API
+
+| Grupo de tablas | README sección |
+|-----------------|----------------|
+| users, refresh_tokens | [auth](./sections/auth/README.md) |
+| identidad (12 tablas) | [career-identity](./sections/career-identity/README.md) |
+| búsqueda (14 tablas) | [career-search](./sections/career-search/README.md) |
+| digital (6 tablas) | [career-digital](./sections/career-digital/README.md) |
+| tags | [career-support](./sections/career-support/README.md) |
+| operational_methodologies | [career-methodologies](./sections/career-methodologies/README.md) |
+| bedrock_* , pdf_output_templates | [bedrock](./sections/bedrock/README.md), [pdf-templates](./sections/pdf-templates/README.md) |
+| bedrock_tasks | [bedrock-tasks](./sections/bedrock-tasks/README.md) |
+| linkedin_* | [linkedin](./sections/linkedin/README.md) |
+| file_uploads | [files](./sections/files/README.md) |
+| portal + projects (lectura) | [public](./sections/public/README.md) |
+
+---
+
+**Relacionado:** [ARCHITECTURE.md](./ARCHITECTURE.md) · [API.md](./API.md) · [SETUP.md](./SETUP.md)

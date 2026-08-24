@@ -2,7 +2,7 @@
 
 ## Paquete
 
-`src/services/bedrock/` — ver README del paquete.
+`src/services/bedrock/` — ver [README del paquete](../src/services/bedrock/README.md).
 
 ## Endpoint principal
 
@@ -29,9 +29,9 @@ Body (`BedrockChatRequest`):
 ## Otros
 
 - `GET /bedrock/conversations?session_type=general|contextual`
-- `GET /bedrock/knowledge/search?q=...` — Qdrant (reemplazo memoria AgentCore)
+- `GET /bedrock/knowledge/search?q=...` — búsqueda semántica Qdrant
 
-Ver [docs/BEDROCK-SYSTEM.md](../../docs/BEDROCK-SYSTEM.md).
+Documentación HTTP completa: [sections/bedrock/README.md](sections/bedrock/README.md). Índice de docs API: [README.md](README.md).
 
 ---
 

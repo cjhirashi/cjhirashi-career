@@ -1,12 +1,11 @@
 # Sistema Bedrock — Guía maestra
 
-Documento índice del Harness local post-rediseño (ADR-008, ADR-009, ADR-010).
+Documento índice del Harness Converse (ADR-008, ADR-009, ADR-010).
 
 ## 1. Resumen
 
-- **Harness local** en `api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto.
-- **AWS:** solo `bedrock-runtime` (ConverseStream + Titan Embeddings + Titan Image).
-- **Sin AgentCore Harness** cuando `BEDROCK_USE_LOCAL_HARNESS=true`.
+- **Harness** en `api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto.
+- **AWS:** solo `bedrock-runtime` (Converse + Titan Embeddings + Titan Image).
 
 ## 2. Dos superficies de chat
 
@@ -23,10 +22,11 @@ Definidos en `api/src/services/bedrock/agent_profiles.py`.
 
 ## 4. Variables de entorno
 
-Ver `.env.example` — `BEDROCK_USE_LOCAL_HARNESS`, `BEDROCK_DEFAULT_MODEL_ID`, `BEDROCK_DAILY_BUDGET_USD`, etc.
+Ver `.env.example` — `BEDROCK_DEFAULT_MODEL_ID`, `BEDROCK_DAILY_BUDGET_USD`, `AWS_ACCESS_KEY_ID`, etc.
 
 ## 5. Documentación relacionada
 
 - [ADR-008](09-DECISIONS/008-bedrock-harness-local.md)
-- [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md) — incluye **política IAM** y pasos en consola AWS
+- [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md) — IAM y catálogo de modelos
+- [api/docs/sections/bedrock/README.md](../api/docs/sections/bedrock/README.md)
 - [admin/docs/BEDROCK-CHAT.md](../admin/docs/BEDROCK-CHAT.md)
