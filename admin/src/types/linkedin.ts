@@ -11,7 +11,7 @@ export interface LinkedInStatus {
 export type LinkedInPostStatus = 'scheduled' | 'published' | 'failed'
 
 export interface LinkedInPostEntity {
-  id: number
+  id: string
   text: string
   image_url: string | null
   status: LinkedInPostStatus

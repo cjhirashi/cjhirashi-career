@@ -8,6 +8,9 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class User(Base):
     """
     User entity for authentication and career profile management.
@@ -19,7 +22,7 @@ class User(Base):
     __tablename__ = "users"
 
     # Primary Key
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(20), primary_key=True, index=True)
 
     # Authentication
     username = Column(String(255), unique=True, nullable=False, index=True)
@@ -60,3 +63,5 @@ class User(Base):
 
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
+
+register_id_listener(User, "usr")

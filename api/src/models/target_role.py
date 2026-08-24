@@ -8,14 +8,17 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class TargetRole(Base):
     """A target role, with market validation data and priority."""
 
     __tablename__ = "target_roles"
     __table_args__ = (CheckConstraint("priority_order BETWEEN 1 AND 3"),)
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     role_name = Column(String(255), nullable=False)
     priority_order = Column(Integer, nullable=True, index=True)
@@ -31,8 +34,13 @@ class TargetRole(Base):
     key_requirements = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<TargetRole(id={self.id}, role_name='{self.role_name}')>"
+
+register_id_listener(TargetRole, "trl")

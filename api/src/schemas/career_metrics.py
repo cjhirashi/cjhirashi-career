@@ -20,6 +20,7 @@ class SearchMetricsWeekResponse(BaseModel):
     interviews_scheduled: int = 0
     offers: int = 0
     rejections: int = 0
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -77,3 +78,4 @@ class SearchOverviewResponse(BaseModel):
     companies_by_status: List[CountBreakdown]
     fit_scoring_factors: List[FitFactorMetric]
     active_search_plan: Optional[SearchPlanMetric] = None
+    notes: Optional[str] = None

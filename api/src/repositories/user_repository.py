@@ -64,7 +64,7 @@ class UserRepository(BaseRepository[User]):
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() is not None
 
-    async def update_last_login(self, user_id: int) -> Optional[User]:
+    async def update_last_login(self, user_id: str) -> Optional[User]:
         """
         Update user's last login timestamp.
 
@@ -102,7 +102,7 @@ class UserRepository(BaseRepository[User]):
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def deactivate_user(self, user_id: int) -> Optional[User]:
+    async def deactivate_user(self, user_id: str) -> Optional[User]:
         """
         Deactivate a user.
 
@@ -118,7 +118,7 @@ class UserRepository(BaseRepository[User]):
             await self.db.flush()
         return user
 
-    async def activate_user(self, user_id: int) -> Optional[User]:
+    async def activate_user(self, user_id: str) -> Optional[User]:
         """
         Activate a user.
 

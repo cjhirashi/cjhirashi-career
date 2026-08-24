@@ -8,6 +8,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class SearchPlan(Base):
     """A job-search plan for a given period, with weekly targets and status."""
 
@@ -18,9 +21,9 @@ class SearchPlan(Base):
         ),
     )
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    target_role_id = Column(Integer, ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_role_id = Column(String(20), ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
 
     period_start = Column(Date, nullable=True)
     period_end = Column(Date, nullable=True)
@@ -33,8 +36,13 @@ class SearchPlan(Base):
     completion_percentage = Column(Integer, default=0, nullable=True)
     lessons_learned = Column(Text, nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<SearchPlan(id={self.id}, period_start={self.period_start})>"
+
+register_id_listener(SearchPlan, "spl")

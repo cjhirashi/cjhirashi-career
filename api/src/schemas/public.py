@@ -15,7 +15,7 @@ from pydantic import BaseModel
 # ============================================================================
 
 class PublicProjectCard(BaseModel):
-    id: int
+    id: str
     title: str
     category: Optional[str] = None
     industry: Optional[str] = None
@@ -41,7 +41,7 @@ class PublicProjectDetail(PublicProjectCard):
 
 
 class PublicPublicationCard(BaseModel):
-    id: int
+    id: str
     title: str
     slug: Optional[str] = None
     excerpt: Optional[str] = None
@@ -88,6 +88,7 @@ class PublicHomeResponse(BaseModel):
     # "Stack técnico" teaser row, curated by that flag rather than showing
     # every category (that's what About's full skill breakdown is for).
     skill_categories: List[str] = []
+    notes: Optional[str] = None
 
 
 # ============================================================================
@@ -125,6 +126,7 @@ class PublicAboutResponse(BaseModel):
     work_history: List[PublicWorkHistoryEntry] = []
     skill_groups: List[PublicSkillGroup] = []
     certifications: List[PublicCertification] = []
+    notes: Optional[str] = None
 
 
 # ============================================================================
@@ -140,3 +142,4 @@ class PublicContactResponse(BaseModel):
     footer_links: List[Any] = []
     linkedin_url: Optional[str] = None
     github_url: Optional[str] = None
+    notes: Optional[str] = None

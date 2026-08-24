@@ -7,17 +7,19 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class ContactInteraction(Base):
     """An interaction with a networking contact, optionally tied to an opportunity."""
 
     __tablename__ = "contact_interactions"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    contact_id = Column(
-        Integer, ForeignKey("networking_contacts.id", ondelete="CASCADE"), nullable=False, index=True
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    contact_id = Column(String(20), ForeignKey("networking_contacts.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    related_vacancy_id = Column(Integer, ForeignKey("vacancies.id", ondelete="SET NULL"), nullable=True)
+    related_vacancy_id = Column(String(20), ForeignKey("vacancies.id", ondelete="SET NULL"), nullable=True)
 
     interaction_at = Column(DateTime(timezone=True), nullable=True)
     channel = Column(String(50), nullable=True)
@@ -26,8 +28,13 @@ class ContactInteraction(Base):
     status = Column(String(50), nullable=True)
     generated_opportunity = Column(Boolean, default=False, nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<ContactInteraction(id={self.id}, contact_id={self.contact_id})>"
+
+register_id_listener(ContactInteraction, "cni")

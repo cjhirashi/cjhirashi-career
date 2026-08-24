@@ -10,11 +10,14 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class PdfOutputTemplate(Base):
     __tablename__ = "pdf_output_templates"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     slug = Column(String(120), nullable=False, index=True)
     document_type = Column(String(50), nullable=False, index=True)
     title = Column(String(255), nullable=False)
@@ -30,3 +33,5 @@ class PdfOutputTemplate(Base):
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+register_id_listener(PdfOutputTemplate, "pdt")

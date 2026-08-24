@@ -34,11 +34,13 @@ class CompetencyBase(BaseModel):
     certification_url: Optional[str] = Field(None, max_length=500, description="Certification URL")
     keywords: Optional[str] = Field(None, max_length=500, description="SEO keywords")
     is_featured: bool = Field(default=False, description="Featured in profile")
+    notes: Optional[str] = None
 
 
 class CompetencyCreate(CompetencyBase):
     """Schema for creating competency."""
     pass
+    notes: Optional[str] = None
 
 
 class CompetencyUpdate(BaseModel):
@@ -50,16 +52,18 @@ class CompetencyUpdate(BaseModel):
     category: Optional[str] = None
     years_of_experience: Optional[float] = None
     is_featured: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class CompetencyResponse(CompetencyBase):
     """Competency response schema."""
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     endorsement_count: int = 0
     is_verified: bool = False
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -71,3 +75,4 @@ class CompetencyListResponse(BaseModel):
     items: list[CompetencyResponse]
     skip: int
     limit: int
+    notes: Optional[str] = None

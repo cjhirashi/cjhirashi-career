@@ -22,6 +22,7 @@ class JobListingSchema(BaseModel):
     snippet: Optional[str] = None
     external_id: Optional[str] = None
     already_saved: bool = False
+    ref: Optional[str] = None
 
 
 class ProviderStatusSchema(BaseModel):
@@ -41,7 +42,7 @@ class JobDiscoveryRunRequest(BaseModel):
     query: Optional[str] = Field(None, max_length=255)
     location: Optional[str] = Field(None, max_length=255)
     providers: Optional[List[str]] = None
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     include_company_boards: bool = False
     remote: bool = False
 
@@ -59,11 +60,11 @@ class ImportUrlRequest(BaseModel):
 
 class SaveListingsRequest(BaseModel):
     listings: List[JobListingSchema] = Field(..., min_length=1)
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
 
 
 class SavedVacancySchema(BaseModel):
-    id: int
+    id: str
     vacancy_url: str
     company: str
     exact_role: str

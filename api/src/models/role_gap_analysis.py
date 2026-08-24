@@ -7,6 +7,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class RoleGapAnalysis(Base):
     """A specific gap identified for a target role, with closing plan and status."""
 
@@ -17,9 +20,9 @@ class RoleGapAnalysis(Base):
         CheckConstraint("closure_status IN ('not_started', 'in_progress', 'completed', 'paused')"),
     )
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    target_role_id = Column(Integer, ForeignKey("target_roles.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_role_id = Column(String(20), ForeignKey("target_roles.id", ondelete="CASCADE"), nullable=False, index=True)
 
     gap_name = Column(String(255), nullable=False)
     severity = Column(String(20), nullable=True)
@@ -28,8 +31,13 @@ class RoleGapAnalysis(Base):
     viability = Column(String(30), nullable=True)
     closure_status = Column(String(30), default="not_started", nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<RoleGapAnalysis(id={self.id}, gap_name='{self.gap_name}')>"
+
+register_id_listener(RoleGapAnalysis, "rga")

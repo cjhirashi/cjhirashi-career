@@ -1,7 +1,7 @@
 import { User, LoginResponse, Identity, Competency } from '@/types'
 
 export const mockUser: User = {
-  id: 1,
+  id: 'mock-1',
   username: 'demo',
   email: 'demo@example.com',
   full_name: 'Demo User',
@@ -14,7 +14,7 @@ export const mockUser: User = {
 }
 
 export const mockUser2: User = {
-  id: 2,
+  id: 'mock-2',
   username: 'testuser',
   email: 'test@example.com',
   full_name: 'Test User',
@@ -34,8 +34,8 @@ export const mockLoginResponse: LoginResponse = {
 }
 
 export const mockIdentity: Identity = {
-  id: 1,
-  user_id: 1,
+  id: 'mock-1',
+  user_id: 'usr-1',
   ikigai_what_do_i_do: 'Build scalable backend systems',
   ikigai_what_do_i_love: 'Problem solving with elegant code',
   ikigai_what_am_i_good_at: 'Software architecture, Python, databases',
@@ -52,8 +52,8 @@ export const mockIdentity: Identity = {
 }
 
 export const mockCompetency: Competency = {
-  id: 1,
-  user_id: 1,
+  id: 'mock-1',
+  user_id: 'usr-1',
   name: 'Python',
   category: 'technical',
   level: 'expert',
@@ -69,14 +69,14 @@ export const mockCompetencies: Competency[] = [
   mockCompetency,
   {
     ...mockCompetency,
-    id: 2,
+    id: 'mock-2',
     name: 'Leadership',
     category: 'transferable',
     level: 'advanced',
   },
   {
     ...mockCompetency,
-    id: 3,
+    id: 'mock-3',
     name: 'Product Strategy',
     category: 'business',
     level: 'intermediate',
@@ -85,8 +85,8 @@ export const mockCompetencies: Competency[] = [
 
 // Additional mock data for comprehensive testing
 export const mockEmptyIdentity: Identity = {
-  id: 1,
-  user_id: 1,
+  id: 'mock-1',
+  user_id: 'usr-1',
   ikigai_what_do_i_do: '',
   ikigai_what_do_i_love: '',
   ikigai_what_am_i_good_at: '',

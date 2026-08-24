@@ -32,7 +32,7 @@ def _get_client() -> AsyncQdrantClient:
     return _client
 
 
-def _point_id(resource_key: str, record_id: int) -> str:
+def _point_id(resource_key: str, record_id: str) -> str:
     """Qdrant point ids must be a UUID or an unsigned int - derive a stable
     UUID from the natural key so re-indexing the same record is an upsert,
     never a duplicate."""
@@ -57,10 +57,10 @@ async def _ensure_collection(vector_size: int) -> None:
 
 async def upsert_point(
     *,
-    user_id: int,
+    user_id: str,
     resource_type: str,
     resource_key: str,
-    record_id: int,
+    record_id: str,
     text: str,
     vector: List[float],
 ) -> None:
@@ -88,7 +88,7 @@ async def upsert_point(
     )
 
 
-async def delete_point(*, resource_key: str, record_id: int) -> None:
+async def delete_point(*, resource_key: str, record_id: str) -> None:
     client = _get_client()
     await client.delete(
         collection_name=settings.QDRANT_COLLECTION,
@@ -98,7 +98,7 @@ async def delete_point(*, resource_key: str, record_id: int) -> None:
 
 async def search(
     *,
-    user_id: int,
+    user_id: str,
     vector: List[float],
     top_k: int = 5,
     resource_type: Optional[str] = None,

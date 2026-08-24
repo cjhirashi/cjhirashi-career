@@ -55,14 +55,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    try:
-        user_id = int(user_id_str)
-    except (ValueError, TypeError):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido: ID de usuario malformado",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+    user_id = user_id_str
 
     # Buscar usuario por ID (búsqueda por primary key es más eficiente)
     result = await db.execute(

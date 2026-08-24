@@ -34,11 +34,13 @@ class PublicationBase(BaseModel):
     status: PublicationStatusLiteral = "draft"
     reading_minutes: Optional[int] = None
     featured_on_home: bool = False
-    related_project_id: Optional[int] = None
+    related_project_id: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class PublicationCreate(PublicationBase):
     pass
+    notes: Optional[str] = None
 
 
 class PublicationUpdate(BaseModel):
@@ -59,14 +61,16 @@ class PublicationUpdate(BaseModel):
     status: Optional[PublicationStatusLiteral] = None
     reading_minutes: Optional[int] = None
     featured_on_home: Optional[bool] = None
-    related_project_id: Optional[int] = None
+    related_project_id: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class PublicationResponse(PublicationBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -86,21 +90,25 @@ class LinkedInProfileBase(BaseModel):
     featured_skills: Optional[str] = None
     featured_certifications: Optional[str] = None
     languages: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class LinkedInProfileCreate(LinkedInProfileBase):
     pass
+    notes: Optional[str] = None
 
 
 class LinkedInProfileUpdate(LinkedInProfileBase):
     pass
+    notes: Optional[str] = None
 
 
 class LinkedInProfileResponse(LinkedInProfileBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -116,21 +124,25 @@ class GitHubProfileBase(BaseModel):
     readme_markdown: Optional[str] = None
     profile_url: Optional[str] = Field(None, max_length=500)
     username: Optional[str] = Field(None, max_length=255)
+    notes: Optional[str] = None
 
 
 class GitHubProfileCreate(GitHubProfileBase):
     pass
+    notes: Optional[str] = None
 
 
 class GitHubProfileUpdate(GitHubProfileBase):
     pass
+    notes: Optional[str] = None
 
 
 class GitHubProfileResponse(GitHubProfileBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -157,21 +169,25 @@ class PortalHomeBase(BaseModel):
     stat3_value: Optional[str] = Field(None, max_length=50)
     stat4_label: Optional[str] = Field(None, max_length=100)
     stat4_value: Optional[str] = Field(None, max_length=50)
+    notes: Optional[str] = None
 
 
 class PortalHomeCreate(PortalHomeBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalHomeUpdate(PortalHomeBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalHomeResponse(PortalHomeBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -184,21 +200,25 @@ class PortalHomeResponse(PortalHomeBase):
 class PortalAboutBase(BaseModel):
     photo_url: Optional[str] = Field(None, max_length=1024)
     name: Optional[str] = Field(None, max_length=255)
+    notes: Optional[str] = None
 
 
 class PortalAboutCreate(PortalAboutBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalAboutUpdate(PortalAboutBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalAboutResponse(PortalAboutBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -215,21 +235,25 @@ class PortalContactBase(BaseModel):
     availability_status: Optional[str] = Field(None, max_length=50)
     preferred_contact_method: Optional[str] = Field(None, max_length=100)
     footer_links: Optional[List[Any]] = None
+    notes: Optional[str] = None
 
 
 class PortalContactCreate(PortalContactBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalContactUpdate(PortalContactBase):
     pass
+    notes: Optional[str] = None
 
 
 class PortalContactResponse(PortalContactBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

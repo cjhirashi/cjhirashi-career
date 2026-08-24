@@ -19,11 +19,14 @@ class LinkedInPostStatus:
     FAILED = "failed"
 
 
+from services.id_generator import register_id_listener
+
+
 class LinkedInPost(Base):
     __tablename__ = "linkedin_posts"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     text = Column(Text, nullable=False)
     image_url = Column(String(1024), nullable=True)  # our own MinIO copy, for display/re-upload at publish time
@@ -33,7 +36,12 @@ class LinkedInPost(Base):
     linkedin_post_urn = Column(String(255), nullable=True)
     scheduled_at = Column(DateTime(timezone=True), nullable=True)
     published_at = Column(DateTime(timezone=True), nullable=True)
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<LinkedInPost(id={self.id}, status='{self.status}')>"
+
+register_id_listener(LinkedInPost, "lnp")

@@ -19,12 +19,12 @@ export const agentTasksApi = {
     return response.data
   },
 
-  update: async (id: number, payload: Partial<{ title: string; description: string; status: string }>): Promise<BedrockTask> => {
+  update: async (id: string, payload: Partial<{ title: string; description: string; status: string }>): Promise<BedrockTask> => {
     const response = await axiosInstance.put<BedrockTask>(`/agent-tasks/${id}`, payload)
     return response.data
   },
 
-  remove: async (id: number): Promise<void> => {
+  remove: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/agent-tasks/${id}`)
   },
 }

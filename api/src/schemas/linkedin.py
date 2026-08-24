@@ -13,14 +13,16 @@ class LinkedInStatusResponse(BaseModel):
     member_email: Optional[str] = None
     profile_picture_url: Optional[str] = None
     expires_at: Optional[datetime] = None
+    notes: Optional[str] = None
 
 
 class LinkedInConnectResponse(BaseModel):
     authorize_url: str
+    notes: Optional[str] = None
 
 
 class LinkedInPostResponse(BaseModel):
-    id: int
+    id: str
     text: str
     image_url: Optional[str] = None
     status: str
@@ -29,6 +31,7 @@ class LinkedInPostResponse(BaseModel):
     scheduled_at: Optional[datetime] = None
     published_at: Optional[datetime] = None
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

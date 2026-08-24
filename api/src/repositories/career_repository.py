@@ -60,7 +60,7 @@ class CareerRepository(Generic[ModelType]):
     async def list_for_user(
         self,
         db: AsyncSession,
-        user_id: int,
+        user_id: str,
         skip: int = 0,
         limit: int = 20,
         sort_by: Optional[str] = None,
@@ -90,14 +90,14 @@ class CareerRepository(Generic[ModelType]):
         result = await db.execute(stmt)
         return result.scalars().all()
 
-    async def count_for_user(self, db: AsyncSession, user_id: int) -> int:
+    async def count_for_user(self, db: AsyncSession, user_id: str) -> int:
         """Return the total number of rows belonging to `user_id`."""
         stmt = select(sa_func.count()).select_from(self.model).where(self.model.user_id == user_id)
         result = await db.execute(stmt)
         return result.scalar_one()
 
     async def get_for_user(
-        self, db: AsyncSession, user_id: int, item_id: int
+        self, db: AsyncSession, user_id: str, item_id: str
     ) -> Optional[ModelType]:
         """Fetch a single row by id, scoped to `user_id`. Never trusts a bare id lookup."""
         stmt = select(self.model).where(
@@ -107,7 +107,7 @@ class CareerRepository(Generic[ModelType]):
         return result.scalar_one_or_none()
 
     async def create_for_user(
-        self, db: AsyncSession, user_id: int, data: dict
+        self, db: AsyncSession, user_id: str, data: dict
     ) -> ModelType:
         """
         Create a row, forcing `user_id` from the authenticated user (never
@@ -137,7 +137,7 @@ class CareerRepository(Generic[ModelType]):
         return obj
 
     async def update_for_user(
-        self, db: AsyncSession, user_id: int, item_id: int, data: dict
+        self, db: AsyncSession, user_id: str, item_id: str, data: dict
     ) -> Optional[ModelType]:
         """Partially update a row scoped to `user_id`. Returns None if not found/not owned."""
         obj = await self.get_for_user(db, user_id, item_id)
@@ -153,7 +153,7 @@ class CareerRepository(Generic[ModelType]):
         _fire_and_forget(self._index_for_search(obj, user_id))
         return obj
 
-    async def delete_for_user(self, db: AsyncSession, user_id: int, item_id: int) -> bool:
+    async def delete_for_user(self, db: AsyncSession, user_id: str, item_id: str) -> bool:
         """Delete a row scoped to `user_id`. Returns False if not found/not owned."""
         obj = await self.get_for_user(db, user_id, item_id)
         if obj is None:
@@ -173,7 +173,7 @@ class CareerRepository(Generic[ModelType]):
                 lines.append(f"{col}: {value}")
         return "\n".join(lines)
 
-    async def _index_for_search(self, obj: ModelType, user_id: int) -> None:
+    async def _index_for_search(self, obj: ModelType, user_id: str) -> None:
         """Best-effort: (re)index this record in Qdrant for Agent Bedrock's
         knowledge base. Never lets an indexing failure fail the real write -
         logs and moves on. Skipped entirely if this repository wasn't built
@@ -206,7 +206,7 @@ class CareerRepository(Generic[ModelType]):
                 exc_info=True,
             )
 
-    async def _remove_from_search(self, item_id: int) -> None:
+    async def _remove_from_search(self, item_id: str) -> None:
         """Best-effort counterpart to `_index_for_search`, called after a real delete."""
         if not self.resource_key or not self.vectorize:
             return

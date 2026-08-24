@@ -8,8 +8,8 @@ from pydantic import BaseModel
 
 
 class FileUploadResponse(BaseModel):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     original_filename: str
     stored_filename: str
     file_type: str
@@ -19,6 +19,7 @@ class FileUploadResponse(BaseModel):
     is_public: bool
     download_url: Optional[str] = None
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

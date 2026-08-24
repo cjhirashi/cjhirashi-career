@@ -46,7 +46,7 @@ class AuditLog(Base):
     # Audit Details
     action = Column(Enum(AuditAction), nullable=False, index=True)
     resource_type = Column(String(100), nullable=False, index=True)  # User, Competency, Evidence, etc.
-    resource_id = Column(Integer, nullable=True)
+    resource_id = Column(String(100), nullable=True)
     resource_name = Column(String(255), nullable=True)
 
     # Change Details

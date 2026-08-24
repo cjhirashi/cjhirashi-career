@@ -35,7 +35,7 @@ export function useLinkedInMutations() {
   })
 
   const cancelPostMutation = useMutation({
-    mutationFn: (id: number) => linkedinApi.cancelPost(id),
+    mutationFn: (id: string) => linkedinApi.cancelPost(id),
     onSuccess: invalidatePosts,
   })
 

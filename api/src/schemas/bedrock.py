@@ -40,6 +40,7 @@ class BedrockModelOption(BaseModel):
 class BedrockModelStatusResponse(BaseModel):
     current_model_id: str
     available_models: List[BedrockModelOption]
+    notes: Optional[str] = None
 
 
 class BedrockModelSwitchRequest(BaseModel):
@@ -72,23 +73,42 @@ class BedrockUsageMetricsResponse(BaseModel):
     daily_budget_usd: Optional[float] = None
     daily_spent_usd: Optional[float] = None
     daily_remaining_usd: Optional[float] = None
+    notes: Optional[str] = None
 
 
 class BedrockBudgetStatusResponse(BaseModel):
     daily_budget_usd: float
     daily_spent_usd: float
     daily_remaining_usd: float
+    notes: Optional[str] = None
 
 
 class BedrockInstructionsResponse(BaseModel):
     system_prompt: str
     is_default: bool
+    notes: Optional[str] = None
 
 
 class BedrockInstructionsUpdateRequest(BaseModel):
     """`system_prompt=None` (or omitted) resets to the built-in default."""
 
     system_prompt: Optional[str] = None
+
+
+class BedrockAgentProfilePromptResponse(BaseModel):
+    profile_id: str
+    label: str
+    default_suffix: str
+    override_suffix: Optional[str] = None
+    effective_suffix: str
+    is_default: bool
+    notes: Optional[str] = None
+
+
+class BedrockAgentProfilePromptUpdateRequest(BaseModel):
+    """`system_prompt_suffix=None` clears the override for this profile."""
+
+    system_prompt_suffix: Optional[str] = None
 
 
 class BedrockCustomToolCreateRequest(BaseModel):
@@ -98,12 +118,13 @@ class BedrockCustomToolCreateRequest(BaseModel):
 
 
 class BedrockCustomToolResponse(BaseModel):
-    id: int
+    id: str
     name: str
     url: str
     headers: Optional[Dict[str, str]] = None
     is_enabled: bool
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -119,6 +140,7 @@ class BedrockMemoryRecordResponse(BaseModel):
     score: Optional[float] = None
     createdAt: Optional[Any] = None
     namespaces: Optional[List[str]] = None
+    notes: Optional[str] = None
 
     class Config:
         extra = "allow"
@@ -131,6 +153,7 @@ class BedrockMemoryEventResponse(BaseModel):
     eventId: Optional[str] = None
     eventTimestamp: Optional[Any] = None
     payload: Optional[List[Dict[str, Any]]] = None
+    notes: Optional[str] = None
 
     class Config:
         extra = "allow"
@@ -146,16 +169,18 @@ class BedrockConversationResponse(BaseModel):
     session_type: str = "contextual"
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
 class BedrockConversationMessageResponse(BaseModel):
-    id: int
+    id: str
     role: str
     content: str
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -166,13 +191,14 @@ class BedrockConversationRenameRequest(BaseModel):
 
 
 class BedrockAuditLogResponse(BaseModel):
-    id: int
+    id: str
     action: str
     resource_type: str
-    resource_id: Optional[int] = None
+    resource_id: Optional[str] = None
     old_values: Optional[Dict[str, Any]] = None
     new_values: Optional[Dict[str, Any]] = None
     created_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

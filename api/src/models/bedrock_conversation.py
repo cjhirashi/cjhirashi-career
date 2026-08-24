@@ -15,11 +15,14 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class BedrockConversation(Base):
     __tablename__ = "bedrock_conversations"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_id = Column(String(100), nullable=False, unique=True, index=True)
     # contextual = sidebar derecha por sección; general = /agent/chat orquestador
     session_type = Column(String(20), nullable=False, default="contextual", index=True)
@@ -38,8 +41,8 @@ class BedrockConversation(Base):
 class BedrockConversationMessage(Base):
     __tablename__ = "bedrock_conversation_messages"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    conversation_id = Column(Integer, ForeignKey("bedrock_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True)
+    conversation_id = Column(String(20), ForeignKey("bedrock_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
     role = Column(String(20), nullable=False)  # "user" | "assistant"
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -48,3 +51,6 @@ class BedrockConversationMessage(Base):
 
     def __repr__(self):
         return f"<BedrockConversationMessage(id={self.id}, role='{self.role}')>"
+
+register_id_listener(BedrockConversation, "bco")
+register_id_listener(BedrockConversationMessage, "bcm")

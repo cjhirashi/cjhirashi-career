@@ -7,9 +7,12 @@ requires Marketing Developer Platform partner approval), so `access_token`
 simply expires after `expires_at` and the user re-authorizes via the
 Connect flow again - there is no silent renewal.
 """
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, Text, String, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.sql import func
 from database import Base
+
+
+from services.id_generator import register_id_listener
 
 
 class LinkedInConnection(Base):
@@ -18,8 +21,8 @@ class LinkedInConnection(Base):
     __tablename__ = "linkedin_connections"
     __table_args__ = (UniqueConstraint("user_id"),)
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     access_token = Column(String(2048), nullable=False)
     member_sub = Column(String(255), nullable=False)  # LinkedIn OIDC `sub` claim -> urn:li:person:{sub}
@@ -33,3 +36,5 @@ class LinkedInConnection(Base):
 
     def __repr__(self):
         return f"<LinkedInConnection(user_id={self.user_id}, member_name='{self.member_name}')>"
+
+register_id_listener(LinkedInConnection, "lnc")

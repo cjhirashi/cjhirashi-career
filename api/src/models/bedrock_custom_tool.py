@@ -15,10 +15,13 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class BedrockCustomTool(Base):
     __tablename__ = "bedrock_custom_tools"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(String(20), primary_key=True)
     name = Column(String(100), nullable=False, unique=True)
     url = Column(Text, nullable=False)
     headers = Column(JSON, nullable=True)
@@ -27,3 +30,5 @@ class BedrockCustomTool(Base):
 
     def __repr__(self):
         return f"<BedrockCustomTool(id={self.id}, name='{self.name}')>"
+
+register_id_listener(BedrockCustomTool, "bct")

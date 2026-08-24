@@ -14,10 +14,12 @@ class OperationalMethodologyBase(BaseModel):
     subsection: Optional[str] = Field(None, max_length=150)
     description: Optional[str] = None
     content: str
+    notes: Optional[str] = None
 
 
 class OperationalMethodologyCreate(OperationalMethodologyBase):
     pass
+    notes: Optional[str] = None
 
 
 class OperationalMethodologyUpdate(BaseModel):
@@ -26,13 +28,15 @@ class OperationalMethodologyUpdate(BaseModel):
     subsection: Optional[str] = None
     description: Optional[str] = None
     content: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class OperationalMethodologyResponse(OperationalMethodologyBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

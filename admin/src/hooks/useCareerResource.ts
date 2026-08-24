@@ -43,13 +43,13 @@ export function useCareerMutations<T = CareerEntity>(resource: string) {
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Record<string, unknown> }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Record<string, unknown> }) =>
       careerApi.update<T>(resource, id, payload),
     onSuccess: invalidate,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => careerApi.remove(resource, id),
+    mutationFn: (id: string) => careerApi.remove(resource, id),
     onSuccess: invalidate,
   })
 

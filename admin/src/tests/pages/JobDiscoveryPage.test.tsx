@@ -21,10 +21,9 @@ describe('JobDiscoveryPage', () => {
   it('renders title and provider checkboxes', async () => {
     render(<JobDiscoveryPage />)
     expect(screen.getByText('Descubrir vacantes')).toBeInTheDocument()
-    await waitFor(() => expect(mockedCareerApi.listJobProviders).toHaveBeenCalled())
-    expect(screen.getByText('Get on Board')).toBeInTheDocument()
-    expect(screen.getByText(/Indeed/)).toBeInTheDocument()
-    expect(screen.getByText('LinkedIn')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('Get on Board')).toBeInTheDocument())
+    expect(screen.getByRole('checkbox', { name: /Indeed/ })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'LinkedIn' })).toBeInTheDocument()
   })
 
   it('runs a search and shows LinkedIn as an open-search link', async () => {
@@ -70,7 +69,7 @@ describe('JobDiscoveryPage', () => {
       errors: [],
     })
     mockedCareerApi.saveJobListings.mockResolvedValue({
-      created: [{ id: 1, vacancy_url: 'https://www.getonbrd.com/jobs/1', company: 'Acme', exact_role: 'Python Dev' }],
+      created: [{ id: 'vac-1', vacancy_url: 'https://www.getonbrd.com/jobs/1', company: 'Acme', exact_role: 'Python Dev' }],
       skipped: [],
     })
     render(<JobDiscoveryPage />)

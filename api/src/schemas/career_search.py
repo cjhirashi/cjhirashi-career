@@ -34,8 +34,8 @@ class FitScoringFactorUpdate(BaseModel):
 
 
 class FitScoringFactorResponse(FitScoringFactorBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -79,8 +79,8 @@ class MarketSegmentUpdate(BaseModel):
 
 
 class MarketSegmentResponse(MarketSegmentBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -93,7 +93,7 @@ class MarketSegmentResponse(MarketSegmentBase):
 # ============================================================================
 
 class RoleNarrativeBase(BaseModel):
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     title: str = Field(..., max_length=255)
     usage_context: Optional[str] = Field(None, max_length=100)
     full_narrative: Optional[str] = None
@@ -106,7 +106,7 @@ class RoleNarrativeCreate(RoleNarrativeBase):
 
 
 class RoleNarrativeUpdate(BaseModel):
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     title: Optional[str] = Field(None, max_length=255)
     usage_context: Optional[str] = None
     full_narrative: Optional[str] = None
@@ -115,8 +115,8 @@ class RoleNarrativeUpdate(BaseModel):
 
 
 class RoleNarrativeResponse(RoleNarrativeBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -134,7 +134,7 @@ PlanStatusLiteral = Literal["not_started", "in_progress", "paused", "completed",
 class SearchPlanBase(BaseModel):
     period_start: Optional[date] = None
     period_end: Optional[date] = None
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     weekly_targets: Optional[Dict[str, Any]] = None
     primary_channels: Optional[str] = None
     target_cvs_sent: Optional[int] = None
@@ -152,7 +152,7 @@ class SearchPlanCreate(SearchPlanBase):
 class SearchPlanUpdate(BaseModel):
     period_start: Optional[date] = None
     period_end: Optional[date] = None
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     weekly_targets: Optional[Dict[str, Any]] = None
     primary_channels: Optional[str] = None
     target_cvs_sent: Optional[int] = None
@@ -164,8 +164,8 @@ class SearchPlanUpdate(BaseModel):
 
 
 class SearchPlanResponse(SearchPlanBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -213,8 +213,8 @@ class NetworkingContactUpdate(BaseModel):
 
 
 class NetworkingContactResponse(NetworkingContactBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -229,12 +229,12 @@ class NetworkingContactResponse(NetworkingContactBase):
 class TargetCompanyBase(BaseModel):
     company_name: str = Field(..., max_length=255)
     tier: Optional[int] = None
-    best_fit_role_id: Optional[int] = None
+    best_fit_role_id: Optional[str] = None
     company_size: Optional[str] = Field(None, max_length=50)
     salary_estimate: Optional[str] = Field(None, max_length=100)
     work_modality: Optional[str] = Field(None, max_length=100)
     target_market: Optional[str] = Field(None, max_length=100)
-    weak_tie_contact_id: Optional[int] = None
+    weak_tie_contact_id: Optional[str] = None
     priority: Optional[str] = Field(None, max_length=10)
     status: Optional[str] = Field(None, max_length=30)
     notes: Optional[str] = None
@@ -249,12 +249,12 @@ class TargetCompanyCreate(TargetCompanyBase):
 class TargetCompanyUpdate(BaseModel):
     company_name: Optional[str] = Field(None, max_length=255)
     tier: Optional[int] = None
-    best_fit_role_id: Optional[int] = None
+    best_fit_role_id: Optional[str] = None
     company_size: Optional[str] = None
     salary_estimate: Optional[str] = None
     work_modality: Optional[str] = None
     target_market: Optional[str] = None
-    weak_tie_contact_id: Optional[int] = None
+    weak_tie_contact_id: Optional[str] = None
     priority: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
@@ -263,8 +263,8 @@ class TargetCompanyUpdate(BaseModel):
 
 
 class TargetCompanyResponse(TargetCompanyBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -314,8 +314,8 @@ class VacancyUpdate(BaseModel):
 
 
 class VacancyResponse(VacancyBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -331,13 +331,13 @@ VersionStatusLiteral = Literal["draft", "approved", "final"]
 
 
 class CVVersionBase(BaseModel):
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     title: str = Field(..., max_length=255)
     length_pages: Optional[int] = None
     status: VersionStatusLiteral = "draft"
     content: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
-    file_upload_id: Optional[int] = None
+    file_upload_id: Optional[str] = None
 
 
 class CVVersionCreate(CVVersionBase):
@@ -345,18 +345,18 @@ class CVVersionCreate(CVVersionBase):
 
 
 class CVVersionUpdate(BaseModel):
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     title: Optional[str] = Field(None, max_length=255)
     length_pages: Optional[int] = None
     status: Optional[VersionStatusLiteral] = None
     content: Optional[str] = None
     target_vacancy_ids: Optional[List[int]] = None
-    file_upload_id: Optional[int] = None
+    file_upload_id: Optional[str] = None
 
 
 class CVVersionResponse(CVVersionBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -369,12 +369,12 @@ class CVVersionResponse(CVVersionBase):
 # ============================================================================
 
 class CoverLetterVersionBase(BaseModel):
-    target_role_id: Optional[int] = None
-    target_vacancy_id: Optional[int] = None
+    target_role_id: Optional[str] = None
+    target_vacancy_id: Optional[str] = None
     title: str = Field(..., max_length=255)
     status: VersionStatusLiteral = "draft"
     body_content: Optional[str] = None
-    file_upload_id: Optional[int] = None
+    file_upload_id: Optional[str] = None
 
 
 class CoverLetterVersionCreate(CoverLetterVersionBase):
@@ -382,17 +382,17 @@ class CoverLetterVersionCreate(CoverLetterVersionBase):
 
 
 class CoverLetterVersionUpdate(BaseModel):
-    target_role_id: Optional[int] = None
-    target_vacancy_id: Optional[int] = None
+    target_role_id: Optional[str] = None
+    target_vacancy_id: Optional[str] = None
     title: Optional[str] = Field(None, max_length=255)
     status: Optional[VersionStatusLiteral] = None
     body_content: Optional[str] = None
-    file_upload_id: Optional[int] = None
+    file_upload_id: Optional[str] = None
 
 
 class CoverLetterVersionResponse(CoverLetterVersionBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -409,12 +409,12 @@ FinalResultLiteral = Literal["offer_accepted", "offer_rejected", "rejected", "ne
 
 
 class ApplicationBase(BaseModel):
-    vacancy_id: int
+    vacancy_id: str
     applied_at: Optional[datetime] = None
-    cv_version_id: Optional[int] = None
-    cover_letter_version_id: Optional[int] = None
+    cv_version_id: Optional[str] = None
+    cover_letter_version_id: Optional[str] = None
     current_status: CurrentStatusLiteral = "applied"
-    recruiter_contact_id: Optional[int] = None
+    recruiter_contact_id: Optional[str] = None
     final_result: Optional[FinalResultLiteral] = None
 
 
@@ -423,18 +423,18 @@ class ApplicationCreate(ApplicationBase):
 
 
 class ApplicationUpdate(BaseModel):
-    vacancy_id: Optional[int] = None
+    vacancy_id: Optional[str] = None
     applied_at: Optional[datetime] = None
-    cv_version_id: Optional[int] = None
-    cover_letter_version_id: Optional[int] = None
+    cv_version_id: Optional[str] = None
+    cover_letter_version_id: Optional[str] = None
     current_status: Optional[CurrentStatusLiteral] = None
-    recruiter_contact_id: Optional[int] = None
+    recruiter_contact_id: Optional[str] = None
     final_result: Optional[FinalResultLiteral] = None
 
 
 class ApplicationResponse(ApplicationBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -447,7 +447,7 @@ class ApplicationResponse(ApplicationBase):
 # ============================================================================
 
 class ApplicationInteractionBase(BaseModel):
-    application_id: int
+    application_id: str
     interaction_at: Optional[datetime] = None
     channel: Optional[str] = Field(None, max_length=50)
     content_sent: Optional[str] = None
@@ -468,8 +468,8 @@ class ApplicationInteractionUpdate(BaseModel):
 
 
 class ApplicationInteractionResponse(ApplicationInteractionBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -486,7 +486,7 @@ InterviewResultLiteral = Literal["pending", "advanced", "rejected", "under_consi
 
 
 class InterviewBase(BaseModel):
-    application_id: int
+    application_id: str
     interview_type: Optional[str] = Field(None, max_length=50)
     scheduled_at: Optional[datetime] = None
     interviewers: Optional[str] = None
@@ -494,7 +494,7 @@ class InterviewBase(BaseModel):
     answers_given: Optional[str] = None
     feedback_received: Optional[str] = None
     overall_impression: Optional[OverallImpressionLiteral] = None
-    narrative_used_id: Optional[int] = None
+    narrative_used_id: Optional[str] = None
     interview_result: Optional[InterviewResultLiteral] = None
 
 
@@ -510,13 +510,13 @@ class InterviewUpdate(BaseModel):
     answers_given: Optional[str] = None
     feedback_received: Optional[str] = None
     overall_impression: Optional[OverallImpressionLiteral] = None
-    narrative_used_id: Optional[int] = None
+    narrative_used_id: Optional[str] = None
     interview_result: Optional[InterviewResultLiteral] = None
 
 
 class InterviewResponse(InterviewBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -529,8 +529,8 @@ class InterviewResponse(InterviewBase):
 # ============================================================================
 
 class ContactInteractionBase(BaseModel):
-    contact_id: int
-    related_vacancy_id: Optional[int] = None
+    contact_id: str
+    related_vacancy_id: Optional[str] = None
     interaction_at: Optional[datetime] = None
     channel: Optional[str] = Field(None, max_length=50)
     content_sent: Optional[str] = None
@@ -544,7 +544,7 @@ class ContactInteractionCreate(ContactInteractionBase):
 
 
 class ContactInteractionUpdate(BaseModel):
-    related_vacancy_id: Optional[int] = None
+    related_vacancy_id: Optional[str] = None
     interaction_at: Optional[datetime] = None
     channel: Optional[str] = None
     content_sent: Optional[str] = None
@@ -554,8 +554,8 @@ class ContactInteractionUpdate(BaseModel):
 
 
 class ContactInteractionResponse(ContactInteractionBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 
@@ -595,8 +595,8 @@ class NetworkingActivityUpdate(BaseModel):
 
 
 class NetworkingActivityResponse(NetworkingActivityBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
 

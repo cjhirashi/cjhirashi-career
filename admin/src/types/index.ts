@@ -1,6 +1,6 @@
 // User and Authentication Types
 export interface User {
-  id: number
+  id: string
   username: string
   email: string
   full_name: string
@@ -29,8 +29,8 @@ export interface TokenRefreshResponse {
 
 // Identity Module
 export interface Identity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   ikigai_what_do_i_do?: string
   ikigai_what_do_i_love?: string
   ikigai_what_am_i_good_at?: string
@@ -46,8 +46,8 @@ export interface Identity {
 export type CompetencyCategory = 'technical' | 'transferable' | 'business'
 
 export interface Competency {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   name: string
   category: CompetencyCategory
   level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
@@ -61,8 +61,8 @@ export interface Competency {
 
 // Evidence Module
 export interface Project {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   description: string
   technologies: string[]
@@ -74,8 +74,8 @@ export interface Project {
 }
 
 export interface Position {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   company: string
   start_date: string
@@ -87,8 +87,8 @@ export interface Position {
 }
 
 export interface Achievement {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   type: 'award' | 'certification' | 'recognition'
   date: string
@@ -99,8 +99,8 @@ export interface Achievement {
 }
 
 export interface STARCase {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   situation: string
   task: string
   action: string
@@ -113,8 +113,8 @@ export interface STARCase {
 
 // Job Strategies Module
 export interface JobStrategy {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   target_title: string
   target_companies: string[]
   target_industries: string[]
@@ -124,8 +124,8 @@ export interface JobStrategy {
 }
 
 export interface JobApplication {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   company: string
   position: string
   status: 'applied' | 'rejected' | 'interview' | 'offer' | 'accepted'
@@ -138,8 +138,8 @@ export interface JobApplication {
 
 // Networking Module
 export interface NetworkContact {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   name: string
   role: string
   company: string
@@ -153,8 +153,8 @@ export interface NetworkContact {
 }
 
 export interface NetworkingOpportunity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   type: 'referral' | 'collaboration' | 'mentorship' | 'partnership'
   description: string
   status: 'open' | 'in_progress' | 'completed'
@@ -165,8 +165,8 @@ export interface NetworkingOpportunity {
 
 // Interview Preparation Module
 export interface InterviewQuestion {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   question: string
   category: 'behavioral' | 'technical' | 'domain'
   difficulty: 'easy' | 'medium' | 'hard'
@@ -175,9 +175,9 @@ export interface InterviewQuestion {
 }
 
 export interface InterviewAnswer {
-  id: number
-  user_id: number
-  question_id: number
+  id: string
+  user_id: string
+  question_id: string
   answer: string
   status: 'draft' | 'ready'
   created_at: string

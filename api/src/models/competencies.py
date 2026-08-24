@@ -12,6 +12,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class Competency(Base):
     """
     Professional competency or skill (technical, transferible or de negocio).
@@ -19,8 +22,8 @@ class Competency(Base):
 
     __tablename__ = "competencies"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     name = Column(String(255), nullable=False)
     type = Column(String(50), nullable=False, index=True)  # technical | transferable | business
@@ -40,8 +43,13 @@ class Competency(Base):
     # get_home). Independent of is_highlighted, which has no wired use yet.
     featured_on_home = Column(Boolean, default=False, nullable=True, index=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<Competency(id={self.id}, name='{self.name}', type='{self.type}')>"
+
+register_id_listener(Competency, "cmp")

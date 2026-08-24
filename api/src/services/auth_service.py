@@ -223,7 +223,7 @@ class AuthService:
         return payload
 
     @staticmethod
-    def extract_user_id_from_token(token: str) -> int:
+    def extract_user_id_from_token(token: str) -> str:
         """
         Extract user ID from token payload.
 
@@ -231,7 +231,7 @@ class AuthService:
             token: JWT token string
 
         Returns:
-            User ID from token
+            User ID (prefixed string, e.g. "usr-1") from token
 
         Raises:
             ValueError: If user_id not in token or token invalid
@@ -242,7 +242,4 @@ class AuthService:
         if not user_id:
             raise ValueError("User ID not found in token")
 
-        try:
-            return int(user_id)
-        except (ValueError, TypeError):
-            raise ValueError("Invalid user ID in token")
+        return str(user_id)

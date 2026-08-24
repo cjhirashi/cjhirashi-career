@@ -41,7 +41,7 @@ export const filesApi = {
     return response.data
   },
 
-  setVisibility: async (id: number, isPublic: boolean): Promise<FileUploadEntity> => {
+  setVisibility: async (id: string, isPublic: boolean): Promise<FileUploadEntity> => {
     const response = await axiosInstance.patch<FileUploadEntity>(`/files/${id}/visibility`, {
       is_public: isPublic,
     })
@@ -51,7 +51,7 @@ export const filesApi = {
   /** Short-lived signed URL - the only way to read a private file, and also
    * usable for a public one (e.g. to preview without trusting the stored
    * download_url yet). */
-  getDownloadUrl: async (id: number): Promise<string> => {
+  getDownloadUrl: async (id: string): Promise<string> => {
     const response = await axiosInstance.get<{ url: string }>(`/files/${id}/download`)
     return response.data.url
   },
@@ -59,12 +59,12 @@ export const filesApi = {
   /** Raw file bytes, authenticated the normal way (JWT header via
    * axiosInstance) - used to force a real "Save As" download via a Blob.
    * A plain link to the bucket URL just navigates/opens it instead. */
-  downloadBlob: async (id: number): Promise<Blob> => {
+  downloadBlob: async (id: string): Promise<Blob> => {
     const response = await axiosInstance.get(`/files/${id}/raw`, { responseType: 'blob' })
     return response.data
   },
 
-  remove: async (id: number): Promise<void> => {
+  remove: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/files/${id}`)
   },
 }

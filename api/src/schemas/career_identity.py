@@ -20,10 +20,12 @@ class DifferentiatorBase(BaseModel):
     strengths: Optional[str] = None
     evidence: Optional[str] = None
     is_active: bool = True
+    notes: Optional[str] = None
 
 
 class DifferentiatorCreate(DifferentiatorBase):
     pass
+    notes: Optional[str] = None
 
 
 class DifferentiatorUpdate(BaseModel):
@@ -32,13 +34,15 @@ class DifferentiatorUpdate(BaseModel):
     strengths: Optional[str] = None
     evidence: Optional[str] = None
     is_active: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class DifferentiatorResponse(DifferentiatorBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -52,21 +56,25 @@ class IdentityBase(BaseModel):
     professional_tagline: Optional[str] = Field(None, max_length=255)
     bio_summary: Optional[str] = None
     unique_value_proposition: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class IdentityCreate(IdentityBase):
     pass
+    notes: Optional[str] = None
 
 
 class IdentityUpdate(IdentityBase):
     pass
+    notes: Optional[str] = None
 
 
 class IdentityResponse(IdentityBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -83,22 +91,26 @@ class IdentityReflectionBase(BaseModel):
     dimension: DimensionLiteral
     content: Optional[str] = None
     tags: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class IdentityReflectionCreate(IdentityReflectionBase):
     pass
+    notes: Optional[str] = None
 
 
 class IdentityReflectionUpdate(BaseModel):
     content: Optional[str] = None
     tags: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class IdentityReflectionResponse(IdentityReflectionBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -126,10 +138,12 @@ class CompetencyBase(BaseModel):
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: bool = False
     featured_on_home: bool = False
+    notes: Optional[str] = None
 
 
 class CompetencyCreate(CompetencyBase):
     pass
+    notes: Optional[str] = None
 
 
 class CompetencyUpdate(BaseModel):
@@ -147,13 +161,15 @@ class CompetencyUpdate(BaseModel):
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: Optional[bool] = None
     featured_on_home: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class CompetencyResponse(CompetencyBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -174,11 +190,13 @@ class CertificationBase(BaseModel):
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
     status: CertificationStatusLiteral = "pending"
-    related_competency_id: Optional[int] = None
+    related_competency_id: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class CertificationCreate(CertificationBase):
     pass
+    notes: Optional[str] = None
 
 
 class CertificationUpdate(BaseModel):
@@ -189,14 +207,16 @@ class CertificationUpdate(BaseModel):
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
     status: Optional[CertificationStatusLiteral] = None
-    related_competency_id: Optional[int] = None
+    related_competency_id: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class CertificationResponse(CertificationBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -220,10 +240,12 @@ class TargetRoleBase(BaseModel):
     current_accessibility: Optional[str] = Field(None, max_length=100)
     key_requirements: Optional[str] = None
     is_active: bool = True
+    notes: Optional[str] = None
 
 
 class TargetRoleCreate(TargetRoleBase):
     pass
+    notes: Optional[str] = None
 
 
 class TargetRoleUpdate(BaseModel):
@@ -240,13 +262,15 @@ class TargetRoleUpdate(BaseModel):
     current_accessibility: Optional[str] = None
     key_requirements: Optional[str] = None
     is_active: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class TargetRoleResponse(TargetRoleBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -269,10 +293,12 @@ class WorkHistoryBase(BaseModel):
     learnings: Optional[str] = None
     contract_type: Optional[str] = Field(None, max_length=50)
     industry_sector: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = None
 
 
 class WorkHistoryCreate(WorkHistoryBase):
     pass
+    notes: Optional[str] = None
 
 
 class WorkHistoryUpdate(BaseModel):
@@ -288,13 +314,15 @@ class WorkHistoryUpdate(BaseModel):
     learnings: Optional[str] = None
     contract_type: Optional[str] = None
     industry_sector: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class WorkHistoryResponse(WorkHistoryBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -309,7 +337,7 @@ EvidenceTypeLiteral = Literal["direct_account", "public_backed"]
 
 class AchievementBase(BaseModel):
     title: str = Field(..., max_length=255)
-    work_history_id: Optional[int] = None
+    work_history_id: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
     challenge: Optional[str] = None
     solution: Optional[str] = None
@@ -321,15 +349,17 @@ class AchievementBase(BaseModel):
     visible_on_cv: bool = True
     visible_in_interview: bool = True
     visible_on_portal: bool = False
+    notes: Optional[str] = None
 
 
 class AchievementCreate(AchievementBase):
     pass
+    notes: Optional[str] = None
 
 
 class AchievementUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
-    work_history_id: Optional[int] = None
+    work_history_id: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
     challenge: Optional[str] = None
     solution: Optional[str] = None
@@ -341,13 +371,15 @@ class AchievementUpdate(BaseModel):
     visible_on_cv: Optional[bool] = None
     visible_in_interview: Optional[bool] = None
     visible_on_portal: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class AchievementResponse(AchievementBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -362,15 +394,17 @@ class StarStoryBase(BaseModel):
     duration_seconds: Optional[int] = Field(None, ge=60, le=90)
     narrative: Optional[str] = None
     key_points: Optional[str] = None
-    achievement_id: Optional[int] = None
+    achievement_id: Optional[str] = None
     cross_pattern: Optional[str] = Field(None, max_length=255)
     role_application: Optional[str] = None
     times_practiced: int = 0
     active_in_interviews: bool = True
+    notes: Optional[str] = None
 
 
 class StarStoryCreate(StarStoryBase):
     pass
+    notes: Optional[str] = None
 
 
 class StarStoryUpdate(BaseModel):
@@ -378,18 +412,20 @@ class StarStoryUpdate(BaseModel):
     duration_seconds: Optional[int] = Field(None, ge=60, le=90)
     narrative: Optional[str] = None
     key_points: Optional[str] = None
-    achievement_id: Optional[int] = None
+    achievement_id: Optional[str] = None
     cross_pattern: Optional[str] = None
     role_application: Optional[str] = None
     times_practiced: Optional[int] = None
     active_in_interviews: Optional[bool] = None
+    notes: Optional[str] = None
 
 
 class StarStoryResponse(StarStoryBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -411,10 +447,12 @@ class CareerReviewBase(BaseModel):
     result_or_learning: Optional[str] = None
     action_items: Optional[str] = None
     tracking_status: TrackingStatusLiteral = "active"
+    notes: Optional[str] = None
 
 
 class CareerReviewCreate(CareerReviewBase):
     pass
+    notes: Optional[str] = None
 
 
 class CareerReviewUpdate(BaseModel):
@@ -425,13 +463,15 @@ class CareerReviewUpdate(BaseModel):
     result_or_learning: Optional[str] = None
     action_items: Optional[str] = None
     tracking_status: Optional[TrackingStatusLiteral] = None
+    notes: Optional[str] = None
 
 
 class CareerReviewResponse(CareerReviewBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -447,34 +487,38 @@ ClosureStatusLiteral = Literal["not_started", "in_progress", "completed", "pause
 
 
 class RoleGapAnalysisBase(BaseModel):
-    target_role_id: int
+    target_role_id: str
     gap_name: str = Field(..., max_length=255)
     severity: Optional[SeverityLiteral] = None
     market_requirement: Optional[str] = None
     closing_plan: Optional[str] = None
     viability: Optional[ViabilityLiteral] = None
     closure_status: ClosureStatusLiteral = "not_started"
+    notes: Optional[str] = None
 
 
 class RoleGapAnalysisCreate(RoleGapAnalysisBase):
     pass
+    notes: Optional[str] = None
 
 
 class RoleGapAnalysisUpdate(BaseModel):
-    target_role_id: Optional[int] = None
+    target_role_id: Optional[str] = None
     gap_name: Optional[str] = Field(None, max_length=255)
     severity: Optional[SeverityLiteral] = None
     market_requirement: Optional[str] = None
     closing_plan: Optional[str] = None
     viability: Optional[ViabilityLiteral] = None
     closure_status: Optional[ClosureStatusLiteral] = None
+    notes: Optional[str] = None
 
 
 class RoleGapAnalysisResponse(RoleGapAnalysisBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -517,10 +561,12 @@ class ProjectBase(BaseModel):
     is_featured: bool = False
     is_anchor: bool = False
     image_url: Optional[str] = Field(None, max_length=1024)
+    notes: Optional[str] = None
 
 
 class ProjectCreate(ProjectBase):
     pass
+    notes: Optional[str] = None
 
 
 class ProjectUpdate(BaseModel):
@@ -553,13 +599,15 @@ class ProjectUpdate(BaseModel):
     is_featured: Optional[bool] = None
     is_anchor: Optional[bool] = None
     image_url: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class ProjectResponse(ProjectBase):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     created_at: datetime
     updated_at: datetime
+    notes: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -1,8 +1,8 @@
 import { axiosInstance } from './client'
 
 export interface PdfOutputTemplate {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   slug: string
   document_type: string
   title: string
@@ -37,7 +37,7 @@ export const pdfTemplatesApi = {
     return response.data
   },
 
-  get: async (id: number): Promise<PdfOutputTemplate> => {
+  get: async (id: string): Promise<PdfOutputTemplate> => {
     const response = await axiosInstance.get<PdfOutputTemplate>(`/pdf-templates/${id}`)
     return response.data
   },
@@ -47,16 +47,16 @@ export const pdfTemplatesApi = {
     return response.data
   },
 
-  update: async (id: number, payload: Partial<PdfTemplatePayload>): Promise<PdfOutputTemplate> => {
+  update: async (id: string, payload: Partial<PdfTemplatePayload>): Promise<PdfOutputTemplate> => {
     const response = await axiosInstance.put<PdfOutputTemplate>(`/pdf-templates/${id}`, payload)
     return response.data
   },
 
-  remove: async (id: number): Promise<void> => {
+  remove: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/pdf-templates/${id}`)
   },
 
-  render: async (id: number, variables: Record<string, string>, title?: string): Promise<Blob> => {
+  render: async (id: string, variables: Record<string, string>, title?: string): Promise<Blob> => {
     const response = await axiosInstance.post(
       `/pdf-templates/${id}/render`,
       { variables, title },

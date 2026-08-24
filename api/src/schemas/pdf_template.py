@@ -32,8 +32,8 @@ class PdfOutputTemplateUpdate(BaseModel):
 
 
 class PdfOutputTemplateResponse(BaseModel):
-    id: int
-    user_id: int
+    id: str
+    user_id: str
     slug: str
     document_type: str
     title: str

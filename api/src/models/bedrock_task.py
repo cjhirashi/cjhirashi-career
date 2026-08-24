@@ -20,18 +20,26 @@ from database import Base
 TASK_STATUSES = ("pending", "in_progress", "done", "cancelled")
 
 
+from services.id_generator import register_id_listener
+
+
 class BedrockTask(Base):
     __tablename__ = "bedrock_tasks"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)  # the plan's detail, Markdown
     status = Column(String(20), nullable=False, default="pending", index=True)
+
+    notes = Column(Text, nullable=True)
+
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<BedrockTask(id={self.id}, title='{self.title}', status='{self.status}')>"
+
+register_id_listener(BedrockTask, "btk")

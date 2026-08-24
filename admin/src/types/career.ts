@@ -15,8 +15,8 @@ export type ISODateTime = string
 // ---------------------------------------------------------------------------
 
 export interface Differentiator {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   pillar_name: string
   pillar_description?: string | null
   strengths?: string | null
@@ -27,8 +27,8 @@ export interface Differentiator {
 }
 
 export interface Identity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   professional_tagline?: string | null
   bio_summary?: string | null
   unique_value_proposition?: string | null
@@ -39,8 +39,8 @@ export interface Identity {
 export type IdentityDimension = 'passion' | 'profession' | 'vocation' | 'mission'
 
 export interface IdentityReflection {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   dimension: IdentityDimension
   content?: string | null
   tags?: string | null
@@ -50,8 +50,8 @@ export interface IdentityReflection {
 export type CompetencyType = 'technical' | 'transferable' | 'business'
 
 export interface Competency {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   name: string
   type: CompetencyType
   category?: string | null
@@ -71,19 +71,19 @@ export interface Competency {
 }
 
 export interface Certification {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   name: string
   institution?: string | null
   year?: number | null
   description?: string | null
-  related_competency_id?: number | null
+  related_competency_id?: string | null
   created_at: ISODateTime
 }
 
 export interface TargetRole {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   role_name: string
   priority_order?: number | null
   salary_median?: number | null
@@ -102,8 +102,8 @@ export interface TargetRole {
 }
 
 export interface WorkHistory {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   company: string
   role_title: string
   start_date?: ISODate | null
@@ -122,10 +122,10 @@ export interface WorkHistory {
 export type EvidenceType = 'direct_account' | 'public_backed'
 
 export interface Achievement {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
-  work_history_id?: number | null
+  work_history_id?: string | null
   context?: Record<string, unknown> | null
   challenge?: string | null
   solution?: string | null
@@ -141,13 +141,13 @@ export interface Achievement {
 }
 
 export interface StarStory {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   duration_seconds?: number | null
   narrative?: string | null
   key_points?: string | null
-  achievement_id?: number | null
+  achievement_id?: string | null
   cross_pattern?: string | null
   role_application?: string | null
   times_practiced: number
@@ -159,8 +159,8 @@ export type ReviewType = 'gap_analysis' | 'transition_decision' | 'quarterly_rev
 export type TrackingStatus = 'active' | 'completed' | 'paused'
 
 export interface CareerReview {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   review_date?: ISODate | null
   review_type?: ReviewType | null
   context?: string | null
@@ -176,9 +176,9 @@ export type Viability = 'viable' | 'viable_with_caveats' | 'not_viable'
 export type ClosureStatus = 'not_started' | 'in_progress' | 'completed' | 'paused'
 
 export interface RoleGapAnalysis {
-  id: number
-  user_id: number
-  target_role_id: number
+  id: string
+  user_id: string
+  target_role_id: string
   gap_name: string
   severity?: Severity | null
   market_requirement?: string | null
@@ -191,8 +191,8 @@ export interface RoleGapAnalysis {
 export type ProjectStatus = 'active' | 'in_development' | 'archived'
 
 export interface Project {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   category?: string | null
   industry?: string | null
@@ -231,8 +231,8 @@ export interface Project {
 // ---------------------------------------------------------------------------
 
 export interface FitScoringFactor {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   factor_name: string
   weight_percentage?: number | null
   scoring_guide?: string | null
@@ -242,8 +242,8 @@ export interface FitScoringFactor {
 export type MarketType = 'visible' | 'hidden'
 
 export interface MarketSegment {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   market_type?: MarketType | null
   channel_name?: string | null
   channel_type?: string | null
@@ -257,9 +257,9 @@ export interface MarketSegment {
 }
 
 export interface RoleNarrative {
-  id: number
-  user_id: number
-  target_role_id?: number | null
+  id: string
+  user_id: string
+  target_role_id?: string | null
   title: string
   usage_context?: string | null
   full_narrative?: string | null
@@ -272,11 +272,11 @@ export interface RoleNarrative {
 export type PlanStatus = 'not_started' | 'in_progress' | 'paused' | 'completed' | 'cancelled'
 
 export interface SearchPlan {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   period_start?: ISODate | null
   period_end?: ISODate | null
-  target_role_id?: number | null
+  target_role_id?: string | null
   weekly_targets?: Record<string, unknown> | null
   primary_channels?: string | null
   target_cvs_sent?: number | null
@@ -298,8 +298,8 @@ export type RoleCategory =
 export type ContactStatus = 'pending' | 'contacted' | 'following_up' | 'converted'
 
 export interface NetworkingContact {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   name: string
   role_title?: string | null
   company_or_specialty?: string | null
@@ -314,16 +314,16 @@ export interface NetworkingContact {
 }
 
 export interface TargetCompany {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   company_name: string
   tier?: number | null
-  best_fit_role_id?: number | null
+  best_fit_role_id?: string | null
   company_size?: string | null
   salary_estimate?: string | null
   work_modality?: string | null
   target_market?: string | null
-  weak_tie_contact_id?: number | null
+  weak_tie_contact_id?: string | null
   priority?: string | null
   status?: string | null
   notes?: string | null
@@ -336,8 +336,8 @@ export interface TargetCompany {
 export type Evaluation = 'apply' | 'do_not_apply' | 'pending_review'
 
 export interface Vacancy {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   order_number?: number | null
   company: string
   exact_role: string
@@ -356,28 +356,28 @@ export interface Vacancy {
 export type VersionStatus = 'draft' | 'approved' | 'final'
 
 export interface CVVersion {
-  id: number
-  user_id: number
-  target_role_id?: number | null
+  id: string
+  user_id: string
+  target_role_id?: string | null
   title: string
   length_pages?: number | null
   status: VersionStatus
   content?: string | null
   target_vacancy_ids?: number[] | null
-  file_upload_id?: number | null
+  file_upload_id?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
 
 export interface CoverLetterVersion {
-  id: number
-  user_id: number
-  target_role_id?: number | null
-  target_vacancy_id?: number | null
+  id: string
+  user_id: string
+  target_role_id?: string | null
+  target_vacancy_id?: string | null
   title: string
   status: VersionStatus
   body_content?: string | null
-  file_upload_id?: number | null
+  file_upload_id?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -386,22 +386,22 @@ export type CurrentStatus = 'applied' | 'in_process' | 'offer' | 'rejected' | 'a
 export type FinalResult = 'offer_accepted' | 'offer_rejected' | 'rejected' | 'negotiating'
 
 export interface Application {
-  id: number
-  user_id: number
-  vacancy_id: number
+  id: string
+  user_id: string
+  vacancy_id: string
   applied_at?: ISODateTime | null
-  cv_version_id?: number | null
-  cover_letter_version_id?: number | null
+  cv_version_id?: string | null
+  cover_letter_version_id?: string | null
   current_status: CurrentStatus
-  recruiter_contact_id?: number | null
+  recruiter_contact_id?: string | null
   final_result?: FinalResult | null
   created_at: ISODateTime
 }
 
 export interface ApplicationInteraction {
-  id: number
-  user_id: number
-  application_id: number
+  id: string
+  user_id: string
+  application_id: string
   interaction_at?: ISODateTime | null
   channel?: string | null
   content_sent?: string | null
@@ -414,9 +414,9 @@ export type OverallImpression = 'very_positive' | 'positive' | 'neutral' | 'nega
 export type InterviewResult = 'pending' | 'advanced' | 'rejected' | 'under_consideration'
 
 export interface Interview {
-  id: number
-  user_id: number
-  application_id: number
+  id: string
+  user_id: string
+  application_id: string
   interview_type?: string | null
   scheduled_at?: ISODateTime | null
   interviewers?: string | null
@@ -424,16 +424,16 @@ export interface Interview {
   answers_given?: string | null
   feedback_received?: string | null
   overall_impression?: OverallImpression | null
-  narrative_used_id?: number | null
+  narrative_used_id?: string | null
   interview_result?: InterviewResult | null
   created_at: ISODateTime
 }
 
 export interface ContactInteraction {
-  id: number
-  user_id: number
-  contact_id: number
-  related_vacancy_id?: number | null
+  id: string
+  user_id: string
+  contact_id: string
+  related_vacancy_id?: string | null
   interaction_at?: ISODateTime | null
   channel?: string | null
   content_sent?: string | null
@@ -446,8 +446,8 @@ export interface ContactInteraction {
 export type NetworkingCategory = 'give_value_70' | 'share_learning_20' | 'talk_about_you_10'
 
 export interface NetworkingActivity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   category?: NetworkingCategory | null
   activity_type: string
   concrete_action?: string | null
@@ -465,8 +465,8 @@ export interface NetworkingActivity {
 export type PublicationStatus = 'draft' | 'scheduled' | 'published'
 
 export interface Publication {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   slug?: string | null
   excerpt?: string | null
@@ -484,14 +484,14 @@ export interface Publication {
   status: PublicationStatus
   reading_minutes?: number | null
   featured_on_home: boolean
-  related_project_id?: number | null
+  related_project_id?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
 
 export interface LinkedInProfileRecord {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   headline?: string | null
   about?: string | null
   profile_url?: string | null
@@ -506,8 +506,8 @@ export interface LinkedInProfileRecord {
 }
 
 export interface GitHubProfileRecord {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   headline?: string | null
   bio?: string | null
   readme_markdown?: string | null
@@ -530,8 +530,8 @@ export interface GitHubRepo {
 }
 
 export interface PortalHomeRecord {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   hero_photo_url?: string | null
   hero_title?: string | null
   hero_subtitle?: string | null
@@ -553,8 +553,8 @@ export interface PortalHomeRecord {
 }
 
 export interface PortalAboutRecord {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   photo_url?: string | null
   name?: string | null
   created_at: ISODateTime
@@ -562,8 +562,8 @@ export interface PortalAboutRecord {
 }
 
 export interface PortalContactRecord {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   contact_email?: string | null
   whatsapp?: string | null
   location?: string | null
@@ -579,8 +579,8 @@ export interface PortalContactRecord {
 // ---------------------------------------------------------------------------
 
 export interface Tag {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   tag_name: string
   entity_type?: string | null
   color_hex?: string | null
@@ -593,8 +593,8 @@ export interface Tag {
 // ---------------------------------------------------------------------------
 
 export interface OperationalMethodology {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   section?: string | null
   subsection?: string | null
@@ -654,8 +654,8 @@ export interface SearchOverview {
 
 /** Any career-domain entity always has at least these two columns. */
 export interface CareerEntity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   [key: string]: unknown
 }
 
@@ -675,6 +675,7 @@ export interface JobListing {
   snippet?: string | null
   external_id?: string | null
   already_saved: boolean
+  ref?: string | null
 }
 
 export interface JobProviderStatus {
@@ -693,6 +694,6 @@ export interface JobDiscoveryRunResponse {
 }
 
 export interface JobDiscoverySaveResponse {
-  created: { id: number; vacancy_url: string; company: string; exact_role: string }[]
+  created: { id: string; vacancy_url: string; company: string; exact_role: string }[]
   skipped: { vacancy_url?: string | null; reason: string }[]
 }

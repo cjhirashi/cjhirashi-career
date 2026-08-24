@@ -7,15 +7,17 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class ApplicationInteraction(Base):
     """An interaction (email, call, message) tied to a job application."""
 
     __tablename__ = "application_interactions"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    application_id = Column(
-        Integer, ForeignKey("applications.id", ondelete="CASCADE"), nullable=False, index=True
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    application_id = Column(String(20), ForeignKey("applications.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
     interaction_at = Column(DateTime(timezone=True), nullable=True)
@@ -24,8 +26,13 @@ class ApplicationInteraction(Base):
     response_received = Column(Text, nullable=True)
     status = Column(String(50), nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<ApplicationInteraction(id={self.id}, application_id={self.application_id})>"
+
+register_id_listener(ApplicationInteraction, "ain")

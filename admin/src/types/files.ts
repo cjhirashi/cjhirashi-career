@@ -2,8 +2,8 @@
 export type FileType = 'document' | 'image' | 'archive' | 'other'
 
 export interface FileUploadEntity {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   original_filename: string
   stored_filename: string
   file_type: FileType

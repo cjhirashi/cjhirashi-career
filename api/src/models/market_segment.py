@@ -7,6 +7,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class MarketSegment(Base):
     """A job-search channel (visible or hidden market) with tracked results."""
 
@@ -16,8 +19,8 @@ class MarketSegment(Base):
         CheckConstraint("priority BETWEEN 1 AND 10"),
     )
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     market_type = Column(String(20), nullable=True)
     channel_name = Column(String(255), nullable=True)
@@ -29,8 +32,13 @@ class MarketSegment(Base):
     priority = Column(Integer, nullable=True)
     is_active = Column(Boolean, default=True, nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<MarketSegment(id={self.id}, channel_name='{self.channel_name}')>"
+
+register_id_listener(MarketSegment, "mks")

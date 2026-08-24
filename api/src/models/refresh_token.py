@@ -7,6 +7,9 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class RefreshToken(Base):
     """
     Refresh token storage for JWT token rotation.
@@ -20,10 +23,10 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
     # Primary Key
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Token Details
     token = Column(String(500), unique=True, nullable=False, index=True)
@@ -50,3 +53,5 @@ class RefreshToken(Base):
 
     def __repr__(self):
         return f"<RefreshToken(id={self.id}, user_id={self.user_id}, is_revoked={self.is_revoked})>"
+
+register_id_listener(RefreshToken, "rtk")

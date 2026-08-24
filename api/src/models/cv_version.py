@@ -9,6 +9,9 @@ from database import Base
 
 
 
+from services.id_generator import register_id_listener
+
+
 class CVVersion(Base):
     """
     A CV version tailored to a target role.
@@ -23,9 +26,9 @@ class CVVersion(Base):
     __tablename__ = "cv_versions"
     __table_args__ = (CheckConstraint("status IN ('draft', 'approved', 'final')"),)
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    target_role_id = Column(Integer, ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_role_id = Column(String(20), ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
 
     title = Column(String(255), nullable=False)
     length_pages = Column(Integer, nullable=True)
@@ -35,10 +38,15 @@ class CVVersion(Base):
     # content can be restructured freely instead of fitting 4 rigid slots.
     content = Column(Text, nullable=True)
     target_vacancy_ids = Column(JSONB, nullable=True)
-    file_upload_id = Column(Integer, nullable=True)
+    file_upload_id = Column(String(20), nullable=True)
+
+    notes = Column(Text, nullable=True)
+
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<CVVersion(id={self.id}, title='{self.title}')>"
+
+register_id_listener(CVVersion, "cvv")

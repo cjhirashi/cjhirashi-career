@@ -264,7 +264,7 @@ async def list_projects(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/projects/{project_id}", response_model=PublicProjectDetail)
-async def get_project(project_id: int, db: AsyncSession = Depends(get_db)):
+async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
     project = (
         await db.execute(select(Project).where(Project.user_id == USER_ID, Project.id == project_id))
     ).scalar_one_or_none()

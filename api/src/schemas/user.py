@@ -42,7 +42,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """User response schema (safe to send to client)."""
-    id: int
+    id: str
     is_active: bool
     is_verified: bool
     created_at: datetime

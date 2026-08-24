@@ -8,14 +8,17 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class Project(Base):
     """A project shown on the CV / portal, with technical detail and results."""
 
     __tablename__ = "projects"
     __table_args__ = (CheckConstraint("status IN ('active', 'in_development', 'archived')"),)
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     title = Column(String(255), nullable=False)
     category = Column(String(50), nullable=True)
@@ -54,8 +57,13 @@ class Project(Base):
     is_anchor = Column(Boolean, default=False, nullable=True, index=True)
     image_url = Column(String(1024), nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<Project(id={self.id}, title='{self.title}')>"
+
+register_id_listener(Project, "prj")

@@ -1,7 +1,7 @@
 """
 File Upload Model - File storage and management.
 """
-from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, BigInteger, Boolean, Enum
+from sqlalchemy import Column, Integer, Text, ForeignKey, String, DateTime, BigInteger, Boolean, Enum
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -14,6 +14,9 @@ class FileType(str, enum.Enum):
     IMAGE = "image"  # JPG, PNG, GIF
     ARCHIVE = "archive"  # ZIP, RAR, TAR
     OTHER = "other"
+
+
+from services.id_generator import register_id_listener
 
 
 class FileUpload(Base):
@@ -29,10 +32,10 @@ class FileUpload(Base):
     __tablename__ = "file_uploads"
 
     # Primary Key
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # File Metadata
     original_filename = Column(String(500), nullable=False)
@@ -48,7 +51,7 @@ class FileUpload(Base):
     tags = Column(String(500), nullable=True)
 
     # Related Entity
-    related_evidence_id = Column(Integer, nullable=True)  # FK to Evidence
+    related_evidence_id = Column(String(20), nullable=True)  # FK to Evidence
     related_entity_type = Column(String(100), nullable=True)  # evidence, interview, project, etc.
 
     # Access Control
@@ -61,6 +64,9 @@ class FileUpload(Base):
     preview_url = Column(String(500), nullable=True)
 
     # Timestamps
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     last_downloaded = Column(DateTime(timezone=True), nullable=True)
@@ -70,3 +76,5 @@ class FileUpload(Base):
 
     def __repr__(self):
         return f"<FileUpload(id={self.id}, filename='{self.original_filename}', size={self.file_size})>"
+
+register_id_listener(FileUpload, "flu")

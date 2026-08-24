@@ -11,11 +11,14 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class PortalHome(Base):
     __tablename__ = "portal_home"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
     hero_photo_url = Column(String(1024), nullable=True)
     hero_title = Column(String(255), nullable=True)
@@ -40,8 +43,13 @@ class PortalHome(Base):
     stat4_label = Column(String(100), nullable=True)
     stat4_value = Column(String(50), nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<PortalHome(id={self.id}, user_id={self.user_id})>"
+
+register_id_listener(PortalHome, "phm")

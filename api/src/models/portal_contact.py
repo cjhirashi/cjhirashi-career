@@ -5,17 +5,20 @@ github_profile, not duplicated here - `footer_links` covers everything else
 (resume download, X/Twitter, a second email, etc.). One row per user.
 Career domain (v2) - Presencia Digital.
 """
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, Text, String, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class PortalContact(Base):
     __tablename__ = "portal_contact"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
     contact_email = Column(String(255), nullable=True)
     whatsapp = Column(String(50), nullable=True)
@@ -26,8 +29,13 @@ class PortalContact(Base):
     # beyond the LinkedIn/GitHub links (which come from their own tables).
     footer_links = Column(JSONB, nullable=True)
 
+    notes = Column(Text, nullable=True)
+
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
         return f"<PortalContact(id={self.id}, user_id={self.user_id})>"
+
+register_id_listener(PortalContact, "pco")

@@ -67,7 +67,7 @@ export const careerApi = {
     return response.data.count
   },
 
-  get: async <T = CareerEntity>(resource: string, id: number): Promise<T> => {
+  get: async <T = CareerEntity>(resource: string, id: string): Promise<T> => {
     const response = await axiosInstance.get<T>(`${basePath(resource)}/${id}`)
     return response.data
   },
@@ -79,14 +79,14 @@ export const careerApi = {
 
   update: async <T = CareerEntity>(
     resource: string,
-    id: number,
+    id: string,
     payload: Record<string, unknown>
   ): Promise<T> => {
     const response = await axiosInstance.put<T>(`${basePath(resource)}/${id}`, payload)
     return response.data
   },
 
-  remove: async (resource: string, id: number): Promise<void> => {
+  remove: async (resource: string, id: string): Promise<void> => {
     await axiosInstance.delete(`${basePath(resource)}/${id}`)
   },
 
@@ -116,7 +116,7 @@ export const careerApi = {
     query?: string
     location?: string
     providers?: string[]
-    target_role_id?: number
+    target_role_id?: string
     include_company_boards?: boolean
     remote?: boolean
   }): Promise<JobDiscoveryRunResponse> => {
@@ -131,7 +131,7 @@ export const careerApi = {
 
   saveJobListings: async (
     listings: JobListing[],
-    targetRoleId?: number
+    targetRoleId?: string
   ): Promise<JobDiscoverySaveResponse> => {
     const response = await axiosInstance.post<JobDiscoverySaveResponse>('/career/job-discoveries/save', {
       listings,
@@ -147,7 +147,7 @@ export const careerApi = {
    * blob-download shape as `filesApi.downloadBlob`. */
   generateResourcePdf: async (
     resourceKey: string,
-    id: number
+    id: string
   ): Promise<{ blob: Blob; filename: string | null }> => {
     const response = await axiosInstance.post(`${basePath(resourceKey)}/${id}/pdf`, null, {
       responseType: 'blob',

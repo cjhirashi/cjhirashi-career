@@ -59,7 +59,7 @@ export interface BedrockPageContext {
 
 /** Full payload for POST /bedrock/chat (mirror of schemas/bedrock.py). */
 export interface BedrockChatAttachment {
-  file_id: number
+  file_id: string
   filename: string
   mime_type?: string
   url?: string
@@ -86,25 +86,25 @@ export interface BedrockConversation {
 }
 
 export interface BedrockChatMessage {
-  id: number
+  id: string
   role: 'user' | 'assistant'
   content: string
   created_at: string
 }
 
 export interface BedrockAuditLogEntry {
-  id: number
+  id: string
   action: 'create' | 'update' | 'delete' | string
   resource_type: string
-  resource_id: number | null
+  resource_id: string | null
   old_values: Record<string, unknown> | null
   new_values: Record<string, unknown> | null
   created_at: string
 }
 
 export interface BedrockTask {
-  id: number
-  user_id: number
+  id: string
+  user_id: string
   title: string
   description: string | null
   status: 'pending' | 'in_progress' | 'done' | 'cancelled' | string
@@ -117,8 +117,17 @@ export interface BedrockInstructions {
   is_default: boolean
 }
 
+export interface BedrockAgentProfilePrompt {
+  profile_id: string
+  label: string
+  default_suffix: string
+  override_suffix: string | null
+  effective_suffix: string
+  is_default: boolean
+}
+
 export interface BedrockCustomTool {
-  id: number
+  id: string
   name: string
   url: string
   headers: Record<string, string> | null

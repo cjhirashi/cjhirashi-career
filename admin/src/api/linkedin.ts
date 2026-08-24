@@ -38,7 +38,7 @@ export const linkedinApi = {
     return response.data
   },
 
-  cancelPost: async (id: number): Promise<void> => {
+  cancelPost: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/linkedin/posts/${id}`)
   },
 }

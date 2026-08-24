@@ -28,12 +28,12 @@ export function useFileMutations() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => filesApi.remove(id),
+    mutationFn: (id: string) => filesApi.remove(id),
     onSuccess: invalidate,
   })
 
   const visibilityMutation = useMutation({
-    mutationFn: ({ id, isPublic }: { id: number; isPublic: boolean }) => filesApi.setVisibility(id, isPublic),
+    mutationFn: ({ id, isPublic }: { id: string; isPublic: boolean }) => filesApi.setVisibility(id, isPublic),
     onSuccess: invalidate,
   })
 

@@ -55,7 +55,7 @@ class Event(Base):
 
     # Related Entity
     entity_type = Column(String(100), nullable=True)  # competency, evidence, vacancy, etc.
-    entity_id = Column(Integer, nullable=True)
+    entity_id = Column(String(100), nullable=True)
     entity_title = Column(String(500), nullable=True)
 
     # Context

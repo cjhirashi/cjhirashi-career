@@ -7,6 +7,9 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class UserSession(Base):
     """
     User session tracking for security and analytics.
@@ -21,10 +24,10 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     # Primary Key
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Session Details
     session_token = Column(String(500), unique=True, nullable=False, index=True)
@@ -67,3 +70,5 @@ class UserSession(Base):
 
     def __repr__(self):
         return f"<UserSession(id={self.id}, user_id={self.user_id}, is_active={self.is_active})>"
+
+register_id_listener(UserSession, "uss")

@@ -8,8 +8,8 @@ vi.mock('@/api/files')
 const mockedFilesApi = vi.mocked(filesApi)
 
 const sampleFile = {
-  id: 1,
-  user_id: 1,
+  id: 'flu-1',
+  user_id: 'usr-1',
   original_filename: 'diagrama.png',
   stored_filename: 'public/certificaciones/abc123.png',
   file_type: 'image' as const,
@@ -118,7 +118,7 @@ describe('FilesPage', () => {
   })
 
   it('uploads a selected file with no folder by default', async () => {
-    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 2, original_filename: 'nuevo.png' })
+    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
     render(<FilesPage />)
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
@@ -132,7 +132,7 @@ describe('FilesPage', () => {
   })
 
   it('uploads as private when the "Público" checkbox is unchecked', async () => {
-    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 2, original_filename: 'nuevo.png' })
+    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
     render(<FilesPage />)
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
@@ -146,7 +146,7 @@ describe('FilesPage', () => {
   })
 
   it('uploads to the typed folder when one is set', async () => {
-    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 2, original_filename: 'nuevo.png' })
+    mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
     render(<FilesPage />)
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 

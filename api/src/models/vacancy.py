@@ -11,6 +11,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class Vacancy(Base):
     """A job vacancy found during the search, with fit scoring and evaluation."""
 
@@ -20,8 +23,8 @@ class Vacancy(Base):
         CheckConstraint("evaluation IN ('apply', 'do_not_apply', 'pending_review')"),
     )
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     order_number = Column(Integer, nullable=True)
     company = Column(String(255), nullable=False)
@@ -41,3 +44,5 @@ class Vacancy(Base):
 
     def __repr__(self):
         return f"<Vacancy(id={self.id}, company='{self.company}', exact_role='{self.exact_role}')>"
+
+register_id_listener(Vacancy, "vac")

@@ -10,6 +10,9 @@ from sqlalchemy.sql import func
 from database import Base
 
 
+from services.id_generator import register_id_listener
+
+
 class NetworkingContact(Base):
     """A professional contact used in the job search / networking strategy."""
 
@@ -24,8 +27,8 @@ class NetworkingContact(Base):
         ),
     )
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(String(20), primary_key=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     name = Column(String(255), nullable=False)
     role_title = Column(String(255), nullable=True)
@@ -42,3 +45,5 @@ class NetworkingContact(Base):
 
     def __repr__(self):
         return f"<NetworkingContact(id={self.id}, name='{self.name}')>"
+
+register_id_listener(NetworkingContact, "nwc")
