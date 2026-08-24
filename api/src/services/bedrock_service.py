@@ -370,7 +370,7 @@ async def create_custom_tool(db, name: str, url: str, headers: Optional[Dict[str
     return tool
 
 
-async def set_custom_tool_enabled(db, tool_id: int, is_enabled: bool) -> Optional["BedrockCustomTool"]:  # noqa: F821
+async def set_custom_tool_enabled(db, tool_id: str, is_enabled: bool) -> Optional["BedrockCustomTool"]:  # noqa: F821
     from sqlalchemy import select
 
     from models.bedrock_custom_tool import BedrockCustomTool
@@ -385,7 +385,7 @@ async def set_custom_tool_enabled(db, tool_id: int, is_enabled: bool) -> Optiona
     return tool
 
 
-async def delete_custom_tool(db, tool_id: int) -> bool:
+async def delete_custom_tool(db, tool_id: str) -> bool:
     from sqlalchemy import select
 
     from models.bedrock_custom_tool import BedrockCustomTool
@@ -428,7 +428,7 @@ def _serialize(obj: Any) -> Dict[str, Any]:
 async def _record_audit(
     db,
     *,
-    user_id: int,
+    user_id: str,
     action: str,
     resource_key: str,
     record_id: Optional[int],
@@ -460,7 +460,7 @@ async def _record_audit(
     await db.commit()
 
 
-async def _execute_tool(db, user_id: int, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
+async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Run one tool call, scoped to `user_id` throughout - same isolation
     guarantee as every other authenticated route in this API."""
     if name == "search_knowledge_base":
@@ -600,7 +600,7 @@ async def _execute_tool(db, user_id: int, name: str, tool_input: Dict[str, Any],
 # página Bitácora).
 # ---------------------------------------------------------------------------
 
-async def list_audit_log(db, user_id: int, limit: int = 50, offset: int = 0) -> List["AuditLog"]:  # noqa: F821
+async def list_audit_log(db, user_id: str, limit: int = 50, offset: int = 0) -> List["AuditLog"]:  # noqa: F821
     from sqlalchemy import select
 
     from models.audit_log import AuditLog
@@ -615,7 +615,7 @@ async def list_audit_log(db, user_id: int, limit: int = 50, offset: int = 0) -> 
     return result.scalars().all()
 
 
-async def restore_audit_entry(db, user_id: int, audit_id: int) -> Dict[str, Any]:
+async def restore_audit_entry(db, user_id: str, audit_id: str) -> Dict[str, Any]:
     """Deshace un delete que hizo el agente: recrea el registro a partir de
     `old_values` de la entrada de bitácora (la fila completa capturada
     justo antes del delete). Solo tiene sentido para entradas `delete` - un
@@ -710,6 +710,8 @@ def default_system_prompt() -> str:
         "restore_deleted_record - no lo recrees a mano con create_career_record, el registro restaurado "
         "debe salir exactamente del estado que guardó la bitácora. "
         "Responde siempre en español, de forma clara y directa sobre qué hiciste. "
+        "No envuelvas la respuesta al usuario en etiquetas de razonamiento interno "
+        "(<thinking>, </thinking>, <think>, </think>). "
         f"Recursos disponibles (resource_key): {resource_list}."
     )
 
@@ -761,7 +763,7 @@ def _conversation_title_from(text: str) -> str:
     return text[:60] + "…" if len(text) > 60 else text
 
 
-async def _get_or_create_conversation(db, user_id: int, session_id: str, first_message: str) -> "BedrockConversation":  # noqa: F821
+async def _get_or_create_conversation(db, user_id: str, session_id: str, first_message: str) -> "BedrockConversation":  # noqa: F821
     from sqlalchemy import select
 
     from models.bedrock_conversation import BedrockConversation
@@ -795,7 +797,7 @@ async def _append_message(db, conversation: "BedrockConversation", role: str, co
     await db.commit()
 
 
-async def list_conversations(db, user_id: int) -> List["BedrockConversation"]:  # noqa: F821
+async def list_conversations(db, user_id: str) -> List["BedrockConversation"]:  # noqa: F821
     from sqlalchemy import select
 
     from models.bedrock_conversation import BedrockConversation
@@ -808,7 +810,7 @@ async def list_conversations(db, user_id: int) -> List["BedrockConversation"]:  
     return result.scalars().all()
 
 
-async def get_conversation_messages(db, user_id: int, session_id: str) -> List["BedrockConversationMessage"]:  # noqa: F821
+async def get_conversation_messages(db, user_id: str, session_id: str) -> List["BedrockConversationMessage"]:  # noqa: F821
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
 
@@ -823,7 +825,7 @@ async def get_conversation_messages(db, user_id: int, session_id: str) -> List["
     return conversation.messages if conversation else []
 
 
-async def rename_conversation(db, user_id: int, session_id: str, title: str) -> bool:
+async def rename_conversation(db, user_id: str, session_id: str, title: str) -> bool:
     from sqlalchemy import select
 
     from models.bedrock_conversation import BedrockConversation
@@ -841,7 +843,7 @@ async def rename_conversation(db, user_id: int, session_id: str, title: str) -> 
     return True
 
 
-async def delete_conversation(db, user_id: int, session_id: str) -> bool:
+async def delete_conversation(db, user_id: str, session_id: str) -> bool:
     from sqlalchemy import select
 
     from models.bedrock_conversation import BedrockConversation
@@ -868,7 +870,7 @@ async def delete_conversation(db, user_id: int, session_id: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
-async def chat(db, user_id: int, session_id: str, message: str) -> Dict[str, Any]:
+async def chat(db, user_id: str, session_id: str, message: str) -> Dict[str, Any]:
     """Run one chat turn against the harness. The harness owns the
     conversation history server-side (keyed by `session_id`) - callers only
     ever send the newest user message, never the full history.
@@ -899,7 +901,7 @@ _TOOL_STATUS_MESSAGES = {
 }
 
 
-async def chat_stream(db, user_id: int, session_id: str, message: str, turn_request=None):
+async def chat_stream(db, user_id: str, session_id: str, message: str, turn_request=None):
     """Loop agente — Harness local (Converse) o legacy AgentCore."""
     from services.bedrock.agent_loop import chat_stream as local_chat_stream, use_local_harness
     from services.bedrock.agent_loop import ChatTurnRequest

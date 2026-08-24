@@ -20,6 +20,8 @@ from middleware.auth import get_current_user
 from models.bedrock_usage_log import BedrockUsageLog
 from models.user import User
 from schemas.bedrock import (
+    BedrockAgentProfilePromptResponse,
+    BedrockAgentProfilePromptUpdateRequest,
     BedrockAuditLogResponse,
     BedrockChatRequest,
     BedrockConversationMessageResponse,
@@ -41,6 +43,8 @@ from schemas.bedrock import (
     BedrockUsageMetricsResponse,
 )
 from services import bedrock_service
+from services.bedrock import profile_prompts
+from services.bedrock.agent_profiles import get_profile
 from services.bedrock_service import BedrockError
 
 logger = logging.getLogger(__name__)
@@ -68,7 +72,7 @@ def _require_configured() -> None:
         )
 
 
-async def _sse_chat_events(db: AsyncSession, user_id: int, payload: BedrockChatRequest):
+async def _sse_chat_events(db: AsyncSession, user_id: str, payload: BedrockChatRequest):
     """SSE desde chat_stream — soporta Harness local y legacy."""
     from services.bedrock.agent_loop import ChatTurnRequest
 
@@ -269,6 +273,43 @@ async def update_instructions(
     return BedrockInstructionsResponse(system_prompt=prompt, is_default=prompt == default)
 
 
+@router.get(
+    "/agent-profiles",
+    response_model=list[BedrockAgentProfilePromptResponse],
+    summary="List agent profiles with prompt suffix defaults and overrides",
+)
+async def list_agent_profile_prompts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await profile_prompts.list_profile_prompts(db)
+
+
+@router.put(
+    "/agent-profiles/{profile_id}/prompt",
+    response_model=BedrockAgentProfilePromptResponse,
+    summary="Set or clear the system prompt suffix override for one agent profile",
+)
+async def update_agent_profile_prompt(
+    profile_id: str,
+    payload: BedrockAgentProfilePromptUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    try:
+        return await profile_prompts.set_profile_prompt_suffix(
+            db,
+            profile_id,
+            payload.system_prompt_suffix,
+        )
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+
+
 # ---------------------------------------------------------------------------
 # Custom tools (MCP integrations)
 # ---------------------------------------------------------------------------
@@ -295,7 +336,7 @@ async def create_tool(
 
 @router.put("/tools/{tool_id}/enabled", response_model=BedrockCustomToolResponse, summary="Enable or disable a registered MCP tool server")
 async def set_tool_enabled(
-    tool_id: int,
+    tool_id: str,
     is_enabled: bool,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -308,7 +349,7 @@ async def set_tool_enabled(
 
 @router.delete("/tools/{tool_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove a registered MCP tool server")
 async def delete_tool(
-    tool_id: int,
+    tool_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -426,7 +467,18 @@ async def get_conversation_messages(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await bedrock_service.get_conversation_messages(db, current_user.id, session_id)
+    from services.bedrock.reply_text import sanitize_assistant_reply
+
+    messages = await bedrock_service.get_conversation_messages(db, current_user.id, session_id)
+    return [
+        BedrockConversationMessageResponse(
+            id=m.id,
+            role=m.role,
+            content=sanitize_assistant_reply(m.content) if m.role == "assistant" else m.content,
+            created_at=m.created_at,
+        )
+        for m in messages
+    ]
 
 
 @router.put("/conversations/{session_id}", summary="Rename a conversation")
@@ -471,7 +523,7 @@ async def get_audit_log(
 
 @router.post("/audit-log/{audit_id}/restore", summary="Restore a record the agent deleted")
 async def restore_audit_entry(
-    audit_id: int,
+    audit_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

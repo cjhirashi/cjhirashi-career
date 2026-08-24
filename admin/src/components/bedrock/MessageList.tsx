@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Sparkles, User } from 'lucide-react'
 import { BedrockChatMessage } from '@/types/bedrock'
+import { sanitizeAssistantReply } from '@/utils/chatReply'
 
 const Bubble: React.FC<{ message: BedrockChatMessage }> = ({ message }) => {
   const isUser = message.role === 'user'
@@ -27,7 +28,9 @@ const Bubble: React.FC<{ message: BedrockChatMessage }> = ({ message }) => {
           <p className="whitespace-pre-wrap break-words">{message.content}</p>
         ) : (
           <div className="markdown-body markdown-body-compact">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {sanitizeAssistantReply(message.content)}
+            </ReactMarkdown>
           </div>
         )}
       </div>

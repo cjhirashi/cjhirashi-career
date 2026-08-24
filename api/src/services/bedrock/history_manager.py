@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+from services.bedrock.reply_text import sanitize_assistant_reply
 
 
 def conversation_title_from(text: str) -> str:
@@ -18,7 +19,7 @@ def conversation_title_from(text: str) -> str:
 
 async def get_or_create_conversation(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     session_id: str,
     first_message: str,
     session_type: str = "contextual",
@@ -52,7 +53,7 @@ async def append_message(db: AsyncSession, conversation: BedrockConversation, ro
 
 async def load_converse_messages(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     session_id: str,
     window: int,
 ) -> List[Dict[str, Any]]:
@@ -76,12 +77,13 @@ async def load_converse_messages(
         rows = rows[-window:]
     out: List[Dict[str, Any]] = []
     for m in rows:
-        out.append({"role": m.role, "content": [{"text": m.content}]})
+        content = sanitize_assistant_reply(m.content) if m.role == "assistant" else m.content
+        out.append({"role": m.role, "content": [{"text": content}]})
     return out
 
 
 async def list_conversations(
-    db: AsyncSession, user_id: int, session_type: Optional[str] = None
+    db: AsyncSession, user_id: str, session_type: Optional[str] = None
 ) -> List[BedrockConversation]:
     q = select(BedrockConversation).where(BedrockConversation.user_id == user_id)
     if session_type:
