@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { FieldConfig, ResourceConfig } from '@/config/careerResources'
 import { fromFormValue, FieldParseError, toFormValue } from './careerFieldUtils'
+import { FkSelectField } from './FkSelectField'
 
 interface ResourceFormProps {
   config: ResourceConfig
@@ -95,6 +96,26 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
             />
             <span className="text-sm text-text">{field.label}</span>
           </label>
+        )
+      case 'fk-select':
+        return (
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+            </label>
+            <FkSelectField
+              id={commonProps.id}
+              name={commonProps.name}
+              fkResource={field.fkResource ?? ''}
+              fkLabelField={field.fkLabelField}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(v) => handleChange(field.name, v)}
+              required={field.required}
+              placeholder={field.placeholder}
+            />
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
         )
       case 'select':
         return (

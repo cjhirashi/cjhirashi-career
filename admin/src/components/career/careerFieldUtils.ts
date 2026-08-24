@@ -32,6 +32,8 @@ export const toFormValue = (type: FieldType, value: unknown): string | boolean =
       }
     case 'number':
       return typeof value === 'number' ? String(value) : ''
+    case 'fk-select':
+      return value != null ? String(value) : ''
     default:
       return typeof value === 'string' ? value : String(value)
   }
@@ -90,6 +92,8 @@ export const fromFormValue = (field: FieldConfig, raw: string | boolean): unknow
         throw new FieldParseError(label, `"${label}" no es JSON válido`)
       }
     }
+    case 'fk-select':
+      return str.trim() === '' ? null : str
     case 'text':
     case 'textarea':
     default:

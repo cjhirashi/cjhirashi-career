@@ -21,6 +21,7 @@ export type FieldType =
   | 'string-array' // newline-separated list -> string[]
   | 'number-array' // comma-separated list -> number[]
   | 'json' // raw JSON textarea -> parsed with JSON.parse
+  | 'fk-select' // FK selector: fetches options from another career resource
 
 export interface SelectOption {
   value: string
@@ -37,6 +38,16 @@ export interface FieldConfig {
   helpText?: string
   /** Render this field spanning both columns of the two-column form grid. */
   fullWidth?: boolean
+  /**
+   * For type='fk-select': the career resource key to fetch options from.
+   * E.g. 'target-roles', 'competencies', 'vacancies'.
+   */
+  fkResource?: string
+  /**
+   * For type='fk-select': the field(s) on the referenced record to use as
+   * display label. First non-empty value wins. Defaults to ['name','title'].
+   */
+  fkLabelField?: string | string[]
 }
 
 export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number'
@@ -222,9 +233,10 @@ export const competenciesConfig: ResourceConfig = {
     },
     {
       name: 'aligned_differentiator_ids',
-      label: 'IDs de diferenciadores alineados (separados por coma)',
-      type: 'number-array',
+      label: 'Diferenciadores alineados (IDs separados por coma)',
+      type: 'string-array',
       fullWidth: true,
+      helpText: 'Ingresa los IDs de diferenciadores (ej. dif-1, dif-2), uno por línea.',
     },
     { name: 'depth_description', label: 'Descripción de profundidad', type: 'textarea', fullWidth: true },
     { name: 'market_gaps', label: 'Brechas de mercado', type: 'textarea', fullWidth: true },
@@ -259,7 +271,7 @@ export const certificationsConfig: ResourceConfig = {
         { value: 'completed', label: 'Completado' },
       ],
     },
-    { name: 'related_competency_id', label: 'ID de competencia relacionada', type: 'number' },
+    { name: 'related_competency_id', label: 'Competencia relacionada', type: 'fk-select', fkResource: 'competencies', fkLabelField: 'name' },
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
     { name: 'syllabus', label: 'Temario', type: 'textarea', fullWidth: true, helpText: 'Markdown.' },
     {
@@ -359,7 +371,7 @@ export const achievementsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
-    { name: 'work_history_id', label: 'ID historial laboral relacionado', type: 'number' },
+    { name: 'work_history_id', label: 'Historial laboral relacionado', type: 'fk-select', fkResource: 'work-history', fkLabelField: ['company', 'role_title'] },
     {
       name: 'evidence_type',
       label: 'Tipo de evidencia',
@@ -383,9 +395,10 @@ export const achievementsConfig: ResourceConfig = {
     },
     {
       name: 'demonstrated_competency_ids',
-      label: 'IDs de competencias demostradas (separados por coma)',
-      type: 'number-array',
+      label: 'Competencias demostradas (IDs)',
+      type: 'string-array',
       fullWidth: true,
+      helpText: 'Ingresa los IDs de competencias (ej. cmp-1), uno por línea.',
     },
     { name: 'context', label: 'Contexto (JSON)', type: 'json', fullWidth: true },
     { name: 'impact_metrics', label: 'Métricas de impacto (JSON)', type: 'json', fullWidth: true },
@@ -408,7 +421,7 @@ export const starStoriesConfig: ResourceConfig = {
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
     { name: 'duration_seconds', label: 'Duración en segundos (60-90)', type: 'number' },
-    { name: 'achievement_id', label: 'ID de logro relacionado', type: 'number' },
+    { name: 'achievement_id', label: 'Logro relacionado', type: 'fk-select', fkResource: 'achievements', fkLabelField: 'title' },
     { name: 'cross_pattern', label: 'Patrón transversal', type: 'text' },
     { name: 'times_practiced', label: 'Veces practicada', type: 'number' },
     { name: 'active_in_interviews', label: 'Activa en entrevistas', type: 'boolean' },
@@ -478,7 +491,7 @@ export const roleGapAnalysisConfig: ResourceConfig = {
     { key: 'closure_status', label: 'Estado', format: 'badge' },
   ],
   fields: [
-    { name: 'target_role_id', label: 'ID de rol objetivo', type: 'number', required: true },
+    { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name', required: true },
     { name: 'gap_name', label: 'Nombre de la brecha', type: 'text', required: true },
     {
       name: 'severity',
@@ -668,7 +681,7 @@ export const roleNarrativesConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
-    { name: 'target_role_id', label: 'ID de rol objetivo', type: 'number' },
+    { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
     { name: 'usage_context', label: 'Contexto de uso', type: 'text' },
     { name: 'is_active', label: 'Activa', type: 'boolean' },
     { name: 'full_narrative', label: 'Narrativa completa', type: 'textarea', fullWidth: true },
@@ -692,7 +705,7 @@ export const searchPlansConfig: ResourceConfig = {
   fields: [
     { name: 'period_start', label: 'Inicio de periodo', type: 'date' },
     { name: 'period_end', label: 'Fin de periodo', type: 'date' },
-    { name: 'target_role_id', label: 'ID de rol objetivo', type: 'number' },
+    { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
     { name: 'target_cvs_sent', label: 'CVs objetivo enviados', type: 'number' },
     { name: 'target_interviews', label: 'Entrevistas objetivo', type: 'number' },
     { name: 'target_offers', label: 'Ofertas objetivo', type: 'number' },
@@ -784,12 +797,12 @@ export const targetCompaniesConfig: ResourceConfig = {
   fields: [
     { name: 'company_name', label: 'Nombre de la empresa', type: 'text', required: true },
     { name: 'tier', label: 'Tier', type: 'number' },
-    { name: 'best_fit_role_id', label: 'ID de rol mejor ajuste', type: 'number' },
+    { name: 'best_fit_role_id', label: 'Rol mejor ajuste', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
     { name: 'company_size', label: 'Tamaño de empresa', type: 'text' },
     { name: 'salary_estimate', label: 'Estimado salarial', type: 'text' },
     { name: 'work_modality', label: 'Modalidad de trabajo', type: 'text' },
     { name: 'target_market', label: 'Mercado objetivo', type: 'text' },
-    { name: 'weak_tie_contact_id', label: 'ID de contacto (weak tie)', type: 'number' },
+    { name: 'weak_tie_contact_id', label: 'Contacto (weak tie)', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name' },
     { name: 'priority', label: 'Prioridad', type: 'text' },
     { name: 'status', label: 'Estado', type: 'text' },
     { name: 'notes', label: 'Notas', type: 'textarea', fullWidth: true },
@@ -865,7 +878,7 @@ export const cvVersionsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
-    { name: 'target_role_id', label: 'ID de rol objetivo', type: 'number' },
+    { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
     { name: 'length_pages', label: 'Número de páginas', type: 'number' },
     {
       name: 'status',
@@ -879,9 +892,10 @@ export const cvVersionsConfig: ResourceConfig = {
     },
     {
       name: 'target_vacancy_ids',
-      label: 'IDs de vacantes objetivo (separados por coma)',
-      type: 'number-array',
+      label: 'Vacantes objetivo (IDs)',
+      type: 'string-array',
       fullWidth: true,
+      helpText: 'Ingresa los IDs de vacantes (ej. vac-1), uno por línea.',
     },
     {
       name: 'content',
@@ -907,8 +921,8 @@ export const coverLetterVersionsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
-    { name: 'target_role_id', label: 'ID de rol objetivo', type: 'number' },
-    { name: 'target_vacancy_id', label: 'ID de vacante objetivo', type: 'number' },
+    { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
+    { name: 'target_vacancy_id', label: 'Vacante objetivo', type: 'fk-select', fkResource: 'vacancies', fkLabelField: 'position_title' },
     {
       name: 'status',
       label: 'Estado',
@@ -931,17 +945,17 @@ export const applicationsConfig: ResourceConfig = {
   description:
     'Una fila por cada postulación real enviada, enlazando la vacante, el CV y la carta usados. "Estado actual" debe mantenerse vivo - un estado desactualizado rompe el análisis de qué está funcionando.',
   columns: [
-    { key: 'vacancy_id', label: 'ID vacante', format: 'number' },
+    { key: 'vacancy_id', label: 'Vacante' },
     { key: 'applied_at', label: 'Aplicado el', format: 'datetime' },
     { key: 'current_status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
     { key: 'final_result', label: 'Resultado final', format: 'badge' },
   ],
   fields: [
-    { name: 'vacancy_id', label: 'ID de vacante', type: 'number', required: true },
+    { name: 'vacancy_id', label: 'Vacante', type: 'fk-select', fkResource: 'vacancies', fkLabelField: 'position_title', required: true },
     { name: 'applied_at', label: 'Fecha/hora de aplicación', type: 'datetime' },
-    { name: 'cv_version_id', label: 'ID de versión de CV', type: 'number' },
-    { name: 'cover_letter_version_id', label: 'ID de versión de carta', type: 'number' },
-    { name: 'recruiter_contact_id', label: 'ID de contacto reclutador', type: 'number' },
+    { name: 'cv_version_id', label: 'Versión de CV', type: 'fk-select', fkResource: 'cv-versions', fkLabelField: 'title' },
+    { name: 'cover_letter_version_id', label: 'Versión de carta de presentación', type: 'fk-select', fkResource: 'cover-letter-versions', fkLabelField: 'title' },
+    { name: 'recruiter_contact_id', label: 'Contacto reclutador', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name' },
     {
       name: 'current_status',
       label: 'Estado actual',
@@ -981,7 +995,7 @@ export const applicationInteractionsConfig: ResourceConfig = {
     { key: 'status', label: 'Estado', format: 'badge' },
   ],
   fields: [
-    { name: 'application_id', label: 'ID de aplicación', type: 'number', required: true },
+    { name: 'application_id', label: 'Aplicación', type: 'fk-select', fkResource: 'applications', fkLabelField: 'company', required: true },
     { name: 'interaction_at', label: 'Fecha/hora', type: 'datetime' },
     { name: 'channel', label: 'Canal', type: 'text' },
     { name: 'status', label: 'Estado', type: 'text' },
@@ -1004,10 +1018,10 @@ export const interviewsConfig: ResourceConfig = {
     { key: 'interview_result', label: 'Resultado', format: 'badge' },
   ],
   fields: [
-    { name: 'application_id', label: 'ID de aplicación', type: 'number', required: true },
+    { name: 'application_id', label: 'Aplicación', type: 'fk-select', fkResource: 'applications', fkLabelField: 'company', required: true },
     { name: 'interview_type', label: 'Tipo de entrevista', type: 'text' },
     { name: 'scheduled_at', label: 'Fecha/hora programada', type: 'datetime' },
-    { name: 'narrative_used_id', label: 'ID de narrativa usada', type: 'number' },
+    { name: 'narrative_used_id', label: 'Narrativa usada', type: 'fk-select', fkResource: 'role-narratives', fkLabelField: 'title' },
     {
       name: 'overall_impression',
       label: 'Impresión general',
@@ -1066,8 +1080,8 @@ export const contactInteractionsConfig: ResourceConfig = {
     { key: 'generated_opportunity', label: 'Generó oportunidad', format: 'boolean' },
   ],
   fields: [
-    { name: 'contact_id', label: 'ID de contacto', type: 'number', required: true },
-    { name: 'related_vacancy_id', label: 'ID de vacante relacionada', type: 'number' },
+    { name: 'contact_id', label: 'Contacto', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name', required: true },
+    { name: 'related_vacancy_id', label: 'Vacante relacionada', type: 'fk-select', fkResource: 'vacancies', fkLabelField: 'position_title' },
     { name: 'interaction_at', label: 'Fecha/hora', type: 'datetime' },
     { name: 'channel', label: 'Canal', type: 'text' },
     { name: 'status', label: 'Estado', type: 'text' },
@@ -1144,7 +1158,7 @@ export const publicationsConfig: ResourceConfig = {
       ],
     },
     { name: 'featured_on_home', label: 'Destacado en home', type: 'boolean' },
-    { name: 'related_project_id', label: 'ID de proyecto relacionado', type: 'number' },
+    { name: 'related_project_id', label: 'Proyecto relacionado', type: 'fk-select', fkResource: 'projects', fkLabelField: 'name' },
     { name: 'publication_url', label: 'URL de publicación', type: 'text', fullWidth: true },
     { name: 'published_at', label: 'Fecha de publicación', type: 'datetime' },
     { name: 'views', label: 'Vistas', type: 'number' },
