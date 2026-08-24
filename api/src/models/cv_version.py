@@ -26,8 +26,10 @@ class CVVersion(Base):
     __tablename__ = "cv_versions"
     __table_args__ = (CheckConstraint("status IN ('draft', 'approved', 'final')"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    # --- Campos de negocio ---
     target_role_id = Column(String(20), ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
 
     title = Column(String(255), nullable=False)
@@ -43,6 +45,7 @@ class CVVersion(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

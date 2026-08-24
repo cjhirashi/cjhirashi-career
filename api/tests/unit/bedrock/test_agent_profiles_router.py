@@ -1,8 +1,7 @@
-"""Tests unitarios Harness local Bedrock."""
+"""Tests unitarios Bedrock harness."""
 import pytest
 from services.bedrock.agent_profiles import resolve_agent_profile, get_profile
 from services.bedrock.tools import converse_tool_specs, all_tool_names
-from services.bedrock.agent_loop import use_local_harness
 
 
 def test_resolve_digital_route():

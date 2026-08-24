@@ -38,12 +38,14 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Audit Details
+    # --- Campos de negocio ---
     action = Column(Enum(AuditAction), nullable=False, index=True)
     resource_type = Column(String(100), nullable=False, index=True)  # User, Competency, Evidence, etc.
     resource_id = Column(String(100), nullable=True)
@@ -73,6 +75,7 @@ class AuditLog(Base):
     extra_metadata = Column(JSON, nullable=True)
 
     # Timestamp
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
     # Relationships

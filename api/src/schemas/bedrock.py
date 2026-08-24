@@ -7,6 +7,10 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+# ============================================================================
+# Configuración compartida
+# ============================================================================
+
 # Every schema below has a `model_id` field (an AWS Bedrock model id, not
 # related to Pydantic's own `model_*` methods) - silence Pydantic v2's
 # protected-namespace warning for that name across this whole module rather
@@ -14,6 +18,10 @@ from pydantic import BaseModel, ConfigDict
 # bedrock_service.py, the frontend).
 _ALLOW_MODEL_ID = ConfigDict(protected_namespaces=())
 
+
+# ============================================================================
+# Chat — solicitudes
+# ============================================================================
 
 class BedrockChatRequest(BaseModel):
     """Harness local: historial en PG; cliente envía mensaje + contexto opcional."""
@@ -26,6 +34,10 @@ class BedrockChatRequest(BaseModel):
     agent_profile_id: Optional[str] = None
     attachments: Optional[List[Dict[str, Any]]] = None
 
+
+# ============================================================================
+# Modelos — respuestas y solicitudes
+# ============================================================================
 
 class BedrockModelOption(BaseModel):
     model_config = _ALLOW_MODEL_ID
@@ -48,6 +60,10 @@ class BedrockModelSwitchRequest(BaseModel):
 
     model_id: str
 
+
+# ============================================================================
+# Métricas de uso — respuestas
+# ============================================================================
 
 class BedrockUsageByModel(BaseModel):
     model_config = _ALLOW_MODEL_ID
@@ -76,12 +92,20 @@ class BedrockUsageMetricsResponse(BaseModel):
     notes: Optional[str] = None
 
 
+# ============================================================================
+# Presupuesto — respuestas
+# ============================================================================
+
 class BedrockBudgetStatusResponse(BaseModel):
     daily_budget_usd: float
     daily_spent_usd: float
     daily_remaining_usd: float
     notes: Optional[str] = None
 
+
+# ============================================================================
+# Instrucciones del sistema — respuestas y solicitudes
+# ============================================================================
 
 class BedrockInstructionsResponse(BaseModel):
     system_prompt: str
@@ -94,6 +118,10 @@ class BedrockInstructionsUpdateRequest(BaseModel):
 
     system_prompt: Optional[str] = None
 
+
+# ============================================================================
+# Perfiles de agente — respuestas y solicitudes
+# ============================================================================
 
 class BedrockAgentProfilePromptResponse(BaseModel):
     profile_id: str
@@ -110,6 +138,10 @@ class BedrockAgentProfilePromptUpdateRequest(BaseModel):
 
     system_prompt_suffix: Optional[str] = None
 
+
+# ============================================================================
+# Herramientas personalizadas — solicitudes y respuestas
+# ============================================================================
 
 class BedrockCustomToolCreateRequest(BaseModel):
     name: str
@@ -130,10 +162,12 @@ class BedrockCustomToolResponse(BaseModel):
         from_attributes = True
 
 
+# ============================================================================
+# Memoria — respuestas y solicitudes
+# ============================================================================
+
 class BedrockMemoryRecordResponse(BaseModel):
-    """Loosely typed on purpose - passes through whatever AgentCore Memory's
-    API returns (memoryRecordId, content, score, createdAt, ...) rather than
-    re-modeling its full response shape for a read-only diagnostic view."""
+    """Respuesta flexible para búsqueda semántica de hechos (Qdrant)."""
 
     memoryRecordId: Optional[str] = None
     content: Optional[Dict[str, Any]] = None
@@ -163,6 +197,10 @@ class BedrockManualMemoryRequest(BaseModel):
     text: str
 
 
+# ============================================================================
+# Conversaciones — respuestas y solicitudes
+# ============================================================================
+
 class BedrockConversationResponse(BaseModel):
     session_id: str
     title: str
@@ -189,6 +227,10 @@ class BedrockConversationMessageResponse(BaseModel):
 class BedrockConversationRenameRequest(BaseModel):
     title: str
 
+
+# ============================================================================
+# Auditoría — respuestas
+# ============================================================================
 
 class BedrockAuditLogResponse(BaseModel):
     id: str

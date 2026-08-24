@@ -7,6 +7,10 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+# ============================================================================
+# Conexión — respuestas de estado y autorización
+# ============================================================================
+
 class LinkedInStatusResponse(BaseModel):
     connected: bool
     member_name: Optional[str] = None
@@ -20,6 +24,10 @@ class LinkedInConnectResponse(BaseModel):
     authorize_url: str
     notes: Optional[str] = None
 
+
+# ============================================================================
+# Publicaciones — respuestas
+# ============================================================================
 
 class LinkedInPostResponse(BaseModel):
     id: str

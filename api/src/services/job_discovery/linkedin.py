@@ -5,6 +5,10 @@ from urllib.parse import urlencode
 from services.job_discovery.types import JobListing, SearchQuery
 
 
+# ============================================================================
+# Construcción de URLs de búsqueda
+# ============================================================================
+
 def build_linkedin_search_urls(query: SearchQuery) -> list[str]:
     location = query.location or "Mexico"
     urls = [
@@ -28,6 +32,10 @@ def build_linkedin_search_urls(query: SearchQuery) -> list[str]:
             unique.append(url)
     return unique[:3]
 
+
+# ============================================================================
+# Adaptador LinkedIn
+# ============================================================================
 
 class LinkedInSearchAdapter:
     id = "linkedin"

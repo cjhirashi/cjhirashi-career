@@ -15,9 +15,11 @@ from services.id_generator import register_id_listener
 class GitHubProfile(Base):
     __tablename__ = "github_profile"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
+    # --- Campos de negocio ---
     headline = Column(String(255), nullable=True)
     bio = Column(Text, nullable=True)
     readme_markdown = Column(Text, nullable=True)
@@ -27,6 +29,7 @@ class GitHubProfile(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

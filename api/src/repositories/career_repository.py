@@ -16,9 +16,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import Base
 
+# ============================================================================
+# Imports y tipos genéricos
+# ============================================================================
+
 ModelType = TypeVar("ModelType", bound=Base)
 
 logger = logging.getLogger(__name__)
+
+# ============================================================================
+# Utilidades — tareas en segundo plano
+# ============================================================================
 
 # Keeps a strong reference to fire-and-forget indexing tasks so they aren't
 # garbage-collected mid-flight (a well-known asyncio.create_task gotcha) -
@@ -31,6 +39,10 @@ def _fire_and_forget(coro) -> None:
     _background_tasks.add(task)
     task.add_done_callback(_background_tasks.discard)
 
+
+# ============================================================================
+# Repositorio de carrera — CRUD con aislamiento por usuario
+# ============================================================================
 
 class CareerRepository(Generic[ModelType]):
     """Generic CRUD repository enforcing per-user row-level isolation."""
@@ -56,6 +68,10 @@ class CareerRepository(Generic[ModelType]):
             attr.key for attr in column_attrs if isinstance(attr.columns[0].type, (String, Text))
         ]
         self._indexable_columns = [c for c in self._column_names if c not in ("id", "user_id")]
+
+    # ------------------------------------------------------------------------
+    # Consultas — listado, conteo y obtención
+    # ------------------------------------------------------------------------
 
     async def list_for_user(
         self,
@@ -105,6 +121,10 @@ class CareerRepository(Generic[ModelType]):
         )
         result = await db.execute(stmt)
         return result.scalar_one_or_none()
+
+    # ------------------------------------------------------------------------
+    # Mutaciones — creación, actualización y eliminación
+    # ------------------------------------------------------------------------
 
     async def create_for_user(
         self, db: AsyncSession, user_id: str, data: dict
@@ -162,6 +182,10 @@ class CareerRepository(Generic[ModelType]):
         await db.commit()
         _fire_and_forget(self._remove_from_search(item_id))
         return True
+
+    # ------------------------------------------------------------------------
+    # Indexación vectorial — búsqueda semántica (Qdrant)
+    # ------------------------------------------------------------------------
 
     def _record_to_text(self, obj: ModelType) -> str:
         """Flatten a record into `column: value` lines for embedding - every

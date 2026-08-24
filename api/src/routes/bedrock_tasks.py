@@ -6,10 +6,16 @@ uses (see routes/career_common.py). Importing this module is what registers
 the agent's existing generic tools (create_career_record etc.) with zero
 new tool code - see services/bedrock_service.py.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from models.bedrock_task import BedrockTask
 from schemas.bedrock_task import BedrockTaskCreate, BedrockTaskUpdate, BedrockTaskResponse
 from routes.career_common import build_crud_router
 
+# ============================================================================
+# Router CRUD de tareas del agente
+# ============================================================================
 router = build_crud_router(
     prefix="/agent-tasks",
     tags=["Agent - Tasks"],

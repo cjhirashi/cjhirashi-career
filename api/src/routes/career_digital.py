@@ -5,6 +5,9 @@ Aggregates CRUD routers for: publications, linkedin-profile, github-profile,
 portal-home, portal-about, portal-contact. Plus a live (non-CRUD) endpoint
 that fetches the connected GitHub username's public repos.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -32,9 +35,15 @@ from routes.career_common import build_crud_router
 from services import github_service
 from services.github_service import GitHubError
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/career", tags=["Career - Digital Presence"])
 
 
+# ============================================================================
+# Endpoint: repositorios GitHub (consulta en vivo)
+# ============================================================================
 @router.get("/github-profile/repos", summary="List the connected GitHub username's public repos (live)")
 async def list_github_repos(
     current_user: User = Depends(get_current_user),
@@ -52,6 +61,9 @@ async def list_github_repos(
     except GitHubError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 
+# ============================================================================
+# Publicaciones y perfiles sociales
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/publications", tags=["Career - Digital Presence"], model=Publication,
     create_schema=PublicationCreate, update_schema=PublicationUpdate,
@@ -70,6 +82,9 @@ router.include_router(build_crud_router(
     response_schema=GitHubProfileResponse, entity_name="GitHub profile",
 ))
 
+# ============================================================================
+# Contenido del portal público
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/portal-home", tags=["Career - Digital Presence"], model=PortalHome,
     create_schema=PortalHomeCreate, update_schema=PortalHomeUpdate,

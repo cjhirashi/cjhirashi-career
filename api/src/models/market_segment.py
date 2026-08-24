@@ -19,9 +19,11 @@ class MarketSegment(Base):
         CheckConstraint("priority BETWEEN 1 AND 10"),
     )
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     market_type = Column(String(20), nullable=True)
     channel_name = Column(String(255), nullable=True)
     channel_type = Column(String(50), nullable=True)
@@ -35,6 +37,7 @@ class MarketSegment(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -3,12 +3,18 @@ Career domain (v2), Dominio 4: Soporte.
 
 Aggregates CRUD router for: tags.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from fastapi import APIRouter
 
 from models.tag import Tag
 from schemas.career_support import TagCreate, TagUpdate, TagResponse
 from routes.career_common import build_crud_router
 
+# ============================================================================
+# Router principal y endpoints CRUD
+# ============================================================================
 router = APIRouter(prefix="/career", tags=["Career - Support"])
 
 router.include_router(build_crud_router(

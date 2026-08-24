@@ -1,7 +1,7 @@
 """
 Memoria local — PG (historial) + Qdrant (hechos semánticos).
 
-Reemplaza AgentCore Memory cuando BEDROCK_USE_LOCAL_HARNESS=true.
+Memoria del agente — historial PG (corto plazo) + Qdrant (semántica).
 """
 import hashlib
 from datetime import datetime, timezone
@@ -15,6 +15,10 @@ from services import qdrant_service
 from services.bedrock.embeddings import embed_text
 from services.bedrock.errors import BedrockError
 
+
+# ============================================================================
+# Memoria de conversación (PostgreSQL)
+# ============================================================================
 
 async def list_memory_events(
     db: AsyncSession, user_id: str, session_id: str, max_results: int = 50
@@ -56,6 +60,10 @@ async def list_memory_events(
     return events
 
 
+# ============================================================================
+# Búsqueda semántica (Qdrant)
+# ============================================================================
+
 async def retrieve_memory_records(user_id: str, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
     """Búsqueda semántica Qdrant — hechos de carrera + memoria manual."""
     vector = await embed_text(query)
@@ -72,6 +80,10 @@ async def retrieve_memory_records(user_id: str, query: str, top_k: int = 10) -> 
         )
     return records
 
+
+# ============================================================================
+# Memoria manual
+# ============================================================================
 
 async def create_manual_memory(user_id: str, text: str) -> None:
     """Indexa un hecho manual en Qdrant (disponible de inmediato en búsqueda)."""

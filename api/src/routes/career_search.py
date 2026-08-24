@@ -8,6 +8,9 @@ application_interactions, interviews, contact_interactions,
 networking_activities. Also hand-writes cv_versions' one non-CRUD endpoint
 (PDF export), on top of the CRUD router `build_crud_router` gives it.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -54,8 +57,14 @@ from schemas.career_search import (
 
 from routes.career_common import build_crud_router
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/career", tags=["Career - Search"])
 
+# ============================================================================
+# Planificación y segmentación de mercado
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/fit-scoring-factors", tags=["Career - Search"], model=FitScoringFactor,
     create_schema=FitScoringFactorCreate, update_schema=FitScoringFactorUpdate,
@@ -80,6 +89,9 @@ router.include_router(build_crud_router(
     response_schema=SearchPlanResponse, entity_name="search plan",
 ))
 
+# ============================================================================
+# Networking y empresas objetivo
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/networking-contacts", tags=["Career - Search"], model=NetworkingContact,
     create_schema=NetworkingContactCreate, update_schema=NetworkingContactUpdate,
@@ -92,6 +104,9 @@ router.include_router(build_crud_router(
     response_schema=TargetCompanyResponse, entity_name="target company",
 ))
 
+# ============================================================================
+# Vacantes y versiones de CV
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/vacancies", tags=["Career - Search"], model=Vacancy,
     create_schema=VacancyCreate, update_schema=VacancyUpdate,
@@ -107,6 +122,9 @@ router.include_router(build_crud_router(
     vectorize=False,
 ))
 
+# ============================================================================
+# Helper: repositorio de versiones de CV (endpoint PDF)
+# ============================================================================
 # Repository instance dedicated to the endpoint below - separate from the one
 # `build_crud_router` builds internally (not exposed outside that factory),
 # but identical in behaviour: `get_for_user` enforces the same row-level
@@ -115,6 +133,9 @@ router.include_router(build_crud_router(
 _cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions", vectorize=False)
 
 
+# ============================================================================
+# Endpoint: exportación PDF de versión de CV
+# ============================================================================
 @router.post(
     "/cv-versions/{cv_version_id}/pdf",
     tags=["Career - Search"],
@@ -140,6 +161,7 @@ async def generate_cv_version_pdf(
         if template_id is not None:
             from models.pdf_output_template import PdfOutputTemplate
             from services.pdf_service import generate_html_template_pdf
+            from services.pdf_template_css import resolve_template_css
             from services.pdf_template_render import render_template_html
 
             tpl = await db.get(PdfOutputTemplate, template_id)
@@ -149,8 +171,9 @@ async def generate_cv_version_pdf(
                 tpl.html_template,
                 {"title": cv_version.title, "content": cv_version.content, "body": cv_version.content},
             )
+            css_content = await resolve_template_css(db, tpl)
             pdf_bytes = await generate_html_template_pdf(
-                title=cv_version.title, html_body=html, css_content=tpl.css_content
+                title=cv_version.title, html_body=html, css_content=css_content
             )
         else:
             pdf_bytes = await generate_markdown_document(cv_version.title, cv_version.content)
@@ -167,12 +190,18 @@ async def generate_cv_version_pdf(
     )
 
 
+# ============================================================================
+# Cartas de presentación
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/cover-letter-versions", tags=["Career - Search"], model=CoverLetterVersion,
     create_schema=CoverLetterVersionCreate, update_schema=CoverLetterVersionUpdate,
     response_schema=CoverLetterVersionResponse, entity_name="cover letter version",
 ))
 
+# ============================================================================
+# Aplicaciones e interacciones
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/applications", tags=["Career - Search"], model=Application,
     create_schema=ApplicationCreate, update_schema=ApplicationUpdate,
@@ -185,6 +214,9 @@ router.include_router(build_crud_router(
     response_schema=ApplicationInteractionResponse, entity_name="application interaction",
 ))
 
+# ============================================================================
+# Entrevistas y actividades de networking
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/interviews", tags=["Career - Search"], model=Interview,
     create_schema=InterviewCreate, update_schema=InterviewUpdate,

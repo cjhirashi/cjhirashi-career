@@ -1,6 +1,9 @@
 """
 Dependency injection configuration para FastAPI.
-Centraliza la creación de dependencias reutilizables.
+
+Centraliza dependencias reutilizables entre routers:
+- Repositorios (UserRepository, …)
+- Re-export de get_current_user para imports uniformes
 """
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession

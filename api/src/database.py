@@ -1,6 +1,12 @@
 """
 Configuración de la base de datos con SQLAlchemy async.
-Proporciona engine, sessionmaker y base declarativa.
+
+Expone:
+- `engine` — pool de conexiones async a PostgreSQL
+- `AsyncSessionLocal` — factory de sesiones
+- `Base` — clase base declarativa para modelos ORM
+- `get_db()` — dependency FastAPI (commit/rollback automático)
+- `init_db()` / `close_db()` — lifecycle en app.py
 """
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
@@ -9,7 +15,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Engine asíncrono
+# ============================================================================
+# Engine y session factory
+# ============================================================================
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
@@ -19,7 +27,7 @@ engine = create_async_engine(
     max_overflow=20
 )
 
-# Session maker asíncrono
+# Session maker — una sesión por request vía get_db()
 AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
@@ -28,10 +36,13 @@ AsyncSessionLocal = async_sessionmaker(
     autoflush=False
 )
 
-# Base para modelos
+# Base declarativa — todos los modelos en models/ heredan de aquí
 Base = declarative_base()
 
 
+# ============================================================================
+# Dependency get_db — patrón request-scoped session
+# ============================================================================
 async def get_db():
     """
     Dependency para obtener sesión de base de datos.
@@ -49,6 +60,9 @@ async def get_db():
             await session.close()
 
 
+# ============================================================================
+# Lifecycle helpers — llamados desde app.py lifespan
+# ============================================================================
 async def init_db():
     """Inicializa las tablas de la base de datos."""
     async with engine.begin() as conn:

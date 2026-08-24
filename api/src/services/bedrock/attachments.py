@@ -13,6 +13,10 @@ from services.bedrock.errors import BedrockError
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# Límites y tipos MIME permitidos
+# ============================================================================
+
 _MAX_BYTES = 5 * 1024 * 1024
 _IMAGE_MIMES = {
     "image/png": "png",
@@ -26,6 +30,10 @@ _DOC_MIMES = {
     "text/markdown": "md",
 }
 
+
+# ============================================================================
+# Construcción de content blocks
+# ============================================================================
 
 async def build_user_content_blocks(
     db: AsyncSession,

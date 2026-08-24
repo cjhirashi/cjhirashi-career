@@ -20,6 +20,10 @@ from services.bedrock.errors import BedrockBudgetExceeded, BedrockError
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# Constantes de estado de tools
+# ============================================================================
+
 _TOOL_STATUS = {
     "describe_resource_schema": "Revisando la estructura de la tabla...",
     "search_knowledge_base": "Consultando la base de conocimiento...",
@@ -41,34 +45,79 @@ _TOOL_STATUS = {
 }
 
 
+# ============================================================================
+# Dataclass que modela la solicitud de un turno de chat realizado por el usuario.
+# Contiene el mensaje principal, contexto del chat, información de metadatos de página,
+# perfil/agente relevante, modelo de IA preferido y anexos enviados junto al mensaje.
+# Es usada como estructura base para manejar la información de cada petición de conversación.
+# ============================================================================
+
 @dataclass
 class ChatTurnRequest:
-    session_id: str
-    message: str
-    chat_surface: str = "contextual"
-    page_context: Optional[Dict[str, Any]] = None
-    model_id: Optional[str] = None
-    agent_profile_id: Optional[str] = None
-    attachments: Optional[List[Dict[str, Any]]] = None
+    session_id: str                # ID único de la sesión de chat
+    message: str                   # Mensaje enviado por el usuario (input principal)
+    chat_surface: str = "contextual"         # Superficie/contexto del chat ("general", "contextual", etc.)
+    page_context: Optional[Dict[str, Any]] = None  # Contexto adicional de la página/origen (metadatos relevantes)
+    model_id: Optional[str] = None           # ID explícito del modelo solicitado (opcional, sugerido por cliente)
+    agent_profile_id: Optional[str] = None   # Perfil/agente especializado solicitado (opcional)
+    attachments: Optional[List[Dict[str, Any]]] = None  # Archivos adjuntos o bloques de contenido enviados junto al mensaje
 
+
+# ============================================================================
+# Resolución de modelo efectivo
+# ============================================================================
 
 def _effective_model(req: ChatTurnRequest, runtime, profile) -> str:
-    """Modelo efectivo. Chat general ignora modelos débiles (Nova Lite) del cliente."""
+    """
+    Determina el modelo de IA "efectivo" para una solicitud de turno de chat,
+    teniendo en cuenta las preferencias del usuario, reglas de negocio y perfiles de agente.
+
+    - Para chats "general", ignora modelos débiles sugeridos por el usuario y usa el default del perfil
+      si existe y está permitido, o el modelo por defecto del runtime.
+    - Para otras superficies/contextos:
+      - Si el usuario sugirió un modelo permitido y no es "débil", se usa ese.
+      - Si no, prefiere el modelo por defecto del perfil, si existe.
+      - Si ningún criterio anterior aplica, recomienda modelo según el contexto de página.
+
+    Args:
+        req:   Instancia de ChatTurnRequest con la metadata del turno.
+        runtime: Objeto con configuración actual de orquestador de modelos.
+        profile: Perfil de agente asociado a la conversación.
+
+    Returns:
+        str: ID del modelo efectivo a utilizar.
+    """
+    # Modelos considerados demasiado "débiles" para chats generales.
     weak_models = {
         "amazon.nova-lite-v1:0",
         "amazon.nova-micro-v1:0",
     }
+
+    # Si la superficie es "general", se prefiere explícitamente el modelo por defecto del perfil,
+    # ignorando modelos débiles sugeridos por el cliente.
     if req.chat_surface == "general":
+        # Usa el modelo por defecto del perfil si está definido y está permitido.
         if profile.default_model_id and profile.default_model_id in settings.BEDROCK_AVAILABLE_MODELS:
             return profile.default_model_id
+        # Si no existe, cae al modelo por defecto definido a nivel de runtime.
         return runtime.orchestrator_model_id
+
+    # En otros chats/contextos, si el usuario pide un modelo explícito permitido (y no débil), usarlo.
     if req.model_id and req.model_id in settings.BEDROCK_AVAILABLE_MODELS:
         if req.model_id not in weak_models:
             return req.model_id
+
+    # Si el perfil tiene un modelo por defecto valido, usarlo.
     if profile.default_model_id:
         return profile.default_model_id
+
+    # Como última opción, recomendar modelo basado en el contexto de página actual.
     return section_profiles.resolve_recommended_model(req.page_context)
 
+
+# ============================================================================
+# Turno síncrono
+# ============================================================================
 
 async def run_single_turn_sync(
     db: AsyncSession,
@@ -83,7 +132,36 @@ async def run_single_turn_sync(
     max_round_trips: Optional[int] = None,
     record_history: bool = True,
 ) -> Dict[str, Any]:
-    """Turno síncrono (sin SSE) — usado por delegación."""
+    """
+    Ejecuta un único turno de conversación de manera síncrona (sin streaming SSE) utilizando el loop principal del agente Bedrock.
+
+    Este método es utilizado típicamente para delegación interna o desde componentes que requieren la respuesta
+    completa del agente en una sola llamada, sin la comunicación parcial por eventos SSE.
+
+    Flujo interno:
+        - Invoca el generador `chat_stream`, iterando sobre los eventos generados por el agente.
+        - Si se recibe un evento de tipo "done", lo almacena como resultado final.
+        - Si se recibe un evento de tipo "error", se lanza la excepción correspondiente.
+        - Al finalizar, devuelve el resultado completo de la respuesta (evento "done").
+
+    Args:
+        db (AsyncSession): Sesión async de base de datos.
+        user_id (str): ID del usuario que realiza la solicitud.
+        session_id (str): ID de la conversación/sesión.
+        message (str): Mensaje o input del usuario.
+        chat_surface (str, opcional): Superficie del chat ("general", "contextual", etc.).
+        agent_profile_id (str, opcional): ID del perfil de agente.
+        page_context (dict, opcional): Contexto de página o metadata adicional.
+        model_id (str, opcional): Modelo explícito a usar en la respuesta.
+        max_round_trips (int, opcional): Rondas máximas permitidas para el ciclo de herramientas.
+        record_history (bool, opcional): Si True, registra el turno en el historial.
+
+    Returns:
+        Dict[str, Any]: Diccionario con la respuesta final generada (evento "done").
+    
+    Raises:
+        BedrockError: Si se produce un error durante la generación del turno.
+    """
     last: Dict[str, Any] = {}
     async for event in chat_stream(
         db,
@@ -106,6 +184,10 @@ async def run_single_turn_sync(
     return last
 
 
+# ============================================================================
+# Turno con streaming SSE
+# ============================================================================
+
 async def chat_stream(
     db: AsyncSession,
     user_id: str,
@@ -114,7 +196,48 @@ async def chat_stream(
     max_round_trips_override: Optional[int] = None,
     record_history: bool = True,
 ) -> AsyncIterator[Dict[str, Any]]:
-    """Generador SSE: status, delegation_*, done, error."""
+    """
+    Generador asincrónico de eventos para manejar el ciclo de conversación del agente con soporte para SSE (Server-Sent Events).
+    
+    Esta función permite procesar turnos de conversación entre un usuario y un agente, soportando múltiples rondas, 
+    llamadas a herramientas y delegaciones a especialistas, todo en modalidad de streaming asíncrono. Produce distintos 
+    eventos a lo largo del proceso, notificando sobre el estado, delegaciones, errores y la respuesta final.
+
+    Flujo principal:
+        1. Prepara el contexto de ejecución: recupera historial, perfil de agente, herramientas permitidas y mensaje actual.
+        2. (Opcional) Registra o recupera la conversación en la BD, si record_history=True.
+        3. Itera hasta un máximo de rondas (max_rounds): 
+            - Llama al modelo conversacional para obtener la siguiente acción (respuesta o uso de herramienta).
+            - Si hay error con Bedrock, emite un evento de error y termina.
+            - Si el agente responde directamente (stop_reason != tool_use):
+                - Registra uso y mensajes en historial, si corresponde.
+                - Emite evento "done" con la respuesta final y termina.
+            - Si requiere herramientas:
+                - Para cada uso de herramienta:
+                    - Si es delegación a especialista, ejecuta sub-turno y emite eventos de inicio/fin.
+                    - Si es herramienta normal, la ejecuta y agrega resultados.
+                    - Acumula recursos afectados e invalidaciones.
+                - Agrega los resultados de herramientas al nuevo contexto para la siguiente ronda.
+        4. Si se agotan las vueltas sin respuesta final, emite un evento de error.
+
+    Args:
+        db (AsyncSession): Sesión asíncrona de base de datos.
+        user_id (str): ID del usuario que interactúa con el agente.
+        req (ChatTurnRequest): Objeto con detalles del turno/mensaje y contexto.
+        max_round_trips_override (int, opcional): Número máximo de rondas para la conversación (override de setting).
+        record_history (bool, opcional): Si True, registra el historial de mensajes/conversación.
+
+    Yields:
+        Dict[str, Any]: Diccionario con eventos de tipo:
+            - {"type": "status", "message": ...}
+            - {"type": "delegation_start", ...}
+            - {"type": "delegation_end", ...}
+            - {"type": "done", "reply": ..., "affected_resources": [...]}
+            - {"type": "error", "message": ...}
+
+    Raises:
+        BedrockError: Si ocurre un error durante la ejecución de la ronda conversacional (emite evento de error).
+    """
     runtime = await settings_loader.get_runtime_settings(db)
     await budget.assert_budget_available(db, user_id, runtime.daily_budget_usd)
 
@@ -251,12 +374,3 @@ async def chat_stream(
 
     await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
     yield {"type": "error", "message": "Se agotaron las vueltas del agente sin respuesta final."}
-
-
-def use_local_harness() -> bool:
-    """True si el Harness local está activo (default cuando flag=true)."""
-    if not settings.BEDROCK_USE_LOCAL_HARNESS:
-        return False
-    if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
-        return True
-    return False

@@ -25,6 +25,10 @@ from config import settings
 _client: Optional[AsyncQdrantClient] = None
 
 
+# ============================================================================
+# Operaciones de colección
+# ============================================================================
+
 def _get_client() -> AsyncQdrantClient:
     global _client
     if _client is None:
@@ -54,6 +58,10 @@ async def _ensure_collection(vector_size: int) -> None:
         vectors_config=models.VectorParams(size=vector_size, distance=models.Distance.COSINE),
     )
 
+
+# ============================================================================
+# Indexación
+# ============================================================================
 
 async def upsert_point(
     *,
@@ -95,6 +103,10 @@ async def delete_point(*, resource_key: str, record_id: str) -> None:
         points_selector=models.PointIdsList(points=[_point_id(resource_key, record_id)]),
     )
 
+
+# ============================================================================
+# Búsqueda
+# ============================================================================
 
 async def search(
     *,

@@ -8,6 +8,10 @@ from services.job_discovery.remoteok import RemoteOKAdapter
 from services.job_discovery.remotive import RemotiveAdapter
 from services.job_discovery.types import ProviderStatus
 
+# ============================================================================
+# Adaptadores registrados
+# ============================================================================
+
 # Indeed is the product name; Adzuna is an internal via, not a UI provider.
 MARKET_ADAPTERS = (
     GetOnBoardAdapter(),
@@ -21,6 +25,10 @@ MARKET_ADAPTERS = (
 def adapters_by_id() -> Dict[str, object]:
     return {adapter.id: adapter for adapter in MARKET_ADAPTERS}
 
+
+# ============================================================================
+# Consulta de estado
+# ============================================================================
 
 def list_provider_statuses() -> List[ProviderStatus]:
     statuses: List[ProviderStatus] = []

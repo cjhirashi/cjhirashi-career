@@ -24,12 +24,14 @@ class UserSession(Base):
     __tablename__ = "user_sessions"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Session Details
+    # --- Campos de negocio ---
     session_token = Column(String(500), unique=True, nullable=False, index=True)
     session_hash = Column(String(255), nullable=False)  # Hashed for security
 

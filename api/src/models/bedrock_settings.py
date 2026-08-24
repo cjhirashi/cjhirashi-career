@@ -16,7 +16,9 @@ from database import Base
 class BedrockSettings(Base):
     __tablename__ = "bedrock_settings"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, autoincrement=True)
+    # --- Campos de negocio ---
     system_prompt = Column(Text, nullable=True)
     # Harness local — modelo activo y límites (ADR-008)
     active_model_id = Column(String(150), nullable=True)

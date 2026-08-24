@@ -26,9 +26,11 @@ from services.id_generator import register_id_listener
 class BedrockTask(Base):
     __tablename__ = "bedrock_tasks"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)  # the plan's detail, Markdown
     status = Column(String(20), nullable=False, default="pending", index=True)
@@ -36,6 +38,7 @@ class BedrockTask(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

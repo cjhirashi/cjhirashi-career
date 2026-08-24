@@ -25,9 +25,11 @@ from services.id_generator import register_id_listener
 class LinkedInPost(Base):
     __tablename__ = "linkedin_posts"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     text = Column(Text, nullable=False)
     image_url = Column(String(1024), nullable=True)  # our own MinIO copy, for display/re-upload at publish time
     status = Column(String(20), nullable=False, default=LinkedInPostStatus.PUBLISHED)
@@ -39,6 +41,7 @@ class LinkedInPost(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self):

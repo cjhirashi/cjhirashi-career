@@ -7,6 +7,10 @@ from typing import Optional
 
 from config import settings
 
+# ============================================================================
+# Mapas de perfil y modelo
+# ============================================================================
+
 _PROFILE_MODELS = {
     "crud_standard": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
     "strategy": "deepseek.v3.2",
@@ -45,6 +49,10 @@ _STATIC_ROUTE_PROFILE = {
     "/agent/chat": "read_light",
 }
 
+
+# ============================================================================
+# Resolución de modelo recomendado
+# ============================================================================
 
 def resolve_recommended_model(page_context: Optional[dict]) -> str:
     """Modelo sugerido según sección; fallback a default global."""

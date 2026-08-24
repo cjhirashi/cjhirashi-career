@@ -20,6 +20,10 @@ class GitHubError(Exception):
     pass
 
 
+# ============================================================================
+# Listado de repositorios
+# ============================================================================
+
 async def list_public_repos(username: str) -> list[dict[str, Any]]:
     async with httpx.AsyncClient() as client:
         response = await client.get(

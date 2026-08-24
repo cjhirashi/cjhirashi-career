@@ -1,6 +1,8 @@
 """
-Enhanced Authentication Routes - Login, logout, refresh, register.
-Uses AuthService for business logic.
+Enhanced Authentication Routes — login, logout, refresh, registro y perfil.
+
+Prefijo: `/auth`. Delega lógica JWT a `AuthService` y persistencia a
+`UserRepository`. Todos los endpoints de perfil requieren Bearer token.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,11 +26,17 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+# ============================================================================
+# Dependencies locales
+# ============================================================================
 async def get_user_repository(db: AsyncSession) -> UserRepository:
     """Dependency to get user repository."""
     return UserRepository(db)
 
 
+# ============================================================================
+# Registro y sesión (públicos — no requieren JWT)
+# ============================================================================
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: UserCreate,
@@ -205,9 +213,12 @@ async def logout():
         Logout confirmation message
     """
     logger.info("User logout requested")
-    return LogoutResponse(message="Logout successful. Please delete your token client-side.")
+    return LogoutResponse(message="Logout successful. Please delete your token client-side."    )
 
 
+# ============================================================================
+# Perfil autenticado — requieren JWT (get_current_user)
+# ============================================================================
 @router.patch("/me", response_model=UserResponse)
 async def update_profile(
     payload: UserUpdate,

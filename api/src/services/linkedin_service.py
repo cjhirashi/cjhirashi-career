@@ -45,6 +45,10 @@ class LinkedInError(Exception):
     """Raised when LinkedIn's API rejects a request (bad/expired token, etc.)."""
 
 
+# ============================================================================
+# OAuth
+# ============================================================================
+
 def build_state_token(user_id: str) -> str:
     payload = {
         "sub": str(user_id),
@@ -99,6 +103,10 @@ async def exchange_code_for_token(code: str) -> dict:
     return response.json()
 
 
+# ============================================================================
+# Llamadas a la API
+# ============================================================================
+
 async def fetch_userinfo(access_token: str) -> dict:
     """Returns the OIDC claims: sub, name, email, picture, ..."""
     async with httpx.AsyncClient() as client:
@@ -150,6 +158,10 @@ async def upload_image(access_token: str, member_sub: str, image_bytes: bytes) -
 
     return image_urn
 
+
+# ============================================================================
+# Publicación de posts
+# ============================================================================
 
 async def create_post(
     access_token: str, member_sub: str, text: str, image_urn: Optional[str] = None

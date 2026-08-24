@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 _client = None
 
 
+# ============================================================================
+# Cliente de generación de imágenes
+# ============================================================================
+
 def _client():
     global _client
     if _client is None:
@@ -28,6 +32,10 @@ def _client():
         )
     return _client
 
+
+# ============================================================================
+# Generación de imagen
+# ============================================================================
 
 async def generate_image_bytes(prompt: str, width: int = 1200, height: int = 627) -> bytes:
     """Invoca Titan Image y devuelve PNG bytes."""

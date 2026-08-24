@@ -8,6 +8,10 @@ from typing import Optional
 from datetime import datetime
 
 
+# ============================================================================
+# Metodologías operativas — esquemas CRUD
+# ============================================================================
+
 class OperationalMethodologyBase(BaseModel):
     title: str = Field(..., max_length=255)
     section: Optional[str] = Field(None, max_length=150)

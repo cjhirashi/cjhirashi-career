@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 POLL_INTERVAL_SECONDS = 60
 
 
+# ============================================================================
+# Bucle del scheduler
+# ============================================================================
+
 async def _publish_due_posts() -> None:
     async with AsyncSessionLocal() as db:
         result = await db.execute(

@@ -8,6 +8,10 @@ Ver docs/BEDROCK-SYSTEM.md y ADR-008.
 from botocore.exceptions import ClientError
 
 
+# ============================================================================
+# Excepciones del harness
+# ============================================================================
+
 class BedrockError(Exception):
     """Fallo recuperable o de configuración en inferencia, tools o presupuesto."""
 
@@ -19,6 +23,10 @@ class BedrockBudgetExceeded(BedrockError):
 
     pass
 
+
+# ============================================================================
+# Formateo de errores boto3
+# ============================================================================
 
 def format_bedrock_client_error(exc: Exception, *, model_id: str) -> str:
     """Mensaje legible para errores boto3 Bedrock (IAM, modelo, cuota)."""

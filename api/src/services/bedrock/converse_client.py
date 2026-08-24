@@ -1,7 +1,7 @@
 """
 Cliente ConverseStream — inferencia Bedrock con tool calling.
 
-Única capa que habla con bedrock-runtime Converse (no AgentCore Harness).
+Cliente ConverseStream — inferencia Bedrock con tool calling (bedrock-runtime).
 Ver api/docs/BEDROCK-HARNESS.md.
 """
 import asyncio
@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 _runtime_client = None
 
 
+# ============================================================================
+# Cliente Bedrock Runtime
+# ============================================================================
+
 def _get_runtime_client():
     global _runtime_client
     if _runtime_client is None:
@@ -34,6 +38,10 @@ def _get_runtime_client():
         )
     return _runtime_client
 
+
+# ============================================================================
+# Respuesta Converse y tool use
+# ============================================================================
 
 def parse_converse_response(response: Dict[str, Any]) -> Dict[str, Any]:
     """Normaliza la respuesta de Converse (no streaming) al formato interno del harness."""
@@ -68,6 +76,10 @@ def parse_converse_response(response: Dict[str, Any]) -> Dict[str, Any]:
         "tool_uses": tool_uses,
     }
 
+
+# ============================================================================
+# Streaming Converse
+# ============================================================================
 
 def consume_converse_stream(stream) -> Dict[str, Any]:
     """Convierte el stream Converse en texto, tool_uses, stop_reason y usage."""
@@ -116,6 +128,10 @@ def consume_converse_stream(stream) -> Dict[str, Any]:
         "tool_uses": parsed,
     }
 
+
+# ============================================================================
+# Invocación Converse
+# ============================================================================
 
 async def converse(
     *,

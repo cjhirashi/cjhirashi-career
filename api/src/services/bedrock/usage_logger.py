@@ -14,6 +14,10 @@ from models.bedrock_usage_round_log import BedrockUsageRoundLog
 logger = logging.getLogger(__name__)
 
 
+# ============================================================================
+# Estimación de costo
+# ============================================================================
+
 def _estimate_cost(model_id: str, input_tokens: int, output_tokens: int) -> float:
     pricing = settings.BEDROCK_AVAILABLE_MODELS.get(model_id, {})
     return (
@@ -21,6 +25,10 @@ def _estimate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
         + output_tokens * pricing.get("price_output_per_million", 0) / 1_000_000
     )
 
+
+# ============================================================================
+# Registro por turno completo
+# ============================================================================
 
 async def record_turn_usage(
     user_id: str,
@@ -47,6 +55,10 @@ async def record_turn_usage(
     except Exception:
         logger.exception("Failed to record turn usage")
 
+
+# ============================================================================
+# Registro granular por round
+# ============================================================================
 
 async def record_round_log(
     *,

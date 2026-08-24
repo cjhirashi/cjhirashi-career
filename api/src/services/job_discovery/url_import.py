@@ -22,6 +22,10 @@ _HOST_SOURCE = (
 )
 
 
+# ============================================================================
+# Inferencia de fuente
+# ============================================================================
+
 def infer_source(url: str) -> str:
     host = (urlparse(url).hostname or "").lower()
     if host.startswith("www."):
@@ -31,6 +35,10 @@ def infer_source(url: str) -> str:
             return source
     return "url"
 
+
+# ============================================================================
+# Extracción de metadatos HTML
+# ============================================================================
 
 def _meta(html: str, *keys: str) -> Optional[str]:
     for key in keys:
@@ -76,6 +84,10 @@ def listing_from_html(url: str, html: str) -> JobListing:
         snippet=(description or "")[:400] or None,
     )
 
+
+# ============================================================================
+# Importación de URL
+# ============================================================================
 
 async def import_url(url: str) -> JobListing:
     normalized = url.strip()

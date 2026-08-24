@@ -23,12 +23,14 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Token Details
+    # --- Campos de negocio ---
     token = Column(String(500), unique=True, nullable=False, index=True)
     token_hash = Column(String(255), nullable=False)  # Hashed version for comparison
 
@@ -44,6 +46,7 @@ class RefreshToken(Base):
     user_agent = Column(String(500), nullable=True)
 
     # Timestamps
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     used_at = Column(DateTime(timezone=True), nullable=True)
     revoked_at = Column(DateTime(timezone=True), nullable=True)

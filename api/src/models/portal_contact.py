@@ -17,9 +17,11 @@ from services.id_generator import register_id_listener
 class PortalContact(Base):
     __tablename__ = "portal_contact"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
+    # --- Campos de negocio ---
     contact_email = Column(String(255), nullable=True)
     whatsapp = Column(String(50), nullable=True)
     location = Column(String(255), nullable=True)
@@ -32,6 +34,7 @@ class PortalContact(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

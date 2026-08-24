@@ -8,6 +8,10 @@ from services.job_discovery.types import JobListing, SearchQuery
 FEED_URL = "https://remoteok.com/api"
 
 
+# ============================================================================
+# Parseo de respuesta
+# ============================================================================
+
 def _parse_date(item: dict[str, Any]) -> Optional[date]:
     raw = item.get("date") or item.get("epoch")
     if isinstance(raw, (int, float)):
@@ -61,6 +65,10 @@ def listings_from_remoteok_payload(payload: Any, query: SearchQuery) -> list[Job
             break
     return listings
 
+
+# ============================================================================
+# Adaptador RemoteOK
+# ============================================================================
 
 class RemoteOKAdapter:
     id = "remoteok"

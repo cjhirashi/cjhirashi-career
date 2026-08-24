@@ -10,6 +10,10 @@ Uso en cada modelo:
 """
 from sqlalchemy import event, text
 
+# ============================================================================
+# Registro de prefijos
+# ============================================================================
+
 # Mapa canónico tabla → prefijo (fuente de verdad)
 TABLE_PREFIXES: dict[str, str] = {
     "achievements":               "ach",
@@ -40,6 +44,7 @@ TABLE_PREFIXES: dict[str, str] = {
     "networking_contacts":        "nwc",
     "operational_methodologies":  "opm",
     "pdf_output_templates":       "pdt",
+    "pdf_template_styles":        "pds",
     "portal_about":               "pab",
     "portal_contact":             "pco",
     "portal_home":                "phm",
@@ -89,9 +94,17 @@ def _seq_name(table_name: str) -> str:
     return f"{prefix}_id_seq"
 
 
+# ============================================================================
+# Listener de inserción
+# ============================================================================
+
 def register_id_listener(model_class, prefix: str) -> None:
     """Registra el evento before_insert para asignar el ID prefijado."""
     table_name = model_class.__tablename__
+
+    # ============================================================================
+    # Generación de IDs
+    # ============================================================================
 
     @event.listens_for(model_class, "before_insert")
     def _assign_id(mapper, connection, target):

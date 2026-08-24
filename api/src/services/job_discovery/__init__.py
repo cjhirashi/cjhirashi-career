@@ -1,4 +1,9 @@
 """Job discovery adapters and orchestration."""
+
+# ============================================================================
+# Reexportaciones públicas
+# ============================================================================
+
 from services.job_discovery.service import (
     import_vacancy_url,
     listing_to_dict,

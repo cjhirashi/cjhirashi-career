@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 _embedding_client = None
 
 
+# ============================================================================
+# Cliente de embeddings
+# ============================================================================
+
 def _require_aws() -> None:
     if not settings.AWS_ACCESS_KEY_ID or not settings.AWS_SECRET_ACCESS_KEY:
         raise BedrockError("Bedrock is not configured (missing AWS credentials)")
@@ -35,6 +39,10 @@ def _get_embedding_client():
         )
     return _embedding_client
 
+
+# ============================================================================
+# Vectorización de texto
+# ============================================================================
 
 async def embed_text(text: str) -> List[float]:
     """Vectoriza texto con Titan Embeddings v2."""

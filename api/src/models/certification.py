@@ -16,9 +16,11 @@ class Certification(Base):
     __tablename__ = "certifications"
     __table_args__ = (CheckConstraint("status IN ('pending', 'in_progress', 'completed')"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     name = Column(String(255), nullable=False)
     institution = Column(String(255), nullable=True)
     year = Column(Integer, nullable=True)
@@ -31,6 +33,7 @@ class Certification(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -17,9 +17,11 @@ class TargetRole(Base):
     __tablename__ = "target_roles"
     __table_args__ = (CheckConstraint("priority_order BETWEEN 1 AND 3"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     role_name = Column(String(255), nullable=False)
     priority_order = Column(Integer, nullable=True, index=True)
     salary_median = Column(Integer, nullable=True)
@@ -37,6 +39,7 @@ class TargetRole(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

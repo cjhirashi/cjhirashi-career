@@ -22,9 +22,11 @@ class Competency(Base):
 
     __tablename__ = "competencies"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     name = Column(String(255), nullable=False)
     type = Column(String(50), nullable=False, index=True)  # technical | transferable | business
     category = Column(String(100), nullable=True)
@@ -46,6 +48,7 @@ class Competency(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

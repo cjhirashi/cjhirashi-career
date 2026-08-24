@@ -32,12 +32,14 @@ class FileUpload(Base):
     __tablename__ = "file_uploads"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # File Metadata
+    # --- Campos de negocio ---
     original_filename = Column(String(500), nullable=False)
     stored_filename = Column(String(500), unique=True, nullable=False, index=True)
     file_path = Column(String(1000), nullable=False)
@@ -67,6 +69,7 @@ class FileUpload(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     last_downloaded = Column(DateTime(timezone=True), nullable=True)

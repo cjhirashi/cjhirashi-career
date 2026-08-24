@@ -30,6 +30,10 @@ logger = logging.getLogger(__name__)
 DEFAULT_PROVIDERS = ("getonboard", "indeed", "linkedin", "remotive", "remoteok")
 
 
+# ============================================================================
+# Utilidades de listado
+# ============================================================================
+
 def _analysis_notes(raw: dict) -> Optional[str]:
     parts: list[str] = []
     snippet = (raw.get("snippet") or "").strip()
@@ -65,6 +69,10 @@ def listing_to_dict(listing: JobListing) -> dict:
         "ref": listing.ref,
     }
 
+
+# ============================================================================
+# Resolución de consulta y boards
+# ============================================================================
 
 async def _saved_urls(db: AsyncSession, user_id: str) -> set[str]:
     result = await db.execute(select(Vacancy.vacancy_url).where(Vacancy.user_id == user_id))
@@ -118,6 +126,10 @@ async def _load_company_boards(db: AsyncSession, user_id: str) -> List[CompanyBo
 async def _search_one(adapter, query: SearchQuery) -> list[JobListing]:
     return await adapter.search(query)
 
+
+# ============================================================================
+# Descubrimiento
+# ============================================================================
 
 async def run_discovery(
     db: AsyncSession,
@@ -203,6 +215,10 @@ async def run_discovery(
     )
 
 
+# ============================================================================
+# Persistencia
+# ============================================================================
+
 async def save_listings(
     db: AsyncSession,
     user_id: str,
@@ -285,6 +301,10 @@ async def save_listings(
     await db.commit()
     return {"created": created, "skipped": skipped}
 
+
+# ============================================================================
+# Exportaciones públicas
+# ============================================================================
 
 def providers() -> list:
     return list_provider_statuses()

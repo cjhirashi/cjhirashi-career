@@ -7,6 +7,10 @@ from typing import List, Literal, Optional
 ListingKind = Literal["job", "search_url"]
 
 
+# ============================================================================
+# Modelos de datos
+# ============================================================================
+
 @dataclass
 class CompanyBoard:
     """A target company with a public Greenhouse or Lever board."""

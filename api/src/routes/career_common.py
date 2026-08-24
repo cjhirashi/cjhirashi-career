@@ -8,6 +8,9 @@ authentication and enforces row-level user isolation via
 always taken from the authenticated user, never from the request body or
 query string.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from typing import Dict, List, Optional, Type
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -19,6 +22,9 @@ from middleware.auth import get_current_user
 from models.user import User
 from repositories.career_repository import CareerRepository
 
+# ============================================================================
+# Registro de recursos (RESOURCE_REGISTRY)
+# ============================================================================
 # resource_key -> SQLAlchemy model, populated automatically below as each
 # `build_crud_router(...)` call registers itself - never maintained by hand.
 # This is what lets Agent Bedrock's tools (services/bedrock_service.py)
@@ -27,6 +33,9 @@ from repositories.career_repository import CareerRepository
 RESOURCE_REGISTRY: Dict[str, Type[Base]] = {}
 
 
+# ============================================================================
+# Factory: build_crud_router
+# ============================================================================
 def build_crud_router(
     *,
     prefix: str,
@@ -53,6 +62,10 @@ def build_crud_router(
 
     class CountResponse(BaseModel):
         count: int
+
+    # ============================================================================
+    # Endpoints CRUD estándar (list / count / get / create / update / delete)
+    # ============================================================================
 
     @router.get("", response_model=List[response_schema], summary=f"List {entity_name}")
     async def list_items(

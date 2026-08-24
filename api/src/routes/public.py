@@ -7,6 +7,9 @@ and exposes nothing besides the content that's meant to be public - no
 career-pipeline, application-tracking, or LinkedIn-connection data lives
 under this router.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 import re
 from collections import OrderedDict
 from typing import List, Optional
@@ -37,6 +40,9 @@ from schemas.public import (
     PublicBlogPost, PublicHeroCta, PublicStat,
 )
 
+# ============================================================================
+# Router principal y constantes
+# ============================================================================
 router = APIRouter(prefix="/public", tags=["Public Portal"])
 
 USER_ID = settings.PUBLIC_PORTAL_USER_ID
@@ -50,6 +56,9 @@ USER_ID = settings.PUBLIC_PORTAL_USER_ID
 PORTAL_BLOG_PLATFORM = "portfolio_web"
 
 
+# ============================================================================
+# Helpers y mappers de respuesta
+# ============================================================================
 def _parse_lines(text: Optional[str]) -> List[str]:
     """Splits a "one item per line" Markdown-list field (see careerResources.ts's
     `textarea` convention) into a clean list, stripping "- "/"* " bullets."""
@@ -123,6 +132,9 @@ def _stats(home: Optional[PortalHome]) -> List[PublicStat]:
     return [PublicStat(label=label, value=value) for label, value in slots if label and value]
 
 
+# ============================================================================
+# Endpoint: página Home
+# ============================================================================
 @router.get("/home", response_model=PublicHomeResponse)
 async def get_home(db: AsyncSession = Depends(get_db)):
     # No fallback to Identity here on purpose: what's in the Portal · Home
@@ -186,6 +198,9 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     )
 
 
+# ============================================================================
+# Endpoint: página About
+# ============================================================================
 @router.get("/about", response_model=PublicAboutResponse)
 async def get_about(db: AsyncSession = Depends(get_db)):
     identity = (await db.execute(select(Identity).where(Identity.user_id == USER_ID))).scalar_one_or_none()
@@ -229,6 +244,9 @@ async def get_about(db: AsyncSession = Depends(get_db)):
     )
 
 
+# ============================================================================
+# Endpoint: página Contact
+# ============================================================================
 @router.get("/contact", response_model=PublicContactResponse)
 async def get_contact(db: AsyncSession = Depends(get_db)):
     contact = (
@@ -253,6 +271,9 @@ async def get_contact(db: AsyncSession = Depends(get_db)):
     )
 
 
+# ============================================================================
+# Endpoints: proyectos
+# ============================================================================
 @router.get("/projects", response_model=List[PublicProjectDetail])
 async def list_projects(db: AsyncSession = Depends(get_db)):
     projects = (
@@ -273,6 +294,9 @@ async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
     return _project_detail(project)
 
 
+# ============================================================================
+# Endpoints: blog
+# ============================================================================
 @router.get("/blog", response_model=List[PublicBlogPost])
 async def list_blog_posts(limit: int = Query(default=50, ge=1, le=100), db: AsyncSession = Depends(get_db)):
     posts = (

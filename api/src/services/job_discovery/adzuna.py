@@ -7,6 +7,10 @@ from services.job_discovery.http import get_json
 from services.job_discovery.types import JobListing, SearchQuery
 
 
+# ============================================================================
+# Configuración y parseo
+# ============================================================================
+
 def adzuna_configured() -> bool:
     return bool(settings.ADZUNA_APP_ID and settings.ADZUNA_APP_KEY)
 
@@ -67,6 +71,10 @@ def listings_from_adzuna_payload(
         )
     return listings
 
+
+# ============================================================================
+# Búsqueda
+# ============================================================================
 
 async def search_adzuna(query: SearchQuery) -> list[JobListing]:
     if not adzuna_configured():

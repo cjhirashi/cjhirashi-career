@@ -23,9 +23,11 @@ class Vacancy(Base):
         CheckConstraint("evaluation IN ('apply', 'do_not_apply', 'pending_review')"),
     )
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     order_number = Column(Integer, nullable=True)
     company = Column(String(255), nullable=False)
     exact_role = Column(String(255), nullable=False)
@@ -39,6 +41,7 @@ class Vacancy(Base):
     evaluation = Column(String(30), default="pending_review", nullable=True, index=True)
     is_active = Column(Boolean, default=True, nullable=True)
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

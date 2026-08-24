@@ -6,6 +6,10 @@ from services.job_discovery.http import get_json
 from services.job_discovery.types import CompanyBoard, JobListing, SearchQuery
 
 
+# ============================================================================
+# Parseo de respuesta
+# ============================================================================
+
 def _parse_date(raw: Any) -> Optional[date]:
     if raw is None:
         return None
@@ -59,6 +63,10 @@ def listings_from_lever_payload(
             break
     return listings
 
+
+# ============================================================================
+# Búsqueda en board
+# ============================================================================
 
 async def search_lever_board(board: CompanyBoard, query: SearchQuery) -> list[JobListing]:
     url = f"https://api.lever.co/v0/postings/{board.token}"

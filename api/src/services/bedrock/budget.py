@@ -15,6 +15,10 @@ from models.bedrock_usage_round_log import BedrockUsageRoundLog
 from services.bedrock.errors import BedrockBudgetExceeded
 
 
+# ============================================================================
+# Consulta de gasto diario
+# ============================================================================
+
 async def get_daily_spend_usd(db: AsyncSession, user_id: str) -> float:
     """Gasto estimado hoy (logs por turno + round logs)."""
     today = datetime.now(timezone.utc).date()
@@ -36,6 +40,10 @@ async def get_daily_spend_usd(db: AsyncSession, user_id: str) -> float:
     return total
 
 
+# ============================================================================
+# Validación de presupuesto
+# ============================================================================
+
 async def assert_budget_available(db: AsyncSession, user_id: str, daily_budget: float) -> None:
     """Lanza BedrockBudgetExceeded si el gasto del día >= presupuesto."""
     spent = await get_daily_spend_usd(db, user_id)
@@ -45,6 +53,10 @@ async def assert_budget_available(db: AsyncSession, user_id: str, daily_budget: 
             "Ajusta BEDROCK_DAILY_BUDGET_USD o espera mañana."
         )
 
+
+# ============================================================================
+# Presupuesto restante
+# ============================================================================
 
 async def get_remaining_budget_usd(db: AsyncSession, user_id: str, daily_budget: float) -> float:
     spent = await get_daily_spend_usd(db, user_id)

@@ -3,6 +3,9 @@ Job discovery endpoints (not generic CRUD).
 
 Preview-then-save: /run and /import-url never write vacancies.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -30,9 +33,15 @@ from services.job_discovery import (
 )
 from services.job_discovery.preview_store import append_preview
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/career/job-discoveries", tags=["Career - Job Discovery"])
 
 
+# ============================================================================
+# Endpoints: proveedores, búsqueda, importación y guardado
+# ============================================================================
 @router.get("/providers", response_model=List[ProviderStatusSchema])
 async def get_providers(current_user: User = Depends(get_current_user)):
     del current_user

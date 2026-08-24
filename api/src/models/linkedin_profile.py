@@ -19,9 +19,11 @@ from services.id_generator import register_id_listener
 class LinkedInProfile(Base):
     __tablename__ = "linkedin_profile"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
+    # --- Campos de negocio ---
     headline = Column(String(255), nullable=True)
     about = Column(Text, nullable=True)
     profile_url = Column(String(500), nullable=True)
@@ -39,6 +41,7 @@ class LinkedInProfile(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

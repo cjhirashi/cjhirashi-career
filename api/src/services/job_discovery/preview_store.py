@@ -19,6 +19,10 @@ LAST_KEY = "last"
 _REF_RE = re.compile(r"^(?:L)?(\d+)$", re.IGNORECASE)
 
 
+# ============================================================================
+# Normalización de referencias
+# ============================================================================
+
 def normalize_ref(raw: str) -> Optional[str]:
     text = (raw or "").strip().upper()
     match = _REF_RE.match(text)
@@ -38,6 +42,10 @@ def _write(user_id: str, session_key: str, listings: Dict[str, dict]) -> None:
     _purge_locked(now)
     _STORE[(user_id, session_key or "admin")] = (now + _TTL_SECONDS, listings)
 
+
+# ============================================================================
+# Almacenamiento de preview
+# ============================================================================
 
 def remember_preview(user_id: str, session_key: str, listings: List[dict]) -> List[dict]:
     """Replace the preview, assign L1..Ln, and mirror to `last`."""
@@ -79,6 +87,10 @@ def append_preview(user_id: str, session_key: str, listing: dict) -> dict:
         _write(user_id, LAST_KEY, last)
     return item
 
+
+# ============================================================================
+# Resolución de referencias
+# ============================================================================
 
 def resolve_refs(
     user_id: str,

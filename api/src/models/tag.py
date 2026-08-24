@@ -16,9 +16,11 @@ class Tag(Base):
     __tablename__ = "tags"
     __table_args__ = (UniqueConstraint("user_id", "tag_name"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     tag_name = Column(String(100), nullable=False)
     entity_type = Column(String(100), nullable=True)
     color_hex = Column(String(7), nullable=True)
@@ -27,6 +29,7 @@ class Tag(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -5,6 +5,10 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
+# ============================================================================
+# Tipos y esquemas base
+# ============================================================================
+
 ListingKind = Literal["job", "search_url"]
 
 
@@ -38,6 +42,10 @@ class ProviderErrorSchema(BaseModel):
     message: str
 
 
+# ============================================================================
+# Descubrimiento — solicitudes y respuestas
+# ============================================================================
+
 class JobDiscoveryRunRequest(BaseModel):
     query: Optional[str] = Field(None, max_length=255)
     location: Optional[str] = Field(None, max_length=255)
@@ -53,6 +61,10 @@ class JobDiscoveryRunResponse(BaseModel):
     listings: List[JobListingSchema]
     errors: List[ProviderErrorSchema] = []
 
+
+# ============================================================================
+# Importación y guardado — solicitudes y respuestas
+# ============================================================================
 
 class ImportUrlRequest(BaseModel):
     url: str = Field(..., min_length=8, max_length=500)

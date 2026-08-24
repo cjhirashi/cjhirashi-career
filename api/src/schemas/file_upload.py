@@ -7,6 +7,10 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+# ============================================================================
+# Respuestas — archivos subidos
+# ============================================================================
+
 class FileUploadResponse(BaseModel):
     id: str
     user_id: str

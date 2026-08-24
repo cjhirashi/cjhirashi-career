@@ -25,12 +25,14 @@ class Metrics(Base):
     __tablename__ = "metrics"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
     # Profile Completeness
+    # --- Campos de negocio ---
     profile_completion_percentage = Column(Float, default=0.0, nullable=False)
     identity_completion = Column(Float, default=0.0, nullable=False)
     competencies_count = Column(Integer, default=0, nullable=False)
@@ -87,6 +89,7 @@ class Metrics(Base):
     extra_metadata = Column(JSON, nullable=True)
 
     # Timestamps
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     computed_at = Column(DateTime(timezone=True), nullable=True)  # When metrics were last computed

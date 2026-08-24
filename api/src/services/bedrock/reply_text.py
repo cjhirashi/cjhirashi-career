@@ -1,6 +1,10 @@
 """Sanitize assistant text before it is stored, replayed, or shown in chat."""
 import re
 
+# ============================================================================
+# Patrones de chain-of-thought
+# ============================================================================
+
 _THINK_BLOCK = re.compile(
     r"<\s*(thinking|think)\s*>.*?<\s*/\s*\1\s*>",
     re.DOTALL | re.IGNORECASE,
@@ -11,6 +15,10 @@ _UNCLOSED_THINK = re.compile(
 )
 _THINK_TAG = re.compile(r"<\s*/?\s*(thinking|think)\s*>", re.IGNORECASE)
 
+
+# ============================================================================
+# Sanitización de respuesta del asistente
+# ============================================================================
 
 def sanitize_assistant_reply(text: str) -> str:
     """Drop model chain-of-thought markup, keep the user-facing answer.

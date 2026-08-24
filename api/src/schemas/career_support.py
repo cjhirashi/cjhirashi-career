@@ -8,6 +8,10 @@ from typing import Optional
 from datetime import datetime
 
 
+# ============================================================================
+# Etiquetas — esquemas CRUD
+# ============================================================================
+
 class TagBase(BaseModel):
     tag_name: str = Field(..., max_length=100)
     entity_type: Optional[str] = Field(None, max_length=100)

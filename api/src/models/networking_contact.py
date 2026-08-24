@@ -27,9 +27,11 @@ class NetworkingContact(Base):
         ),
     )
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     name = Column(String(255), nullable=False)
     role_title = Column(String(255), nullable=True)
     company_or_specialty = Column(String(255), nullable=True)
@@ -40,6 +42,7 @@ class NetworkingContact(Base):
     how_originated = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

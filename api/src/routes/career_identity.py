@@ -5,6 +5,9 @@ Aggregates CRUD routers for: differentiators, identity, identity_reflections,
 competencies, certifications, target_roles, work_history, achievements,
 star_stories, career_reviews, role_gap_analysis, projects.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from fastapi import APIRouter
 
 from models.differentiator import Differentiator
@@ -37,8 +40,14 @@ from schemas.career_identity import (
 
 from routes.career_common import build_crud_router
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/career", tags=["Career - Identity"])
 
+# ============================================================================
+# Identidad profesional
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/differentiators", tags=["Career - Identity"], model=Differentiator,
     create_schema=DifferentiatorCreate, update_schema=DifferentiatorUpdate,
@@ -57,6 +66,9 @@ router.include_router(build_crud_router(
     response_schema=IdentityReflectionResponse, entity_name="identity reflection",
 ))
 
+# ============================================================================
+# Competencias y certificaciones
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/competencies", tags=["Career - Identity"], model=Competency,
     create_schema=CompetencyCreate, update_schema=CompetencyUpdate,
@@ -69,6 +81,9 @@ router.include_router(build_crud_router(
     response_schema=CertificationResponse, entity_name="certification",
 ))
 
+# ============================================================================
+# Roles y experiencia laboral
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/target-roles", tags=["Career - Identity"], model=TargetRole,
     create_schema=TargetRoleCreate, update_schema=TargetRoleUpdate,
@@ -81,6 +96,9 @@ router.include_router(build_crud_router(
     response_schema=WorkHistoryResponse, entity_name="work history entry",
 ))
 
+# ============================================================================
+# Logros, narrativas y revisiones de carrera
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/achievements", tags=["Career - Identity"], model=Achievement,
     create_schema=AchievementCreate, update_schema=AchievementUpdate,
@@ -105,6 +123,9 @@ router.include_router(build_crud_router(
     response_schema=RoleGapAnalysisResponse, entity_name="role gap analysis",
 ))
 
+# ============================================================================
+# Proyectos
+# ============================================================================
 router.include_router(build_crud_router(
     prefix="/projects", tags=["Career - Identity"], model=Project,
     create_schema=ProjectCreate, update_schema=ProjectUpdate,

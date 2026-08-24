@@ -43,12 +43,14 @@ class Event(Base):
     __tablename__ = "events"
 
     # Primary Key
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign Key
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Event Details
+    # --- Campos de negocio ---
     event_type = Column(Enum(EventType), nullable=False, index=True)
     event_name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
@@ -67,6 +69,7 @@ class Event(Base):
     extra_metadata = Column(JSON, nullable=True)
 
     # Timestamp
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
     # Relationships

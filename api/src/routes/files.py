@@ -8,6 +8,9 @@ that's the whole point of "generar links públicos" - but reading a *private*
 one always goes through this API (get_presigned_url), never a bare bucket
 URL: the bucket policy only grants anonymous access under `public/`.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 import io
 import logging
 import re
@@ -31,8 +34,14 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/files", tags=["Files"])
 
+# ============================================================================
+# Constantes de optimización de imágenes
+# ============================================================================
 # Uploaded photos routinely come straight off a phone/camera (several MB,
 # far larger than anything the portal/admin ever displays) with no
 # optimization step anywhere in the pipeline - re-encode on upload instead
@@ -41,6 +50,9 @@ MAX_IMAGE_DIMENSION = 1920
 JPEG_QUALITY = 85
 
 
+# ============================================================================
+# Helpers: optimización y clasificación de imágenes
+# ============================================================================
 def _has_real_transparency(image: Image.Image) -> bool:
     """True only if the image actually uses transparency (some pixel with
     alpha < 255) - not merely if its color mode has an alpha channel. Photos
@@ -93,6 +105,9 @@ def _infer_file_type(content_type: str) -> FileType:
     return FileType.OTHER
 
 
+# ============================================================================
+# Endpoints: subida y listado de archivos
+# ============================================================================
 @router.post("", response_model=FileUploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
     file: UploadFile = File(...),
@@ -197,6 +212,9 @@ async def list_categories(
     return result.scalars().all()
 
 
+# ============================================================================
+# Schemas auxiliares (visibilidad y URLs firmadas)
+# ============================================================================
 class VisibilityUpdate(BaseModel):
     is_public: bool
 
@@ -205,6 +223,9 @@ class PresignedUrlResponse(BaseModel):
     url: str
 
 
+# ============================================================================
+# Endpoints: gestión de visibilidad y descarga
+# ============================================================================
 @router.patch("/{file_id}/visibility", response_model=FileUploadResponse)
 async def update_visibility(
     file_id: str,

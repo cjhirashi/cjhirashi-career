@@ -21,9 +21,11 @@ class LinkedInConnection(Base):
     __tablename__ = "linkedin_connections"
     __table_args__ = (UniqueConstraint("user_id"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     access_token = Column(String(2048), nullable=False)
     member_sub = Column(String(255), nullable=False)  # LinkedIn OIDC `sub` claim -> urn:li:person:{sub}
     member_name = Column(String(255), nullable=True)

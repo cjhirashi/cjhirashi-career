@@ -17,6 +17,10 @@ class AuthService:
     Authentication service handling JWT creation, validation, and password operations.
     """
 
+    # ============================================================================
+    # Hash de contraseñas
+    # ============================================================================
+
     @staticmethod
     def hash_password(password: str) -> str:
         """
@@ -58,6 +62,10 @@ class AuthService:
         except Exception as e:
             logger.warning(f"Password verification failed: {e}")
             return False
+
+    # ============================================================================
+    # Creación de tokens
+    # ============================================================================
 
     @staticmethod
     def _create_token(
@@ -149,6 +157,10 @@ class AuthService:
             ValueError: If token creation fails
         """
         return AuthService._create_token(data, "refresh", expires_delta)
+
+    # ============================================================================
+    # Validación de tokens
+    # ============================================================================
 
     @staticmethod
     def decode_token(token: str) -> dict:

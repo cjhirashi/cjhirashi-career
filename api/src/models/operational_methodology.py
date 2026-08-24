@@ -17,9 +17,11 @@ from services.id_generator import register_id_listener
 class OperationalMethodology(Base):
     __tablename__ = "operational_methodologies"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
     # e.g. "Investigación Operativa" / "Metodología Operativa de la Bóveda" -
     # free text rather than an enum, new top-level groupings will show up.
@@ -31,6 +33,7 @@ class OperationalMethodology(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

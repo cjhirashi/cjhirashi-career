@@ -20,9 +20,11 @@ class NetworkingActivity(Base):
         ),
     )
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     category = Column(String(30), nullable=True, index=True)
     activity_type = Column(String(255), nullable=False)
     concrete_action = Column(Text, nullable=True)
@@ -34,6 +36,7 @@ class NetworkingActivity(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

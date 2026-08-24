@@ -1,6 +1,8 @@
 """
-Portafolio-cjhirashi API - Application Configuration
-Loads environment variables and defines global configuration.
+Portafolio-cjhirashi API - Application Configuration.
+
+Carga variables de entorno vía pydantic-settings y expone un singleton
+`settings` usado en toda la aplicación (BD, JWT, Bedrock, MinIO, etc.).
 """
 from pydantic_settings import BaseSettings
 from pydantic import Field
@@ -9,15 +11,19 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
-    """Application configuration via environment variables."""
+    """Configuración global leída desde `.env` y variables de entorno."""
 
-    # Database (REQUIRED - no defaults for production safety)
+    # -------------------------------------------------------------------------
+    # Base de datos (obligatorio en producción)
+    # -------------------------------------------------------------------------
     DATABASE_URL: str = Field(
         ...,
         description="PostgreSQL connection string (required)"
     )
 
-    # JWT & Security (REQUIRED - no defaults for production safety)
+    # -------------------------------------------------------------------------
+    # JWT y seguridad (SECRET_KEY obligatorio, mín. 32 caracteres)
+    # -------------------------------------------------------------------------
     SECRET_KEY: str = Field(
         ...,
         min_length=32,
@@ -36,7 +42,9 @@ class Settings(BaseSettings):
         description="Refresh token expiration in days"
     )
 
-    # CORS Origins (as string, parsed to list)
+    # -------------------------------------------------------------------------
+    # CORS y metadatos de la aplicación
+    # -------------------------------------------------------------------------
     CORS_ORIGINS_STR: str = "http://localhost:8002,http://localhost:8003,http://localhost:8004"
 
     # Application
@@ -44,12 +52,16 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
-    # File Uploads
+    # -------------------------------------------------------------------------
+    # Subida de archivos (límites locales; almacenamiento real en MinIO)
+    # -------------------------------------------------------------------------
     UPLOADS_DIR: str = "/app/uploads"
     MAX_UPLOAD_SIZE_MB: int = 10
     ALLOWED_EXTENSIONS: List[str] = ["pdf", "doc", "docx", "jpg", "jpeg", "png", "gif"]
 
-    # MinIO (object storage bucket - required)
+    # -------------------------------------------------------------------------
+    # MinIO — bucket S3-compatible para archivos públicos/privados
+    # -------------------------------------------------------------------------
     MINIO_ENDPOINT: str = Field(
         ...,
         description="MinIO host:port on the internal Docker network (required)"
@@ -62,7 +74,9 @@ class Settings(BaseSettings):
         description="Public base URL the bucket is exposed at (e.g. https://files.cjhirashi.com), required"
     )
 
-    # Rate Limiting
+    # -------------------------------------------------------------------------
+    # Rate limiting y paginación por defecto en listados CRUD
+    # -------------------------------------------------------------------------
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REQUESTS: int = 100
     RATE_LIMIT_WINDOW_SECONDS: int = 60
@@ -72,10 +86,11 @@ class Settings(BaseSettings):
     DEFAULT_LIMIT: int = 20
     MAX_LIMIT: int = 100
 
-    # AWS Bedrock — Harness local (Converse API) + Titan Embeddings + Titan Image.
-    # Ver docs/BEDROCK-SYSTEM.md y ADR-008. BEDROCK_HARNESS_ARN es legacy AgentCore.
+    # -------------------------------------------------------------------------
+    # AWS Bedrock — Converse API, embeddings Titan, generación de imágenes
+    # Ver docs/BEDROCK-SYSTEM.md para arquitectura del agente.
+    # -------------------------------------------------------------------------
     BEDROCK_REGION: str = "us-east-1"
-    BEDROCK_USE_LOCAL_HARNESS: bool = True
     BEDROCK_USE_CONVERSE_STREAM: bool = False
     BEDROCK_DEFAULT_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
@@ -87,12 +102,12 @@ class Settings(BaseSettings):
     BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3
     BEDROCK_DAILY_BUDGET_USD: float = 5.0
     BEDROCK_EMBEDDING_MODEL_ID: str = "amazon.titan-embed-text-v2:0"
-    BEDROCK_HARNESS_ARN: str = ""
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
 
+    # Catálogo de modelos disponibles en el selector del Admin Panel.
+    # invoke_via: foundation = ID directo; inference_profile = prefijo us.*
     BEDROCK_AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
-        # invoke_via: foundation = ID directo (amazon.*, meta.*, …); inference_profile = prefijo us.*
         "amazon.nova-micro-v1:0": {
             "label": "Nova Micro",
             "tier": "economy",
@@ -165,23 +180,28 @@ class Settings(BaseSettings):
         },
     }
 
-    # Qdrant (Bedrock Chat's local knowledge base - operational_methodologies
-    # + every career-domain record, kept in sync by CareerRepository)
+    # -------------------------------------------------------------------------
+    # Qdrant — base de conocimiento vectorial del agente Bedrock
+    # -------------------------------------------------------------------------
     QDRANT_URL: str = "http://qdrant:6333"
     QDRANT_COLLECTION: str = "career_knowledge"
 
-    # PDF Generator (renders a CVVersion's Markdown `content` into a PDF -
-    # internal-only container, see routes/career_search.py's /pdf endpoint)
+    # -------------------------------------------------------------------------
+    # PDF Generator — servicio interno para renderizar CV/cover letter
+    # -------------------------------------------------------------------------
     PDF_GENERATOR_URL: str = "http://pdf_generator:8080"
 
-    # LinkedIn OAuth (Share on LinkedIn + Sign In with LinkedIn using OpenID
-    # Connect - both self-serve products, no LinkedIn app review required)
+    # -------------------------------------------------------------------------
+    # LinkedIn OAuth — publicación y conexión de cuenta
+    # -------------------------------------------------------------------------
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
     LINKEDIN_REDIRECT_URI: str = ""
     LINKEDIN_FRONTEND_URL: str = ""
 
-    # Job discovery (Indeed via Adzuna; other boards are public, no key)
+    # -------------------------------------------------------------------------
+    # Job discovery — agregadores externos (Adzuna, boards públicos, etc.)
+    # -------------------------------------------------------------------------
     ADZUNA_APP_ID: str = ""
     ADZUNA_APP_KEY: str = ""
     ADZUNA_COUNTRY: str = "mx"
@@ -189,15 +209,22 @@ class Settings(BaseSettings):
     JOB_DISCOVERY_MAX_RESULTS: int = 50
     JOB_DISCOVERY_USER_AGENT: str = "Portafolio-cjhirashi/1.0 (job-discovery; +https://cjhirashi.com)"
 
-    # Public Portal - this is a single-owner portfolio, so the unauthenticated
-    # /public/* routes (routes/public.py) always serve this one user's data.
+    # -------------------------------------------------------------------------
+    # Portal público — usuario único cuyos datos sirve /public/*
+    # -------------------------------------------------------------------------
     PUBLIC_PORTAL_USER_ID: int = 2
 
+    # -------------------------------------------------------------------------
+    # Pydantic Settings — carga desde .env
+    # -------------------------------------------------------------------------
     class Config:
         env_file = ".env"
         case_sensitive = True
         extra = "ignore"
 
+    # -------------------------------------------------------------------------
+    # Propiedades derivadas (no vienen del .env directamente)
+    # -------------------------------------------------------------------------
     @property
     def CORS_ORIGINS(self) -> List[str]:
         """Parse CORS_ORIGINS_STR to list of allowed origins."""
@@ -220,5 +247,5 @@ class Settings(BaseSettings):
         return path
 
 
-# Global settings instance
+# Singleton global — importar como `from config import settings`
 settings = Settings()

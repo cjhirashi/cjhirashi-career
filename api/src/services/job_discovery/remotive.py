@@ -8,6 +8,10 @@ from services.job_discovery.types import JobListing, SearchQuery
 SEARCH_URL = "https://remotive.com/api/remote-jobs"
 
 
+# ============================================================================
+# Parseo de respuesta
+# ============================================================================
+
 def _parse_date(raw: Optional[str]) -> Optional[date]:
     if not raw:
         return None
@@ -45,6 +49,10 @@ def listings_from_remotive_payload(payload: Any, limit: int) -> list[JobListing]
         )
     return listings
 
+
+# ============================================================================
+# Adaptador Remotive
+# ============================================================================
 
 class RemotiveAdapter:
     id = "remotive"

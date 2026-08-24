@@ -8,10 +8,18 @@ from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
 from services.bedrock.agent_profiles import AgentProfile, get_profile, list_profiles
 
 
+# ============================================================================
+# Overrides de suffix desde PG
+# ============================================================================
+
 async def _overrides_map(db: AsyncSession) -> Dict[str, str]:
     result = await db.execute(select(BedrockAgentProfilePrompt))
     return {row.profile_id: row.system_prompt_suffix for row in result.scalars().all()}
 
+
+# ============================================================================
+# Lectura de suffix efectivo
+# ============================================================================
 
 async def get_effective_suffix(db: AsyncSession, profile: AgentProfile) -> str:
     result = await db.execute(
@@ -24,6 +32,10 @@ async def get_effective_suffix(db: AsyncSession, profile: AgentProfile) -> str:
         return row.system_prompt_suffix.strip()
     return profile.system_prompt_suffix
 
+
+# ============================================================================
+# API de prompts por perfil
+# ============================================================================
 
 async def list_profile_prompts(db: AsyncSession) -> List[dict]:
     overrides = await _overrides_map(db)

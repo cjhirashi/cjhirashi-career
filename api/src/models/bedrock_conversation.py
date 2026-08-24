@@ -1,19 +1,13 @@
 """
-BedrockConversation / BedrockConversationMessage - server-side conversation
-history for Agent Bedrock, so it's the same from any device Carlos logs in
-from (the harness's own session memory is not something we can list/browse
-by title, and the earlier client-only localStorage version didn't survive
-switching devices).
+BedrockConversation / BedrockConversationMessage — historial de chat en PostgreSQL.
 
-`session_id` is the same id already used for `invoke_harness`'s
-`runtimeSessionId` (see bedrock_service.chat_stream) - one row per
-conversation, keyed by the id the harness itself uses, not a separate one.
+Mismo `session_id` en cliente y servidor (UUID). Una fila por conversación;
+los mensajes viven en bedrock_conversation_messages. Ver history_manager.py.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
-
 
 from services.id_generator import register_id_listener
 
@@ -21,12 +15,15 @@ from services.id_generator import register_id_listener
 class BedrockConversation(Base):
     __tablename__ = "bedrock_conversations"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    # --- Campos de negocio ---
     session_id = Column(String(100), nullable=False, unique=True, index=True)
     # contextual = sidebar derecha por sección; general = /agent/chat orquestador
     session_type = Column(String(20), nullable=False, default="contextual", index=True)
     title = Column(String(255), nullable=False, default="Nueva conversación")
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False, index=True)
 
@@ -51,6 +48,7 @@ class BedrockConversationMessage(Base):
 
     def __repr__(self):
         return f"<BedrockConversationMessage(id={self.id}, role='{self.role}')>"
+
 
 register_id_listener(BedrockConversation, "bco")
 register_id_listener(BedrockConversationMessage, "bcm")

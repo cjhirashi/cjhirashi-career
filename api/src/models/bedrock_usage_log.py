@@ -14,15 +14,18 @@ from database import Base
 class BedrockUsageLog(Base):
     __tablename__ = "bedrock_usage_logs"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     session_id = Column(String(64), nullable=False, index=True)
     model_id = Column(String(150), nullable=False, index=True)
     input_tokens = Column(Integer, nullable=False, default=0)
     output_tokens = Column(Integer, nullable=False, default=0)
     estimated_cost_usd = Column(Numeric(12, 6), nullable=False, default=0)
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
     def __repr__(self):

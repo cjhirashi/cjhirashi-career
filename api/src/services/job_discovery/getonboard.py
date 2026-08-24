@@ -9,6 +9,10 @@ from services.job_discovery.types import JobListing, SearchQuery
 SEARCH_URL = "https://www.getonbrd.com/api/v0/search/jobs"
 
 
+# ============================================================================
+# Parseo de respuesta
+# ============================================================================
+
 def _company_name(item: dict[str, Any], included: list[dict[str, Any]]) -> str:
     attrs = item.get("attributes") or {}
     if attrs.get("company_name"):
@@ -83,6 +87,10 @@ def listings_from_getonboard_payload(payload: Any, limit: int) -> list[JobListin
         )
     return listings
 
+
+# ============================================================================
+# Adaptador Get on Board
+# ============================================================================
 
 class GetOnBoardAdapter:
     id = "getonboard"

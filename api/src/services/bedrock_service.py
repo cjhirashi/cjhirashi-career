@@ -25,22 +25,8 @@ class BedrockError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Configuración de la conexión con AWS - tres clientes boto3 separados, cada
-# uno habla con un servicio distinto de Bedrock. Los tres se crean de forma
-# perezosa (solo cuando se usan por primera vez) y se guardan como singleton
-# a nivel de módulo, para que cada petición reutilice la misma conexión en
-# vez de reconectar cada vez:
-#   - `bedrock-runtime`           -> _embedding_client: SOLO Titan
-#     Embeddings (embed_text). No tiene nada que ver con el agente de chat.
-#   - `bedrock-agentcore`         -> _runtime_client: esta es la conexión
-#     real con el agente que preguntaste - invoke_harness (el chat) y las
-#     llamadas de lectura/escritura de memoria pasan todas por aquí.
-#   - `bedrock-agentcore-control` -> _control_client: la API *administrativa*
-#     del recurso Harness en sí (leer/cambiar su modelo, consultar su id de
-#     memoria) - no se usa para los turnos de chat, solo para configuración.
-# Los tres se autentican igual, con el access key/secret plano de IAM que
-# viene de `.env` (settings.AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY) - sin
-# SSO, sin rol asumido, solo una credencial estática de usuario de servicio.
+# AWS — cliente bedrock-runtime solo para Titan Embeddings (embed_text).
+# El chat Converse vive en services/bedrock/converse_client.py.
 # ---------------------------------------------------------------------------
 
 _embedding_client = None
@@ -105,278 +91,33 @@ async def embed_text(text: str) -> List[float]:
 # ---------------------------------------------------------------------------
 
 async def get_current_model() -> str:
-    """Modelo activo — Harness local lee PG; legacy lee AgentCore harness."""
-    from services.bedrock.agent_loop import use_local_harness
+    """Modelo activo del chat — persistido en bedrock_settings (PostgreSQL)."""
     from services.bedrock.settings_loader import get_active_model_id
     from database import AsyncSessionLocal
 
-    if use_local_harness():
-        async with AsyncSessionLocal() as db:
-            return await get_active_model_id(db)
-
-    raise BedrockError("Harness local desactivado. Configure BEDROCK_USE_LOCAL_HARNESS=true y credenciales AWS.")
+    _require_configured()
+    async with AsyncSessionLocal() as db:
+        return await get_active_model_id(db)
 
 
 async def switch_model(model_id: str) -> None:
-    """Cambia modelo activo — PG (local) o UpdateHarness (legacy)."""
+    """Cambia el modelo activo del chat (persiste en bedrock_settings)."""
     if model_id not in settings.BEDROCK_AVAILABLE_MODELS:
         raise BedrockError(f"Model not in the allow-list: {model_id}")
 
-    from services.bedrock.agent_loop import use_local_harness
     from services.bedrock.settings_loader import set_active_model_id
     from database import AsyncSessionLocal
 
-    if use_local_harness():
-        async with AsyncSessionLocal() as db:
-            await set_active_model_id(db, model_id)
-        return
-
-    raise BedrockError("Harness local desactivado. Configure BEDROCK_USE_LOCAL_HARNESS=true y credenciales AWS.")
+    _require_configured()
+    async with AsyncSessionLocal() as db:
+        await set_active_model_id(db, model_id)
 
 
 # ---------------------------------------------------------------------------
-# Herramientas expuestas al harness (herramientas inline_function). Esta es
-# la lista que se le manda a AWS en cada invoke_harness (ver `tools` en
-# chat_stream) - el modelo decide solo, en base al nombre/descripción de
-# cada una, cuál usar y con qué argumentos (definidos en su inputSchema,
-# formato JSON Schema estándar). La ejecución real de cada una vive en
-# `_execute_tool`, más abajo.
+# Tool execution — schemas Converse en services/bedrock/tools.py; ejecución
+# CRUD en `_execute_tool` más abajo. MCP custom tools: CRUD en este módulo.
 # ---------------------------------------------------------------------------
 
-_RESOURCE_KEY_PARAM = {
-    "type": "string",
-    "description": "The resource key, e.g. 'vacancies', 'projects', 'operational-methodologies'.",
-}
-
-_RECORD_ID_PARAM = {
-    "type": "string",
-    "description": "Prefixed record id, e.g. ach-17, cmp-42, vac-7. Use the full id as shown in lists.",
-}
-
-_BUILTIN_TOOLS = [
-    {
-        "type": "inline_function",
-        "name": "list_recent_changes",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "List recent entries from the audit log (bitácora) of changes you've made - every "
-                    "create/update/delete you've done, with the full record state before and after. Use "
-                    "this to answer 'what did you just do', to double-check a change before Carlos asks, "
-                    "or to find the audit_id of a delete you need to undo with restore_deleted_record."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "resource_key": {
-                            "type": "string",
-                            "description": "Optional filter to only one resource's changes.",
-                        },
-                        "limit": {"type": "integer", "description": "Max entries, default 10."},
-                    },
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "restore_deleted_record",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "Undo a delete you made - re-creates the record from an audit log entry's saved state "
-                    "(the row exactly as it was right before you deleted it). Get the audit_id from "
-                    "list_recent_changes first. Only works on 'delete' entries."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {"audit_id": {"type": "integer"}},
-                    "required": ["audit_id"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "describe_resource_schema",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "Get the exact field names accepted by create_career_record/update_career_record "
-                    "for one resource. Call this before creating a record on a resource whose fields "
-                    "you're not already sure of (field names don't always match what you'd guess, e.g. "
-                    "the 'tags' resource uses 'tag_name'/'entity_type', not 'name'/'category') - cheaper "
-                    "than a failed create_career_record call and a knowledge-base detour to recover."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {"resource_key": _RESOURCE_KEY_PARAM},
-                    "required": ["resource_key"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "search_knowledge_base",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "Semantic search over the local knowledge base: operational methodologies "
-                    "(how to work each table) and real career records. Use this whenever you need "
-                    "guidance on how to operate a domain, or to find records by meaning rather than "
-                    "an exact id."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string", "description": "Natural-language search query."},
-                        "top_k": {"type": "integer", "description": "Max results, default 5."},
-                        "type": {
-                            "type": "string",
-                            "enum": ["methodology", "career_record"],
-                            "description": "Optional filter to only one kind of content.",
-                        },
-                    },
-                    "required": ["query"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "list_career_record",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "List/search records of one resource, paginated. "
-                    "For 'list all my X' requests use limit=100 without search — NOT search_knowledge_base. "
-                    "Include every item returned (check total_count) in your reply; never pick a subset."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "resource_key": _RESOURCE_KEY_PARAM,
-                        "search": {"type": "string", "description": "Optional free-text filter."},
-                        "sort_by": {"type": "string", "description": "Optional column name to sort by."},
-                        "sort_dir": {"type": "string", "enum": ["asc", "desc"]},
-                        "limit": {"type": "integer", "description": "Default 20, max 100."},
-                        "skip": {"type": "integer", "description": "Pagination offset, default 0."},
-                    },
-                    "required": ["resource_key"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "count_career_records",
-        "config": {
-            "inlineFunction": {
-                "description": (
-                    "Count records in one resource. Use for 'how many X do I have' — "
-                    "always call this before answering count questions."
-                ),
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "resource_key": _RESOURCE_KEY_PARAM,
-                        "search": {"type": "string", "description": "Optional free-text filter."},
-                    },
-                    "required": ["resource_key"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "get_career_record",
-        "config": {
-            "inlineFunction": {
-                "description": "Fetch one full record by id.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM},
-                    "required": ["resource_key", "record_id"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "create_career_record",
-        "config": {
-            "inlineFunction": {
-                "description": "Create a new record. `fields` is an object of column name -> value.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "resource_key": _RESOURCE_KEY_PARAM,
-                        "fields": {"type": "object", "description": "Column name -> value."},
-                    },
-                    "required": ["resource_key", "fields"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "update_career_record",
-        "config": {
-            "inlineFunction": {
-                "description": "Update an existing record. `fields` only needs the columns that change.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "resource_key": _RESOURCE_KEY_PARAM,
-                        "record_id": _RECORD_ID_PARAM,
-                        "fields": {"type": "object", "description": "Column name -> new value."},
-                    },
-                    "required": ["resource_key", "record_id", "fields"],
-                },
-            }
-        },
-    },
-    {
-        "type": "inline_function",
-        "name": "delete_career_record",
-        "config": {
-            "inlineFunction": {
-                "description": "Permanently delete a record.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM},
-                    "required": ["resource_key", "record_id"],
-                },
-            }
-        },
-    },
-]
-
-_WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_record"}
-
-
-async def _active_tools(db) -> List[Dict[str, Any]]:
-    """Las herramientas propias más cada `BedrockCustomTool` habilitada
-    (servidores MCP que Carlos registró desde la app - ver los endpoints
-    /tools de routes/bedrock.py), como entradas de tipo `remote_mcp`. Así
-    es como se agregan capacidades nuevas sin un deploy de código: se
-    registra la URL de un servidor MCP y sus herramientas quedan
-    disponibles en el siguiente turno."""
-    from sqlalchemy import select
-
-    from models.bedrock_custom_tool import BedrockCustomTool
-
-    result = await db.execute(select(BedrockCustomTool).where(BedrockCustomTool.is_enabled.is_(True)))
-    custom_tools = [
-        {
-            "type": "remote_mcp",
-            "name": tool.name,
-            "config": {"remoteMcp": {"url": tool.url, **({"headers": tool.headers} if tool.headers else {})}},
-        }
-        for tool in result.scalars().all()
-    ]
-    return _BUILTIN_TOOLS + custom_tools
 
 
 async def list_custom_tools(db) -> List["BedrockCustomTool"]:  # noqa: F821 - imported below for the type only
@@ -759,11 +500,8 @@ def _invalid_fields_error(repo: CareerRepository, fields: Dict[str, Any]) -> Opt
 
 
 # ---------------------------------------------------------------------------
-# System prompt - quién es el agente y cómo debe comportarse. Se envía de
-# nuevo en cada llamada a `invoke_harness` (ver chat_stream), no se
-# configura una sola vez en el recurso Harness - eso es lo que permite que
-# Carlos lo edite desde la app (/bedrock/instructions) y que aplique en el
-# siguiente mensaje, sin llamada al plano de control de AWS ni redeploy.
+# System prompt — se compone en cada turno Converse (ver agent_loop.chat_stream).
+# Carlos puede editarlo vía /bedrock/instructions; aplica en el siguiente mensaje.
 # ---------------------------------------------------------------------------
 
 
@@ -841,50 +579,8 @@ async def set_system_prompt(db, text: Optional[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Conversaciones - historial guardado del lado del servidor, para que sea
-# el mismo en cualquier dispositivo en vez de vivir en el localStorage de
-# un solo navegador. El `session_id` de aquí es exactamente el mismo id que
-# se le pasa a invoke_harness como runtimeSessionId (ver chat_stream) - una
-# fila por conversación, no un segundo id que mantener sincronizado.
+# Conversaciones — historial en PostgreSQL (history_manager + endpoints /bedrock/conversations).
 # ---------------------------------------------------------------------------
-
-def _conversation_title_from(text: str) -> str:
-    return text[:60] + "…" if len(text) > 60 else text
-
-
-async def _get_or_create_conversation(db, user_id: str, session_id: str, first_message: str) -> "BedrockConversation":  # noqa: F821
-    from sqlalchemy import select
-
-    from models.bedrock_conversation import BedrockConversation
-
-    result = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.session_id == session_id, BedrockConversation.user_id == user_id
-        )
-    )
-    conversation = result.scalar_one_or_none()
-    if conversation is None:
-        conversation = BedrockConversation(
-            user_id=user_id, session_id=session_id, title=_conversation_title_from(first_message)
-        )
-        db.add(conversation)
-        await db.flush()
-    return conversation
-
-
-async def _append_message(db, conversation: "BedrockConversation", role: str, content: str) -> None:  # noqa: F821
-    from datetime import datetime, timezone
-
-    from models.bedrock_conversation import BedrockConversationMessage
-
-    db.add(BedrockConversationMessage(conversation_id=conversation.id, role=role, content=content))
-    # Adding a child message doesn't dirty the parent row on its own -
-    # `onupdate=func.now()` only fires when one of the parent's own columns
-    # actually changes, so this bump is what keeps `list_conversations`'s
-    # "most recently active" ordering correct.
-    conversation.updated_at = datetime.now(timezone.utc)
-    await db.commit()
-
 
 async def list_conversations(db, user_id: str) -> List["BedrockConversation"]:  # noqa: F821
     from sqlalchemy import select
@@ -951,11 +647,7 @@ async def delete_conversation(db, user_id: str, session_id: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# EL LOOP DEL AGENTE - esta es la conexión real con el agente que Carlos
-# preguntó. `chat_stream` es la única función que le habla a
-# `invoke_harness`; todo lo de arriba (herramientas, system prompt,
-# memoria, repositorios) existe para ser usado DESDE aquí. `chat` es solo
-# un envoltorio delgado para quien no necesita ver el progreso paso a paso.
+# Chat — delega en services/bedrock/agent_loop.py (Converse API + tools).
 # ---------------------------------------------------------------------------
 
 
@@ -977,30 +669,11 @@ async def chat(db, user_id: str, session_id: str, message: str) -> Dict[str, Any
     raise BedrockError("chat_stream ended without a final answer")
 
 
-_TOOL_STATUS_MESSAGES = {
-    "describe_resource_schema": "Revisando la estructura de la tabla...",
-    "search_knowledge_base": "Consultando la base de conocimiento...",
-    "list_career_record": "Buscando registros...",
-    "get_career_record": "Consultando el registro...",
-    "create_career_record": "Creando el registro...",
-    "update_career_record": "Actualizando el registro...",
-    "delete_career_record": "Eliminando el registro...",
-    "list_recent_changes": "Consultando la bitácora...",
-    "restore_deleted_record": "Restaurando el registro...",
-}
-
-
 async def chat_stream(db, user_id: str, session_id: str, message: str, turn_request=None):
-    """Loop agente — Harness local (Converse) o legacy AgentCore."""
-    from services.bedrock.agent_loop import chat_stream as local_chat_stream, use_local_harness
+    """Delega en agent_loop.chat_stream (Converse API + tools + historial PG)."""
+    from services.bedrock.agent_loop import chat_stream as harness_chat_stream
     from services.bedrock.agent_loop import ChatTurnRequest
 
-    if use_local_harness():
-        req = turn_request or ChatTurnRequest(session_id=session_id, message=message)
-        async for event in local_chat_stream(db, user_id, req):
-            yield event
-        return
-
-    raise BedrockError(
-        "AgentCore Harness eliminado. Use BEDROCK_USE_LOCAL_HARNESS=true (ver docs/BEDROCK-SYSTEM.md)."
-    )
+    req = turn_request or ChatTurnRequest(session_id=session_id, message=message)
+    async for event in harness_chat_stream(db, user_id, req):
+        yield event

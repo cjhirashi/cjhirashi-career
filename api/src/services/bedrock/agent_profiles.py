@@ -7,6 +7,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Set
 
 
+# ============================================================================
+# Definición del perfil de agente
+# ============================================================================
+
 @dataclass(frozen=True)
 class AgentProfile:
     id: str
@@ -20,6 +24,10 @@ class AgentProfile:
     write_enabled: bool = True
     can_delegate: bool = False
 
+
+# ============================================================================
+# Constantes y recursos por dominio
+# ============================================================================
 
 _BUILTIN_TOOL_NAMES = {
     "list_recent_changes",
@@ -87,6 +95,35 @@ _SEARCH_RESOURCES = [
     "application-interactions",
     "interviews",
 ]
+
+# ============================================================================
+# Suffix del perfil pdf_design (modelo estilos + plantillas)
+# ============================================================================
+
+_PDF_DESIGN_SUFFIX = (
+    "Eres el especialista de diseño PDF (WeasyPrint). El sistema separa CSS y HTML en dos tablas "
+    "relacionadas — NUNCA mezcles CSS dentro de plantillas:\n"
+    "1) **Estilos** (`pdf-template-styles`, IDs `pds-N`): guardan `css_content` (CSS completo) y "
+    "`style_guide` (Markdown que documenta clases, etiquetas y selectores disponibles).\n"
+    "2) **Plantillas** (`pdf-output-templates`, IDs `pdt-N`): guardan `html_template` (HTML con "
+    "{{variables}}`), `style_id` (FK → `pds-N`) y `variables` (Markdown que documenta cada "
+    "placeholder y qué contenido debe llevar).\n"
+    "Relación: **un estilo, muchas plantillas**. Varias plantillas pueden compartir el mismo "
+    "`style_id`. Al renderizar (`generate_pdf`), el backend combina HTML de la plantilla + CSS "
+    "del estilo referenciado.\n"
+    "Flujo obligatorio: (a) crear o elegir estilo con `list/get/create/update_pdf_template_style`; "
+    "(b) documentar clases en `style_guide`; (c) crear plantilla con `create_pdf_template` "
+    "incluyendo `style_id` y `variables`; (d) probar con `generate_pdf`. "
+    "Si reutilizas un estilo existente, consulta su `style_guide` antes de escribir HTML — usa "
+    "solo clases/etiquetas definidas ahí.\n"
+    "Consulta también `search_knowledge_base` en la sección «Diseño PDF» (metodologías operativas) "
+    "para el detalle completo. Usa `describe_resource_schema` con `pdf-output-templates` o "
+    "`pdf-template-styles` si necesitas confirmar campos."
+)
+
+# ============================================================================
+# Definiciones de perfiles
+# ============================================================================
 
 _PROFILES: dict[str, AgentProfile] = {
     "orchestrator": AgentProfile(
@@ -185,9 +222,9 @@ _PROFILES: dict[str, AgentProfile] = {
         id="pdf_design",
         label="Diseño PDF",
         domain_keys=["document_output"],
-        resource_keys=["pdf-output-templates"],
+        resource_keys=["pdf-output-templates", "pdf-template-styles"],
         methodology_sections=["Diseño PDF"],
-        system_prompt_suffix="Diseñas plantillas HTML/CSS WeasyPrint para PDFs de CV y cartas.",
+        system_prompt_suffix=_PDF_DESIGN_SUFFIX,
         default_model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
         allowed_tool_names={
             "search_knowledge_base",
@@ -195,6 +232,10 @@ _PROFILES: dict[str, AgentProfile] = {
             "get_pdf_template",
             "create_pdf_template",
             "update_pdf_template",
+            "list_pdf_template_styles",
+            "get_pdf_template_style",
+            "create_pdf_template_style",
+            "update_pdf_template_style",
             "generate_pdf",
             "describe_resource_schema",
         },
@@ -219,6 +260,10 @@ _PROFILES: dict[str, AgentProfile] = {
         },
     ),
 }
+
+# ============================================================================
+# Mapas de enrutamiento
+# ============================================================================
 
 _ROUTE_TO_PROFILE = {
     "/linkedin": "digital",
@@ -246,6 +291,10 @@ _DOMAIN_TO_PROFILE = {
     "support": "support",
 }
 
+
+# ============================================================================
+# Resolución de perfil y tools
+# ============================================================================
 
 def get_profile(profile_id: str) -> AgentProfile:
     if profile_id not in _PROFILES:
@@ -296,7 +345,16 @@ def tools_for_profile(profile: AgentProfile, all_tool_names: Set[str]) -> Set[st
             "delete_scheduled_linkedin_post",
         }
     if profile.id not in ("pdf_design", "search", "orchestrator"):
-        names -= {"list_pdf_templates", "get_pdf_template", "create_pdf_template", "update_pdf_template"}
+        names -= {
+            "list_pdf_templates",
+            "get_pdf_template",
+            "create_pdf_template",
+            "update_pdf_template",
+            "list_pdf_template_styles",
+            "get_pdf_template_style",
+            "create_pdf_template_style",
+            "update_pdf_template_style",
+        }
     if profile.id != "visual_design":
         names -= {"generate_image", "attach_image_to_record", "list_generated_images"}
     if profile.id != "search":

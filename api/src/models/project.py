@@ -17,9 +17,11 @@ class Project(Base):
     __tablename__ = "projects"
     __table_args__ = (CheckConstraint("status IN ('active', 'in_development', 'archived')"),)
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
     category = Column(String(50), nullable=True)
     industry = Column(String(100), nullable=True)
@@ -60,6 +62,7 @@ class Project(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

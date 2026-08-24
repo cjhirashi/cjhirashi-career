@@ -15,9 +15,11 @@ class TargetCompany(Base):
 
     __tablename__ = "target_companies"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     company_name = Column(String(255), nullable=False)
     tier = Column(Integer, nullable=True, index=True)
     best_fit_role_id = Column(String(20), ForeignKey("target_roles.id", ondelete="SET NULL"), nullable=True)
@@ -32,6 +34,7 @@ class TargetCompany(Base):
     career_board_provider = Column(String(30), nullable=True)
     career_board_token = Column(String(100), nullable=True)
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -1,5 +1,8 @@
 """
 Middleware y dependencias de autenticación JWT.
+
+- `get_current_user` — obligatorio; lanza 401 si el token es inválido
+- `get_optional_current_user` — opcional; retorna None sin token
 """
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -13,10 +16,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Security scheme para Bearer token
+# ============================================================================
+# Security scheme — extrae Bearer token del header Authorization
+# ============================================================================
 security = HTTPBearer()
 
 
+# ============================================================================
+# Dependencias de autenticación
+# ============================================================================
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db)

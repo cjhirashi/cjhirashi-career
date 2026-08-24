@@ -8,10 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import func
 
+# ============================================================================
+# Imports y tipos genéricos
+# ============================================================================
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
+
+# ============================================================================
+# Repositorio base — operaciones CRUD genéricas
+# ============================================================================
 
 class BaseRepository(Generic[T]):
     """
@@ -29,6 +37,10 @@ class BaseRepository(Generic[T]):
         """
         self.model = model
         self.db = db
+
+    # ------------------------------------------------------------------------
+    # Operaciones CRUD
+    # ------------------------------------------------------------------------
 
     async def create(self, obj: T) -> T:
         """Create a new entity."""
@@ -71,6 +83,10 @@ class BaseRepository(Generic[T]):
             await self.db.flush()
             return True
         return False
+
+    # ------------------------------------------------------------------------
+    # Control de transacciones
+    # ------------------------------------------------------------------------
 
     async def commit(self) -> None:
         """Commit transaction."""

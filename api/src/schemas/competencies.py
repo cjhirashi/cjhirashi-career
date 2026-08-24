@@ -7,6 +7,10 @@ from datetime import datetime
 from enum import Enum
 
 
+# ============================================================================
+# Enumeraciones
+# ============================================================================
+
 class CompetencyTypeEnum(str, Enum):
     """Competency type enumeration."""
     TECHNICAL = "technical"
@@ -22,6 +26,10 @@ class CompetencyLevelEnum(str, Enum):
     EXPERT = "expert"
 
 
+# ============================================================================
+# Esquemas base
+# ============================================================================
+
 class CompetencyBase(BaseModel):
     """Base competency schema."""
     name: str = Field(..., max_length=255, description="Skill name")
@@ -36,6 +44,10 @@ class CompetencyBase(BaseModel):
     is_featured: bool = Field(default=False, description="Featured in profile")
     notes: Optional[str] = None
 
+
+# ============================================================================
+# CRUD — creación, actualización y respuesta
+# ============================================================================
 
 class CompetencyCreate(CompetencyBase):
     """Schema for creating competency."""
@@ -68,6 +80,10 @@ class CompetencyResponse(CompetencyBase):
     class Config:
         from_attributes = True
 
+
+# ============================================================================
+# Listado paginado — respuestas
+# ============================================================================
 
 class CompetencyListResponse(BaseModel):
     """Competency list response with pagination."""

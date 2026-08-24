@@ -15,9 +15,11 @@ class FitScoringFactor(Base):
 
     __tablename__ = "fit_scoring_factors"
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     factor_name = Column(String(100), nullable=False)
     weight_percentage = Column(Integer, nullable=True)
     scoring_guide = Column(Text, nullable=True)
@@ -26,6 +28,7 @@ class FitScoringFactor(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

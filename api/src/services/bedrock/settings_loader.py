@@ -11,6 +11,10 @@ from config import settings
 from models.bedrock_settings import BedrockSettings
 
 
+# ============================================================================
+# Configuración runtime del harness
+# ============================================================================
+
 @dataclass
 class HarnessRuntimeSettings:
     active_model_id: str
@@ -19,6 +23,10 @@ class HarnessRuntimeSettings:
     history_window: int
     daily_budget_usd: float
 
+
+# ============================================================================
+# Lectura de settings desde PG
+# ============================================================================
 
 async def get_runtime_settings(db: AsyncSession) -> HarnessRuntimeSettings:
     result = await db.execute(select(BedrockSettings).limit(1))
@@ -33,6 +41,10 @@ async def get_runtime_settings(db: AsyncSession) -> HarnessRuntimeSettings:
         daily_budget_usd=float(row.daily_budget_usd if row else settings.BEDROCK_DAILY_BUDGET_USD),
     )
 
+
+# ============================================================================
+# Modelo activo
+# ============================================================================
 
 async def get_active_model_id(db: AsyncSession) -> str:
     return (await get_runtime_settings(db)).active_model_id

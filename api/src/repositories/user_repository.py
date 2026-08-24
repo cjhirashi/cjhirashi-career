@@ -9,8 +9,16 @@ from sqlalchemy.future import select
 from models.user import User
 from repositories.base_repository import BaseRepository
 
+# ============================================================================
+# Imports y logging
+# ============================================================================
+
 logger = logging.getLogger(__name__)
 
+
+# ============================================================================
+# Repositorio de usuarios — operaciones de acceso a datos
+# ============================================================================
 
 class UserRepository(BaseRepository[User]):
     """User repository for database operations."""
@@ -18,6 +26,10 @@ class UserRepository(BaseRepository[User]):
     def __init__(self, db: AsyncSession):
         """Initialize user repository."""
         super().__init__(User, db)
+
+    # ------------------------------------------------------------------------
+    # Consultas por credenciales
+    # ------------------------------------------------------------------------
 
     async def get_by_username(self, username: str) -> Optional[User]:
         """
@@ -63,6 +75,10 @@ class UserRepository(BaseRepository[User]):
         )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none() is not None
+
+    # ------------------------------------------------------------------------
+    # Sesión y estado de cuenta
+    # ------------------------------------------------------------------------
 
     async def update_last_login(self, user_id: str) -> Optional[User]:
         """

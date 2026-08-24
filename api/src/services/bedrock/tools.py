@@ -16,11 +16,17 @@ from config import settings
 from models.linkedin_connection import LinkedInConnection
 from models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from models.pdf_output_template import PdfOutputTemplate
+from models.pdf_template_style import PdfTemplateStyle
 from repositories.career_repository import CareerRepository
 from services import bedrock_service, storage_service
 from services.id_generator import normalize_prefixed_id
 from services.bedrock.errors import BedrockError
 from services.bedrock.tool_results import truncate_tool_result
+
+
+# ============================================================================
+# Parámetros compartidos de schemas
+# ============================================================================
 
 _RESOURCE_KEY_PARAM = {
     "type": "string",
@@ -31,6 +37,10 @@ _RECORD_ID_PARAM = {
     "type": "string",
     "description": "ID prefijado del registro, ej. ach-17, cmp-42, vac-7. Usar el id completo.",
 }
+
+# ============================================================================
+# Schemas de tools Converse
+# ============================================================================
 
 # Schemas Converse (toolSpec.inputSchema.json)
 _RAW_TOOLS: List[Dict[str, Any]] = [
@@ -50,7 +60,11 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "string", "description": "ID prefijado, ej. lnp-3"}}, "required": ["post_id"]}},
     {"name": "list_pdf_templates", "description": "Lista plantillas PDF del usuario.", "schema": {"type": "object", "properties": {"document_type": {"type": "string"}}}},
     {"name": "get_pdf_template", "description": "Plantilla por id o slug.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "default_only": {"type": "boolean"}}}},
-    {"name": "create_pdf_template", "description": "Crea plantilla HTML PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "css_content": {"type": "string"}}, "required": ["slug", "document_type", "title", "html_template"]}},
+    {"name": "list_pdf_template_styles", "description": "Lista estilos CSS reutilizables para plantillas PDF.", "schema": {"type": "object", "properties": {}}},
+    {"name": "get_pdf_template_style", "description": "Obtiene un estilo CSS por id o slug.", "schema": {"type": "object", "properties": {"style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}}, "required": []}},
+    {"name": "create_pdf_template_style", "description": "Crea estilo CSS reutilizable para plantillas PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string"}, "description": {"type": "string"}}, "required": ["slug", "title", "css_content"]}},
+    {"name": "update_pdf_template_style", "description": "Actualiza estilo CSS de plantillas PDF.", "schema": {"type": "object", "properties": {"style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "fields": {"type": "object"}}, "required": ["style_id", "fields"]}},
+    {"name": "create_pdf_template", "description": "Crea plantilla HTML PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID prefijado del estilo, ej. pds-1"}, "variables": {"type": "string", "description": "Markdown con variables {{nombre}} y su significado"}}, "required": ["slug", "document_type", "title", "html_template"]}},
     {"name": "update_pdf_template", "description": "Actualiza plantilla PDF.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "fields": {"type": "object"}}, "required": ["template_id", "fields"]}},
     {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
     {"name": "generate_image", "description": "Genera imagen IA y sube a MinIO.", "schema": {"type": "object", "properties": {"prompt": {"type": "string"}, "purpose": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["prompt"]}},
@@ -108,13 +122,17 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     },
 ]
 
-_WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_record", "create_linkedin_post", "create_pdf_template", "update_pdf_template", "generate_pdf", "generate_image", "attach_image_to_record", "save_job_listings"}
+_WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_record", "create_linkedin_post", "create_pdf_template", "update_pdf_template", "create_pdf_template_style", "update_pdf_template_style", "generate_pdf", "generate_image", "attach_image_to_record", "save_job_listings"}
 
 _LEGACY = {
     "list_recent_changes", "restore_deleted_record", "describe_resource_schema", "search_knowledge_base",
     "list_career_record", "count_career_records", "get_career_record", "create_career_record", "update_career_record", "delete_career_record",
 }
 
+
+# ============================================================================
+# Especificaciones Converse
+# ============================================================================
 
 def all_tool_names() -> Set[str]:
     return {t["name"] for t in _RAW_TOOLS}
@@ -135,6 +153,10 @@ def converse_tool_specs(allowed: Optional[Set[str]] = None) -> List[Dict[str, An
         })
     return specs
 
+
+# ============================================================================
+# Tools de integración
+# ============================================================================
 
 async def _linkedin_connection(db, user_id: str) -> Optional[LinkedInConnection]:
     result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
@@ -246,7 +268,67 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         row = result.scalar_one_or_none()
         if not row:
             return {"error": "not_found"}
-        return {"item": {"id": row.id, "slug": row.slug, "html_template": row.html_template[:2000], "variables_schema": row.variables_schema}}
+        return {"item": {"id": row.id, "slug": row.slug, "html_template": row.html_template[:2000], "style_id": row.style_id, "variables": row.variables, "variables_schema": row.variables_schema}}
+
+    if name == "list_pdf_template_styles":
+        result = await db.execute(
+            select(PdfTemplateStyle)
+            .where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
+            .order_by(PdfTemplateStyle.title)
+        )
+        rows = result.scalars().all()
+        return {"items": [{"id": r.id, "slug": r.slug, "title": r.title} for r in rows]}
+
+    if name == "get_pdf_template_style":
+        q = select(PdfTemplateStyle).where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
+        if tool_input.get("style_id"):
+            style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+            q = q.where(PdfTemplateStyle.id == style_id)
+        elif tool_input.get("slug"):
+            q = q.where(PdfTemplateStyle.slug == tool_input["slug"])
+        else:
+            return {"error": "specify style_id or slug"}
+        result = await db.execute(q.limit(1))
+        row = result.scalar_one_or_none()
+        if not row:
+            return {"error": "not_found"}
+        return {
+            "item": {
+                "id": row.id,
+                "slug": row.slug,
+                "title": row.title,
+                "css_content": row.css_content[:4000],
+                "style_guide": row.style_guide,
+            }
+        }
+
+    if name == "create_pdf_template_style":
+        row = PdfTemplateStyle(
+            user_id=user_id,
+            slug=tool_input["slug"],
+            title=tool_input["title"],
+            css_content=tool_input["css_content"],
+            style_guide=tool_input.get("style_guide"),
+            description=tool_input.get("description"),
+        )
+        db.add(row)
+        await db.commit()
+        await db.refresh(row)
+        return {"item": {"id": row.id, "slug": row.slug}}
+
+    if name == "update_pdf_template_style":
+        style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+        result = await db.execute(
+            select(PdfTemplateStyle).where(PdfTemplateStyle.id == style_id, PdfTemplateStyle.user_id == user_id)
+        )
+        row = result.scalar_one_or_none()
+        if not row:
+            return {"error": "not_found"}
+        for k, v in tool_input.get("fields", {}).items():
+            if hasattr(row, k):
+                setattr(row, k, v)
+        await db.commit()
+        return {"item": {"id": row.id, "slug": row.slug}}
 
     if name == "create_pdf_template":
         row = PdfOutputTemplate(
@@ -255,7 +337,10 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
             document_type=tool_input["document_type"],
             title=tool_input["title"],
             html_template=tool_input["html_template"],
-            css_content=tool_input.get("css_content"),
+            style_id=normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+            if tool_input.get("style_id")
+            else None,
+            variables=tool_input.get("variables"),
         )
         db.add(row)
         await db.commit()
@@ -277,6 +362,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "generate_pdf":
         from services.pdf_service import generate_html_template_pdf
+        from services.pdf_template_css import resolve_template_css
         from services.pdf_template_render import render_template_html
 
         template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
@@ -293,7 +379,8 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         variables = tool_input.get("variables") or {}
         title = tool_input.get("title") or row.title
         html = render_template_html(row.html_template, variables)
-        pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=row.css_content)
+        css_content = await resolve_template_css(db, row)
+        pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=css_content)
         stored = storage_service.upload_file(
             data=io.BytesIO(pdf_bytes),
             original_filename=f"{row.slug}.pdf",
@@ -433,6 +520,10 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     raise BedrockError(f"Unknown extended tool: {name}")
 
 
+# ============================================================================
+# Dispatch de tools
+# ============================================================================
+
 async def execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Ejecuta una tool y trunca el resultado."""
     if name in _LEGACY:
@@ -454,6 +545,8 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
         return str(tool_input["resource_key"])
     if name in ("create_pdf_template", "update_pdf_template"):
         return "pdf-templates"
+    if name in ("create_pdf_template_style", "update_pdf_template_style"):
+        return "pdf-template-styles"
     if name == "save_job_listings":
         return "vacancies"
     return None

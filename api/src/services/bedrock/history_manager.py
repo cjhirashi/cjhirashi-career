@@ -1,7 +1,7 @@
 """
 Historial de conversación en PostgreSQL — ventana deslizante para Converse.
 
-PG es la fuente de verdad (no AgentCore Memory). Ver ADR-008.
+PG es la fuente de verdad del historial de chat. Ver ADR-008.
 """
 from typing import Any, Dict, List, Optional
 
@@ -12,10 +12,18 @@ from models.bedrock_conversation import BedrockConversation, BedrockConversation
 from services.bedrock.reply_text import sanitize_assistant_reply
 
 
+# ============================================================================
+# Utilidades de conversación
+# ============================================================================
+
 def conversation_title_from(text: str) -> str:
     clean = " ".join(text.split())
     return (clean[:60] + "…") if len(clean) > 60 else clean or "Nueva conversación"
 
+
+# ============================================================================
+# Persistencia de mensajes
+# ============================================================================
 
 async def get_or_create_conversation(
     db: AsyncSession,
@@ -51,6 +59,10 @@ async def append_message(db: AsyncSession, conversation: BedrockConversation, ro
     await db.commit()
 
 
+# ============================================================================
+# Carga de historial Converse
+# ============================================================================
+
 async def load_converse_messages(
     db: AsyncSession,
     user_id: str,
@@ -81,6 +93,10 @@ async def load_converse_messages(
         out.append({"role": m.role, "content": [{"text": content}]})
     return out
 
+
+# ============================================================================
+# Listado de conversaciones
+# ============================================================================
 
 async def list_conversations(
     db: AsyncSession, user_id: str, session_type: Optional[str] = None

@@ -7,6 +7,9 @@ SQLAlchemy ORM model is mapped for the view (Postgres views have no
 primary key), so it is queried directly with parametrized SQL, still
 scoped to the authenticated user.
 """
+# ============================================================================
+# Imports
+# ============================================================================
 from typing import List
 
 from fastapi import APIRouter, Depends, Query
@@ -34,9 +37,15 @@ from schemas.career_metrics import (
     SearchPlanMetric,
 )
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/career/metrics", tags=["Career - Metrics"])
 
 
+# ============================================================================
+# Helpers de agregación
+# ============================================================================
 async def _count_by(db: AsyncSession, user_id: str, model, column) -> List[CountBreakdown]:
     """Generic `SELECT column, COUNT(*) ... GROUP BY column` for one user."""
     stmt = (
@@ -49,6 +58,9 @@ async def _count_by(db: AsyncSession, user_id: str, model, column) -> List[Count
     return [CountBreakdown(label=str(label) if label is not None else "Sin definir", count=count) for label, count in result.all()]
 
 
+# ============================================================================
+# Endpoints: métricas semanales
+# ============================================================================
 @router.get("/weekly", response_model=List[SearchMetricsWeekResponse])
 async def get_weekly_search_metrics(
     limit: int = Query(12, ge=1, le=104, description="Number of most recent weeks to return"),
@@ -74,6 +86,9 @@ async def get_weekly_search_metrics(
     return [SearchMetricsWeekResponse(**row) for row in rows]
 
 
+# ============================================================================
+# Endpoints: panorama general de búsqueda
+# ============================================================================
 @router.get("/search-overview", response_model=SearchOverviewResponse)
 async def get_search_overview(
     current_user: User = Depends(get_current_user),

@@ -52,29 +52,17 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bedrock", tags=["Bedrock"])
 
-# AgentCore legacy exigía session_id >= 33 chars; Harness local acepta UUID.
-_MIN_SESSION_ID_LENGTH_LEGACY = 33
-
 
 def _require_configured() -> None:
-    from services.bedrock.agent_loop import use_local_harness
-
-    if use_local_harness():
-        if not settings.AWS_ACCESS_KEY_ID:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Agent Bedrock is not configured (missing AWS credentials)",
-            )
-        return
-    if not settings.AWS_ACCESS_KEY_ID or not settings.BEDROCK_HARNESS_ARN:
+    if not settings.AWS_ACCESS_KEY_ID or not settings.AWS_SECRET_ACCESS_KEY:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Agent Bedrock is not configured (missing AWS_ACCESS_KEY_ID/BEDROCK_HARNESS_ARN)",
+            detail="Agent Bedrock is not configured (missing AWS credentials)",
         )
 
 
 async def _sse_chat_events(db: AsyncSession, user_id: str, payload: BedrockChatRequest):
-    """SSE desde chat_stream — soporta Harness local y legacy."""
+    """SSE desde chat_stream (Converse API + tools)."""
     from services.bedrock.agent_loop import ChatTurnRequest
 
     turn = ChatTurnRequest(
@@ -134,13 +122,6 @@ async def chat(
     db: AsyncSession = Depends(get_db),
 ):
     _require_configured()
-    from services.bedrock.agent_loop import use_local_harness
-
-    if not use_local_harness() and len(payload.session_id) < _MIN_SESSION_ID_LENGTH_LEGACY:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"session_id must be at least {_MIN_SESSION_ID_LENGTH_LEGACY} characters",
-        )
 
     return StreamingResponse(
         _sse_chat_events(db, current_user.id, payload),
@@ -417,17 +398,10 @@ async def get_memory_events(
     db: AsyncSession = Depends(get_db),
 ):
     _require_configured()
-    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock import local_memory
 
     try:
-        if use_local_harness():
-            from services.bedrock import local_memory
-
-            return await local_memory.list_memory_events(db, current_user.id, session_id)
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
-        )
+        return await local_memory.list_memory_events(db, current_user.id, session_id)
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 
@@ -439,17 +413,10 @@ async def get_memory_records(
     current_user: User = Depends(get_current_user),
 ):
     _require_configured()
-    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock import local_memory
 
     try:
-        if use_local_harness():
-            from services.bedrock import local_memory
-
-            return await local_memory.retrieve_memory_records(current_user.id, query, top_k)
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
-        )
+        return await local_memory.retrieve_memory_records(current_user.id, query, top_k)
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 
@@ -460,18 +427,10 @@ async def add_manual_memory(
     current_user: User = Depends(get_current_user),
 ):
     _require_configured()
-    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock import local_memory
 
     try:
-        if use_local_harness():
-            from services.bedrock import local_memory
-
-            await local_memory.create_manual_memory(current_user.id, payload.text)
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Memoria requiere BEDROCK_USE_LOCAL_HARNESS=true",
-            )
+        await local_memory.create_manual_memory(current_user.id, payload.text)
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
     return {"status": "ok"}
@@ -487,12 +446,9 @@ async def list_conversations(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    from services.bedrock.history_manager import list_conversations as list_conv_local
-    from services.bedrock.agent_loop import use_local_harness
+    from services.bedrock.history_manager import list_conversations as list_conv
 
-    if use_local_harness():
-        return await list_conv_local(db, current_user.id, session_type)
-    return await bedrock_service.list_conversations(db, current_user.id)
+    return await list_conv(db, current_user.id, session_type)
 
 
 @router.get("/conversations/{session_id}/messages", response_model=list[BedrockConversationMessageResponse], summary="Get one conversation's messages")

@@ -10,6 +10,10 @@ from typing import List, Optional
 from datetime import date
 
 
+# ============================================================================
+# Métricas semanales — respuestas
+# ============================================================================
+
 class SearchMetricsWeekResponse(BaseModel):
     """One row of the weekly search metrics view for a given user."""
 
@@ -25,6 +29,10 @@ class SearchMetricsWeekResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# ============================================================================
+# Componentes del dashboard — modelos auxiliares
+# ============================================================================
 
 class FunnelStage(BaseModel):
     label: str
@@ -59,6 +67,10 @@ class SearchPlanMetric(BaseModel):
     target_interviews: int = 0
     target_offers: int = 0
 
+
+# ============================================================================
+# Vista general de búsqueda — respuesta agregada
+# ============================================================================
 
 class SearchOverviewResponse(BaseModel):
     """Aggregated snapshot across the 12 Operativa de Búsqueda tables, for the

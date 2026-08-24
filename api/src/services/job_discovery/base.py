@@ -4,6 +4,10 @@ from typing import Optional, Protocol
 from services.job_discovery.types import JobListing, SearchQuery
 
 
+# ============================================================================
+# Contrato del adaptador
+# ============================================================================
+
 class JobBoardAdapter(Protocol):
     id: str
     label: str

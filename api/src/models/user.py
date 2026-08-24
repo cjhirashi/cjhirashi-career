@@ -21,40 +21,33 @@ class User(Base):
 
     __tablename__ = "users"
 
-    # Primary Key
+    # --- Identificación ---
     id = Column(String(20), primary_key=True, index=True)
 
-    # Authentication
+    # --- Autenticación ---
     username = Column(String(255), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
 
-    # Profile Information
+    # --- Perfil público ---
     full_name = Column(String(255), nullable=True)
     phone = Column(String(20), nullable=True)
     country = Column(String(100), nullable=True)
     professional_title = Column(String(255), nullable=True)
     photo_url = Column(String(1024), nullable=True)
 
-    # Status
+    # --- Estado de cuenta ---
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_verified = Column(Boolean, default=False, nullable=False)
 
-    # Timestamps
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
 
-    # Relationships
-    #
-    # NOTE: The career-domain (v2) models (Identity, Competency, Vacancy,
-    # NetworkingContact, Interview, etc.) intentionally do NOT declare
-    # SQLAlchemy relationship()/back_populates pairs with User. With 30
-    # related tables, per-entity relationship wiring here would be high
-    # maintenance and high risk (a single mismatch breaks mapper
-    # configuration for the whole app on startup). Career-domain data is
-    # queried directly by user_id via the dedicated routes/services
-    # instead. Only base-system relationships remain wired below.
+    # --- Relaciones SQLAlchemy (solo sistema base; dominio career usa user_id directo) ---
+    # NOTE: Los modelos career (Identity, Competency, Vacancy, NetworkingContact,
+    # Interview, etc.) NO declaran relationship() con User — se consultan por user_id.
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     file_uploads = relationship("FileUpload", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")

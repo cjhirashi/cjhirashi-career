@@ -19,9 +19,11 @@ class Achievement(Base):
         CheckConstraint("evidence_type IN ('direct_account', 'public_backed')"),
     )
 
+    # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
     work_history_id = Column(String(20), ForeignKey("work_history.id", ondelete="SET NULL"), nullable=True, index=True)
     context = Column(JSONB, nullable=True)
@@ -39,6 +41,7 @@ class Achievement(Base):
     notes = Column(Text, nullable=True)
 
 
+    # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

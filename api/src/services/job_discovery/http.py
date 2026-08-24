@@ -12,6 +12,10 @@ class JobDiscoveryHttpError(Exception):
         self.status_code = status_code
 
 
+# ============================================================================
+# Cliente HTTP compartido
+# ============================================================================
+
 def _headers(extra: Optional[Mapping[str, str]] = None) -> dict[str, str]:
     headers = {
         "User-Agent": settings.JOB_DISCOVERY_USER_AGENT,

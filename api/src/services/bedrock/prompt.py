@@ -10,6 +10,10 @@ from models.bedrock_settings import BedrockSettings
 from services.bedrock.agent_profiles import AgentProfile
 from services.bedrock import profile_prompts
 
+# ============================================================================
+# Reglas de prompt del sistema
+# ============================================================================
+
 JOB_DISCOVERY_AUTH_RULE = (
     "Vacantes descubiertas: run_job_discovery solo hace preview (refs L1, L2…). "
     "Presenta empresa, rol, fuente y URL. No llames save_job_listings hasta que Carlos "
@@ -34,6 +38,10 @@ GROUNDING_RULE = (
 )
 
 
+# ============================================================================
+# Prompt base y override desde PG
+# ============================================================================
+
 def default_system_prompt() -> str:
     """Prompt base completo — misma fuente que /bedrock/instructions."""
     from services import bedrock_service
@@ -46,6 +54,10 @@ async def get_system_prompt_override(db: AsyncSession) -> Optional[str]:
     row = result.scalar_one_or_none()
     return row.system_prompt if row and row.system_prompt else None
 
+
+# ============================================================================
+# Composición del system prompt
+# ============================================================================
 
 async def compose_system_prompt(
     db: AsyncSession,

@@ -6,6 +6,10 @@ from services.job_discovery.http import get_json
 from services.job_discovery.types import CompanyBoard, JobListing, SearchQuery
 
 
+# ============================================================================
+# Parseo de respuesta
+# ============================================================================
+
 def _parse_date(raw: Optional[str]) -> Optional[date]:
     if not raw:
         return None
@@ -54,6 +58,10 @@ def listings_from_greenhouse_payload(
             break
     return listings
 
+
+# ============================================================================
+# Búsqueda en board
+# ============================================================================
 
 async def search_greenhouse_board(board: CompanyBoard, query: SearchQuery) -> list[JobListing]:
     url = f"https://boards-api.greenhouse.io/v1/boards/{board.token}/jobs"

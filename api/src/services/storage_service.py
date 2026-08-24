@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 _client: Optional[Minio] = None
 
 
+# ============================================================================
+# Bucket
+# ============================================================================
+
 def get_client() -> Minio:
     """Lazily create the MinIO client - internal Docker network traffic, no TLS needed
     (the public HTTPS endpoint is terminated by Caddy in cjhirashi-srv, not here)."""
@@ -58,6 +62,10 @@ def ensure_bucket() -> None:
     }
     client.set_bucket_policy(settings.MINIO_BUCKET, json.dumps(public_read_policy))
 
+
+# ============================================================================
+# Subida de archivos
+# ============================================================================
 
 def slugify_category(category: str) -> str:
     """Turn a free-typed category into a safe S3 key prefix (folder) - lowercase,
@@ -123,6 +131,10 @@ def delete_file(stored_filename: str) -> bool:
             return False
         raise
 
+
+# ============================================================================
+# URLs prefirmadas
+# ============================================================================
 
 def get_public_url(stored_filename: str) -> str:
     return f"{settings.MINIO_PUBLIC_URL}/{settings.MINIO_BUCKET}/{stored_filename}"

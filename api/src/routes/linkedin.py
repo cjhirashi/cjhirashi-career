@@ -7,6 +7,9 @@ dependency: it's reached via a plain browser redirect from LinkedIn with no
 Authorization header, so the user is identified from the signed `state`
 token instead (see services/linkedin_service.py).
 """
+# ============================================================================
+# Imports
+# ============================================================================
 import io
 import logging
 from datetime import datetime, timedelta, timezone
@@ -32,14 +35,23 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# Router principal
+# ============================================================================
 router = APIRouter(prefix="/linkedin", tags=["LinkedIn"])
 
 
+# ============================================================================
+# Helpers de conexión
+# ============================================================================
 async def _get_connection(db: AsyncSession, user_id: str) -> LinkedInConnection | None:
     result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
     return result.scalar_one_or_none()
 
 
+# ============================================================================
+# Conexión: estado y OAuth
+# ============================================================================
 @router.get("/status", response_model=LinkedInStatusResponse)
 async def get_status(
     current_user: User = Depends(get_current_user),
@@ -120,6 +132,9 @@ async def disconnect(
         await db.commit()
 
 
+# ============================================================================
+# Publicaciones en LinkedIn
+# ============================================================================
 @router.get("/posts", response_model=list[LinkedInPostResponse])
 async def list_posts(
     current_user: User = Depends(get_current_user),

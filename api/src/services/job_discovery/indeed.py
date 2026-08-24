@@ -5,6 +5,10 @@ from services.job_discovery.adzuna import adzuna_configured, search_adzuna
 from services.job_discovery.types import JobListing, SearchQuery
 
 
+# ============================================================================
+# Adaptador Indeed
+# ============================================================================
+
 class IndeedAdapter:
     id = "indeed"
     label = "Indeed"
