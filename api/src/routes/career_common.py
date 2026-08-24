@@ -82,7 +82,7 @@ def build_crud_router(
         "/{item_id}", response_model=response_schema, summary=f"Get a single {entity_name}"
     )
     async def get_item(
-        item_id: int,
+        item_id: str,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
@@ -111,7 +111,7 @@ def build_crud_router(
         "/{item_id}", response_model=response_schema, summary=f"Update a {entity_name}"
     )
     async def update_item(
-        item_id: int,
+        item_id: str,
         payload: update_schema,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
@@ -130,7 +130,7 @@ def build_crud_router(
         summary=f"Delete a {entity_name}",
     )
     async def delete_item(
-        item_id: int,
+        item_id: str,
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):

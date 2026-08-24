@@ -99,7 +99,7 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
                     "items": {"type": "string"},
                     "description": "Refs autorizadas, p.ej. ['L1','L3']",
                 },
-                "target_role_id": {"type": "integer"},
+                "target_role_id": {"type": "string", "description": "ID prefijado del rol objetivo, ej. trl-2"},
             },
             "required": ["refs"],
         },
