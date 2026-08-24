@@ -26,6 +26,11 @@ _RESOURCE_KEY_PARAM = {
     "description": "resource_key, ej. vacancies, publications, projects",
 }
 
+_RECORD_ID_PARAM = {
+    "type": "string",
+    "description": "ID prefijado del registro, ej. ach-17, cmp-42, vac-7. Usar el id completo.",
+}
+
 # Schemas Converse (toolSpec.inputSchema.json)
 _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_recent_changes", "description": "Bitácora reciente del agente.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "limit": {"type": "integer"}}}},
@@ -33,21 +38,21 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "describe_resource_schema", "description": "Campos válidos de un resource_key.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM}, "required": ["resource_key"]}},
     {"name": "search_knowledge_base", "description": "Búsqueda semántica Qdrant.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}, "type": {"type": "string", "enum": ["methodology", "career_record"]}}, "required": ["query"]}},
     {"name": "list_career_record", "description": "Lista registros paginados.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}, "limit": {"type": "integer"}, "skip": {"type": "integer"}}, "required": ["resource_key"]}},
-    {"name": "get_career_record", "description": "Obtiene un registro por id.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": {"type": "integer"}}, "required": ["resource_key", "record_id"]}},
+    {"name": "get_career_record", "description": "Obtiene un registro por id.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
     {"name": "create_career_record", "description": "Crea registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "fields"]}},
-    {"name": "update_career_record", "description": "Actualiza registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": {"type": "integer"}, "fields": {"type": "object"}}, "required": ["resource_key", "record_id", "fields"]}},
-    {"name": "delete_career_record", "description": "Elimina registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": {"type": "integer"}}, "required": ["resource_key", "record_id"]}},
+    {"name": "update_career_record", "description": "Actualiza registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "record_id", "fields"]}},
+    {"name": "delete_career_record", "description": "Elimina registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
     {"name": "get_linkedin_status", "description": "Estado conexión LinkedIn.", "schema": {"type": "object", "properties": {}}},
     {"name": "list_linkedin_posts", "description": "Cola e historial posts LinkedIn.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
     {"name": "create_linkedin_post", "description": "Publicar ahora (sin scheduled_at) o programar (ISO futuro).", "schema": {"type": "object", "properties": {"text": {"type": "string"}, "image_url": {"type": "string"}, "scheduled_at": {"type": "string"}}, "required": ["text"]}},
-    {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "integer"}}, "required": ["post_id"]}},
+    {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "string", "description": "ID prefijado, ej. lnp-3"}}, "required": ["post_id"]}},
     {"name": "list_pdf_templates", "description": "Lista plantillas PDF del usuario.", "schema": {"type": "object", "properties": {"document_type": {"type": "string"}}}},
-    {"name": "get_pdf_template", "description": "Plantilla por id o slug.", "schema": {"type": "object", "properties": {"template_id": {"type": "integer"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "default_only": {"type": "boolean"}}}},
+    {"name": "get_pdf_template", "description": "Plantilla por id o slug.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "default_only": {"type": "boolean"}}}},
     {"name": "create_pdf_template", "description": "Crea plantilla HTML PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "css_content": {"type": "string"}}, "required": ["slug", "document_type", "title", "html_template"]}},
-    {"name": "update_pdf_template", "description": "Actualiza plantilla PDF.", "schema": {"type": "object", "properties": {"template_id": {"type": "integer"}, "fields": {"type": "object"}}, "required": ["template_id", "fields"]}},
-    {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables.", "schema": {"type": "object", "properties": {"template_id": {"type": "integer"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
+    {"name": "update_pdf_template", "description": "Actualiza plantilla PDF.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "fields": {"type": "object"}}, "required": ["template_id", "fields"]}},
+    {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
     {"name": "generate_image", "description": "Genera imagen IA y sube a MinIO.", "schema": {"type": "object", "properties": {"prompt": {"type": "string"}, "purpose": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["prompt"]}},
-    {"name": "attach_image_to_record", "description": "Pone image_url en publications o projects.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "record_id": {"type": "integer"}, "image_url": {"type": "string"}}, "required": ["resource_key", "record_id", "image_url"]}},
+    {"name": "attach_image_to_record", "description": "Pone image_url en publications o projects.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "record_id": _RECORD_ID_PARAM, "image_url": {"type": "string"}}, "required": ["resource_key", "record_id", "image_url"]}},
     {"name": "list_generated_images", "description": "Lista imágenes ai-generated.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
     {"name": "delegate_to_specialist", "description": "Orquestador: delega a un especialista (solo chat general).", "schema": {"type": "object", "properties": {"agent_profile_id": {"type": "string"}, "task": {"type": "string"}, "context": {"type": "string"}}, "required": ["agent_profile_id", "task"]}},
     {"name": "list_job_providers", "description": "Portales de vacantes habilitados (indeed, linkedin, getonboard, remotive, remoteok, company_boards).", "schema": {"type": "object", "properties": {}}},
@@ -65,7 +70,7 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
                 "query": {"type": "string"},
                 "location": {"type": "string"},
                 "providers": {"type": "array", "items": {"type": "string"}},
-                "target_role_id": {"type": "integer"},
+                "target_role_id": {"type": "string", "description": "ID prefijado del rol objetivo, ej. trl-2"},
                 "include_company_boards": {"type": "boolean"},
                 "remote": {"type": "boolean"},
             },

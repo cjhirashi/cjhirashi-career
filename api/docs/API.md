@@ -23,6 +23,7 @@
 - [Manejo de Errores](#-manejo-de-errores)
 - [Paginación](#-paginación)
 - [Ejemplos](#-ejemplos)
+- [Job Discovery](#-job-discovery-jwt)
 - [Endpoints en Diseño (No Implementados)](#-endpoints-en-diseño-no-implementados)
 
 ---
@@ -303,7 +304,7 @@ Preview-then-save. `run` e `import-url` no escriben `vacancies`.
 - `POST /career/job-discoveries/import-url` — body: `{ "url": "https://www.linkedin.com/jobs/view/…" }`
 - `POST /career/job-discoveries/save` — persiste listings `listing_kind=job` como vacantes `pending_review`
 
-Indeed usa Adzuna (`ADZUNA_APP_ID` / `ADZUNA_APP_KEY`). LinkedIn solo devuelve URLs de `linkedin.com/jobs/search`. Ver [ADR-011](../docs/09-DECISIONS/011-job-discovery-adapters.md).
+Indeed usa Adzuna (`ADZUNA_APP_ID` / `ADZUNA_APP_KEY`). LinkedIn solo devuelve URLs de `linkedin.com/jobs/search`. Cada listing del preview trae `ref` (L1, L2…). Agent Bedrock solo persiste las refs que Carlos autorice (`save_job_listings`). Ver [ADR-011](../docs/09-DECISIONS/011-job-discovery-adapters.md).
 
 ## 🗺️ Endpoints en Diseño (No Implementados)
 
