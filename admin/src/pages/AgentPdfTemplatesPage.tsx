@@ -21,9 +21,11 @@ export const AgentPdfTemplatesPage: React.FC = () => {
   const { data: templates = [], isLoading, isError, error } = useQuery({
     queryKey: ['pdf-templates'],
     queryFn: () => pdfTemplatesApi.list(),
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   })
 
-  const [selectedId, setSelectedId] = useState<number | 'new' | null>(null)
+  const [selectedId, setSelectedId] = useState<string | 'new' | null>(null)
   const [form, setForm] = useState<PdfTemplatePayload>(EMPTY_FORM)
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -53,7 +55,7 @@ export const AgentPdfTemplatesPage: React.FC = () => {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (selectedId === 'new') return pdfTemplatesApi.create(form)
-      if (typeof selectedId === 'number') return pdfTemplatesApi.update(selectedId, form)
+      if (typeof selectedId === 'string' && selectedId !== 'new') return pdfTemplatesApi.update(selectedId as string, form)
       throw new Error('Nada seleccionado')
     },
     onSuccess: (row) => {
@@ -65,7 +67,7 @@ export const AgentPdfTemplatesPage: React.FC = () => {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => pdfTemplatesApi.remove(id),
+    mutationFn: (id: string) => pdfTemplatesApi.remove(id),
     onSuccess: () => {
       invalidate()
       setSelectedId(null)
@@ -73,7 +75,7 @@ export const AgentPdfTemplatesPage: React.FC = () => {
   })
 
   const previewMutation = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const blob = await pdfTemplatesApi.render(id, {
         title: 'Vista previa',
         content: 'Contenido de ejemplo para la plantilla PDF.',
@@ -148,42 +150,84 @@ export const AgentPdfTemplatesPage: React.FC = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <input
-                    className="input-field text-sm"
-                    placeholder="slug (ej. cv-moderno)"
-                    value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  />
-                  <select
-                    className="input-field text-sm"
-                    value={form.document_type}
-                    onChange={(e) => setForm({ ...form, document_type: e.target.value })}
-                  >
-                    <option value="cv">cv</option>
-                    <option value="cover-letter">cover-letter</option>
-                    <option value="generic">generic</option>
-                  </select>
-                  <input
-                    className="input-field text-sm md:col-span-2"
-                    placeholder="Título"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-slug">
+                      Slug
+                    </label>
+                    <input
+                      id="pdf-template-slug"
+                      className="input-field text-sm"
+                      placeholder="ej. cv-moderno"
+                      value={form.slug}
+                      onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-type">
+                      Tipo de documento
+                    </label>
+                    <select
+                      id="pdf-template-type"
+                      className="input-field text-sm"
+                      value={form.document_type}
+                      onChange={(e) => setForm({ ...form, document_type: e.target.value })}
+                    >
+                      <option value="cv">cv</option>
+                      <option value="cover-letter">cover-letter</option>
+                      <option value="generic">generic</option>
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-title">
+                      Título
+                    </label>
+                    <input
+                      id="pdf-template-title"
+                      className="input-field text-sm"
+                      placeholder="Nombre visible de la plantilla"
+                      value={form.title}
+                      onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-description">
+                      Descripción
+                    </label>
+                    <input
+                      id="pdf-template-description"
+                      className="input-field text-sm"
+                      placeholder="Uso previsto (opcional)"
+                      value={form.description ?? ''}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-html">
+                    Plantilla HTML
+                  </label>
+                  <textarea
+                    id="pdf-template-html"
+                    className="input-field text-sm font-mono"
+                    rows={8}
+                    placeholder="HTML con variables {{title}}, {{content}}, etc."
+                    value={form.html_template}
+                    onChange={(e) => setForm({ ...form, html_template: e.target.value })}
                   />
                 </div>
-                <textarea
-                  className="input-field text-sm font-mono"
-                  rows={8}
-                  placeholder="HTML (variables {{title}}, {{content}})"
-                  value={form.html_template}
-                  onChange={(e) => setForm({ ...form, html_template: e.target.value })}
-                />
-                <textarea
-                  className="input-field text-sm font-mono"
-                  rows={4}
-                  placeholder="CSS opcional"
-                  value={form.css_content ?? ''}
-                  onChange={(e) => setForm({ ...form, css_content: e.target.value })}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-text mb-1" htmlFor="pdf-template-css">
+                    CSS
+                  </label>
+                  <textarea
+                    id="pdf-template-css"
+                    className="input-field text-sm font-mono"
+                    rows={4}
+                    placeholder="Estilos WeasyPrint (opcional)"
+                    value={form.css_content ?? ''}
+                    onChange={(e) => setForm({ ...form, css_content: e.target.value })}
+                  />
+                </div>
                 <label className="flex items-center gap-2 text-sm text-text-secondary">
                   <input
                     type="checkbox"
@@ -203,7 +247,7 @@ export const AgentPdfTemplatesPage: React.FC = () => {
                     <Save size={15} />
                     Guardar
                   </button>
-                  {typeof selectedId === 'number' && (
+                  {typeof selectedId === 'string' && selectedId !== 'new' && (
                     <>
                       <button
                         type="button"

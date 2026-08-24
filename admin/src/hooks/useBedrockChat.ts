@@ -6,6 +6,7 @@ import { useBedrockChatStore } from '@/stores/bedrockChatStore'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { getErrorMessage } from '@/utils/errors'
 import {
+  BedrockAgentProfilePrompt,
   BedrockChatMessage,
   BedrockChatAttachment,
   BedrockChatSurface,
@@ -74,7 +75,7 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
       trimmed || (attachments?.length ? `[${attachments.length} adjunto(s)]` : '')
 
     const optimisticMessage: BedrockChatMessage = {
-      id: -Date.now(),
+      id: `optimistic-${Date.now()}`,
       role: 'user',
       content: displayContent,
       created_at: new Date().toISOString(),
@@ -110,6 +111,10 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
         queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) }),
       ])
       affected_resources.forEach((resource) => {
+        if (resource === 'pdf-templates') {
+          queryClient.invalidateQueries({ queryKey: ['pdf-templates'] })
+          return
+        }
         queryClient.invalidateQueries({ queryKey: careerQueryKey(resource), exact: false })
       })
       useBedrockChatStore.setState({ isSending: false, statusMessage: null })
@@ -193,6 +198,32 @@ export function useBedrockInstructionsUpdate() {
   })
 }
 
+export function useBedrockAgentProfilePrompts() {
+  return useQuery({
+    queryKey: ['bedrock', 'agent-profiles'],
+    queryFn: bedrockApi.listAgentProfilePrompts,
+  })
+}
+
+export function useBedrockAgentProfilePromptUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      profileId,
+      systemPromptSuffix,
+    }: {
+      profileId: string
+      systemPromptSuffix: string | null
+    }) => bedrockApi.updateAgentProfilePrompt(profileId, systemPromptSuffix),
+    onSuccess: (data) => {
+      queryClient.setQueryData<BedrockAgentProfilePrompt[]>(['bedrock', 'agent-profiles'], (prev) => {
+        if (!prev) return [data]
+        return prev.map((p) => (p.profile_id === data.profile_id ? data : p))
+      })
+    },
+  })
+}
+
 export function useBedrockTools() {
   return useQuery({
     queryKey: ['bedrock', 'tools'],
@@ -209,7 +240,7 @@ export function useBedrockToolMutations() {
     onSuccess: invalidate,
   })
   const setEnabledMutation = useMutation({
-    mutationFn: ({ id, isEnabled }: { id: number; isEnabled: boolean }) => bedrockApi.setToolEnabled(id, isEnabled),
+    mutationFn: ({ id, isEnabled }: { id: string; isEnabled: boolean }) => bedrockApi.setToolEnabled(id, isEnabled),
     onSuccess: invalidate,
   })
   const deleteMutation = useMutation({
@@ -267,7 +298,7 @@ export function useAgentTaskMutations() {
 
   const createMutation = useMutation({ mutationFn: agentTasksApi.create, onSuccess: invalidate })
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Parameters<typeof agentTasksApi.update>[1] }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof agentTasksApi.update>[1] }) =>
       agentTasksApi.update(id, payload),
     onSuccess: invalidate,
   })

@@ -33,6 +33,7 @@ import { CareerEntity } from '@/types/career'
 import { getBlobErrorMessage, getErrorMessage } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ResourceForm } from './ResourceForm'
+import { useFkLabel } from '@/hooks/useFkOptions'
 import { GitHubReposPanel } from './GitHubReposPanel'
 import { formatCellValue } from './careerFieldUtils'
 import { formatDate, formatDateTime } from '@/utils/formatters'
@@ -302,12 +303,27 @@ const Badge: React.FC<{ color: 'cyan' | 'slate' | 'success' | 'error' | 'warning
   children,
 }) => <span className={`badge badge-${color}`}>{children}</span>
 
+/** Resolves and displays a FK id as "id — Name". Separate component so the
+ * hook call is always at the top level (rules of hooks). */
+const FkFieldValue: React.FC<{ id: string; fkResource: string; fkLabelField?: string | string[] }> = ({
+  id,
+  fkResource,
+  fkLabelField,
+}) => {
+  const label = useFkLabel(fkResource, id, fkLabelField)
+  return <span className="font-mono text-xs">{label}</span>
+}
+
 /** Read-only rendering of a single field's value, matching its `FieldType` -
  * no truncation (unlike the table's `formatCellValue`), since this is the
  * one place meant to show the complete content. */
-const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type }) => {
+const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfig }> = ({ value, type, field }) => {
   if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
     return <span className="text-text-muted">—</span>
+  }
+
+  if (type === 'fk-select' && field?.fkResource) {
+    return <FkFieldValue id={String(value)} fkResource={field.fkResource} fkLabelField={field.fkLabelField} />
   }
 
   switch (type) {
@@ -371,7 +387,7 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType }> = ({ value, type
 const RecordMetadata: React.FC<{ item: CareerEntity }> = ({ item }) => {
   const metaEntries = useMemo(() => {
     const entries: { label: string; value: string }[] = []
-    if (typeof item.id === 'number') entries.push({ label: 'ID', value: String(item.id) })
+    if (item.id != null) entries.push({ label: 'ID', value: String(item.id) })
     if (typeof item.created_at === 'string') entries.push({ label: 'Creado', value: formatDateTime(item.created_at) })
     if (typeof item.updated_at === 'string')
       entries.push({ label: 'Última actualización', value: formatDateTime(item.updated_at) })
@@ -415,7 +431,7 @@ const RecordView: React.FC<{
             <div key={field.name} className={field.fullWidth ? 'md:col-span-2' : ''}>
               <dt className="text-xs text-text-secondary mb-1">{field.label}</dt>
               <dd className="text-sm text-text">
-                <FieldValue value={item[field.name]} type={field.type} />
+                <FieldValue value={item[field.name]} type={field.type} field={field} />
               </dd>
             </div>
           ))}

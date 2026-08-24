@@ -48,6 +48,7 @@ export const JobDiscoveryPage: React.FC = () => {
         providers: activeProviders,
         include_company_boards: includeBoards,
         remote,
+        target_role_id: rolesQuery.data?.[0]?.id,
       }),
     onSuccess: () => setSelectedKeys(new Set()),
   })
@@ -72,7 +73,7 @@ export const JobDiscoveryPage: React.FC = () => {
   const savable = listings.filter((item) => item.listing_kind === 'job' && selectedKeys.has(listingKey(item)))
 
   const saveMutation = useMutation({
-    mutationFn: () => careerApi.saveJobListings(savable),
+    mutationFn: () => careerApi.saveJobListings(savable, rolesQuery.data?.[0]?.id),
     onSuccess: () => setSelectedKeys(new Set()),
   })
 
@@ -112,8 +113,9 @@ export const JobDiscoveryPage: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Descubrir vacantes</h1>
         <p className="text-slate-600 dark:text-slate-400 mt-2">
-          Busca en Indeed (vía Adzuna), Get on Board, Remotive y RemoteOK. LinkedIn solo arma la
-          búsqueda oficial: abre el link e importa cada <code>jobs/view</code>.
+          El agente busca y te muestra refs (L1, L2…). Tú autorizas cuáles guardar; entran a
+          Vacantes como pending_review para seguimiento. También puedes buscar aquí, marcar e
+          importar un <code>jobs/view</code> de LinkedIn.
           {defaultRole?.role_name ? ` Rol objetivo: ${defaultRole.role_name}.` : ''}
         </p>
       </div>
@@ -265,7 +267,10 @@ export const JobDiscoveryPage: React.FC = () => {
                     />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{listing.exact_role}</p>
+                    <p className="font-medium">
+                      {listing.ref ? <span className="text-primary mr-2">{listing.ref}</span> : null}
+                      {listing.exact_role}
+                    </p>
                     <p className="text-sm text-text-secondary">
                       {listing.company}
                       {listing.location ? ` · ${listing.location}` : ''}

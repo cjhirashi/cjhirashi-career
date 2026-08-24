@@ -7,6 +7,7 @@ import {
   BedrockConversation,
   BedrockCustomTool,
   BedrockInstructions,
+  BedrockAgentProfilePrompt,
   BedrockMemoryEvent,
   BedrockMemoryRecord,
   BedrockModelStatus,
@@ -211,6 +212,26 @@ export const bedrockApi = {
     return response.data
   },
 
+  listAgentProfilePrompts: async (): Promise<BedrockAgentProfilePrompt[]> => {
+    const response = await axiosInstance.get<BedrockAgentProfilePrompt[]>('/bedrock/agent-profiles', {
+      timeout: CONTROL_PLANE_TIMEOUT_MS,
+    })
+    return response.data
+  },
+
+  /** `systemPromptSuffix: null` resets to the built-in default for that profile. */
+  updateAgentProfilePrompt: async (
+    profileId: string,
+    systemPromptSuffix: string | null
+  ): Promise<BedrockAgentProfilePrompt> => {
+    const response = await axiosInstance.put<BedrockAgentProfilePrompt>(
+      `/bedrock/agent-profiles/${profileId}/prompt`,
+      { system_prompt_suffix: systemPromptSuffix },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
   listTools: async (): Promise<BedrockCustomTool[]> => {
     const response = await axiosInstance.get<BedrockCustomTool[]>('/bedrock/tools', {
       timeout: CONTROL_PLANE_TIMEOUT_MS,
@@ -225,7 +246,7 @@ export const bedrockApi = {
     return response.data
   },
 
-  setToolEnabled: async (id: number, isEnabled: boolean): Promise<BedrockCustomTool> => {
+  setToolEnabled: async (id: string, isEnabled: boolean): Promise<BedrockCustomTool> => {
     const response = await axiosInstance.put<BedrockCustomTool>(
       `/bedrock/tools/${id}/enabled`,
       null,
@@ -234,7 +255,7 @@ export const bedrockApi = {
     return response.data
   },
 
-  deleteTool: async (id: number): Promise<void> => {
+  deleteTool: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/bedrock/tools/${id}`, { timeout: CONTROL_PLANE_TIMEOUT_MS })
   },
 
@@ -293,7 +314,7 @@ export const bedrockApi = {
     return response.data
   },
 
-  restoreAuditEntry: async (auditId: number): Promise<void> => {
+  restoreAuditEntry: async (auditId: string): Promise<void> => {
     await axiosInstance.post(`/bedrock/audit-log/${auditId}/restore`, null, { timeout: CONTROL_PLANE_TIMEOUT_MS })
   },
 }
