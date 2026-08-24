@@ -148,6 +148,11 @@ _RESOURCE_KEY_PARAM = {
     "description": "The resource key, e.g. 'vacancies', 'projects', 'operational-methodologies'.",
 }
 
+_RECORD_ID_PARAM = {
+    "type": "string",
+    "description": "Prefixed record id, e.g. ach-17, cmp-42, vac-7. Use the full id as shown in lists.",
+}
+
 _BUILTIN_TOOLS = [
     {
         "type": "inline_function",
@@ -267,7 +272,7 @@ _BUILTIN_TOOLS = [
                 "description": "Fetch one full record by id.",
                 "inputSchema": {
                     "type": "object",
-                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": {"type": "integer"}},
+                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM},
                     "required": ["resource_key", "record_id"],
                 },
             }
@@ -300,7 +305,7 @@ _BUILTIN_TOOLS = [
                     "type": "object",
                     "properties": {
                         "resource_key": _RESOURCE_KEY_PARAM,
-                        "record_id": {"type": "integer"},
+                        "record_id": _RECORD_ID_PARAM,
                         "fields": {"type": "object", "description": "Column name -> new value."},
                     },
                     "required": ["resource_key", "record_id", "fields"],
@@ -316,7 +321,7 @@ _BUILTIN_TOOLS = [
                 "description": "Permanently delete a record.",
                 "inputSchema": {
                     "type": "object",
-                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": {"type": "integer"}},
+                    "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM},
                     "required": ["resource_key", "record_id"],
                 },
             }
@@ -425,13 +430,33 @@ def _serialize(obj: Any) -> Dict[str, Any]:
     return result
 
 
+def _normalize_record_id(resource_key: str, record_id: Any) -> str:
+    """Convierte record_id al formato prefijado (ej. 17 → ach-17 si resource_key=achievements)."""
+    from services.id_generator import TABLE_PREFIXES
+
+    if isinstance(record_id, str):
+        stripped = record_id.strip()
+        if "-" in stripped:
+            return stripped
+        if stripped.isdigit():
+            prefix = TABLE_PREFIXES.get(resource_key)
+            if prefix:
+                return f"{prefix}-{stripped}"
+        return stripped
+    if isinstance(record_id, int):
+        prefix = TABLE_PREFIXES.get(resource_key)
+        if prefix:
+            return f"{prefix}-{record_id}"
+    return str(record_id)
+
+
 async def _record_audit(
     db,
     *,
     user_id: str,
     action: str,
     resource_key: str,
-    record_id: Optional[int],
+    record_id: Optional[str],
     old_values: Optional[Dict[str, Any]],
     new_values: Optional[Dict[str, Any]],
     session_id: str,
@@ -488,7 +513,8 @@ async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any],
 
     if name == "get_career_record":
         repo = _get_repository(tool_input["resource_key"])
-        item = await repo.get_for_user(db, user_id, tool_input["record_id"])
+        record_id = _normalize_record_id(tool_input["resource_key"], tool_input["record_id"])
+        item = await repo.get_for_user(db, user_id, record_id)
         if item is None:
             return {"error": "not_found"}
         return {"item": _serialize(item)}
@@ -548,11 +574,12 @@ async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any],
         invalid = _invalid_fields_error(repo, tool_input["fields"])
         if invalid:
             return invalid
-        before = await repo.get_for_user(db, user_id, tool_input["record_id"])
+        record_id = _normalize_record_id(resource_key, tool_input["record_id"])
+        before = await repo.get_for_user(db, user_id, record_id)
         if before is None:
             return {"error": "not_found"}
         before_serialized = _serialize(before)
-        item = await repo.update_for_user(db, user_id, tool_input["record_id"], tool_input["fields"])
+        item = await repo.update_for_user(db, user_id, record_id, tool_input["fields"])
         serialized = _serialize(item)
         await _record_audit(
             db,
@@ -569,7 +596,7 @@ async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any],
     if name == "delete_career_record":
         resource_key = tool_input["resource_key"]
         repo = _get_repository(resource_key)
-        record_id = tool_input["record_id"]
+        record_id = _normalize_record_id(resource_key, tool_input["record_id"])
         # Captured BEFORE the delete - this is the row the audit log exists
         # to preserve. Without it, a mistaken delete is unrecoverable (this
         # feature exists precisely because that already happened once).
