@@ -63,7 +63,7 @@ async def get_default_template(
 
 @router.get("/{template_id}", response_model=PdfOutputTemplateResponse)
 async def get_template(
-    template_id: int,
+    template_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -84,7 +84,7 @@ async def create_template(
 
 @router.put("/{template_id}", response_model=PdfOutputTemplateResponse)
 async def update_template(
-    template_id: int,
+    template_id: str,
     payload: PdfOutputTemplateUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -104,7 +104,7 @@ async def update_template(
 
 @router.delete("/{template_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_template(
-    template_id: int,
+    template_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -115,7 +115,7 @@ async def delete_template(
 
 @router.post("/{template_id}/render", summary="Render PDF from stored HTML template")
 async def render_pdf_template(
-    template_id: int,
+    template_id: str,
     payload: PdfTemplateRenderRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

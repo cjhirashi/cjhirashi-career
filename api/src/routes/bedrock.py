@@ -6,6 +6,7 @@ other authenticated route in this API uses. Bedrock never gets a distinct
 authorization scope - it operates with whatever the calling Admin Panel
 session already has (see docs/01-INTRODUCTION.md, Security Model).
 """
+import asyncio
 import json
 import logging
 
@@ -85,12 +86,45 @@ async def _sse_chat_events(db: AsyncSession, user_id: str, payload: BedrockChatR
         agent_profile_id=payload.agent_profile_id,
         attachments=payload.attachments,
     )
+
+    queue: asyncio.Queue = asyncio.Queue()
+
+    async def _producer() -> None:
+        try:
+            async for event in bedrock_service.chat_stream(
+                db, user_id, payload.session_id, payload.message, turn_request=turn
+            ):
+                await queue.put(("event", event))
+        except BedrockError as e:
+            logger.error("Bedrock chat failed: %s", e)
+            await queue.put(("error", str(e)))
+        except Exception as e:
+            logger.exception("Unexpected error in Bedrock chat stream")
+            await queue.put(("error", f"Error interno del agente: {e}"))
+        finally:
+            await queue.put(("done", None))
+
+    producer_task = asyncio.create_task(_producer())
     try:
-        async for event in bedrock_service.chat_stream(db, user_id, payload.session_id, payload.message, turn_request=turn):
-            yield f"data: {json.dumps(event)}\n\n"
-    except BedrockError as e:
-        logger.error("Bedrock chat failed: %s", e)
-        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+        while True:
+            try:
+                kind, payload_item = await asyncio.wait_for(queue.get(), timeout=15.0)
+            except asyncio.TimeoutError:
+                yield ": ping\n\n"
+                continue
+            if kind == "done":
+                break
+            if kind == "error":
+                yield f"data: {json.dumps({'type': 'error', 'message': payload_item})}\n\n"
+                break
+            yield f"data: {json.dumps(payload_item)}\n\n"
+    finally:
+        if not producer_task.done():
+            producer_task.cancel()
+            try:
+                await producer_task
+            except asyncio.CancelledError:
+                pass
 
 
 @router.post("/chat", summary="Chat with Agent Bedrock (Server-Sent Events: status/done/error)")

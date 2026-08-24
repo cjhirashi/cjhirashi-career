@@ -121,8 +121,8 @@ _cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions", vecto
     summary="Render a CV version's Markdown content into a downloadable PDF",
 )
 async def generate_cv_version_pdf(
-    cv_version_id: int,
-    template_id: int | None = Query(None, description="Optional PDF output template id"),
+    cv_version_id: str,
+    template_id: str | None = Query(None, description="Optional PDF output template id (ej. pdt-1)"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

@@ -62,7 +62,7 @@ export interface Competency {
   depth_description?: string | null
   market_gaps?: string | null
   honesty_note?: string | null
-  aligned_differentiator_ids?: number[] | null
+  aligned_differentiator_ids?: string[] | null
   proficiency_score?: number | null
   is_highlighted: boolean
   featured_on_home: boolean
@@ -133,7 +133,7 @@ export interface Achievement {
   evidence_type?: EvidenceType | null
   documentation_urls?: string | null
   executive_storytelling?: string | null
-  demonstrated_competency_ids?: number[] | null
+  demonstrated_competency_ids?: string[] | null
   visible_on_cv: boolean
   visible_in_interview: boolean
   visible_on_portal: boolean
@@ -363,7 +363,7 @@ export interface CVVersion {
   length_pages?: number | null
   status: VersionStatus
   content?: string | null
-  target_vacancy_ids?: number[] | null
+  target_vacancy_ids?: string[] | null
   file_upload_id?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime

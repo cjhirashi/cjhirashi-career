@@ -2,7 +2,7 @@
 Metrics Model - User profile metrics and statistics.
 Read-only model computed from events and evidence.
 """
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float, JSON, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Float, JSON, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -28,7 +28,7 @@ class Metrics(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign Key
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
 
     # Profile Completeness
     profile_completion_percentage = Column(Float, default=0.0, nullable=False)

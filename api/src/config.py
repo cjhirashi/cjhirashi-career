@@ -78,7 +78,7 @@ class Settings(BaseSettings):
     BEDROCK_USE_LOCAL_HARNESS: bool = True
     BEDROCK_USE_CONVERSE_STREAM: bool = False
     BEDROCK_DEFAULT_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-    BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.amazon.nova-pro-v1:0"
+    BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     BEDROCK_IMAGE_MODEL_ID: str = "amazon.titan-image-generator-v2:0"
     BEDROCK_MAX_IMAGES_PER_DAY: int = 20
     BEDROCK_MAX_TOOL_RESULT_CHARS: int = 8000

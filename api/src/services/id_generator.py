@@ -60,6 +60,30 @@ TABLE_PREFIXES: dict[str, str] = {
 }
 
 
+def prefix_for_key(key: str) -> str | None:
+    """Resuelve prefijo desde resource_key (achievements, cv-versions) o nombre de tabla."""
+    normalized = key.replace("-", "_")
+    return TABLE_PREFIXES.get(normalized)
+
+
+def normalize_prefixed_id(key: str, raw_id) -> str:
+    """Convierte un id crudo al formato prefijado (ej. 17 → ach-17)."""
+    if isinstance(raw_id, str):
+        stripped = raw_id.strip()
+        if "-" in stripped:
+            return stripped
+        if stripped.isdigit():
+            prefix = prefix_for_key(key)
+            if prefix:
+                return f"{prefix}-{stripped}"
+        return stripped
+    if isinstance(raw_id, int):
+        prefix = prefix_for_key(key)
+        if prefix:
+            return f"{prefix}-{raw_id}"
+    return str(raw_id)
+
+
 def _seq_name(table_name: str) -> str:
     prefix = TABLE_PREFIXES[table_name]
     return f"{prefix}_id_seq"

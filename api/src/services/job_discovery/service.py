@@ -75,7 +75,7 @@ async def _resolve_query(
     db: AsyncSession,
     user_id: str,
     query_text: Optional[str],
-    target_role_id: Optional[int],
+    target_role_id: Optional[str],
 ) -> str:
     if query_text and query_text.strip():
         return query_text.strip()
@@ -126,7 +126,7 @@ async def run_discovery(
     query_text: Optional[str] = None,
     location: Optional[str] = None,
     providers: Optional[Sequence[str]] = None,
-    target_role_id: Optional[int] = None,
+    target_role_id: Optional[str] = None,
     include_company_boards: bool = False,
     remote: bool = False,
     session_key: Optional[str] = None,
@@ -208,7 +208,7 @@ async def save_listings(
     user_id: str,
     listings: Iterable[dict],
     *,
-    target_role_id: Optional[int] = None,
+    target_role_id: Optional[str] = None,
 ) -> dict:
     saved_urls = await _saved_urls(db, user_id)
     created: List[dict] = []

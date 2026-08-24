@@ -10,7 +10,7 @@ export const useProjects = () => {
   })
 }
 
-export const useProjectById = (id: number) => {
+export const useProjectById = (id: string) => {
   return useQuery<Project>({
     queryKey: ['project', id],
     queryFn: () => projectsApi.getProjectById(id),

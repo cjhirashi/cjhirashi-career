@@ -13,7 +13,7 @@ class BedrockUsageRoundLog(Base):
     __tablename__ = "bedrock_usage_round_logs"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     session_id = Column(String(100), nullable=False, index=True)
     model_id = Column(String(150), nullable=True, index=True)
     round_type = Column(String(30), nullable=False, default="converse", index=True)

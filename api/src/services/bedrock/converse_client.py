@@ -124,6 +124,7 @@ async def converse(
     system_prompt: str,
     tools: List[Dict[str, Any]],
     max_tokens: int = 4096,
+    force_tool_use: bool = False,
 ) -> Dict[str, Any]:
     """Una llamada Converse en thread pool (ConverseStream si está habilitado)."""
     client = _get_runtime_client()
@@ -135,6 +136,8 @@ async def converse(
     }
     if tools:
         kwargs["toolConfig"] = {"tools": tools}
+        if force_tool_use:
+            kwargs["toolConfig"]["toolChoice"] = {"any": {}}
 
     use_stream = settings.BEDROCK_USE_CONVERSE_STREAM
 

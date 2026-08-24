@@ -15,7 +15,7 @@ class BedrockUsageLog(Base):
     __tablename__ = "bedrock_usage_logs"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     session_id = Column(String(64), nullable=False, index=True)
     model_id = Column(String(150), nullable=False, index=True)

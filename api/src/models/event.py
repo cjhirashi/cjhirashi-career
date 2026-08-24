@@ -46,7 +46,7 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Foreign Key
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Event Details
     event_type = Column(Enum(EventType), nullable=False, index=True)

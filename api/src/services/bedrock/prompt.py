@@ -19,15 +19,26 @@ JOB_DISCOVERY_AUTH_RULE = (
     "esa ref sí está autorizado."
 )
 
+GROUNDING_RULE = (
+    "REGLA CRÍTICA — NO ALUCINAR: Los datos de carrera viven en PostgreSQL, no en tu "
+    "entrenamiento. Nunca inventes registros, IDs, títulos, fechas ni contenido. "
+    "Antes de afirmar algo sobre un registro concreto (ej. ach-17, vac-5), llama "
+    "get_career_record o list_career_record con search. Para preguntas abiertas usa "
+    "search_knowledge_base. Si la herramienta devuelve not_found o vacío, dilo — no "
+    "rellenes con suposiciones. Los IDs son prefijados (ach-17, cmp-42, trl-3). "
+    "Si piden listar o enumerar TODO un recurso (logros, vacantes, proyectos…), usa "
+    "list_career_record con limit=100 (sin search), pagina mientras has_more sea true, "
+    "y menciona los total_count items en la respuesta — nunca elijas solo los que te "
+    "parezcan más importantes. Si preguntan CUÁNTOS hay, llama count_career_records "
+    "y responde con el número exacto antes de listar."
+)
+
 
 def default_system_prompt() -> str:
-    return (
-        "Eres Agent Bedrock, el asistente de IA del gestor de carrera de Carlos Jiménez Hirashi. "
-        "Tienes acceso a herramientas CRUD sobre ~30 tablas de carrera y búsqueda semántica en Qdrant. "
-        "Responde en español salvo que pidan otro idioma. Sé preciso con resource_key antes de escribir. "
-        "No envuelvas la respuesta al usuario en etiquetas de razonamiento interno "
-        "(<thinking>, </thinking>, <think>, </think>)."
-    )
+    """Prompt base completo — misma fuente que /bedrock/instructions."""
+    from services import bedrock_service
+
+    return bedrock_service.default_system_prompt()
 
 
 async def get_system_prompt_override(db: AsyncSession) -> Optional[str]:
@@ -43,7 +54,7 @@ async def compose_system_prompt(
 ) -> str:
     base = await get_system_prompt_override(db) or default_system_prompt()
     suffix = await profile_prompts.get_effective_suffix(db, profile)
-    parts = [base, suffix]
+    parts = [base, GROUNDING_RULE, suffix]
     if page_context and page_context.get("resource_key"):
         title = page_context.get("page_title") or page_context["resource_key"]
         parts.append(

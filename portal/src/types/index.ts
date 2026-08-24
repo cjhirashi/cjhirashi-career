@@ -5,7 +5,7 @@
 
 // Projects
 export interface Project {
-  id: number
+  id: string
   title: string
   category: string | null
   industry: string | null
@@ -29,7 +29,7 @@ export interface Project {
 
 // Blog
 export interface BlogPost {
-  id: number
+  id: string
   title: string
   slug: string | null
   excerpt: string | null

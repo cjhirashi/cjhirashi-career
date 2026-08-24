@@ -217,7 +217,7 @@ async def create_post(
 
 @router.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_scheduled_post(
-    post_id: int,
+    post_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

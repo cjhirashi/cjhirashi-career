@@ -248,7 +248,11 @@ _BUILTIN_TOOLS = [
         "name": "list_career_record",
         "config": {
             "inlineFunction": {
-                "description": "List/search records of one resource, paginated.",
+                "description": (
+                    "List/search records of one resource, paginated. "
+                    "For 'list all my X' requests use limit=100 without search — NOT search_knowledge_base. "
+                    "Include every item returned (check total_count) in your reply; never pick a subset."
+                ),
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -258,6 +262,26 @@ _BUILTIN_TOOLS = [
                         "sort_dir": {"type": "string", "enum": ["asc", "desc"]},
                         "limit": {"type": "integer", "description": "Default 20, max 100."},
                         "skip": {"type": "integer", "description": "Pagination offset, default 0."},
+                    },
+                    "required": ["resource_key"],
+                },
+            }
+        },
+    },
+    {
+        "type": "inline_function",
+        "name": "count_career_records",
+        "config": {
+            "inlineFunction": {
+                "description": (
+                    "Count records in one resource. Use for 'how many X do I have' — "
+                    "always call this before answering count questions."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "resource_key": _RESOURCE_KEY_PARAM,
+                        "search": {"type": "string", "description": "Optional free-text filter."},
                     },
                     "required": ["resource_key"],
                 },
@@ -430,24 +454,34 @@ def _serialize(obj: Any) -> Dict[str, Any]:
     return result
 
 
+_LIST_LABEL_FIELDS = ("title", "name", "company", "exact_role", "role_name", "tag_name", "slug")
+_LIST_SUMMARY_FIELDS = ("context", "challenge", "status", "evaluation", "card_summary", "excerpt")
+
+
+def _serialize_list_item(obj: Any) -> Dict[str, Any]:
+    """Vista compacta para listados — evita truncar resultados grandes."""
+    full = _serialize(obj)
+    item: Dict[str, Any] = {"id": full.get("id")}
+    for field in _LIST_LABEL_FIELDS:
+        value = full.get(field)
+        if value:
+            item["title"] = str(value)
+            break
+    for field in _LIST_SUMMARY_FIELDS:
+        value = full.get(field)
+        if value and isinstance(value, str):
+            text = value.strip()
+            if text:
+                item["summary"] = text[:240] + ("…" if len(text) > 240 else "")
+                break
+    return item
+
+
 def _normalize_record_id(resource_key: str, record_id: Any) -> str:
     """Convierte record_id al formato prefijado (ej. 17 → ach-17 si resource_key=achievements)."""
-    from services.id_generator import TABLE_PREFIXES
+    from services.id_generator import normalize_prefixed_id
 
-    if isinstance(record_id, str):
-        stripped = record_id.strip()
-        if "-" in stripped:
-            return stripped
-        if stripped.isdigit():
-            prefix = TABLE_PREFIXES.get(resource_key)
-            if prefix:
-                return f"{prefix}-{stripped}"
-        return stripped
-    if isinstance(record_id, int):
-        prefix = TABLE_PREFIXES.get(resource_key)
-        if prefix:
-            return f"{prefix}-{record_id}"
-    return str(record_id)
+    return normalize_prefixed_id(resource_key, record_id)
 
 
 async def _record_audit(
@@ -500,16 +534,44 @@ async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any],
 
     if name == "list_career_record":
         repo = _get_repository(tool_input["resource_key"])
+        skip = tool_input.get("skip", 0)
+        limit = min(tool_input.get("limit", 20), 100)
         items = await repo.list_for_user(
             db,
             user_id,
-            skip=tool_input.get("skip", 0),
-            limit=min(tool_input.get("limit", 20), 100),
+            skip=skip,
+            limit=limit,
             sort_by=tool_input.get("sort_by"),
             sort_dir=tool_input.get("sort_dir", "asc"),
             search=tool_input.get("search"),
         )
-        return {"items": [_serialize(item) for item in items]}
+        total_count = await repo.count_for_user(db, user_id)
+        serialized = [_serialize_list_item(item) for item in items]
+        return {
+            "items": serialized,
+            "total_count": total_count,
+            "returned_count": len(serialized),
+            "skip": skip,
+            "has_more": skip + len(serialized) < total_count,
+            "instruction": (
+                "Menciona TODOS los items de esta respuesta. "
+                "Si has_more es true, llama de nuevo con skip=skip+returned_count hasta agotar."
+            ),
+        }
+
+    if name == "count_career_records":
+        repo = _get_repository(tool_input["resource_key"])
+        search = tool_input.get("search")
+        if search:
+            items = await repo.list_for_user(db, user_id, skip=0, limit=100, search=search)
+            count = len(items)
+        else:
+            count = await repo.count_for_user(db, user_id)
+        return {
+            "count": count,
+            "resource_key": tool_input["resource_key"],
+            "instruction": "Responde con este número exacto. Para listar nombres usa list_career_record.",
+        }
 
     if name == "get_career_record":
         repo = _get_repository(tool_input["resource_key"])

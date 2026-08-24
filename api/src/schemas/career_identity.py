@@ -134,7 +134,7 @@ class CompetencyBase(BaseModel):
     depth_description: Optional[str] = None
     market_gaps: Optional[str] = None
     honesty_note: Optional[str] = None
-    aligned_differentiator_ids: Optional[List[int]] = None
+    aligned_differentiator_ids: Optional[List[str]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: bool = False
     featured_on_home: bool = False
@@ -157,7 +157,7 @@ class CompetencyUpdate(BaseModel):
     depth_description: Optional[str] = None
     market_gaps: Optional[str] = None
     honesty_note: Optional[str] = None
-    aligned_differentiator_ids: Optional[List[int]] = None
+    aligned_differentiator_ids: Optional[List[str]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
     is_highlighted: Optional[bool] = None
     featured_on_home: Optional[bool] = None
@@ -345,7 +345,7 @@ class AchievementBase(BaseModel):
     evidence_type: Optional[EvidenceTypeLiteral] = None
     documentation_urls: Optional[str] = None
     executive_storytelling: Optional[str] = None
-    demonstrated_competency_ids: Optional[List[int]] = None
+    demonstrated_competency_ids: Optional[List[str]] = None
     visible_on_cv: bool = True
     visible_in_interview: bool = True
     visible_on_portal: bool = False
@@ -367,7 +367,7 @@ class AchievementUpdate(BaseModel):
     evidence_type: Optional[EvidenceTypeLiteral] = None
     documentation_urls: Optional[str] = None
     executive_storytelling: Optional[str] = None
-    demonstrated_competency_ids: Optional[List[int]] = None
+    demonstrated_competency_ids: Optional[List[str]] = None
     visible_on_cv: Optional[bool] = None
     visible_in_interview: Optional[bool] = None
     visible_on_portal: Optional[bool] = None

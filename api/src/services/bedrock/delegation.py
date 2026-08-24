@@ -34,7 +34,7 @@ async def run_specialist_sub_turn(
         agent_profile_id=profile.id,
         page_context=None,
         model_id=profile.default_model_id,
-        max_round_trips=2,
+        max_round_trips=4,
         record_history=False,
     )
     return {"summary": result.get("reply", ""), "affected_resources": result.get("affected_resources", [])}

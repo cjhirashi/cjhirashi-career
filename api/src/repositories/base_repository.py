@@ -36,7 +36,7 @@ class BaseRepository(Generic[T]):
         await self.db.flush()
         return obj
 
-    async def get_by_id(self, obj_id: int) -> Optional[T]:
+    async def get_by_id(self, obj_id: str) -> Optional[T]:
         """Get entity by ID."""
         stmt = select(self.model).where(self.model.id == obj_id)
         result = await self.db.execute(stmt)
@@ -54,7 +54,7 @@ class BaseRepository(Generic[T]):
         result = await self.db.execute(stmt)
         return result.scalar()
 
-    async def update(self, obj_id: int, obj_data: dict) -> Optional[T]:
+    async def update(self, obj_id: str, obj_data: dict) -> Optional[T]:
         """Update an entity."""
         obj = await self.get_by_id(obj_id)
         if obj:
@@ -63,7 +63,7 @@ class BaseRepository(Generic[T]):
             await self.db.flush()
         return obj
 
-    async def delete(self, obj_id: int) -> bool:
+    async def delete(self, obj_id: str) -> bool:
         """Delete an entity by ID."""
         obj = await self.get_by_id(obj_id)
         if obj:

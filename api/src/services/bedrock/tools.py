@@ -18,6 +18,7 @@ from models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from models.pdf_output_template import PdfOutputTemplate
 from repositories.career_repository import CareerRepository
 from services import bedrock_service, storage_service
+from services.id_generator import normalize_prefixed_id
 from services.bedrock.errors import BedrockError
 from services.bedrock.tool_results import truncate_tool_result
 
@@ -36,8 +37,9 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_recent_changes", "description": "Bitácora reciente del agente.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "limit": {"type": "integer"}}}},
     {"name": "restore_deleted_record", "description": "Restaura un delete desde audit_id.", "schema": {"type": "object", "properties": {"audit_id": {"type": "integer"}}, "required": ["audit_id"]}},
     {"name": "describe_resource_schema", "description": "Campos válidos de un resource_key.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM}, "required": ["resource_key"]}},
-    {"name": "search_knowledge_base", "description": "Búsqueda semántica Qdrant.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}, "type": {"type": "string", "enum": ["methodology", "career_record"]}}, "required": ["query"]}},
-    {"name": "list_career_record", "description": "Lista registros paginados.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}, "limit": {"type": "integer"}, "skip": {"type": "integer"}}, "required": ["resource_key"]}},
+    {"name": "search_knowledge_base", "description": "Búsqueda semántica Qdrant por significado. NO usar para 'lista todos mis X' — usa list_career_record.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}, "type": {"type": "string", "enum": ["methodology", "career_record"]}}, "required": ["query"]}},
+    {"name": "list_career_record", "description": "Lista registros paginados. Para 'lista todos mis X' usa limit=100 sin search (no search_knowledge_base). Incluye TODOS los items; revisa total_count y pagina si has_more.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}, "limit": {"type": "integer"}, "skip": {"type": "integer"}}, "required": ["resource_key"]}},
+    {"name": "count_career_records", "description": "Cuenta registros de un resource_key. Usar para '¿cuántos X tengo?'.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}}, "required": ["resource_key"]}},
     {"name": "get_career_record", "description": "Obtiene un registro por id.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
     {"name": "create_career_record", "description": "Crea registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "fields"]}},
     {"name": "update_career_record", "description": "Actualiza registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "record_id", "fields"]}},
@@ -110,7 +112,7 @@ _WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_r
 
 _LEGACY = {
     "list_recent_changes", "restore_deleted_record", "describe_resource_schema", "search_knowledge_base",
-    "list_career_record", "get_career_record", "create_career_record", "update_career_record", "delete_career_record",
+    "list_career_record", "count_career_records", "get_career_record", "create_career_record", "update_career_record", "delete_career_record",
 }
 
 
@@ -210,7 +212,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         return {"published": True, "linkedin_post_urn": post_urn}
 
     if name == "delete_scheduled_linkedin_post":
-        post_id = tool_input["post_id"]
+        post_id = normalize_prefixed_id("linkedin_posts", tool_input["post_id"])
         result = await db.execute(select(LinkedInPost).where(LinkedInPost.id == post_id, LinkedInPost.user_id == user_id))
         post = result.scalar_one_or_none()
         if not post:
@@ -232,7 +234,8 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     if name == "get_pdf_template":
         q = select(PdfOutputTemplate).where(PdfOutputTemplate.user_id == user_id, PdfOutputTemplate.is_active.is_(True))
         if tool_input.get("template_id"):
-            q = q.where(PdfOutputTemplate.id == tool_input["template_id"])
+            template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
+            q = q.where(PdfOutputTemplate.id == template_id)
         elif tool_input.get("slug"):
             q = q.where(PdfOutputTemplate.slug == tool_input["slug"])
         elif tool_input.get("default_only") and tool_input.get("document_type"):
@@ -260,7 +263,8 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         return {"item": {"id": row.id, "slug": row.slug}}
 
     if name == "update_pdf_template":
-        result = await db.execute(select(PdfOutputTemplate).where(PdfOutputTemplate.id == tool_input["template_id"], PdfOutputTemplate.user_id == user_id))
+        template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
+        result = await db.execute(select(PdfOutputTemplate).where(PdfOutputTemplate.id == template_id, PdfOutputTemplate.user_id == user_id))
         row = result.scalar_one_or_none()
         if not row:
             return {"error": "not_found"}
@@ -275,7 +279,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         from services.pdf_service import generate_html_template_pdf
         from services.pdf_template_render import render_template_html
 
-        template_id = tool_input["template_id"]
+        template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
         result = await db.execute(
             select(PdfOutputTemplate).where(
                 PdfOutputTemplate.id == template_id,
@@ -320,7 +324,11 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
             return {"error": "resource_key must be publications or projects"}
         return await bedrock_service._execute_tool(
             db, user_id, "update_career_record",
-            {"resource_key": rk, "record_id": tool_input["record_id"], "fields": {"image_url": tool_input["image_url"]}},
+            {
+                "resource_key": rk,
+                "record_id": normalize_prefixed_id(rk, tool_input["record_id"]),
+                "fields": {"image_url": tool_input["image_url"]},
+            },
             session_id,
         )
 
@@ -364,7 +372,9 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
                 query_text=tool_input.get("query"),
                 location=tool_input.get("location"),
                 providers=tool_input.get("providers"),
-                target_role_id=tool_input.get("target_role_id"),
+                target_role_id=normalize_prefixed_id("target_roles", tool_input["target_role_id"])
+                if tool_input.get("target_role_id") is not None
+                else None,
                 include_company_boards=bool(tool_input.get("include_company_boards")),
                 remote=bool(tool_input.get("remote")),
                 session_key=session_id,
@@ -415,7 +425,9 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
             db,
             user_id,
             found,
-            target_role_id=tool_input.get("target_role_id"),
+            target_role_id=normalize_prefixed_id("target_roles", tool_input["target_role_id"])
+            if tool_input.get("target_role_id") is not None
+            else None,
         )
 
     raise BedrockError(f"Unknown extended tool: {name}")

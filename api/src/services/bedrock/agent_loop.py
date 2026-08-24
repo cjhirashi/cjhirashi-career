@@ -24,6 +24,7 @@ _TOOL_STATUS = {
     "describe_resource_schema": "Revisando la estructura de la tabla...",
     "search_knowledge_base": "Consultando la base de conocimiento...",
     "list_career_record": "Buscando registros...",
+    "count_career_records": "Contando registros...",
     "get_career_record": "Consultando el registro...",
     "create_career_record": "Creando el registro...",
     "update_career_record": "Actualizando el registro...",
@@ -52,10 +53,18 @@ class ChatTurnRequest:
 
 
 def _effective_model(req: ChatTurnRequest, runtime, profile) -> str:
-    if req.model_id and req.model_id in settings.BEDROCK_AVAILABLE_MODELS:
-        return req.model_id
+    """Modelo efectivo. Chat general ignora modelos débiles (Nova Lite) del cliente."""
+    weak_models = {
+        "amazon.nova-lite-v1:0",
+        "amazon.nova-micro-v1:0",
+    }
     if req.chat_surface == "general":
+        if profile.default_model_id and profile.default_model_id in settings.BEDROCK_AVAILABLE_MODELS:
+            return profile.default_model_id
         return runtime.orchestrator_model_id
+    if req.model_id and req.model_id in settings.BEDROCK_AVAILABLE_MODELS:
+        if req.model_id not in weak_models:
+            return req.model_id
     if profile.default_model_id:
         return profile.default_model_id
     return section_profiles.resolve_recommended_model(req.page_context)
@@ -138,6 +147,7 @@ async def chat_stream(
 
     yield {"type": "status", "message": "Pensando..."}
 
+    first_round = True
     for _ in range(max_rounds):
         try:
             result = await converse_client.converse(
@@ -145,10 +155,12 @@ async def chat_stream(
                 messages=messages,
                 system_prompt=system_prompt,
                 tools=tool_specs,
+                force_tool_use=first_round and bool(tool_specs),
             )
         except BedrockError as e:
             yield {"type": "error", "message": str(e)}
             return
+        first_round = False
 
         total_usage["inputTokens"] += result["usage"]["inputTokens"]
         total_usage["outputTokens"] += result["usage"]["outputTokens"]

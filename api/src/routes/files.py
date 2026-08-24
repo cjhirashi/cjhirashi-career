@@ -207,7 +207,7 @@ class PresignedUrlResponse(BaseModel):
 
 @router.patch("/{file_id}/visibility", response_model=FileUploadResponse)
 async def update_visibility(
-    file_id: int,
+    file_id: str,
     payload: VisibilityUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -232,7 +232,7 @@ async def update_visibility(
 
 @router.get("/{file_id}/download", response_model=PresignedUrlResponse)
 async def get_download_url(
-    file_id: int,
+    file_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -251,7 +251,7 @@ async def get_download_url(
 
 @router.get("/{file_id}/raw")
 async def download_file(
-    file_id: int,
+    file_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -276,7 +276,7 @@ async def download_file(
 
 @router.delete("/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_file(
-    file_id: int,
+    file_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

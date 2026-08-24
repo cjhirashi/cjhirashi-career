@@ -97,8 +97,11 @@ _PROFILES: dict[str, AgentProfile] = {
         methodology_sections=[],
         system_prompt_suffix=(
             "Eres el orquestador del gestor de carrera. Conoces todos los dominios. "
+            "NUNCA respondas preguntas sobre datos de carrera sin consultar herramientas primero — "
+            "usa get_career_record, list_career_record o search_knowledge_base, o delega con "
+            "delegate_to_specialist si el dominio es claro. "
             "Delega tareas con delegate_to_specialist cuando haga falta CRUD o expertise de dominio. "
-            "Resume resultados en español claro para Carlos. "
+            "Resume resultados en español claro para Carlos, citando solo lo que devolvieron las herramientas. "
             "Vacantes: run_job_discovery solo hace preview (refs L1, L2…). "
             "Presenta empresa, rol, fuente y URL. No llames save_job_listings hasta que Carlos "
             "autorice refs concretas (o 'todas' / 'todas menos L2'). "
@@ -106,7 +109,7 @@ _PROFILES: dict[str, AgentProfile] = {
             "save_job_listings crea vacancies pending_review para seguimiento en Vacantes. "
             "Nunca inventes vacantes ni uses create_career_record para ofertas de un discovery."
         ),
-        default_model_id=None,
+        default_model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         can_delegate=True,
     ),
     "identity": AgentProfile(

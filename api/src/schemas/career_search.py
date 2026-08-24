@@ -336,7 +336,7 @@ class CVVersionBase(BaseModel):
     length_pages: Optional[int] = None
     status: VersionStatusLiteral = "draft"
     content: Optional[str] = None
-    target_vacancy_ids: Optional[List[int]] = None
+    target_vacancy_ids: Optional[List[str]] = None
     file_upload_id: Optional[str] = None
 
 
@@ -350,7 +350,7 @@ class CVVersionUpdate(BaseModel):
     length_pages: Optional[int] = None
     status: Optional[VersionStatusLiteral] = None
     content: Optional[str] = None
-    target_vacancy_ids: Optional[List[int]] = None
+    target_vacancy_ids: Optional[List[str]] = None
     file_upload_id: Optional[str] = None
 
 

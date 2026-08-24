@@ -55,7 +55,7 @@ const STATIC_ROUTE_PROFILE: Record<string, string> = {
   '/job-discovery': 'strategy',
   '/files': 'agent_admin',
   '/linkedin': 'digital_presence',
-  '/agent/chat': 'read_light',
+  '/agent/chat': 'crud_standard',
 }
 
 /**

@@ -15,7 +15,7 @@ const Section = ({ title, content }: { title: string; content: string }) => (
 
 export const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>()
-  const { data: project, isLoading, error } = useProjectById(Number(id))
+  const { data: project, isLoading, error } = useProjectById(id ?? '')
   const { trackClick } = useTrackClick()
 
   if (isLoading) return <LoadingSpinner />
