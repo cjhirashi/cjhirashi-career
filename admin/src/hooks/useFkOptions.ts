@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { careerApi } from '@/api/career'
+import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
 import { SelectOption } from '@/config/careerResources'
 
 /** Resolves the display label from a record using one or more candidate fields. */
@@ -16,20 +17,26 @@ export function resolveFkLabel(
   return String(record.id ?? '—')
 }
 
+export type FkApiMode = 'career' | 'pdf-template-styles'
+
+async function fetchFkRecords(apiMode: FkApiMode, resource: string): Promise<Record<string, unknown>[]> {
+  if (apiMode === 'pdf-template-styles') {
+    return pdfTemplateStylesApi.list({ skip: 0, limit: 100 }) as unknown as Record<string, unknown>[]
+  }
+  return careerApi.list(resource, { limit: 500 })
+}
+
 /**
- * Fetches all records from a career resource and converts them to
- * SelectOption[] of the form  "id — Label".
- *
- * Results are cached by react-query under the key ['fk-options', resource].
- * Multiple fields referencing the same resource share a single request.
+ * Fetches records for a FK selector and converts them to SelectOption[].
  */
 export function useFkOptions(
   resource: string | undefined,
-  labelField?: string | string[]
+  labelField?: string | string[],
+  apiMode: FkApiMode = 'career'
 ): { options: SelectOption[]; isLoading: boolean; isError: boolean } {
   const { data, isLoading, isError } = useQuery<Record<string, unknown>[]>({
-    queryKey: ['fk-options', resource],
-    queryFn: () => careerApi.list(resource!, { limit: 500 }),
+    queryKey: ['fk-options', apiMode, resource],
+    queryFn: () => fetchFkRecords(apiMode, resource!),
     enabled: Boolean(resource),
     staleTime: 2 * 60 * 1000,
   })
@@ -46,16 +53,13 @@ export function useFkOptions(
   return { options, isLoading, isError }
 }
 
-/**
- * Resolves the display string for a stored FK id using the same cached data.
- * Returns "id — Label" when found, or just "id" as fallback.
- */
 export function useFkLabel(
   resource: string | undefined,
   id: string | null | undefined,
-  labelField?: string | string[]
+  labelField?: string | string[],
+  apiMode: FkApiMode = 'career'
 ): string {
-  const { options } = useFkOptions(resource, labelField)
+  const { options } = useFkOptions(resource, labelField, apiMode)
   if (!id) return '—'
   const match = options.find((o) => o.value === id)
   return match ? match.label : id

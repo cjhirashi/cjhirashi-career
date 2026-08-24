@@ -1,14 +1,15 @@
 import { axiosInstance } from './client'
+import { ListParams } from './career'
+import { CareerEntity } from '@/types/career'
 
-export interface PdfOutputTemplate {
-  id: string
-  user_id: string
+export interface PdfOutputTemplate extends CareerEntity {
   slug: string
   document_type: string
   title: string
   description?: string | null
   html_template: string
-  css_content?: string | null
+  style_id?: string | null
+  variables?: string | null
   variables_schema?: Record<string, unknown> | null
   preview_notes?: string | null
   is_active: boolean
@@ -24,15 +25,17 @@ export interface PdfTemplatePayload {
   title: string
   description?: string
   html_template: string
-  css_content?: string
+  style_id?: string
+  variables?: string
   is_default?: boolean
   is_active?: boolean
 }
 
 export const pdfTemplatesApi = {
-  list: async (documentType?: string): Promise<PdfOutputTemplate[]> => {
+  list: async (params: ListParams = {}): Promise<PdfOutputTemplate[]> => {
+    const { skip = 0, limit = 50 } = params
     const response = await axiosInstance.get<PdfOutputTemplate[]>('/pdf-templates', {
-      params: documentType ? { document_type: documentType } : undefined,
+      params: { skip, limit },
     })
     return response.data
   },
@@ -42,12 +45,12 @@ export const pdfTemplatesApi = {
     return response.data
   },
 
-  create: async (payload: PdfTemplatePayload): Promise<PdfOutputTemplate> => {
+  create: async (payload: Record<string, unknown>): Promise<PdfOutputTemplate> => {
     const response = await axiosInstance.post<PdfOutputTemplate>('/pdf-templates', payload)
     return response.data
   },
 
-  update: async (id: string, payload: Partial<PdfTemplatePayload>): Promise<PdfOutputTemplate> => {
+  update: async (id: string, payload: Record<string, unknown>): Promise<PdfOutputTemplate> => {
     const response = await axiosInstance.put<PdfOutputTemplate>(`/pdf-templates/${id}`, payload)
     return response.data
   },
@@ -60,7 +63,7 @@ export const pdfTemplatesApi = {
     const response = await axiosInstance.post(
       `/pdf-templates/${id}/render`,
       { variables, title },
-      { responseType: 'blob' }
+      { responseType: 'blob', timeout: 60000 }
     )
     return response.data
   },

@@ -62,6 +62,7 @@ from models.bedrock_custom_tool import BedrockCustomTool
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
 from models.bedrock_task import BedrockTask
 from models.pdf_output_template import PdfOutputTemplate
+from models.pdf_template_style import PdfTemplateStyle
 
 # ----------------------------------------------------------------------------
 # LinkedIn Integration
@@ -138,6 +139,7 @@ __all__ = [
     "BedrockConversationMessage",
     "BedrockTask",
     "PdfOutputTemplate",
+    "PdfTemplateStyle",
     # LinkedIn integration
     "LinkedInConnection",
     "LinkedInPost",

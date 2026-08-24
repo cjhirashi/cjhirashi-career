@@ -94,6 +94,7 @@ export const fromFormValue = (field: FieldConfig, raw: string | boolean): unknow
     }
     case 'fk-select':
       return str.trim() === '' ? null : str
+    case 'code':
     case 'text':
     case 'textarea':
     default:

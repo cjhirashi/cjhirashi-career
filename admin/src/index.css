@@ -478,6 +478,40 @@
     -webkit-backdrop-filter: blur(8px);
   }
 
+  /* Native <select> fallback (Firefox honours option colors; Chrome/Safari
+     still paint the OS menu). Prefer `.popover-menu` via ThemedSelect. */
+  select.input-field,
+  select.input-field option {
+    background-color: var(--bg-popover);
+    color: var(--text-primary);
+  }
+
+  /* Floating menus (select lists, user menu, model picker). Near-opaque
+     `--bg-popover` so page content does not bleed through like `--bg-card`. */
+  .popover-menu {
+    @apply rounded-2xl border;
+    background-color: var(--bg-popover);
+    border-color: var(--border-glass);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: var(--text-primary);
+  }
+
+  .popover-menu-item {
+    @apply w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-left transition-colors;
+    color: var(--text-primary);
+  }
+
+  .popover-menu-item:hover,
+  .popover-menu-item[data-highlighted='true'] {
+    background-color: var(--bg-glass);
+  }
+
+  .popover-menu-item[aria-selected='true'] {
+    background-color: var(--primary-light);
+  }
+
   .card {
     @apply rounded-2xl border transition-all duration-300;
     background-color: var(--bg-card);

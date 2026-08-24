@@ -1,6 +1,10 @@
 """PDF Generation endpoints."""
 
+import asyncio
 import logging
+from concurrent.futures import ProcessPoolExecutor
+from io import BytesIO
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
@@ -10,6 +14,7 @@ from src.services.cover_letter_generator import CoverLetterGenerator
 from src.services.markdown_document_generator import MarkdownDocumentGenerator
 from src.services.html_template_generator import HtmlTemplateGenerator
 from src.services.pdf_service import PDFService
+from src.services.pdf_worker import render_html_template_pdf
 from src.utils.validators import InputValidator
 from src.utils.formatters import DataFormatter
 
@@ -25,6 +30,28 @@ html_template_generator = HtmlTemplateGenerator()
 pdf_service = PDFService()
 validator = InputValidator()
 formatter = DataFormatter()
+
+# WeasyPrint is CPU-heavy and uses native libraries; isolate it from uvicorn.
+_weasyprint_pool = ProcessPoolExecutor(max_workers=2)
+
+
+async def _render_html_template_in_pool(title: str, html_body: str, css_content: str | None) -> bytes:
+    global _weasyprint_pool
+    loop = asyncio.get_running_loop()
+    try:
+        return await loop.run_in_executor(
+            _weasyprint_pool,
+            render_html_template_pdf,
+            title,
+            html_body,
+            css_content,
+        )
+    except Exception as exc:
+        # A worker crash poisons the pool; recreate it for the next request.
+        if _weasyprint_pool is not None:
+            _weasyprint_pool.shutdown(wait=False, cancel_futures=True)
+            _weasyprint_pool = ProcessPoolExecutor(max_workers=2)
+        raise exc
 
 
 @router.post("/cv")
@@ -224,11 +251,13 @@ async def generate_html_template(request: HtmlTemplateRequest):
     """Generate a PDF from custom HTML body + optional CSS (WeasyPrint)."""
     try:
         logger.info("Processing HTML template PDF: %s", request.title)
-        pdf_buffer = html_template_generator.generate(
+        pdf_bytes = await _render_html_template_in_pool(
             title=request.title,
             html_body=request.html_body,
             css_content=request.css_content,
         )
+        pdf_buffer = BytesIO(pdf_bytes)
+        pdf_buffer.seek(0)
         filename = html_template_generator.get_filename(request.title)
         pdf_size = pdf_service.get_pdf_size(pdf_buffer)
         logger.info("HTML template PDF generated: %s (%s bytes)", filename, pdf_size)

@@ -113,6 +113,12 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
       affected_resources.forEach((resource) => {
         if (resource === 'pdf-templates') {
           queryClient.invalidateQueries({ queryKey: ['pdf-templates'] })
+          queryClient.invalidateQueries({ queryKey: ['fk-options', 'pdf-template-styles'] })
+          return
+        }
+        if (resource === 'pdf-template-styles') {
+          queryClient.invalidateQueries({ queryKey: ['pdf-template-styles'] })
+          queryClient.invalidateQueries({ queryKey: ['fk-options', 'pdf-template-styles'] })
           return
         }
         queryClient.invalidateQueries({ queryKey: careerQueryKey(resource), exact: false })

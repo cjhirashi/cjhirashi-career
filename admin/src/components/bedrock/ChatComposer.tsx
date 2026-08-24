@@ -253,12 +253,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setModelOpen(false)} />
           <div
-            className="absolute left-0 bottom-full mb-1 w-56 z-50 rounded-2xl border shadow-glass overflow-hidden max-h-48 overflow-y-auto"
-            style={{
-              backgroundColor: 'var(--bg-popover)',
-              borderColor: 'var(--border-glass)',
-              backdropFilter: 'blur(16px)',
-            }}
+            className="popover-menu absolute left-0 bottom-full mb-1 w-56 z-50 max-h-48 overflow-y-auto"
             role="listbox"
             aria-label="Seleccionar modelo"
           >
@@ -275,7 +270,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   })
                   setModelOpen(false)
                 }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs text-text hover:bg-glass transition-colors text-left"
+                className="popover-menu-item text-xs"
               >
                 <span>{model.label}</span>
                 {model.model_id === defaultModelId && (
@@ -309,12 +304,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           <>
             <div className="fixed inset-0 z-40" onClick={() => setAgentOpen(false)} />
             <div
-              className="absolute left-0 bottom-full mb-1 w-52 z-50 rounded-2xl border shadow-glass overflow-hidden max-h-48 overflow-y-auto"
-              style={{
-                backgroundColor: 'var(--bg-popover)',
-                borderColor: 'var(--border-glass)',
-                backdropFilter: 'blur(16px)',
-              }}
+              className="popover-menu absolute left-0 bottom-full mb-1 w-52 z-50 max-h-48 overflow-y-auto"
               role="listbox"
               aria-label="Seleccionar especialista"
             >
@@ -326,7 +316,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   setSessionPrefs(sessionId, { agentProfileIdOverride: null })
                   setAgentOpen(false)
                 }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs text-text hover:bg-glass transition-colors text-left"
+                className="popover-menu-item text-xs"
               >
                 <span>Auto (por pantalla)</span>
                 {!sessionPrefs.agentProfileIdOverride && (
@@ -343,7 +333,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                     setSessionPrefs(sessionId, { agentProfileIdOverride: profile.id })
                     setAgentOpen(false)
                   }}
-                  className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs text-text hover:bg-glass transition-colors text-left"
+                  className="popover-menu-item text-xs"
                 >
                   <span>{profile.label}</span>
                   {profile.id === sessionPrefs.agentProfileIdOverride && (

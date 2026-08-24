@@ -1,6 +1,9 @@
 """
-CRUD de plantillas PDF + render preview (Harness local / agente pdf_design).
+CRUD de plantillas PDF y endpoint de render preview (Harness local / agente pdf_design).
 """
+# ============================================================================
+# Imports
+# ============================================================================
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -11,22 +14,47 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from middleware.auth import get_current_user
 from models.pdf_output_template import PdfOutputTemplate
+from models.pdf_template_style import PdfTemplateStyle
 from models.user import User
 from repositories.career_repository import CareerRepository
+from routes.career_common import RESOURCE_REGISTRY
 from schemas.pdf_template import (
     PdfOutputTemplateCreate,
     PdfOutputTemplateResponse,
     PdfOutputTemplateUpdate,
     PdfTemplateRenderRequest,
 )
+from services.id_generator import normalize_prefixed_id
 from services.pdf_service import PDFGeneratorError, generate_html_template_pdf
+from services.pdf_template_css import resolve_template_css
 from services.pdf_template_render import render_template_html
 
+# ============================================================================
+# Router principal y repositorio
+# ============================================================================
 router = APIRouter(prefix="/pdf-templates", tags=["PDF Templates"])
 
 _repo = CareerRepository(PdfOutputTemplate, resource_key="pdf-output-templates", vectorize=False)
+_style_repo = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
+RESOURCE_REGISTRY["pdf-output-templates"] = PdfOutputTemplate
+RESOURCE_REGISTRY["pdf-template-styles"] = PdfTemplateStyle
 
 
+async def _normalize_style_id(
+    db: AsyncSession, user_id: str, style_id: str | None
+) -> str | None:
+    if style_id is None or style_id == "":
+        return None
+    normalized = normalize_prefixed_id("pdf_template_styles", style_id)
+    style = await _style_repo.get_for_user(db, user_id, normalized)
+    if style is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid style_id")
+    return normalized
+
+
+# ============================================================================
+# Endpoints CRUD de plantillas
+# ============================================================================
 @router.get("", response_model=list[PdfOutputTemplateResponse])
 async def list_templates(
     skip: int = Query(0, ge=0),
@@ -79,7 +107,9 @@ async def create_template(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await _repo.create_for_user(db, current_user.id, payload.model_dump())
+    data = payload.model_dump()
+    data["style_id"] = await _normalize_style_id(db, current_user.id, data.get("style_id"))
+    return await _repo.create_for_user(db, current_user.id, data)
 
 
 @router.put("/{template_id}", response_model=PdfOutputTemplateResponse)
@@ -93,6 +123,8 @@ async def update_template(
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
     data = payload.model_dump(exclude_unset=True)
+    if "style_id" in data:
+        data["style_id"] = await _normalize_style_id(db, current_user.id, data.get("style_id"))
     for k, v in data.items():
         if hasattr(row, k):
             setattr(row, k, v)
@@ -113,6 +145,9 @@ async def delete_template(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
 
 
+# ============================================================================
+# Endpoint: render preview (PDF desde plantilla almacenada)
+# ============================================================================
 @router.post("/{template_id}/render", summary="Render PDF from stored HTML template")
 async def render_pdf_template(
     template_id: str,
@@ -126,8 +161,9 @@ async def render_pdf_template(
 
     html = render_template_html(row.html_template, payload.variables or {})
     title = payload.title or row.title
+    css_content = await resolve_template_css(db, row)
     try:
-        pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=row.css_content)
+        pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=css_content)
     except PDFGeneratorError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
 

@@ -135,9 +135,7 @@ export interface BedrockCustomTool {
   created_at: string
 }
 
-// Loosely typed on purpose - passes through whatever AgentCore Memory's API
-// returns rather than re-modeling its full response shape (see
-// schemas/bedrock.py's BedrockMemoryEventResponse/BedrockMemoryRecordResponse).
+// Flexible shape for semantic memory hits from Qdrant (memoryRecordId, content, score, …).
 export interface BedrockMemoryEvent {
   eventId?: string
   eventTimestamp?: string | number

@@ -242,7 +242,8 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     fireEvent.click(screen.getByRole('button', { name: /nuevo/i }))
     const form = screen.getByRole('form')
     fireEvent.change(within(form).getByLabelText(/^nombre/i), { target: { value: 'Pensamiento Sistémico' } })
-    fireEvent.change(within(form).getByLabelText(/^tipo/i), { target: { value: 'technical' } })
+    fireEvent.click(within(form).getByRole('button', { name: /^tipo/i }))
+    fireEvent.click(within(form).getByRole('option', { name: /^técnica/i }))
     fireEvent.click(within(form).getByRole('button', { name: /crear/i }))
 
     await waitFor(() => expect(screen.getAllByText('Pensamiento Sistémico').length).toBeGreaterThan(0))

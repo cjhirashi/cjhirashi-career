@@ -13,6 +13,7 @@ import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-
 export type FieldType =
   | 'text'
   | 'textarea'
+  | 'code'
   | 'number'
   | 'date'
   | 'datetime'
@@ -48,6 +49,8 @@ export interface FieldConfig {
    * display label. First non-empty value wins. Defaults to ['name','title'].
    */
   fkLabelField?: string | string[]
+  /** For type='fk-select': API source when not under /career/{key}. */
+  fkApi?: 'career' | 'pdf-template-styles'
 }
 
 export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number'
@@ -80,8 +83,16 @@ export interface ResourceConfig {
    * record viewer and replaced there by an embedded, auto-loaded preview of
    * the actual generated PDF instead - see CareerResourceView's
    * `pdfExportField` handling. Requires a real `POST /career/{key}/{id}/pdf`
-   * endpoint on the backend (see `careerApi.generateResourcePdf`). */
+   * endpoint on the backend (see `careerApi.generateResourcePdf`), unless
+   * `pdfPreviewSource` is `template-render`. */
   pdfExportField?: string
+  /** How to fetch the embedded PDF preview in record view. Defaults to
+   * `career-pdf` (`POST /career/{key}/{id}/pdf`). Use `template-render` for
+   * HTML/CSS templates rendered via `POST /pdf-templates/{id}/render`. */
+  pdfPreviewSource?: 'career-pdf' | 'template-render'
+  /** Extra fields hidden from record view when a PDF preview is shown
+   * (defaults to `[pdfExportField]` when that is set). */
+  pdfPreviewHiddenFields?: string[]
 }
 
 const badgeByEvaluation = (value: unknown) => {
@@ -906,6 +917,113 @@ export const cvVersionsConfig: ResourceConfig = {
     },
   ],
   pdfExportField: 'content',
+}
+
+export const pdfOutputTemplatesConfig: ResourceConfig = {
+  key: 'pdf-output-templates',
+  label: 'Plantillas PDF',
+  labelSingular: 'Plantilla PDF',
+  genderFeminine: true,
+  columns: [
+    { key: 'title', label: 'Título' },
+    { key: 'document_type', label: 'Tipo', format: 'badge' },
+    { key: 'slug', label: 'Slug' },
+    { key: 'style_id', label: 'Estilo' },
+    { key: 'is_default', label: 'Default', format: 'boolean' },
+    { key: 'is_active', label: 'Activa', format: 'boolean' },
+  ],
+  fields: [
+    { name: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'ej. cv-moderno' },
+    {
+      name: 'document_type',
+      label: 'Tipo de documento',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'cv', label: 'cv' },
+        { value: 'cover-letter', label: 'cover-letter' },
+        { value: 'generic', label: 'generic' },
+      ],
+    },
+    { name: 'title', label: 'Título', type: 'text', required: true },
+    {
+      name: 'description',
+      label: 'Descripción',
+      type: 'text',
+      fullWidth: true,
+      placeholder: 'Uso previsto (opcional)',
+    },
+    {
+      name: 'style_id',
+      label: 'Estilo CSS',
+      type: 'fk-select',
+      fkResource: 'pdf-template-styles',
+      fkApi: 'pdf-template-styles',
+      fkLabelField: 'title',
+      fullWidth: true,
+      placeholder: '— Selecciona un estilo CSS —',
+      helpText: 'El CSS vive en Estilos PDF (pds-N). Elige cuál aplicar a esta plantilla.',
+    },
+    {
+      name: 'variables',
+      label: 'Variables',
+      type: 'textarea',
+      fullWidth: true,
+      helpText: 'Markdown: documenta cada variable {{nombre}} usada en la plantilla y qué contenido debe llevar.',
+    },
+    {
+      name: 'html_template',
+      label: 'Plantilla HTML',
+      type: 'code',
+      required: true,
+      fullWidth: true,
+      helpText: 'HTML con variables {{title}}, {{content}}, etc.',
+    },
+    { name: 'is_default', label: 'Plantilla predeterminada para este tipo', type: 'boolean' },
+    { name: 'is_active', label: 'Activa', type: 'boolean' },
+  ],
+  pdfExportField: 'html_template',
+  pdfPreviewSource: 'template-render',
+  pdfPreviewHiddenFields: ['html_template', 'variables'],
+}
+
+export const pdfTemplateStylesConfig: ResourceConfig = {
+  key: 'pdf-template-styles',
+  label: 'Estilos PDF',
+  labelSingular: 'Estilo PDF',
+  genderFeminine: false,
+  columns: [
+    { key: 'title', label: 'Título' },
+    { key: 'slug', label: 'Slug' },
+    { key: 'is_active', label: 'Activo', format: 'boolean' },
+  ],
+  fields: [
+    { name: 'slug', label: 'Slug', type: 'text', required: true, placeholder: 'ej. cv-cyan-profesional' },
+    { name: 'title', label: 'Título', type: 'text', required: true },
+    {
+      name: 'description',
+      label: 'Descripción',
+      type: 'text',
+      fullWidth: true,
+      placeholder: 'Uso previsto del estilo (opcional)',
+    },
+    {
+      name: 'css_content',
+      label: 'CSS',
+      type: 'code',
+      required: true,
+      fullWidth: true,
+      helpText: 'Reglas WeasyPrint completas para las plantillas que referencien este estilo.',
+    },
+    {
+      name: 'style_guide',
+      label: 'Guía de clases y etiquetas',
+      type: 'textarea',
+      fullWidth: true,
+      helpText: 'Markdown: documenta clases, etiquetas y selectores disponibles y para qué sirven al armar plantillas.',
+    },
+    { name: 'is_active', label: 'Activo', type: 'boolean' },
+  ],
 }
 
 export const coverLetterVersionsConfig: ResourceConfig = {

@@ -1,9 +1,51 @@
-"""Schemas — plantillas HTML/CSS para PDF (WeasyPrint)."""
+"""Schemas — plantillas HTML y estilos CSS para PDF (WeasyPrint)."""
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
+
+# ============================================================================
+# Estilos CSS reutilizables
+# ============================================================================
+
+class PdfTemplateStyleCreate(BaseModel):
+    slug: str = Field(..., min_length=1, max_length=120)
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    css_content: str = Field(..., min_length=1)
+    style_guide: Optional[str] = None
+    is_active: bool = True
+
+
+class PdfTemplateStyleUpdate(BaseModel):
+    slug: Optional[str] = Field(None, min_length=1, max_length=120)
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    css_content: Optional[str] = Field(None, min_length=1)
+    style_guide: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class PdfTemplateStyleResponse(BaseModel):
+    id: str
+    user_id: str
+    slug: str
+    title: str
+    description: Optional[str] = None
+    css_content: str
+    style_guide: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# Plantillas — creación, actualización y respuesta
+# ============================================================================
 
 class PdfOutputTemplateCreate(BaseModel):
     slug: str = Field(..., min_length=1, max_length=120)
@@ -11,7 +53,8 @@ class PdfOutputTemplateCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     html_template: str = Field(..., min_length=1)
-    css_content: Optional[str] = None
+    style_id: Optional[str] = None
+    variables: Optional[str] = None
     variables_schema: Optional[Dict[str, Any]] = None
     preview_notes: Optional[str] = None
     is_active: bool = True
@@ -24,7 +67,8 @@ class PdfOutputTemplateUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
     html_template: Optional[str] = None
-    css_content: Optional[str] = None
+    style_id: Optional[str] = None
+    variables: Optional[str] = None
     variables_schema: Optional[Dict[str, Any]] = None
     preview_notes: Optional[str] = None
     is_active: Optional[bool] = None
@@ -39,7 +83,8 @@ class PdfOutputTemplateResponse(BaseModel):
     title: str
     description: Optional[str] = None
     html_template: str
-    css_content: Optional[str] = None
+    style_id: Optional[str] = None
+    variables: Optional[str] = None
     variables_schema: Optional[Dict[str, Any]] = None
     preview_notes: Optional[str] = None
     is_active: bool
@@ -51,6 +96,10 @@ class PdfOutputTemplateResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# ============================================================================
+# Renderizado — solicitudes
+# ============================================================================
 
 class PdfTemplateRenderRequest(BaseModel):
     variables: Dict[str, Any] = Field(default_factory=dict)

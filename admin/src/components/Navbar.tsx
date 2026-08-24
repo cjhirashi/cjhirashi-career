@@ -93,8 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Dropdown menu */}
             {dropdownOpen && (
               <div
-                className="absolute right-0 mt-2 w-56 max-w-[90vw] z-50 rounded-2xl border shadow-glass"
-                style={{ backgroundColor: 'var(--bg-popover)', borderColor: 'var(--border-glass)', backdropFilter: 'blur(16px)' }}
+                className="popover-menu absolute right-0 mt-2 w-56 max-w-[90vw] z-50"
               >
                 {/* `--bg-popover` (near-opaque) rather than `--bg-card` on
                     purpose - this floats over arbitrary page content, so it

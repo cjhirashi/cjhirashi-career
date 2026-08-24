@@ -60,6 +60,7 @@ const AGENT_DOMAIN_KEY = 'agent'
 const AGENT_LINKS = [
   { label: 'Chat General', path: '/agent/chat', icon: MessageCircle },
   { label: 'Plantillas PDF', path: '/agent/pdf-templates', icon: FileText },
+  { label: 'Estilos PDF', path: '/agent/pdf-template-styles', icon: FileText },
   { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
   { label: 'Metodologías Operativas', path: '/career/operational-methodologies', icon: Workflow },
   { label: 'Memoria', path: '/agent/memory', icon: Brain },

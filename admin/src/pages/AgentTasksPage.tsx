@@ -6,6 +6,7 @@ import { useAgentTasks, useAgentTaskMutations } from '@/hooks/useBedrockChat'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
 import { BedrockTask } from '@/types/bedrock'
+import { ThemedSelect } from '@/components/ThemedSelect'
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -73,18 +74,14 @@ export const AgentTasksPage: React.FC = () => {
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.description}</ReactMarkdown>
                         </div>
                       )}
-                      <select
+                      <ThemedSelect
                         value={task.status}
-                        onChange={(e) => updateMutation.mutate({ id: task.id, payload: { status: e.target.value } })}
-                        className="input-field text-xs py-1"
+                        onChange={(v) => updateMutation.mutate({ id: task.id, payload: { status: v } })}
+                        className="text-xs"
                         aria-label={`Estado de "${task.title}"`}
-                      >
-                        {STATUS_COLUMNS.map((s) => (
-                          <option key={s} value={s}>
-                            {STATUS_LABELS[s]}
-                          </option>
-                        ))}
-                      </select>
+                        allowEmpty={false}
+                        options={STATUS_COLUMNS.map((s) => ({ value: s, label: STATUS_LABELS[s] }))}
+                      />
                     </div>
                   </div>
                 ))}

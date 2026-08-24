@@ -166,7 +166,8 @@ describe('FilesPage', () => {
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
     mockedFilesApi.list.mockClear()
 
-    fireEvent.change(screen.getByLabelText(/filtrar por carpeta/i), { target: { value: 'proyectos' } })
+    fireEvent.click(screen.getByRole('button', { name: /filtrar por carpeta/i }))
+    fireEvent.click(screen.getByRole('option', { name: 'proyectos' }))
 
     await waitFor(() =>
       expect(mockedFilesApi.list).toHaveBeenCalledWith(expect.objectContaining({ category: 'proyectos' }))

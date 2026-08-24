@@ -28,15 +28,23 @@ import rehypeHighlight from 'rehype-highlight'
 import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
 import { useCareerList, useCareerMutations, useCareerCount } from '@/hooks/useCareerResource'
+import { usePdfTemplateList, usePdfTemplateMutations, usePdfTemplateCount } from '@/hooks/usePdfTemplateResource'
+import {
+  usePdfTemplateStyleList,
+  usePdfTemplateStyleMutations,
+  usePdfTemplateStyleCount,
+} from '@/hooks/usePdfTemplateStyleResource'
 import { careerApi } from '@/api/career'
+import { pdfTemplatesApi } from '@/api/pdfTemplates'
 import { CareerEntity } from '@/types/career'
-import { getBlobErrorMessage, getErrorMessage } from '@/utils/errors'
+import { getBlobErrorMessage, getErrorMessage, assertPdfBlob } from '@/utils/errors'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ResourceForm } from './ResourceForm'
 import { useFkLabel } from '@/hooks/useFkOptions'
 import { GitHubReposPanel } from './GitHubReposPanel'
 import { formatCellValue } from './careerFieldUtils'
 import { formatDate, formatDateTime } from '@/utils/formatters'
+import { ThemedSelect } from '@/components/ThemedSelect'
 
 export interface ParentFilter {
   field: string
@@ -281,6 +289,8 @@ const CodeBlockPre: React.FC<React.HTMLAttributes<HTMLPreElement>> = ({ children
 interface CareerResourceViewProps {
   config: ResourceConfig
   pageSize?: number
+  /** When `pdf-templates`, uses `/pdf-templates` CRUD instead of `/career/{key}`. */
+  apiMode?: 'career' | 'pdf-templates' | 'pdf-template-styles'
   /** When set, the view fetches up to 100 rows and filters client-side by `field === value` (used for drill-down/nested resources; the backend has no per-field filter query param). */
   parentFilter?: ParentFilter
   /** Fixed values merged into every create/edit payload, hidden from the form (typically the parent FK for a nested resource). */
@@ -305,12 +315,13 @@ const Badge: React.FC<{ color: 'cyan' | 'slate' | 'success' | 'error' | 'warning
 
 /** Resolves and displays a FK id as "id — Name". Separate component so the
  * hook call is always at the top level (rules of hooks). */
-const FkFieldValue: React.FC<{ id: string; fkResource: string; fkLabelField?: string | string[] }> = ({
-  id,
-  fkResource,
-  fkLabelField,
-}) => {
-  const label = useFkLabel(fkResource, id, fkLabelField)
+const FkFieldValue: React.FC<{
+  id: string
+  fkResource: string
+  fkLabelField?: string | string[]
+  fkApi?: 'career' | 'pdf-template-styles'
+}> = ({ id, fkResource, fkLabelField, fkApi = 'career' }) => {
+  const label = useFkLabel(fkResource, id, fkLabelField, fkApi)
   return <span className="font-mono text-xs">{label}</span>
 }
 
@@ -323,10 +334,23 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfi
   }
 
   if (type === 'fk-select' && field?.fkResource) {
-    return <FkFieldValue id={String(value)} fkResource={field.fkResource} fkLabelField={field.fkLabelField} />
+    return (
+      <FkFieldValue
+        id={String(value)}
+        fkResource={field.fkResource}
+        fkLabelField={field.fkLabelField}
+        fkApi={field.fkApi}
+      />
+    )
   }
 
   switch (type) {
+    case 'code':
+      return (
+        <pre className="text-xs bg-glass rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words font-mono">
+          {String(value)}
+        </pre>
+      )
     case 'boolean':
       return <>{value ? 'Sí' : 'No'}</>
     case 'date':
@@ -559,6 +583,7 @@ const ProjectCard: React.FC<{
 export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   config,
   pageSize = 20,
+  apiMode = 'career',
   parentFilter,
   presetValues,
   title,
@@ -566,6 +591,9 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   renderExtraRowAction,
   rowClassName,
 }) => {
+  const usesPdfTemplatesApi = apiMode === 'pdf-templates'
+  const usesPdfTemplateStylesApi = apiMode === 'pdf-template-styles'
+  const usesExternalPdfApi = usesPdfTemplatesApi || usesPdfTemplateStylesApi
   const isSingleton = config.mode === 'singleton'
   const isNested = !!parentFilter
   // Search/sort only apply to a resource's own top-level list - a nested
@@ -601,17 +629,40 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     setSkip(0)
   }, [search, sortBy, sortDir])
 
-  const { data, isLoading, isError, error, refetch } = useCareerList<CareerEntity>(config.key, {
+  const listParams = {
     skip: isNested || isSingleton ? 0 : skip,
     limit,
     sortBy: supportsListControls ? sortBy : undefined,
     sortDir: supportsListControls ? sortDir : undefined,
     search: supportsListControls ? search || undefined : undefined,
-  })
-  const { createMutation, updateMutation, deleteMutation } = useCareerMutations<CareerEntity>(config.key)
-  // Total row count, independent of pagination - not meaningful for a
-  // singleton (always 0 or 1) or a nested sub-list (already filtered).
-  const { data: totalCount } = useCareerCount(config.key, !isSingleton && !isNested)
+  }
+
+  const careerListQuery = useCareerList<CareerEntity>(config.key, listParams, !usesExternalPdfApi)
+  const pdfListQuery = usePdfTemplateList(listParams, usesPdfTemplatesApi)
+  const pdfStyleListQuery = usePdfTemplateStyleList(listParams, usesPdfTemplateStylesApi)
+  const { data, isLoading, isError, error, refetch } = usesPdfTemplateStylesApi
+    ? pdfStyleListQuery
+    : usesPdfTemplatesApi
+      ? pdfListQuery
+      : careerListQuery
+
+  const careerMutations = useCareerMutations<CareerEntity>(config.key)
+  const pdfMutations = usePdfTemplateMutations()
+  const pdfStyleMutations = usePdfTemplateStyleMutations()
+  const { createMutation, updateMutation, deleteMutation } = usesPdfTemplateStylesApi
+    ? pdfStyleMutations
+    : usesPdfTemplatesApi
+      ? pdfMutations
+      : careerMutations
+
+  const careerCountQuery = useCareerCount(config.key, !isSingleton && !isNested && !usesExternalPdfApi)
+  const pdfCountQuery = usePdfTemplateCount(!isSingleton && !isNested && usesPdfTemplatesApi)
+  const pdfStyleCountQuery = usePdfTemplateStyleCount(!isSingleton && !isNested && usesPdfTemplateStylesApi)
+  const { data: totalCount } = usesPdfTemplateStylesApi
+    ? pdfStyleCountQuery
+    : usesPdfTemplatesApi
+      ? pdfCountQuery
+      : careerCountQuery
 
   const items = useMemo(() => {
     if (!data) return []
@@ -638,7 +689,14 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   // careerResources.ts) - "Generar PDF" (download) and the auto-loading
   // print preview below. Scoped to the single record shown in the detail
   // view, so plain component state is enough (no per-row tracking needed).
-  const isPdfExportable = Boolean(config.pdfExportField)
+  const isPdfExportable = Boolean(config.pdfExportField || config.pdfPreviewSource === 'template-render')
+  const recordViewFields = useMemo(() => {
+    if (!isPdfExportable) return config.fields
+    const hidden = new Set(
+      config.pdfPreviewHiddenFields ?? (config.pdfExportField ? [config.pdfExportField] : [])
+    )
+    return config.fields.filter((field) => !hidden.has(field.name))
+  }, [config.fields, config.pdfExportField, config.pdfPreviewHiddenFields, isPdfExportable])
   const [pdfDownloading, setPdfDownloading] = useState(false)
   const [pdfError, setPdfError] = useState<string | null>(null)
 
@@ -671,9 +729,20 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     setPdfError(null)
     setPdfPreviewLoading(true)
     try {
-      const { blob } = await careerApi.generateResourcePdf(config.key, item.id)
+      let blob: Blob
+      if (config.pdfPreviewSource === 'template-render') {
+        blob = await pdfTemplatesApi.render(String(item.id), {
+          title: 'Vista previa',
+          content: 'Contenido de ejemplo para la plantilla PDF.',
+        })
+      } else {
+        const result = await careerApi.generateResourcePdf(config.key, item.id)
+        blob = result.blob
+      }
+      await assertPdfBlob(blob)
       setPdfPreviewUrl(URL.createObjectURL(blob))
     } catch (err) {
+      closePdfPreview()
       setPdfError(await getBlobErrorMessage(err))
     } finally {
       setPdfPreviewLoading(false)
@@ -743,7 +812,19 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     setPdfError(null)
     setPdfDownloading(true)
     try {
-      const { blob, filename } = await careerApi.generateResourcePdf(config.key, item.id)
+      let blob: Blob
+      let filename: string | null = null
+      if (config.pdfPreviewSource === 'template-render') {
+        blob = await pdfTemplatesApi.render(String(item.id), {
+          title: 'Vista previa',
+          content: 'Contenido de ejemplo para la plantilla PDF.',
+        })
+        filename = `${String(item.title ?? config.labelSingular)}.pdf`
+      } else {
+        const result = await careerApi.generateResourcePdf(config.key, item.id)
+        blob = result.blob
+        filename = result.filename
+      }
       const fallbackName = `${String(item.title ?? config.labelSingular)}.pdf`
       const objectUrl = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -1000,7 +1081,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         {viewState === 'view' && activeItem && (
           <RecordView
             item={activeItem}
-            fields={isPdfExportable ? config.fields.filter((f) => f.name !== config.pdfExportField) : config.fields}
+            fields={recordViewFields}
             resourceKey={config.key}
             showMeta={!isPdfExportable}
           />
@@ -1082,19 +1163,14 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
                 {isCards && config.columns.length > 0 && (
                   <div className="flex items-center gap-1">
-                    <select
+                    <ThemedSelect
                       value={sortBy ?? ''}
-                      onChange={(e) => toggleSort(e.target.value)}
-                      className="input-field py-1.5 text-sm"
+                      onChange={(v) => toggleSort(v)}
+                      className="w-auto min-w-[11rem]"
                       aria-label="Ordenar por"
-                    >
-                      <option value="">Orden por defecto</option>
-                      {config.columns.map((col) => (
-                        <option key={col.key} value={col.key}>
-                          {col.label}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="Orden por defecto"
+                      options={config.columns.map((col) => ({ value: col.key, label: col.label }))}
+                    />
                     {sortBy && (
                       <button
                         type="button"

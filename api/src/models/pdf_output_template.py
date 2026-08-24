@@ -1,15 +1,14 @@
 """
-PdfOutputTemplate — plantillas HTML/CSS para salida PDF (WeasyPrint).
+PdfOutputTemplate — plantillas HTML para salida PDF (WeasyPrint).
 
+Los estilos CSS viven en PdfTemplateStyle y se referencian con style_id.
 Agente pdf_design las diseña; search y pdf-generator las consumen.
-Ver ADR-010.
 """
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
+
 from database import Base
-
-
 from services.id_generator import register_id_listener
 
 
@@ -23,7 +22,8 @@ class PdfOutputTemplate(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     html_template = Column(Text, nullable=False)
-    css_content = Column(Text, nullable=True)
+    style_id = Column(String(20), ForeignKey("pdf_template_styles.id", ondelete="SET NULL"), nullable=True, index=True)
+    variables = Column(Text, nullable=True)
     variables_schema = Column(JSONB, nullable=True)
     preview_notes = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False, index=True)
@@ -33,5 +33,6 @@ class PdfOutputTemplate(Base):
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
 
 register_id_listener(PdfOutputTemplate, "pdt")

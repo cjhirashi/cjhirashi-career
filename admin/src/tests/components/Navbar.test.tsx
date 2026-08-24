@@ -176,7 +176,7 @@ describe('Navbar', () => {
       fireEvent.click(getUserMenuButton())
 
       const dropdown = container.querySelector('.absolute.right-0')
-      expect(dropdown).toHaveStyle({ backgroundColor: 'var(--bg-popover)' })
+      expect(dropdown).toHaveClass('popover-menu')
     })
   })
 

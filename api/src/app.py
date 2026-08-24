@@ -1,6 +1,11 @@
 """
 Punto de entrada de la aplicación FastAPI.
-Configura middleware, CORS, rutas y lifecycle events.
+
+Responsabilidades:
+- Lifecycle (startup/shutdown): BD, MinIO, scheduler LinkedIn
+- Middleware CORS y manejadores globales de errores
+- Registro de todos los routers (auth, career, bedrock, public, …)
+- Endpoints de sistema: /health, /
 """
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,13 +22,15 @@ from routes import auth_enhanced
 from routes import career_identity, career_search, career_digital, career_support, career_metrics, career_methodologies, job_discovery
 from routes import bedrock
 from routes import bedrock_tasks
-from routes import pdf_templates
+from routes import pdf_templates, pdf_template_styles
 from routes import files
 from routes import linkedin
 from routes import public
 from services import storage_service, linkedin_scheduler
 
-# Configurar logging
+# ============================================================================
+# Logging
+# ============================================================================
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -35,6 +42,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# ============================================================================
+# Lifecycle — startup y shutdown de recursos compartidos
+# ============================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -68,7 +78,9 @@ async def lifespan(app: FastAPI):
     await close_db()
 
 
-# Crear instancia de FastAPI
+# ============================================================================
+# Instancia FastAPI
+# ============================================================================
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
@@ -77,7 +89,9 @@ app = FastAPI(
 )
 
 
-# Configurar CORS
+# ============================================================================
+# Middleware CORS
+# ============================================================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -87,7 +101,9 @@ app.add_middleware(
 )
 
 
-# Manejador global de errores de validación
+# ============================================================================
+# Manejadores globales de excepciones
+# ============================================================================
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Maneja errores de validación de Pydantic con respuesta personalizada."""
@@ -114,7 +130,9 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoint
+# ============================================================================
+# Endpoints de sistema (sin prefijo de dominio)
+# ============================================================================
 @app.get("/health", tags=["Health"])
 async def health_check():
     """
@@ -140,7 +158,9 @@ async def root():
     }
 
 
-# Incluir routers
+# ============================================================================
+# Routers — un módulo por dominio funcional
+# ============================================================================
 app.include_router(auth_enhanced.router)
 app.include_router(career_identity.router)
 app.include_router(career_search.router)
@@ -152,11 +172,14 @@ app.include_router(career_methodologies.router)
 app.include_router(bedrock.router)
 app.include_router(bedrock_tasks.router)
 app.include_router(pdf_templates.router)
+app.include_router(pdf_template_styles.router)
 app.include_router(files.router)
 app.include_router(linkedin.router)
 app.include_router(public.router)
 
 
-# Log de startup
+# ============================================================================
+# Log de arranque (import-time, antes del primer request)
+# ============================================================================
 logger.info(f"{settings.APP_NAME} v{settings.APP_VERSION} initialized")
 logger.info(f"CORS enabled for origins: {settings.CORS_ORIGINS}")

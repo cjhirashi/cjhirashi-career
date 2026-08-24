@@ -11,11 +11,12 @@ import { CareerEntity, SearchOverview, WeeklySearchMetrics } from '@/types/caree
 export const careerQueryKey = (resource: string, extra?: unknown) =>
   extra === undefined ? (['career', resource] as const) : (['career', resource, extra] as const)
 
-export function useCareerList<T = CareerEntity>(resource: string, params: ListParams = {}) {
+export function useCareerList<T = CareerEntity>(resource: string, params: ListParams = {}, enabled = true) {
   const { skip = 0, limit = 20, sortBy, sortDir, search } = params
   return useQuery({
     queryKey: careerQueryKey(resource, { skip, limit, sortBy, sortDir, search }),
     queryFn: () => careerApi.list<T>(resource, { skip, limit, sortBy, sortDir, search }),
+    enabled,
   })
 }
 

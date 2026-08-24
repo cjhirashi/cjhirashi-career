@@ -8,6 +8,7 @@ import {
 } from '@/hooks/useBedrockChat'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
+import { ThemedSelect } from '@/components/ThemedSelect'
 
 const SectionCard: React.FC<{ title: string; subtitle?: string; icon: React.ElementType; children: React.ReactNode }> = ({
   title,
@@ -159,19 +160,14 @@ const EventsSection: React.FC = () => {
         <p className="text-text-secondary text-sm text-center py-4">Todavía no tienes conversaciones.</p>
       ) : (
         <>
-          <select
+          <ThemedSelect
             value={sessionId ?? ''}
-            onChange={(e) => setSessionId(e.target.value || null)}
-            className="input-field mb-4"
+            onChange={(v) => setSessionId(v || null)}
+            className="mb-4"
             aria-label="Elegir conversación"
-          >
-            <option value="">Elige una conversación...</option>
-            {conversations.map((c) => (
-              <option key={c.session_id} value={c.session_id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
+            placeholder="Elige una conversación..."
+            options={conversations.map((c) => ({ value: c.session_id, label: c.title }))}
+          />
 
           {isLoading && <LoadingSpinner fullScreen={false} message="Cargando eventos..." />}
           {isError && <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>}

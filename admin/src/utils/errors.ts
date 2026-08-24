@@ -87,6 +87,29 @@ export const getBlobErrorMessage = async (error: unknown): Promise<string> => {
   return getErrorMessage(error)
 }
 
+/** Returns true when a Blob looks like a PDF (%PDF header). */
+export const isPdfBlob = async (blob: Blob): Promise<boolean> => {
+  const header = await blob.slice(0, 5).text()
+  return header.startsWith('%PDF')
+}
+
+/** Rejects HTML/JSON error pages that axios may treat as successful blob responses. */
+export const assertPdfBlob = async (blob: Blob): Promise<void> => {
+  if (await isPdfBlob(blob)) return
+  const text = (await blob.text()).trim()
+  if (text.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(text) as { detail?: string }
+      if (parsed.detail) throw new Error(parsed.detail)
+    } catch (err) {
+      if (!(err instanceof SyntaxError)) throw err
+    }
+  }
+  throw new Error(
+    'La vista previa no devolvió un PDF válido. El servicio de generación puede estar caído o sobrecargado.'
+  )
+}
+
 // Extract validation errors from AxiosError
 export const getValidationErrors = (
   error: unknown

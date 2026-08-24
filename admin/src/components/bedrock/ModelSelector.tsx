@@ -7,8 +7,7 @@ import { getErrorMessage } from '@/utils/errors'
  * api/src/config.py) - every option here already has its IAM access (and,
  * for Anthropic models, its AWS Marketplace agreement) provisioned on the
  * harness execution role, so picking one is always safe. Switching models
- * is a control-plane call on AWS's side (`UpdateHarness`) - it can take a
- * few seconds, hence the pending state.
+ * Switching models persists the choice in PostgreSQL (bedrock_settings).
  *
  * A custom button+popover instead of a native <select>: a native <option>
  * list is rendered by the OS/browser, not by our CSS, so it always shows up
@@ -77,15 +76,14 @@ export const ModelSelector: React.FC = () => {
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
-            className="absolute left-0 mt-2 w-56 z-50 rounded-2xl border shadow-glass overflow-hidden"
-            style={{ backgroundColor: 'var(--bg-popover)', borderColor: 'var(--border-glass)', backdropFilter: 'blur(16px)' }}
+            className="popover-menu absolute left-0 mt-2 w-56 z-50"
           >
             {data.available_models.map((model) => (
               <button
                 key={model.model_id}
                 type="button"
                 onClick={() => pick(model.model_id)}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 text-sm text-text hover:bg-glass transition-colors text-left"
+                className="popover-menu-item"
               >
                 <span>
                   {model.label}

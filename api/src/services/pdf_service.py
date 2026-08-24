@@ -14,12 +14,16 @@ logger = logging.getLogger(__name__)
 # Rendering a full document (Markdown -> HTML -> PDF) can take a while under
 # load - generous on purpose, this is a synchronous user-triggered download,
 # not a hot path.
-_TIMEOUT_SECONDS = 30.0
+_TIMEOUT_SECONDS = 60.0
 
 
 class PDFGeneratorError(Exception):
     pass
 
+
+# ============================================================================
+# Generación desde Markdown
+# ============================================================================
 
 async def generate_markdown_document(title: str, content: str) -> bytes:
     """POSTs to pdf_generator's `/generate/markdown-document` and returns the
@@ -38,6 +42,10 @@ async def generate_markdown_document(title: str, content: str) -> bytes:
 
     return response.content
 
+
+# ============================================================================
+# Generación desde plantilla HTML
+# ============================================================================
 
 async def generate_html_template_pdf(title: str, html_body: str, css_content: str | None = None) -> bytes:
     """POSTs to pdf_generator `/generate/html-template` — WeasyPrint con HTML/CSS custom."""

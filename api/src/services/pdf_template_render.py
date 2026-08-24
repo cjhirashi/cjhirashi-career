@@ -3,6 +3,10 @@ import re
 from typing import Any, Dict
 
 
+# ============================================================================
+# Renderizado de plantillas
+# ============================================================================
+
 def render_template_html(html_template: str, variables: Dict[str, Any]) -> str:
     """Reemplaza {{key}} por str(variables[key]); deja la clave si falta."""
 

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { FieldConfig, ResourceConfig } from '@/config/careerResources'
 import { fromFormValue, FieldParseError, toFormValue } from './careerFieldUtils'
 import { FkSelectField } from './FkSelectField'
+import { ThemedSelect } from '@/components/ThemedSelect'
 
 interface ResourceFormProps {
   config: ResourceConfig
@@ -109,6 +110,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
               name={commonProps.name}
               fkResource={field.fkResource ?? ''}
               fkLabelField={field.fkLabelField}
+              fkApi={field.fkApi}
               value={typeof value === 'string' ? value : ''}
               onChange={(v) => handleChange(field.name, v)}
               required={field.required}
@@ -124,20 +126,13 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
               {field.label}
               {field.required && <span className="text-red-500"> *</span>}
             </label>
-            <select
+            <ThemedSelect
               {...commonProps}
               value={typeof value === 'string' ? value : ''}
-              onChange={(e) => handleChange(field.name, e.target.value)}
+              onChange={(v) => handleChange(field.name, v)}
               required={field.required}
-              className="input-field"
-            >
-              <option value="">-- Selecciona --</option>
-              {field.options?.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={field.options ?? []}
+            />
           </div>
         )
       case 'textarea':
@@ -158,6 +153,24 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
             <p className="text-text-secondary text-xs mt-1">
               Admite Markdown - deja una línea en blanco entre párrafos, **negritas**, listas con &quot;- &quot;...
             </p>
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
+        )
+      case 'code':
+        return (
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+            </label>
+            <textarea
+              {...commonProps}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              required={field.required}
+              placeholder={field.placeholder}
+              className="input-field h-48 font-mono text-xs"
+            />
             {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
           </div>
         )

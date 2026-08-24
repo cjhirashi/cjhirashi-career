@@ -25,6 +25,7 @@ import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
 import { AgentTasksPage } from '@/pages/AgentTasksPage'
 import { AgentGeneralChatPage } from '@/pages/AgentGeneralChatPage'
 import { AgentPdfTemplatesPage } from '@/pages/AgentPdfTemplatesPage'
+import { AgentPdfTemplateStylesPage } from '@/pages/AgentPdfTemplateStylesPage'
 
 // Lazy: the only page that pulls in recharts (~100kB gzipped) - loading it
 // eagerly like the rest would add that weight to every page's first load,
@@ -180,6 +181,16 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <AgentPdfTemplatesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/agent/pdf-template-styles"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentPdfTemplateStylesPage />
                 </Layout>
               </PrivateRoute>
             }

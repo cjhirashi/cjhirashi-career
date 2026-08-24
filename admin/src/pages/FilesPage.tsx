@@ -18,6 +18,7 @@ import { filesApi } from '@/api/files'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
+import { ThemedSelect } from '@/components/ThemedSelect'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { Modal } from '@/components/Modal'
 
@@ -223,19 +224,15 @@ export const FilesPage: React.FC = () => {
           <label className="sr-only" htmlFor="category-filter">
             Filtrar por carpeta
           </label>
-          <select
+          <ThemedSelect
             id="category-filter"
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="input-field text-sm py-1.5 w-auto"
-          >
-            <option value="">Todas las carpetas</option>
-            {categories?.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            onChange={setCategoryFilter}
+            className="w-auto min-w-[12rem]"
+            aria-label="Filtrar por carpeta"
+            placeholder="Todas las carpetas"
+            options={(categories ?? []).map((c) => ({ value: c, label: c }))}
+          />
 
           <input
             type="text"
