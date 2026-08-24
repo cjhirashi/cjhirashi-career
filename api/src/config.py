@@ -76,6 +76,7 @@ class Settings(BaseSettings):
     # Ver docs/BEDROCK-SYSTEM.md y ADR-008. BEDROCK_HARNESS_ARN es legacy AgentCore.
     BEDROCK_REGION: str = "us-east-1"
     BEDROCK_USE_LOCAL_HARNESS: bool = True
+    BEDROCK_USE_CONVERSE_STREAM: bool = False
     BEDROCK_DEFAULT_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.amazon.nova-pro-v1:0"
     BEDROCK_IMAGE_MODEL_ID: str = "amazon.titan-image-generator-v2:0"
@@ -91,63 +92,74 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
 
     BEDROCK_AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
+        # invoke_via: foundation = ID directo (amazon.*, meta.*, …); inference_profile = prefijo us.*
         "amazon.nova-micro-v1:0": {
             "label": "Nova Micro",
             "tier": "economy",
+            "invoke_via": "foundation",
             "price_input_per_million": 0.035,
             "price_output_per_million": 0.14,
         },
         "amazon.nova-lite-v1:0": {
             "label": "Nova Lite",
             "tier": "economy",
+            "invoke_via": "foundation",
             "price_input_per_million": 0.06,
             "price_output_per_million": 0.24,
         },
         "deepseek.v3.2": {
             "label": "DeepSeek V3.2",
             "tier": "economy",
+            "invoke_via": "foundation",
             "price_input_per_million": 0.62,
             "price_output_per_million": 1.85,
         },
         "cohere.command-r-v1:0": {
             "label": "Command R",
             "tier": "economy",
+            "invoke_via": "foundation",
             "price_input_per_million": 0.15,
             "price_output_per_million": 0.60,
         },
         "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
             "label": "Claude Haiku 4.5",
             "tier": "standard",
+            "invoke_via": "inference_profile",
             "price_input_per_million": 1.00,
             "price_output_per_million": 5.00,
         },
         "us.amazon.nova-pro-v1:0": {
             "label": "Amazon Nova Pro",
             "tier": "standard",
+            "invoke_via": "inference_profile",
             "price_input_per_million": 0.80,
             "price_output_per_million": 3.20,
         },
         "meta.llama3-3-70b-instruct-v1:0": {
             "label": "Llama 3.3 70B",
             "tier": "standard",
+            "invoke_via": "foundation",
             "price_input_per_million": 0.72,
             "price_output_per_million": 0.72,
         },
         "mistral.mistral-large-2402-v1:0": {
             "label": "Mistral Large",
             "tier": "standard",
+            "invoke_via": "foundation",
             "price_input_per_million": 2.00,
             "price_output_per_million": 6.00,
         },
         "us.amazon.nova-premier-v1:0": {
             "label": "Nova Premier",
             "tier": "premium",
+            "invoke_via": "inference_profile",
             "price_input_per_million": 2.50,
             "price_output_per_million": 10.00,
         },
         "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
             "label": "Claude Sonnet 4.5",
             "tier": "premium",
+            "invoke_via": "inference_profile",
             "price_input_per_million": 3.00,
             "price_output_per_million": 15.00,
         },
@@ -184,6 +196,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"
 
     @property
     def CORS_ORIGINS(self) -> List[str]:

@@ -54,9 +54,10 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {
         "name": "run_job_discovery",
         "description": (
-            "Busca vacantes. providers: indeed (resultados reales vía Adzuna), linkedin "
-            "(solo URLs oficiales de búsqueda; no inventes vacantes), getonboard, remotive, remoteok. "
-            "Si el usuario pide Indeed o LinkedIn, pasa esos ids."
+            "Busca vacantes y devuelve un PREVIEW con refs L1, L2… No crea registros. "
+            "providers: indeed (vía Adzuna), linkedin (solo URLs oficiales de búsqueda; no inventes vacantes), "
+            "getonboard, remotive, remoteok. Presenta la lista a Carlos y ESPERA a que autorice refs concretas "
+            "antes de save_job_listings."
         ),
         "schema": {
             "type": "object",
@@ -70,8 +71,34 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
             },
         },
     },
-    {"name": "import_job_url", "description": "Importa una vacante concreta por URL (linkedin.com/jobs/view/..., Indeed, OCC).", "schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]}},
-    {"name": "save_job_listings", "description": "Guarda listings listing_kind=job como vacancies pending_review. Omite search_url.", "schema": {"type": "object", "properties": {"listings": {"type": "array", "items": {"type": "object"}}, "target_role_id": {"type": "integer"}}, "required": ["listings"]}},
+    {
+        "name": "import_job_url",
+        "description": (
+            "Importa UNA vacante concreta por URL (linkedin.com/jobs/view/..., Indeed, OCC) al preview "
+            "con una ref nueva. Si Carlos pegó la URL, eso autoriza guardar esa ref."
+        ),
+        "schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]},
+    },
+    {
+        "name": "save_job_listings",
+        "description": (
+            "Crea vacancies con evaluation=pending_review SOLO de refs (L1, L3…) que Carlos autorizó "
+            "de la última búsqueda o import. Prohibido llamar sin autorización explícita. "
+            "No inventes refs ni pases listings inventados. Omite search_url."
+        ),
+        "schema": {
+            "type": "object",
+            "properties": {
+                "refs": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Refs autorizadas, p.ej. ['L1','L3']",
+                },
+                "target_role_id": {"type": "integer"},
+            },
+            "required": ["refs"],
+        },
+    },
 ]
 
 _WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_record", "create_linkedin_post", "create_pdf_template", "update_pdf_template", "generate_pdf", "generate_image", "attach_image_to_record", "save_job_listings"}
@@ -102,7 +129,7 @@ def converse_tool_specs(allowed: Optional[Set[str]] = None) -> List[Dict[str, An
     return specs
 
 
-async def _linkedin_connection(db, user_id: int) -> Optional[LinkedInConnection]:
+async def _linkedin_connection(db, user_id: str) -> Optional[LinkedInConnection]:
     result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
     conn = result.scalar_one_or_none()
     if conn and conn.expires_at > datetime.now(timezone.utc):
@@ -110,7 +137,7 @@ async def _linkedin_connection(db, user_id: int) -> Optional[LinkedInConnection]
     return None
 
 
-async def _execute_extended(db, user_id: int, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
+async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Tools nuevos del harness local (no en monolito legacy)."""
     if name == "get_linkedin_status":
         conn = await _linkedin_connection(db, user_id)
@@ -335,6 +362,7 @@ async def _execute_extended(db, user_id: int, name: str, tool_input: Dict[str, A
                 target_role_id=tool_input.get("target_role_id"),
                 include_company_boards=bool(tool_input.get("include_company_boards")),
                 remote=bool(tool_input.get("remote")),
+                session_key=session_id,
             )
         except ValueError as exc:
             return {"error": str(exc)}
@@ -343,28 +371,52 @@ async def _execute_extended(db, user_id: int, name: str, tool_input: Dict[str, A
             "location": result.location,
             "listings": [listing_to_dict(item) for item in result.listings],
             "errors": [{"provider": e.provider, "message": e.message} for e in result.errors],
+            "instruction": (
+                "Presenta a Carlos cada listing_kind=job con su ref (L1, L2…). "
+                "No llames save_job_listings hasta que autorice refs concretas."
+            ),
         }
 
     if name == "import_job_url":
         from services.job_discovery import import_vacancy_url, listing_to_dict
+        from services.job_discovery.preview_store import append_preview
 
         listing = await import_vacancy_url(tool_input["url"])
+        remembered = append_preview(user_id, session_id, listing_to_dict(listing))
+        listing.ref = remembered["ref"]
         return listing_to_dict(listing)
 
     if name == "save_job_listings":
         from services.job_discovery import save_listings
+        from services.job_discovery.preview_store import resolve_refs
 
+        refs = tool_input.get("refs") or []
+        if not refs:
+            return {
+                "error": (
+                    "Faltan refs autorizadas. Espera a que Carlos elija L1, L3… "
+                    "de la última búsqueda. No inventes vacantes."
+                )
+            }
+        found, missing, available = resolve_refs(user_id, session_id, refs)
+        if missing:
+            return {
+                "error": f"Refs no están en la última búsqueda: {missing}.",
+                "available_refs": available,
+            }
+        if not found:
+            return {"error": "No hay listings autorizados para guardar.", "available_refs": available}
         return await save_listings(
             db,
             user_id,
-            tool_input.get("listings") or [],
+            found,
             target_role_id=tool_input.get("target_role_id"),
         )
 
     raise BedrockError(f"Unknown extended tool: {name}")
 
 
-async def execute_tool(db, user_id: int, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
+async def execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Ejecuta una tool y trunca el resultado."""
     if name in _LEGACY:
         result = await bedrock_service._execute_tool(db, user_id, name, tool_input, session_id)
@@ -375,3 +427,16 @@ async def execute_tool(db, user_id: int, name: str, tool_input: Dict[str, Any], 
 
 def is_write_tool(name: str) -> bool:
     return name in _WRITE_TOOLS
+
+
+def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[str, Any]) -> Optional[str]:
+    """Clave para invalidar caché del admin tras un write exitoso (career resource_key o dominio especial)."""
+    if tool_result.get("error"):
+        return None
+    if tool_input.get("resource_key"):
+        return str(tool_input["resource_key"])
+    if name in ("create_pdf_template", "update_pdf_template"):
+        return "pdf-templates"
+    if name == "save_job_listings":
+        return "vacancies"
+    return None

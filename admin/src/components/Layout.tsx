@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { useNavigate } from 'react-router-dom'
 import { PanelRight } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
@@ -12,6 +12,12 @@ interface LayoutProps {
 
 const MOBILE_BREAKPOINT = 768 // Tailwind's `md` breakpoint
 const DESKTOP_BREAKPOINT = 1280 // Tailwind's `xl` breakpoint - matches SidebarRight's own
+
+/** Chat contextual (sidebar derecha) no se muestra en Chat General — ya tiene su propia UI. */
+const CONTEXTUAL_CHAT_HIDDEN_ROUTES = ['/agent/chat']
+
+const isContextualChatHidden = (pathname: string): boolean =>
+  CONTEXTUAL_CHAT_HIDDEN_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
 const isDesktopViewport = (): boolean =>
   typeof window !== 'undefined' ? window.innerWidth >= MOBILE_BREAKPOINT : true
@@ -31,6 +37,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [rightPanelOpen, setRightPanelOpen] = useState(isXlViewport)
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const hideContextualChat = isContextualChatHidden(pathname)
+
+  useEffect(() => {
+    if (hideContextualChat) setRightPanelOpen(false)
+  }, [hideContextualChat])
 
   useEffect(() => {
     let wasDesktop = isDesktopViewport()
@@ -46,7 +58,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
 
       const isXl = isXlViewport()
-      if (isXl !== wasXl) {
+      if (isXl !== wasXl && !hideContextualChat) {
         setRightPanelOpen(isXl)
         wasXl = isXl
       }
@@ -54,7 +66,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [hideContextualChat])
 
   const handleLogout = async () => {
     await logout()
@@ -75,8 +87,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Navbar
         onLogout={handleLogout}
         onMenuToggle={() => setSidebarOpen((open) => !open)}
-        onRightPanelToggle={() => setRightPanelOpen((open) => !open)}
-        rightPanelOpen={rightPanelOpen}
+        onRightPanelToggle={hideContextualChat ? undefined : () => setRightPanelOpen((open) => !open)}
+        rightPanelOpen={hideContextualChat ? false : rightPanelOpen}
       />
 
       {/* `dash-body`: sidebar-left | main-content | sidebar-right */}
@@ -102,7 +114,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             click, same idea as the left sidebar's mobile backdrop above.
             Not needed at `xl:` and up, where the panel lives in normal flow
             instead of floating over the content. */}
-        {rightPanelOpen && (
+        {rightPanelOpen && !hideContextualChat && (
           <div
             className="fixed inset-0 z-40 bg-slate-900/50 xl:hidden"
             aria-hidden="true"
@@ -110,30 +122,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
         )}
 
-        {/* Chat (reserved for the future in-Admin Bedrock assistant) /
-            instructions panel - see SidebarRight.tsx. Full-screen overlay on
-            mobile, right-anchored overlay on tablet, normal flow on desktop
-            (xl+) - and only when the user hasn't hidden it via the topbar
-            toggle. */}
-        {rightPanelOpen ? (
-          <SidebarRight onClose={() => setRightPanelOpen(false)} />
-        ) : (
-          // Edge tab to bring the panel back - same idea as the collapsed
-          // left Sidebar always leaving a strip to re-expand from, so
-          // hiding the right panel is never a dead end. Tablet/desktop
-          // (md+) only - on mobile the Navbar toggle handles this instead,
-          // since there's no in-flow content edge to anchor a tab to once
-          // the panel becomes a full-screen overlay.
-          <button
-            type="button"
-            onClick={() => setRightPanelOpen(true)}
-            aria-label="Mostrar panel de asistencia"
-            title="Mostrar panel"
-            className="hidden md:flex items-center justify-center w-8 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border text-text-secondary hover:text-text hover:bg-glass transition-colors"
-          >
-            <PanelRight size={18} aria-hidden="true" />
-          </button>
-        )}
+        {!hideContextualChat &&
+          (rightPanelOpen ? (
+            <SidebarRight onClose={() => setRightPanelOpen(false)} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setRightPanelOpen(true)}
+              aria-label="Mostrar panel de asistencia"
+              title="Mostrar panel"
+              className="hidden md:flex items-center justify-center w-8 flex-shrink-0 glass-panel backdrop-blur-[20px] border-l border-border text-text-secondary hover:text-text hover:bg-glass transition-colors"
+            >
+              <PanelRight size={18} aria-hidden="true" />
+            </button>
+          ))}
       </div>
     </div>
   )

@@ -37,7 +37,7 @@ from schemas.career_metrics import (
 router = APIRouter(prefix="/career/metrics", tags=["Career - Metrics"])
 
 
-async def _count_by(db: AsyncSession, user_id: int, model, column) -> List[CountBreakdown]:
+async def _count_by(db: AsyncSession, user_id: str, model, column) -> List[CountBreakdown]:
     """Generic `SELECT column, COUNT(*) ... GROUP BY column` for one user."""
     stmt = (
         select(column, func.count())

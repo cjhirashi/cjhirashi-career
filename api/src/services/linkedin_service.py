@@ -45,7 +45,7 @@ class LinkedInError(Exception):
     """Raised when LinkedIn's API rejects a request (bad/expired token, etc.)."""
 
 
-def build_state_token(user_id: int) -> str:
+def build_state_token(user_id: str) -> str:
     payload = {
         "sub": str(user_id),
         "type": STATE_TOKEN_TYPE,
@@ -67,7 +67,7 @@ def decode_state_token(state: str) -> int:
     return int(payload["sub"])
 
 
-def build_authorize_url(user_id: int) -> str:
+def build_authorize_url(user_id: str) -> str:
     params = {
         "response_type": "code",
         "client_id": settings.LINKEDIN_CLIENT_ID,

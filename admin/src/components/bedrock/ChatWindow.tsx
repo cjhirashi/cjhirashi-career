@@ -2,13 +2,10 @@ import React from 'react'
 import { AxiosError } from 'axios'
 import { MapPin, Sparkles } from 'lucide-react'
 import { useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
-import { useBedrockChatStore } from '@/stores/bedrockChatStore'
-import { getAgentProfileLabel } from '@/config/agentProfiles'
-import { CHAT_PROFILE_LABELS, resolveChatProfileKey, resolveRecommendedModel } from '@/config/chatSectionProfiles'
+import { CHAT_PROFILE_LABELS, resolveChatProfileKey } from '@/config/chatSectionProfiles'
 import { BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
 import { MessageList } from './MessageList'
 import { ChatComposer } from './ChatComposer'
-import { ModelSelector } from './ModelSelector'
 import { ConversationHistory } from './ConversationHistory'
 
 const NotConfigured: React.FC = () => (
@@ -30,14 +27,10 @@ const NotConfigured: React.FC = () => (
 interface ContextChipsProps {
   chatSurface: BedrockChatSurface
   pageContext?: BedrockPageContext | null
-  sessionId: string
 }
 
-/** Shows where the user is chatting from and which model/profile apply. */
-const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, sessionId }) => {
-  const { data: modelStatus } = useBedrockModel()
-  const sessionPrefs = useBedrockChatStore((s) => s.getSessionPrefs(sessionId))
-
+/** Shows where the user is chatting from (model/agent live in the composer). */
+const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext }) => {
   if (chatSurface === 'general') {
     return (
       <div className="flex flex-wrap gap-1.5 flex-shrink-0">
@@ -50,14 +43,6 @@ const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, s
   if (!pageContext) return null
 
   const profileKey = resolveChatProfileKey(pageContext)
-  const modelId =
-    sessionPrefs.modelIdOverride ??
-    resolveRecommendedModel(pageContext, modelStatus?.current_model_id)
-  const modelLabel =
-    modelStatus?.available_models.find((m) => m.model_id === modelId)?.label ?? modelId
-  const agentLabel = sessionPrefs.agentProfileIdOverride
-    ? getAgentProfileLabel(sessionPrefs.agentProfileIdOverride)
-    : null
 
   return (
     <div className="flex flex-wrap gap-1.5 flex-shrink-0" aria-label="Contexto del chat">
@@ -70,8 +55,6 @@ const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, s
       {profileKey && CHAT_PROFILE_LABELS[profileKey] && (
         <span className="badge badge-slate text-[10px]">{CHAT_PROFILE_LABELS[profileKey]}</span>
       )}
-      <span className="badge badge-cyan text-[10px]">{modelLabel}</span>
-      {agentLabel && <span className="badge badge-slate text-[10px]">{agentLabel}</span>}
     </div>
   )
 }
@@ -115,9 +98,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className="flex-1 flex flex-col gap-3 min-h-0">
-      <div className="flex items-center justify-between gap-2 flex-shrink-0">
-        <ModelSelector />
-        {showHistoryControls && (
+      {showHistoryControls && (
+        <div className="flex items-center justify-end gap-2 flex-shrink-0">
           <ConversationHistory
             conversations={conversations}
             activeSessionId={sessionId}
@@ -126,10 +108,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             onRename={renameConversation}
             onDelete={deleteConversation}
           />
-        )}
-      </div>
+        </div>
+      )}
 
-      <ContextChips chatSurface={chatSurface} pageContext={pageContext} sessionId={sessionId} />
+      <ContextChips chatSurface={chatSurface} pageContext={pageContext} />
 
       <MessageList messages={messages} isSending={isSending} statusMessage={statusMessage} />
 

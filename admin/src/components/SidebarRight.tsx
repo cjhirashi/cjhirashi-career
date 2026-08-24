@@ -28,7 +28,7 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
   },
   '/job-discovery': {
     title: 'Descubrir vacantes',
-    body: 'Busca vacantes en Indeed (vía Adzuna), Get on Board, Remotive y RemoteOK. LinkedIn solo genera la URL oficial de búsqueda: ábrela e importa cada jobs/view. Marca las que quieras y gúardalas como vacantes pending_review. No se scrapean Indeed ni LinkedIn.',
+    body: 'Pide al agente en el chat que busque (Indeed, Get on Board, Remotive, RemoteOK). Te devolverá refs L1, L2… Autoriza cuáles guardar (“guarda L1 y L3” o “todas menos L2”) y las crea como vacantes pending_review para seguimiento. LinkedIn solo abre la búsqueda oficial: pega cada jobs/view para importar. Marcar y guardar en esta pantalla también autoriza.',
   },
   '/files': {
     title: 'Archivos',

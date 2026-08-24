@@ -20,5 +20,5 @@ Reemplazar por Harness local en `api/src/services/bedrock/`:
 ## Consecuencias
 
 - Eliminar dependencia de `BEDROCK_HARNESS_ARN` en despliegues nuevos
-- IAM: `bedrock:InvokeModel` + `bedrock:ConverseStream` en modelos del catálogo
+- IAM: `bedrock:InvokeModel` (Converse) y opcionalmente `bedrock:InvokeModelWithResponseStream` (ConverseStream) en modelos e inference profiles del catálogo
 - Feature flag `BEDROCK_USE_LOCAL_HARNESS` (default true)

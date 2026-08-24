@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/linkedin", tags=["LinkedIn"])
 
 
-async def _get_connection(db: AsyncSession, user_id: int) -> LinkedInConnection | None:
+async def _get_connection(db: AsyncSession, user_id: str) -> LinkedInConnection | None:
     result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
     return result.scalar_one_or_none()
 

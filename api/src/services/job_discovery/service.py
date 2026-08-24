@@ -22,11 +22,29 @@ from services.job_discovery.types import (
     ProviderError,
     SearchQuery,
 )
+from services.job_discovery.preview_store import remember_preview
 from services.job_discovery.url_import import import_url as import_vacancy_url
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_PROVIDERS = ("getonboard", "indeed", "linkedin", "remotive", "remoteok")
+
+
+def _analysis_notes(raw: dict) -> Optional[str]:
+    parts: list[str] = []
+    snippet = (raw.get("snippet") or "").strip()
+    if snippet:
+        parts.append(snippet)
+    extras: list[str] = []
+    if raw.get("location"):
+        extras.append(f"Ubicación: {raw['location']}")
+    if raw.get("salary_text"):
+        extras.append(f"Salario: {raw['salary_text']}")
+    if raw.get("via"):
+        extras.append(f"Vía: {raw['via']}")
+    if extras:
+        parts.append(" · ".join(extras))
+    return "\n".join(parts) or None
 
 
 def listing_to_dict(listing: JobListing) -> dict:
@@ -44,17 +62,18 @@ def listing_to_dict(listing: JobListing) -> dict:
         "snippet": listing.snippet,
         "external_id": listing.external_id,
         "already_saved": listing.already_saved,
+        "ref": listing.ref,
     }
 
 
-async def _saved_urls(db: AsyncSession, user_id: int) -> set[str]:
+async def _saved_urls(db: AsyncSession, user_id: str) -> set[str]:
     result = await db.execute(select(Vacancy.vacancy_url).where(Vacancy.user_id == user_id))
     return {row[0] for row in result.all() if row[0]}
 
 
 async def _resolve_query(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     query_text: Optional[str],
     target_role_id: Optional[int],
 ) -> str:
@@ -79,7 +98,7 @@ async def _resolve_query(
     raise ValueError("Indica un texto de búsqueda o un target_role_id")
 
 
-async def _load_company_boards(db: AsyncSession, user_id: int) -> List[CompanyBoard]:
+async def _load_company_boards(db: AsyncSession, user_id: str) -> List[CompanyBoard]:
     result = await db.execute(
         select(TargetCompany).where(
             TargetCompany.user_id == user_id,
@@ -102,7 +121,7 @@ async def _search_one(adapter, query: SearchQuery) -> list[JobListing]:
 
 async def run_discovery(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     *,
     query_text: Optional[str] = None,
     location: Optional[str] = None,
@@ -110,6 +129,7 @@ async def run_discovery(
     target_role_id: Optional[int] = None,
     include_company_boards: bool = False,
     remote: bool = False,
+    session_key: Optional[str] = None,
 ) -> DiscoveryResult:
     query_str = await _resolve_query(db, user_id, query_text, target_role_id)
     wanted = list(providers) if providers else list(DEFAULT_PROVIDERS)
@@ -171,8 +191,12 @@ async def run_discovery(
         unique.append(listing)
 
     max_results = settings.JOB_DISCOVERY_MAX_RESULTS
+    trimmed = unique[:max_results]
+    preview = remember_preview(user_id, session_key or "admin", [listing_to_dict(item) for item in trimmed])
+    for listing, payload in zip(trimmed, preview):
+        listing.ref = payload["ref"]
     return DiscoveryResult(
-        listings=unique[:max_results],
+        listings=trimmed,
         errors=errors,
         query=query_str,
         location=location,
@@ -181,7 +205,7 @@ async def run_discovery(
 
 async def save_listings(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     listings: Iterable[dict],
     *,
     target_role_id: Optional[int] = None,
@@ -216,7 +240,7 @@ async def save_listings(
             found_date=today,
             evaluation="pending_review",
             is_active=True,
-            analysis_notes=raw.get("snippet"),
+            analysis_notes=_analysis_notes(raw),
         )
         db.add(vacancy)
         pending.append(vacancy)

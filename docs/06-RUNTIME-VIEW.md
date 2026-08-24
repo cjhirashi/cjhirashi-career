@@ -206,20 +206,24 @@ sequenceDiagram
 
 ## 🔎 Escenario 6 — Descubrimiento de vacantes
 
-Carlos o Agent Bedrock buscan vacantes. `POST /career/job-discoveries/run` no escribe `vacancies`. Indeed se resuelve vía Adzuna; LinkedIn solo devuelve URLs oficiales de búsqueda. Las vacantes concretas se persisten con `POST /career/job-discoveries/save` (o `import-url` + save). Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md).
+Carlos o Agent Bedrock buscan vacantes. `POST /career/job-discoveries/run` no escribe `vacancies`; asigna refs `L1, L2…`. Indeed se resuelve vía Adzuna; LinkedIn solo devuelve URLs oficiales de búsqueda. El agente presenta el preview y **espera autorización**. Solo entonces `save_job_listings(refs=…)` (o `POST /save` con las marcadas en Admin) inserta `vacancies` con `evaluation=pending_review` para seguimiento. Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md).
 
 ```mermaid
 sequenceDiagram
-    participant Admin as Admin_o_Bedrock
+    participant Carlos
+    participant Bedrock as Agent_Bedrock
     participant API as API_REST
     participant Adapters as Adaptadores
     participant DB as PostgreSQL
 
-    Admin->>API: POST /career/job-discoveries/run
+    Carlos->>Bedrock: Busca vacantes de X
+    Bedrock->>API: POST /career/job-discoveries/run
     API->>Adapters: gather GetOnBoard Indeed LinkedIn
     Adapters-->>API: JobListing preview
-    API-->>Admin: listings plus errors
-    Admin->>API: POST /career/job-discoveries/save
+    API-->>Bedrock: listings con refs L1 L2
+    Bedrock-->>Carlos: Lista para autorizar
+    Carlos->>Bedrock: Guarda L1 y L3
+    Bedrock->>API: save_job_listings refs L1 L3
     API->>DB: INSERT vacancies pending_review
 ```
 

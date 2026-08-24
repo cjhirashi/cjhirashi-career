@@ -17,7 +17,7 @@ from services.bedrock.errors import BedrockError
 
 
 async def list_memory_events(
-    db: AsyncSession, user_id: int, session_id: str, max_results: int = 50
+    db: AsyncSession, user_id: str, session_id: str, max_results: int = 50
 ) -> List[Dict[str, Any]]:
     """Mensajes PG de una conversación, formato compatible con la UI de memoria."""
     conv = await db.execute(
@@ -56,7 +56,7 @@ async def list_memory_events(
     return events
 
 
-async def retrieve_memory_records(user_id: int, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
+async def retrieve_memory_records(user_id: str, query: str, top_k: int = 10) -> List[Dict[str, Any]]:
     """Búsqueda semántica Qdrant — hechos de carrera + memoria manual."""
     vector = await embed_text(query)
     hits = await qdrant_service.search(user_id=user_id, vector=vector, top_k=top_k)
@@ -73,7 +73,7 @@ async def retrieve_memory_records(user_id: int, query: str, top_k: int = 10) -> 
     return records
 
 
-async def create_manual_memory(user_id: int, text: str) -> None:
+async def create_manual_memory(user_id: str, text: str) -> None:
     """Indexa un hecho manual en Qdrant (disponible de inmediato en búsqueda)."""
     trimmed = text.strip()
     if not trimmed:

@@ -40,6 +40,7 @@ class JobListing:
     snippet: Optional[str] = None
     external_id: Optional[str] = None
     already_saved: bool = False
+    ref: Optional[str] = None
 
 
 @dataclass

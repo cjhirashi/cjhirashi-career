@@ -25,6 +25,7 @@ Un `JobDiscoveryService` dentro de la API REST, con un adaptador por portal. Pre
 
 - El agente llama `run_job_discovery(providers=['indeed'|'linkedin'|…])` por nombre de producto.
 - Un portal caído no tumba la búsqueda.
+- El agente no persiste hasta que Carlos autoriza refs (`L1`, `L3`) o marca en Admin. Las vacantes entran como `pending_review` para seguimiento.
 
 ### Negativas
 

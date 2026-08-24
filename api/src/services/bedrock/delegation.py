@@ -13,7 +13,7 @@ from services.bedrock.agent_profiles import AgentProfile, get_profile
 async def run_specialist_sub_turn(
     db: AsyncSession,
     *,
-    user_id: int,
+    user_id: str,
     session_id: str,
     profile: AgentProfile,
     task: str,

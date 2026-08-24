@@ -23,7 +23,7 @@ def _estimate_cost(model_id: str, input_tokens: int, output_tokens: int) -> floa
 
 
 async def record_turn_usage(
-    user_id: int,
+    user_id: str,
     session_id: str,
     model_id: str,
     usage: Dict[str, int],
@@ -50,7 +50,7 @@ async def record_turn_usage(
 
 async def record_round_log(
     *,
-    user_id: int,
+    user_id: str,
     session_id: str,
     model_id: Optional[str],
     round_type: str,

@@ -29,7 +29,7 @@ _DOC_MIMES = {
 
 async def build_user_content_blocks(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     message: str,
     attachments: Optional[List[Dict[str, Any]]],
 ) -> List[Dict[str, Any]]:

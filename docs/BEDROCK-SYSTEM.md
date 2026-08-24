@@ -28,5 +28,5 @@ Ver `.env.example` — `BEDROCK_USE_LOCAL_HARNESS`, `BEDROCK_DEFAULT_MODEL_ID`, 
 ## 5. Documentación relacionada
 
 - [ADR-008](09-DECISIONS/008-bedrock-harness-local.md)
-- [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md)
+- [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md) — incluye **política IAM** y pasos en consola AWS
 - [admin/docs/BEDROCK-CHAT.md](../admin/docs/BEDROCK-CHAT.md)

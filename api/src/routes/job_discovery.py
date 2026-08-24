@@ -28,6 +28,7 @@ from services.job_discovery import (
     run_discovery,
     save_listings,
 )
+from services.job_discovery.preview_store import append_preview
 
 router = APIRouter(prefix="/career/job-discoveries", tags=["Career - Job Discovery"])
 
@@ -54,6 +55,7 @@ async def run_job_discovery(
             target_role_id=payload.target_role_id,
             include_company_boards=payload.include_company_boards,
             remote=payload.remote,
+            session_key="admin",
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -70,8 +72,9 @@ async def import_job_url(
     payload: ImportUrlRequest,
     current_user: User = Depends(get_current_user),
 ):
-    del current_user
     listing = await import_vacancy_url(payload.url)
+    remembered = append_preview(current_user.id, "admin", listing_to_dict(listing))
+    listing.ref = remembered["ref"]
     return JobListingSchema(**listing_to_dict(listing))
 
 

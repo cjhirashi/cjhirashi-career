@@ -33,6 +33,10 @@ _TOOL_STATUS = {
     "create_linkedin_post": "Publicando en LinkedIn...",
     "generate_image": "Generando imagen...",
     "delegate_to_specialist": "Consultando especialista...",
+    "list_job_providers": "Revisando portales de vacantes...",
+    "run_job_discovery": "Buscando vacantes...",
+    "import_job_url": "Importando vacante por URL...",
+    "save_job_listings": "Creando vacantes autorizadas...",
 }
 
 
@@ -60,7 +64,7 @@ def _effective_model(req: ChatTurnRequest, runtime, profile) -> str:
 async def run_single_turn_sync(
     db: AsyncSession,
     *,
-    user_id: int,
+    user_id: str,
     session_id: str,
     message: str,
     chat_surface: str = "contextual",
@@ -95,7 +99,7 @@ async def run_single_turn_sync(
 
 async def chat_stream(
     db: AsyncSession,
-    user_id: int,
+    user_id: str,
     req: ChatTurnRequest,
     *,
     max_round_trips_override: Optional[int] = None,
@@ -118,15 +122,14 @@ async def chat_stream(
 
     session_type = "general" if req.chat_surface == "general" else "contextual"
     conversation = None
+    history = await history_manager.load_converse_messages(db, user_id, req.session_id, runtime.history_window)
+    user_content = await build_user_content_blocks(db, user_id, req.message, req.attachments)
+    messages = history + [{"role": "user", "content": user_content}]
+
     if record_history:
         conversation = await history_manager.get_or_create_conversation(
             db, user_id, req.session_id, req.message, session_type=session_type
         )
-        await history_manager.append_message(db, conversation, "user", req.message)
-
-    history = await history_manager.load_converse_messages(db, user_id, req.session_id, runtime.history_window)
-    user_content = await build_user_content_blocks(db, user_id, req.message, req.attachments)
-    messages = history + [{"role": "user", "content": user_content}]
 
     affected: List[str] = []
     total_usage = {"inputTokens": 0, "outputTokens": 0}
@@ -161,6 +164,7 @@ async def chat_stream(
         if result["stop_reason"] != "tool_use":
             await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
             if record_history and conversation:
+                await history_manager.append_message(db, conversation, "user", req.message)
                 await history_manager.append_message(db, conversation, "assistant", result["text"])
             yield {"type": "done", "reply": result["text"], "affected_resources": affected}
             return
@@ -209,8 +213,13 @@ async def chat_stream(
                 else:
                     tool_result = await tools.execute_tool(db, user_id, name, t["input"], req.session_id)
                 status = "success"
-                if tools.is_write_tool(name) and t["input"].get("resource_key"):
-                    affected.append(t["input"]["resource_key"])
+                if name == "delegate_to_specialist" and isinstance(tool_result, dict):
+                    for key in tool_result.get("affected_resources") or []:
+                        if key not in affected:
+                            affected.append(key)
+                inv_key = tools.invalidation_key(name, t["input"], tool_result)
+                if inv_key and inv_key not in affected:
+                    affected.append(inv_key)
             except Exception as e:
                 tool_result = {"error": str(e)}
                 status = "error"
@@ -223,10 +232,10 @@ async def chat_stream(
                 }
             })
 
-        messages = [
+        messages.extend([
             {"role": "assistant", "content": assistant_content},
             {"role": "user", "content": tool_result_content},
-        ]
+        ])
 
     await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
     yield {"type": "error", "message": "Se agotaron las vueltas del agente sin respuesta final."}

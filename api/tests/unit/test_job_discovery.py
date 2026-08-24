@@ -13,6 +13,7 @@ from services.job_discovery.linkedin import LinkedInSearchAdapter, build_linkedi
 from services.job_discovery.registry import list_provider_statuses
 from services.job_discovery.remoteok import listings_from_remoteok_payload
 from services.job_discovery.remotive import listings_from_remotive_payload
+from services.job_discovery.preview_store import remember_preview, reset_for_tests, resolve_refs
 from services.job_discovery.service import run_discovery, save_listings
 from services.job_discovery.types import CompanyBoard, JobListing, SearchQuery
 from services.job_discovery.url_import import infer_source, listing_from_html
@@ -270,3 +271,107 @@ async def test_failed_adapter_does_not_abort():
 
 def test_found_date_type():
     assert isinstance(date.today(), date)
+
+
+@pytest.fixture(autouse=True)
+def _reset_preview_store():
+    reset_for_tests()
+    yield
+    reset_for_tests()
+
+
+def test_preview_refs_roundtrip():
+    remembered = remember_preview(
+        1,
+        "sess",
+        [
+            {
+                "company": "Acme",
+                "exact_role": "Engineer",
+                "vacancy_url": "https://example.com/job/1",
+                "source": "getonboard",
+                "listing_kind": "job",
+            }
+        ],
+    )
+    assert remembered[0]["ref"] == "L1"
+    found, missing, available = resolve_refs(1, "sess", ["l1"])
+    assert missing == []
+    assert available == ["L1"]
+    assert found[0]["company"] == "Acme"
+
+
+@pytest.mark.asyncio
+async def test_run_assigns_refs_without_persisting():
+    fake = [
+        JobListing(
+            company="Acme",
+            exact_role="Engineer",
+            vacancy_url="https://www.getonbrd.com/jobs/1",
+            source="getonboard",
+        )
+    ]
+    db = _db_mock()
+    with patch(
+        "services.job_discovery.getonboard.GetOnBoardAdapter.search",
+        new=AsyncMock(return_value=fake),
+    ):
+        result = await run_discovery(
+            db,
+            user_id=1,
+            query_text="engineer",
+            providers=["getonboard"],
+            session_key="chat-1",
+        )
+    assert result.listings[0].ref == "L1"
+    db.add.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_save_tool_rejects_invented_listings_without_refs():
+    from services.bedrock.tools import execute_tool
+
+    db = _db_mock()
+    result = await execute_tool(
+        db,
+        1,
+        "save_job_listings",
+        {
+            "listings": [
+                {
+                    "company": "Fake",
+                    "exact_role": "Invented",
+                    "vacancy_url": "https://example.com/invented",
+                    "source": "indeed",
+                    "listing_kind": "job",
+                }
+            ]
+        },
+        "chat-1",
+    )
+    assert result.get("error")
+    db.add.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_save_tool_creates_authorized_refs():
+    from services.bedrock.tools import execute_tool
+
+    remember_preview(
+        1,
+        "chat-1",
+        [
+            {
+                "company": "Acme",
+                "exact_role": "Engineer",
+                "vacancy_url": "https://example.com/job/authorized",
+                "source": "getonboard",
+                "listing_kind": "job",
+            }
+        ],
+    )
+    db = _db_mock()
+    result = await execute_tool(db, 1, "save_job_listings", {"refs": ["L1"]}, "chat-1")
+    assert len(result["created"]) == 1
+    assert result["created"][0]["company"] == "Acme"
+    db.add.assert_called()
