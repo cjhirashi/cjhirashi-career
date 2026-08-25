@@ -531,23 +531,52 @@ textarea:focus-visible {
  */
 .markdown-content h1,
 .markdown-content h2,
-.markdown-content h3 {
-  font-weight: 700;
-  color: var(--text);
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
   margin-top: 1.75rem;
   margin-bottom: 0.75rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
+/* Heading scale: size steps down; tones alternate primary (cyan) /
+   secondary (steel) so each level is readable at a glance. */
 .markdown-content h1 {
-  font-size: 1.75rem;
+  font-size: 1.85em;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .markdown-content h2 {
-  font-size: 1.4rem;
+  font-size: 1.55em;
+  font-weight: 700;
+  color: var(--secondary-color);
 }
 
 .markdown-content h3 {
-  font-size: 1.15rem;
+  font-size: 1.3em;
+  font-weight: 600;
+  color: var(--primary-hover);
+}
+
+.markdown-content h4 {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: var(--secondary-hover);
+}
+
+.markdown-content h5 {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.markdown-content h6 {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--secondary-color);
 }
 
 .markdown-content p {
@@ -575,13 +604,24 @@ textarea:focus-visible {
   margin-bottom: 0.4rem;
 }
 
+/* Emphasis: each Markdown marker gets its own theme tone so *italic*,
+   **bold** and ***bold-italic*** stay visually distinct. */
+.markdown-content em {
+  color: var(--secondary-color);
+  font-style: italic;
+}
+
 .markdown-content strong {
-  color: var(--primary);
+  color: var(--primary-color);
   font-weight: 700;
 }
 
-.markdown-content em {
-  color: var(--primary);
+/* ***texto*** → <em><strong> or <strong><em> */
+.markdown-content em strong,
+.markdown-content strong em {
+  color: var(--primary-hover);
+  font-weight: 700;
+  font-style: italic;
 }
 
 .markdown-content a {
