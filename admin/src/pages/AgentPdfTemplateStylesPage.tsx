@@ -13,7 +13,11 @@ export const AgentPdfTemplateStylesPage: React.FC = () => {
         </p>
       </div>
 
-      <CareerResourceView config={pdfTemplateStylesConfig} apiMode="pdf-template-styles" />
+      <CareerResourceView
+        config={pdfTemplateStylesConfig}
+        apiMode="pdf-template-styles"
+        listPath="/agent/pdf-template-styles"
+      />
     </div>
   )
 }

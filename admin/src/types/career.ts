@@ -600,6 +600,7 @@ export interface OperationalMethodology {
   subsection?: string | null
   description?: string | null
   content: string
+  agent_profile_ids?: string[] | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }

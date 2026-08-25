@@ -41,7 +41,7 @@ export function useChatPageContext(): BedrockPageContext {
       return ctx
     }
 
-    const careerMatch = route.match(/^\/career\/([^/]+)$/)
+    const careerMatch = route.match(/^\/career\/([^/]+)(?:\/[^/]+)?$/)
     if (careerMatch) {
       const resourceKey = careerMatch[1]
       const resource = CAREER_RESOURCES[resourceKey]
@@ -56,7 +56,7 @@ export function useChatPageContext(): BedrockPageContext {
       return ctx
     }
 
-    const agentMatch = route.match(/^\/agent\/([^/]+)$/)
+    const agentMatch = route.match(/^\/agent\/([^/]+)(?:\/[^/]+)?$/)
     if (agentMatch) {
       const ctx: BedrockPageContext = {
         route,

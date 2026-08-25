@@ -35,7 +35,7 @@ export const CareerResourcePage: React.FC = () => {
       {config.description && (
         <p className="text-slate-600 dark:text-slate-400 mb-4">{config.description}</p>
       )}
-      <CareerResourceView config={config} />
+      <CareerResourceView config={config} listPath={`/career/${config.key}`} />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowDown,
   ArrowLeft,
@@ -27,6 +28,7 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
+import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { useCareerList, useCareerMutations, useCareerCount } from '@/hooks/useCareerResource'
 import { usePdfTemplateList, usePdfTemplateMutations, usePdfTemplateCount } from '@/hooks/usePdfTemplateResource'
 import {
@@ -36,8 +38,10 @@ import {
 } from '@/hooks/usePdfTemplateStyleResource'
 import { careerApi } from '@/api/career'
 import { pdfTemplatesApi } from '@/api/pdfTemplates'
+import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
 import { CareerEntity } from '@/types/career'
 import { getBlobErrorMessage, getErrorMessage, assertPdfBlob } from '@/utils/errors'
+import { matchesRecordSegment, recordSegmentFromPath, recordUrlSegment } from '@/utils/recordUrl'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ResourceForm } from './ResourceForm'
 import { useFkLabel } from '@/hooks/useFkOptions'
@@ -301,6 +305,8 @@ interface CareerResourceViewProps {
   renderExtraRowAction?: (item: CareerEntity) => React.ReactNode
   /** Extra class applied to a row to highlight the current drill-down selection. */
   rowClassName?: (item: CareerEntity) => string
+  /** Table list URL. When set, opening a record appends `/{slug|id}` (e.g. `/agent/pdf-templates/cv-ats-optimizado`). */
+  listPath?: string
 }
 
 /** What the card is currently showing, in place of a popup modal - the card
@@ -329,6 +335,19 @@ const FkFieldValue: React.FC<{
  * no truncation (unlike the table's `formatCellValue`), since this is the
  * one place meant to show the complete content. */
 const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfig }> = ({ value, type, field }) => {
+  if (type === 'multi-select') {
+    if (!Array.isArray(value) || value.length === 0) {
+      return <span className="text-text-muted">Todos los agentes</span>
+    }
+    return (
+      <ul className="list-disc list-inside space-y-0.5">
+        {value.map((id) => (
+          <li key={String(id)}>{getAgentProfileLabel(String(id))}</li>
+        ))}
+      </ul>
+    )
+  }
+
   if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
     return <span className="text-text-muted">—</span>
   }
@@ -580,6 +599,49 @@ const ProjectCard: React.FC<{
   )
 }
 
+function sameCareerRecord(a: CareerEntity, b: CareerEntity): boolean {
+  return (
+    String(a.updated_at ?? '') === String(b.updated_at ?? '') && JSON.stringify(a) === JSON.stringify(b)
+  )
+}
+
+async function fetchRecordByUrlSegment(
+  apiMode: 'career' | 'pdf-templates' | 'pdf-template-styles',
+  resourceKey: string,
+  segment: string
+): Promise<CareerEntity | null> {
+  let decoded = segment
+  try {
+    decoded = decodeURIComponent(segment)
+  } catch {
+    decoded = segment
+  }
+  const pick = (rows: CareerEntity[]) => rows.find((row) => matchesRecordSegment(row, segment)) ?? null
+  try {
+    if (apiMode === 'pdf-templates') {
+      try {
+        return await pdfTemplatesApi.get(decoded)
+      } catch {
+        return pick(await pdfTemplatesApi.list({ skip: 0, limit: 100 }))
+      }
+    }
+    if (apiMode === 'pdf-template-styles') {
+      try {
+        return await pdfTemplateStylesApi.get(decoded)
+      } catch {
+        return pick(await pdfTemplateStylesApi.list({ skip: 0, limit: 100 }))
+      }
+    }
+    try {
+      return await careerApi.get(resourceKey, decoded)
+    } catch {
+      return pick(await careerApi.list(resourceKey, { search: decoded, limit: 100 }))
+    }
+  } catch {
+    return null
+  }
+}
+
 export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   config,
   pageSize = 20,
@@ -590,12 +652,20 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   hideTitle,
   renderExtraRowAction,
   rowClassName,
+  listPath,
 }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const usesPdfTemplatesApi = apiMode === 'pdf-templates'
   const usesPdfTemplateStylesApi = apiMode === 'pdf-template-styles'
   const usesExternalPdfApi = usesPdfTemplatesApi || usesPdfTemplateStylesApi
   const isSingleton = config.mode === 'singleton'
   const isNested = !!parentFilter
+  const urlEnabled = Boolean(listPath) && !isNested && !isSingleton
+  const recordSegment = urlEnabled && listPath
+    ? recordSegmentFromPath(location.pathname, listPath)
+    : undefined
+  const pendingRecordNav = useRef(false)
   // Search/sort only apply to a resource's own top-level list - a nested
   // sub-list (e.g. applications shown inside a vacancy) is already a small,
   // pre-filtered slice, and a singleton has no list to sort/search at all.
@@ -680,6 +750,17 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   const [viewState, setViewState] = useState<ViewState>('list')
   const [activeItem, setActiveItem] = useState<CareerEntity | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
+
+  // When the list query refetches (agent write, mutation, invalidation),
+  // replace the open record with the fresh row so the detail view is not
+  // stuck on the snapshot from the original click.
+  useEffect(() => {
+    if (!activeItem || (viewState !== 'view' && viewState !== 'edit')) return
+    const fresh = items.find((item) => String(item.id) === String(activeItem.id))
+    if (!fresh) return
+    if (sameCareerRecord(fresh, activeItem)) return
+    setActiveItem(fresh)
+  }, [items, viewState, activeItem])
   // Singleton mode (e.g. `identity`) has no table to come back to - it's
   // just "showing the one record" vs "editing it", not the 4-way
   // list/view/edit/create state the rest of this component uses.
@@ -740,7 +821,10 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         blob = result.blob
       }
       await assertPdfBlob(blob)
-      setPdfPreviewUrl(URL.createObjectURL(blob))
+      setPdfPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current)
+        return URL.createObjectURL(blob)
+      })
     } catch (err) {
       closePdfPreview()
       setPdfError(await getBlobErrorMessage(err))
@@ -749,12 +833,76 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     }
   }
 
+  useEffect(() => {
+    if (viewState !== 'view' || !activeItem || !isPdfExportable) return
+    void fetchPdfPreview(activeItem)
+    // Refetch when the open record is replaced after an agent/table write.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewState, activeItem?.id, activeItem?.updated_at, isPdfExportable])
+
+  const goToRecordUrl = (item: CareerEntity) => {
+    if (!urlEnabled || !listPath) return
+    const next = `${listPath.replace(/\/$/, '')}/${recordUrlSegment(item)}`
+    if (location.pathname !== next) {
+      pendingRecordNav.current = true
+      navigate(next)
+    }
+  }
+
+  const goToListUrl = () => {
+    if (!urlEnabled || !listPath) return
+    if (location.pathname !== listPath) navigate(listPath)
+  }
+
+  useEffect(() => {
+    if (!urlEnabled) return
+    if (recordSegment) {
+      pendingRecordNav.current = false
+      const found = items.find((item) => matchesRecordSegment(item, recordSegment))
+      if (found) {
+        setActiveItem((current) =>
+          current && String(current.id) === String(found.id) && sameCareerRecord(found, current)
+            ? current
+            : found
+        )
+        setViewState((current) => (current === 'edit' ? 'edit' : 'view'))
+      }
+      return
+    }
+    if (pendingRecordNav.current) return
+    if (viewState === 'view' || viewState === 'edit') {
+      setViewState('list')
+      setActiveItem(null)
+      closePdfPreview()
+    }
+  }, [urlEnabled, recordSegment, items, viewState])
+
+  useEffect(() => {
+    if (!urlEnabled || !listPath || !recordSegment || isLoading) return
+    if (items.some((item) => matchesRecordSegment(item, recordSegment))) return
+    if (activeItem && matchesRecordSegment(activeItem, recordSegment)) return
+    let cancelled = false
+    void fetchRecordByUrlSegment(apiMode, config.key, recordSegment).then((row) => {
+      if (cancelled) return
+      if (row) {
+        setActiveItem(row)
+        setViewState((current) => (current === 'edit' ? 'edit' : 'view'))
+        return
+      }
+      navigate(listPath, { replace: true })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [urlEnabled, listPath, recordSegment, items, isLoading, activeItem, apiMode, config.key, navigate])
+
   const backToList = () => {
     setViewState('list')
     setActiveItem(null)
     setFormError(null)
     setPdfError(null)
     closePdfPreview()
+    goToListUrl()
   }
 
   const openView = (item: CareerEntity) => {
@@ -763,7 +911,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     setPdfError(null)
     closePdfPreview()
     setViewState('view')
-    if (isPdfExportable) fetchPdfPreview(item)
+    goToRecordUrl(item)
   }
 
   const openCreate = () => {
@@ -777,6 +925,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     setFormError(null)
     closePdfPreview()
     setViewState('edit')
+    goToRecordUrl(item)
   }
 
   const cancelForm = () => {
@@ -857,11 +1006,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
           onSuccess: (updated) => {
             setActiveItem(updated)
             setViewState('view')
-            // `openEdit` already cleared the previous preview - reload it
-            // for the just-saved content, same as opening the record fresh
-            // would (openView does this too; this handler is the other
-            // place that lands on `viewState === 'view'`).
-            if (isPdfExportable) fetchPdfPreview(updated)
+            goToRecordUrl(updated)
           },
           onError: (err) => setFormError(getErrorMessage(err)),
         }
@@ -871,7 +1016,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         onSuccess: (created) => {
           setActiveItem(created)
           setViewState('view')
-          if (isPdfExportable) fetchPdfPreview(created)
+          goToRecordUrl(created)
         },
         onError: (err) => setFormError(getErrorMessage(err)),
       })

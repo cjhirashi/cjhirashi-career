@@ -13,7 +13,7 @@ const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/career/:resourceKey" element={<CareerResourcePage />} />
+        <Route path="/career/:resourceKey/:recordSlug?" element={<CareerResourcePage />} />
       </Routes>
     </MemoryRouter>
   )

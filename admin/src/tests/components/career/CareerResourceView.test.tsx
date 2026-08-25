@@ -1,8 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, within } from '../../utils'
+import type { ReactElement } from 'react'
+import { MemoryRouter, useLocation } from 'react-router-dom'
+import { render as renderWithProviders, screen, fireEvent, waitFor, within, createTestQueryClient } from '../../utils'
 import { CareerResourceView } from '@/components/career/CareerResourceView'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { careerApi } from '@/api/career'
+
+function render(
+  ui: ReactElement,
+  options: { queryClient?: ReturnType<typeof createTestQueryClient>; route?: string } = {}
+) {
+  const { route = '/', queryClient } = options
+  return renderWithProviders(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>, { queryClient })
+}
+
+function PathProbe() {
+  const location = useLocation()
+  return <div data-testid="pathname">{location.pathname}</div>
+}
 
 vi.mock('@/api/career')
 
@@ -319,5 +334,78 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(confirmSpy).toHaveBeenCalled()
     expect(mockedCareerApi.remove).not.toHaveBeenCalled()
     confirmSpy.mockRestore()
+  })
+
+  it('refreshes the open record when the list query returns newer data', async () => {
+    const queryClient = createTestQueryClient()
+    render(<CareerResourceView config={config} />, { queryClient })
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    expect(
+      screen.getByText('Descripción larga de la profundidad de esta competencia, con varias oraciones.')
+    ).toBeInTheDocument()
+
+    mockedCareerApi.list.mockResolvedValue([
+      {
+        ...sampleItem,
+        depth_description: 'Texto actualizado por el agente.',
+        updated_at: '2026-03-01T00:00:00Z',
+      },
+    ] as never)
+
+    await queryClient.invalidateQueries({ queryKey: ['career', 'competencies'] })
+
+    await waitFor(() => {
+      expect(screen.getByText('Texto actualizado por el agente.')).toBeInTheDocument()
+    })
+    expect(
+      screen.queryByText('Descripción larga de la profundidad de esta competencia, con varias oraciones.')
+    ).not.toBeInTheDocument()
+  })
+
+  it('appends the record slug to the URL when a row is opened', async () => {
+    mockedCareerApi.list.mockResolvedValue([{ ...sampleItem, slug: 'liderazgo-tecnico' }] as never)
+    render(
+      <>
+        <PathProbe />
+        <CareerResourceView config={config} listPath="/career/competencies" />
+      </>,
+      { route: '/career/competencies' }
+    )
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    expect(screen.getByTestId('pathname')).toHaveTextContent(/^\/career\/competencies$/)
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pathname')).toHaveTextContent('/career/competencies/liderazgo-tecnico')
+    )
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('opens the record when the URL already has a slug', async () => {
+    mockedCareerApi.list.mockResolvedValue([{ ...sampleItem, slug: 'liderazgo-tecnico' }] as never)
+    render(<CareerResourceView config={config} listPath="/career/competencies" />, {
+      route: '/career/competencies/liderazgo-tecnico',
+    })
+    await waitFor(() =>
+      expect(
+        screen.getByText('Descripción larga de la profundidad de esta competencia, con varias oraciones.')
+      ).toBeInTheDocument()
+    )
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('falls back to the record id in the URL when there is no slug', async () => {
+    render(
+      <>
+        <PathProbe />
+        <CareerResourceView config={config} listPath="/career/competencies" />
+      </>,
+      { route: '/career/competencies' }
+    )
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    await waitFor(() => expect(screen.getByTestId('pathname')).toHaveTextContent('/career/competencies/1'))
   })
 })

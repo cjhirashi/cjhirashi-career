@@ -174,6 +174,41 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
             {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
           </div>
         )
+      case 'multi-select': {
+        const selected = new Set(
+          (typeof value === 'string' ? value : '')
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+        const toggle = (optionValue: string, checked: boolean) => {
+          if (checked) selected.add(optionValue)
+          else selected.delete(optionValue)
+          handleChange(field.name, Array.from(selected).join('\n'))
+        }
+        return (
+          <fieldset key={field.name} className="form-group">
+            <legend className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+            </legend>
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-64 overflow-y-auto rounded-lg border border-border p-3">
+              {(field.options || []).map((opt) => (
+                <label key={opt.value} className="flex items-center gap-2 text-sm text-text">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(opt.value)}
+                    onChange={(e) => toggle(opt.value, e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </fieldset>
+        )
+      }
       case 'json':
       case 'string-array':
       case 'number-array':

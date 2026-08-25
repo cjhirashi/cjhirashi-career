@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
-import { careerQueryKey } from '@/hooks/useCareerResource'
+import { invalidateAdminDataViews } from '@/hooks/invalidateAdminDataViews'
 import { conversationBucket, useBedrockChatStore } from '@/stores/bedrockChatStore'
 import { resolveAgentProfileId } from '@/config/agentProfiles'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
@@ -86,9 +86,13 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
     if ((!trimmed && !attachments?.length) || isSending || !activeSessionId) return
 
     const prefs = getSessionPrefs(activeSessionId)
+    const recommended = resolveRecommendedModel(pageContext, modelStatus?.current_model_id)
+    const allowed = new Set((modelStatus?.available_models ?? []).map((m) => m.model_id))
     const modelId =
-      prefs.modelIdOverride ??
-      resolveRecommendedModel(pageContext, modelStatus?.current_model_id)
+      (prefs.modelIdOverride && allowed.has(prefs.modelIdOverride) && prefs.modelIdOverride) ||
+      (recommended && allowed.has(recommended) && recommended) ||
+      modelStatus?.current_model_id ||
+      recommended
 
     const displayContent =
       trimmed || (attachments?.length ? `[${attachments.length} adjunto(s)]` : '')
@@ -107,7 +111,7 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
     useBedrockChatStore.setState({ isSending: true, statusMessage: null, error: null })
 
     try {
-      const { affected_resources } = await bedrockApi.chat(
+      await bedrockApi.chat(
         {
           session_id: activeSessionId,
           message: trimmed || '(adjuntos)',
@@ -127,20 +131,8 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: messagesKey(activeSessionId) }),
         queryClient.invalidateQueries({ queryKey: ['bedrock', 'conversations'] }),
+        invalidateAdminDataViews(queryClient),
       ])
-      affected_resources.forEach((resource) => {
-        if (resource === 'pdf-templates') {
-          queryClient.invalidateQueries({ queryKey: ['pdf-templates'] })
-          queryClient.invalidateQueries({ queryKey: ['fk-options', 'pdf-template-styles'] })
-          return
-        }
-        if (resource === 'pdf-template-styles') {
-          queryClient.invalidateQueries({ queryKey: ['pdf-template-styles'] })
-          queryClient.invalidateQueries({ queryKey: ['fk-options', 'pdf-template-styles'] })
-          return
-        }
-        queryClient.invalidateQueries({ queryKey: careerQueryKey(resource), exact: false })
-      })
       useBedrockChatStore.setState({ isSending: false, statusMessage: null })
     } catch (err) {
       useBedrockChatStore.setState({ isSending: false, statusMessage: null, error: getErrorMessage(err) })

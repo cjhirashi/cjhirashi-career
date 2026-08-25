@@ -9,6 +9,7 @@
 // ============================================================================
 
 import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-react'
+import { allAgentSelectOptions } from '@/config/agentProfiles'
 
 export type FieldType =
   | 'text'
@@ -19,6 +20,7 @@ export type FieldType =
   | 'datetime'
   | 'boolean'
   | 'select'
+  | 'multi-select'
   | 'string-array' // newline-separated list -> string[]
   | 'number-array' // comma-separated list -> number[]
   | 'json' // raw JSON textarea -> parsed with JSON.parse
@@ -53,7 +55,7 @@ export interface FieldConfig {
   fkApi?: 'career' | 'pdf-template-styles'
 }
 
-export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number'
+export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number' | 'agents'
 
 export interface ColumnConfig {
   key: string
@@ -122,6 +124,48 @@ const fitBadge = (value: unknown) => {
 // ---------------------------------------------------------------------------
 // Dominio 1: Identidad Profesional
 // ---------------------------------------------------------------------------
+
+export const personalProfileConfig: ResourceConfig = {
+  key: 'personal-profile',
+  label: 'Datos personales',
+  labelSingular: 'Ficha personal',
+  genderFeminine: true,
+  mode: 'singleton',
+  description:
+    'Ficha biográfica de referencia para el gestor de carrera y los agentes: nombre legal, fecha de nacimiento, ubicación, contacto e idiomas. No es la narrativa profesional (eso vive en Identidad). Úsala como fuente de verdad al redactar CVs, cartas y formularios.',
+  columns: [],
+  fields: [
+    { name: 'full_name', label: 'Nombre completo', type: 'text', required: true, fullWidth: true },
+    { name: 'preferred_name', label: 'Nombre preferido', type: 'text', helpText: 'Cómo quieres que te llamen o cómo aparece el nombre corto en un CV.' },
+    { name: 'date_of_birth', label: 'Fecha de nacimiento', type: 'date' },
+    { name: 'nationality', label: 'Nacionalidad', type: 'text' },
+    { name: 'city', label: 'Ciudad', type: 'text' },
+    { name: 'country', label: 'País', type: 'text' },
+    { name: 'phone', label: 'Teléfono', type: 'text' },
+    { name: 'email', label: 'Correo de contacto', type: 'text', helpText: 'Correo que debe ir en CVs y postulaciones; no tiene que ser el del login.' },
+    {
+      name: 'languages',
+      label: 'Idiomas',
+      type: 'textarea',
+      fullWidth: true,
+      helpText: 'Markdown. Ej. Español nativo, Inglés C1.',
+    },
+    {
+      name: 'work_authorization',
+      label: 'Autorización de trabajo',
+      type: 'textarea',
+      fullWidth: true,
+      helpText: 'Visas, ciudadanía, restricciones geográficas relevantes para postulaciones.',
+    },
+    {
+      name: 'notes',
+      label: 'Notas personales',
+      type: 'textarea',
+      fullWidth: true,
+      helpText: 'Contexto extra para el gestor de carrera (familia, movilidad, disponibilidad, etc.).',
+    },
+  ],
+}
 
 export const differentiatorsConfig: ResourceConfig = {
   key: 'differentiators',
@@ -1461,11 +1505,20 @@ export const operationalMethodologiesConfig: ResourceConfig = {
     { key: 'title', label: 'Título' },
     { key: 'section', label: 'Sección' },
     { key: 'subsection', label: 'Subsección' },
+    { key: 'agent_profile_ids', label: 'Agentes', format: 'agents' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true, fullWidth: true },
     { name: 'section', label: 'Sección', type: 'text' },
     { name: 'subsection', label: 'Subsección', type: 'text' },
+    {
+      name: 'agent_profile_ids',
+      label: 'Agentes destinatarios',
+      type: 'multi-select',
+      fullWidth: true,
+      options: allAgentSelectOptions(),
+      helpText: 'Sin selección = metodología compartida (todos los agentes).',
+    },
     { name: 'description', label: 'Descripción breve', type: 'textarea', fullWidth: true },
     {
       name: 'content',
@@ -1509,6 +1562,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     label: 'Identidad Profesional',
     icon: Compass,
     resourceKeys: [
+      'personal-profile',
       'differentiators',
       'identity',
       'identity-reflections',
@@ -1568,6 +1622,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
 ]
 
 export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
+  'personal-profile': personalProfileConfig,
   differentiators: differentiatorsConfig,
   identity: identityConfig,
   'identity-reflections': identityReflectionsConfig,

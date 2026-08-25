@@ -1,4 +1,5 @@
 import { FieldConfig, FieldType } from '@/config/careerResources'
+import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { formatDate, formatDateTime, truncate } from '@/utils/formatters'
 
 /**
@@ -21,6 +22,7 @@ export const toFormValue = (type: FieldType, value: unknown): string | boolean =
       // <input type="datetime-local"> needs "YYYY-MM-DDTHH:mm".
       return value.length >= 16 ? value.slice(0, 16) : value
     case 'string-array':
+    case 'multi-select':
       return Array.isArray(value) ? value.join('\n') : ''
     case 'number-array':
       return Array.isArray(value) ? value.join(', ') : ''
@@ -69,6 +71,7 @@ export const fromFormValue = (field: FieldConfig, raw: string | boolean): unknow
     case 'datetime':
       return str.trim() === '' ? null : str
     case 'string-array':
+    case 'multi-select':
       return str
         .split('\n')
         .map((s) => s.trim())
@@ -117,6 +120,9 @@ export const formatCellValue = (value: unknown, format?: string): string => {
       return typeof value === 'string' ? truncate(value, 60) : String(value)
     case 'number':
       return String(value)
+    case 'agents':
+      if (!Array.isArray(value) || value.length === 0) return 'Todos'
+      return value.map((id) => getAgentProfileLabel(String(id))).join(', ')
     default:
       if (Array.isArray(value)) return value.join(', ')
       if (typeof value === 'object') return JSON.stringify(value)

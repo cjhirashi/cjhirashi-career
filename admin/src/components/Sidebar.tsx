@@ -78,9 +78,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   // directly in the sidebar (no outer "Carrera" wrapper to expand first).
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null)
 
-  const isActive = (path: string): boolean => location.pathname === path
-  const isCareerResourceActive = (resourceKey: string): boolean =>
-    location.pathname === `/career/${resourceKey}`
+  const isActive = (path: string): boolean =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`)
+  const isCareerResourceActive = (resourceKey: string): boolean => {
+    const path = `/career/${resourceKey}`
+    return location.pathname === path || location.pathname.startsWith(`${path}/`)
+  }
 
   const closeMobileDrawer = () => {
     if (window.innerWidth < 768 && isOpen) onToggle()

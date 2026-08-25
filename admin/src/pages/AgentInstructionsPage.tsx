@@ -25,7 +25,7 @@ export const AgentInstructionsPage: React.FC = () => {
     error: profilesLoadError,
   } = useBedrockAgentProfilePrompts()
   const profileUpdate = useBedrockAgentProfilePromptUpdate()
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('orchestrator')
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('agent_orchestrator')
   const [profileDraft, setProfileDraft] = useState('')
 
   useEffect(() => {
@@ -49,8 +49,9 @@ export const AgentInstructionsPage: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-text">Instrucciones del Agente</h1>
         <p className="text-text-secondary mt-2">
-          Prompt base global y suffix por especialista. Puedes referenciar metodologías (p. ej. «consulta
-          search_knowledge_base en la sección Diseño PDF»). Los cambios aplican desde el siguiente mensaje.
+          Prompt base global y suffix por especialista (L1 orquestador, L2 área, L3 tarea).
+          Los agentes L3 no tienen chat; igual puedes editar su suffix. Los cambios aplican
+          desde el siguiente mensaje.
         </p>
       </div>
 
@@ -157,6 +158,10 @@ export const AgentInstructionsPage: React.FC = () => {
                   }`}
                 >
                   <span className="font-medium text-text">{p.label}</span>
+                  <span className="ml-2 text-[10px] text-text-muted">L{p.level ?? 2}</span>
+                  {!p.user_facing && (
+                    <span className="block text-[10px] text-text-muted">Sin chat (tarea)</span>
+                  )}
                   {!p.is_default && (
                     <span className="block text-[10px] text-primary">Personalizado</span>
                   )}

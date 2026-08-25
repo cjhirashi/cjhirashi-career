@@ -151,7 +151,7 @@ export const App: React.FC = () => {
           {/* Career domain (v2) - generic route shared by all 30 resources,
               see src/config/careerResources.ts for the registry. */}
           <Route
-            path="/career/:resourceKey"
+            path="/career/:resourceKey/:recordSlug?"
             element={
               <PrivateRoute>
                 <Layout>
@@ -176,7 +176,7 @@ export const App: React.FC = () => {
             }
           />
           <Route
-            path="/agent/pdf-templates"
+            path="/agent/pdf-templates/:recordSlug?"
             element={
               <PrivateRoute>
                 <Layout>
@@ -186,7 +186,7 @@ export const App: React.FC = () => {
             }
           />
           <Route
-            path="/agent/pdf-template-styles"
+            path="/agent/pdf-template-styles/:recordSlug?"
             element={
               <PrivateRoute>
                 <Layout>
