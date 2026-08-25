@@ -8,6 +8,7 @@ Expone:
 - `get_db()` — dependency FastAPI (commit/rollback automático)
 - `init_db()` / `close_db()` — lifecycle en app.py
 """
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from config import settings
@@ -67,6 +68,14 @@ async def init_db():
     """Inicializa las tablas de la base de datos."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Prefixed IDs (`psp-1`, `idn-1`, …) need a PostgreSQL sequence per
+        # table. create_all does not create them; without this, the first
+        # insert on a newly added model fails with "relation *_id_seq does
+        # not exist".
+        from services.id_generator import TABLE_PREFIXES
+
+        for prefix in TABLE_PREFIXES.values():
+            await conn.execute(text(f"CREATE SEQUENCE IF NOT EXISTS {prefix}_id_seq START 1"))
     logger.info("Database tables created successfully")
 
 

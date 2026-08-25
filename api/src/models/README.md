@@ -91,7 +91,7 @@ flowchart TB
 | `portal_about.py` | Copy extra de Sobre mí (bio vive en `identity`) |
 | `portal_contact.py` | Contacto + footer (links sociales salen de perfiles) |
 | `tag.py` | Etiquetas transversales |
-| `operational_methodology.py` | Protocolos Markdown de operación del dominio |
+| `operational_methodology.py` | Protocolos Markdown + `agent_profile_ids` (agentes destinatarios) |
 
 ---
 

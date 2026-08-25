@@ -214,6 +214,9 @@ class CareerRepository(Generic[ModelType]):
                 return
             vector = await bedrock_service.embed_text(text)
             resource_type = "methodology" if self.resource_key == "operational-methodologies" else "career_record"
+            extra_payload = None
+            if resource_type == "methodology":
+                extra_payload = {"agent_profile_ids": getattr(obj, "agent_profile_ids", None) or []}
             await qdrant_service.upsert_point(
                 user_id=user_id,
                 resource_type=resource_type,
@@ -221,6 +224,7 @@ class CareerRepository(Generic[ModelType]):
                 record_id=obj.id,
                 text=text,
                 vector=vector,
+                extra_payload=extra_payload,
             )
         except Exception:
             logger.warning(

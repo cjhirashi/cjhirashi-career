@@ -1,7 +1,7 @@
 """
 Career domain (v2), Dominio 1: Identidad Profesional.
 
-Aggregates CRUD routers for: differentiators, identity, identity_reflections,
+Aggregates CRUD routers for: personal_profile, differentiators, identity, identity_reflections,
 competencies, certifications, target_roles, work_history, achievements,
 star_stories, career_reviews, role_gap_analysis, projects.
 """
@@ -10,6 +10,7 @@ star_stories, career_reviews, role_gap_analysis, projects.
 # ============================================================================
 from fastapi import APIRouter
 
+from models.personal_profile import PersonalProfile
 from models.differentiator import Differentiator
 from models.identity import Identity
 from models.identity_reflection import IdentityReflection
@@ -24,6 +25,7 @@ from models.role_gap_analysis import RoleGapAnalysis
 from models.project import Project
 
 from schemas.career_identity import (
+    PersonalProfileCreate, PersonalProfileUpdate, PersonalProfileResponse,
     DifferentiatorCreate, DifferentiatorUpdate, DifferentiatorResponse,
     IdentityCreate, IdentityUpdate, IdentityResponse,
     IdentityReflectionCreate, IdentityReflectionUpdate, IdentityReflectionResponse,
@@ -48,6 +50,12 @@ router = APIRouter(prefix="/career", tags=["Career - Identity"])
 # ============================================================================
 # Identidad profesional
 # ============================================================================
+router.include_router(build_crud_router(
+    prefix="/personal-profile", tags=["Career - Identity"], model=PersonalProfile,
+    create_schema=PersonalProfileCreate, update_schema=PersonalProfileUpdate,
+    response_schema=PersonalProfileResponse, entity_name="personal profile",
+))
+
 router.include_router(build_crud_router(
     prefix="/differentiators", tags=["Career - Identity"], model=Differentiator,
     create_schema=DifferentiatorCreate, update_schema=DifferentiatorUpdate,

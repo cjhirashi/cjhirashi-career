@@ -55,7 +55,7 @@ Solo response: `SearchMetricsWeekResponse`, `SearchOverviewResponse`, `FunnelSta
 
 ### `career_methodologies.py`
 
-CRUD de `OperationalMethodology` (`title`, `section`, `content` Markdown).
+CRUD de `OperationalMethodology` (`title`, `section`, `content` Markdown, `agent_profile_ids`).
 
 ### `job_discovery.py`
 

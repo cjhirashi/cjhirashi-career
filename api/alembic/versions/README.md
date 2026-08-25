@@ -1,6 +1,6 @@
 # Revisiones Alembic (`alembic/versions/`)
 
-Cadena lineal (head actual: `a8b9c0d1e2f3`).
+Cadena lineal (head actual: `e5f6a7b8c9d0`).
 
 ## Arquitectura
 
@@ -16,6 +16,9 @@ flowchart TD
     H --> I[f4a5b6c7d8e9 PDF styles]
     I --> J[f5b6c7d8e9f0 seed metodología PDF]
     J --> K[a8b9c0d1e2f3 agent_profile_id en conversaciones]
+    K --> L[c3d4e5f6a7b8 rename agent_* ids]
+    L --> M[d4e5f6a7b8c9 personal_profile]
+    M --> N[e5f6a7b8c9d0 methodology agent_profile_ids]
 ```
 
 ```
@@ -30,6 +33,9 @@ ca159800797a
     → f4a5b6c7d8e9
     → f5b6c7d8e9f0
     → a8b9c0d1e2f3
+    → c3d4e5f6a7b8
+    → d4e5f6a7b8c9
+    → e5f6a7b8c9d0
 ```
 
 ---
@@ -46,6 +52,9 @@ ca159800797a
 | `e3f4a5b6c7d8_fix_system_table_user_ids.py` | | Ajusta `user_id` en tablas de sistema/telemetría tras el cambio de `users.id` |
 | `f4a5b6c7d8e9_pdf_template_styles.py` | | `pdf_template_styles` + FK `style_id` en plantillas |
 | `f5b6c7d8e9f0_seed_pdf_design_methodology.py` | | Seed de metodología operativa «Plantillas PDF y estilos CSS» |
-| `a8b9c0d1e2f3_conversation_agent_profile.py` | head | `agent_profile_id` en `bedrock_conversations` (historial por especialista) |
+| `a8b9c0d1e2f3_conversation_agent_profile.py` | | `agent_profile_id` en `bedrock_conversations` (historial por especialista) |
+| `c3d4e5f6a7b8_rename_agent_profile_ids.py` | | Ids de agente a `agent_<name>` (L1/L2 label EN, L3 id previo) |
+| `d4e5f6a7b8c9_personal_profile.py` | | Ficha singleton `personal_profile` (datos biográficos) |
+| `e5f6a7b8c9d0_methodology_agent_profile_ids.py` | head | `agent_profile_ids` en metodologías operativas |
 
 Cada archivo define `upgrade()` / `downgrade()`. No editar revisiones ya aplicadas en producción; crear una nueva.

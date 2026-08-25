@@ -7,6 +7,7 @@ this app - see `content`. Not exposed on the public portal, admin-only.
 Career domain (v2) - Soporte operativo.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -29,6 +30,9 @@ class OperationalMethodology(Base):
     subsection = Column(String(150), nullable=True)
     description = Column(Text, nullable=True)
     content = Column(Text, nullable=False)
+    # IDs canónicos agent_* para quienes aplica esta metodología.
+    # Vacío o null = todos los agentes. Lista = solo esos perfiles.
+    agent_profile_ids = Column(JSONB, nullable=True)
 
     notes = Column(Text, nullable=True)
 

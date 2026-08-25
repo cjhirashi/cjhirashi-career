@@ -1,7 +1,7 @@
 """
 Pydantic schemas - Career domain (v2), Dominio 1: Identidad Profesional.
 
-Covers: differentiators, identity, identity_reflections, competencies,
+Covers: personal_profile, differentiators, identity, identity_reflections, competencies,
 certifications, target_roles, work_history, achievements, star_stories,
 career_reviews, role_gap_analysis, projects.
 """
@@ -75,6 +75,52 @@ class IdentityResponse(IdentityBase):
     created_at: datetime
     updated_at: datetime
     notes: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# PersonalProfile — ficha biográfica singleton (referencia del gestor)
+# ============================================================================
+
+class PersonalProfileBase(BaseModel):
+    full_name: str = Field(..., max_length=255)
+    preferred_name: Optional[str] = Field(None, max_length=255)
+    date_of_birth: Optional[date] = None
+    nationality: Optional[str] = Field(None, max_length=100)
+    city: Optional[str] = Field(None, max_length=255)
+    country: Optional[str] = Field(None, max_length=100)
+    phone: Optional[str] = Field(None, max_length=40)
+    email: Optional[str] = Field(None, max_length=255)
+    languages: Optional[str] = None
+    work_authorization: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class PersonalProfileCreate(PersonalProfileBase):
+    pass
+
+
+class PersonalProfileUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, max_length=255)
+    preferred_name: Optional[str] = Field(None, max_length=255)
+    date_of_birth: Optional[date] = None
+    nationality: Optional[str] = Field(None, max_length=100)
+    city: Optional[str] = Field(None, max_length=255)
+    country: Optional[str] = Field(None, max_length=100)
+    phone: Optional[str] = Field(None, max_length=40)
+    email: Optional[str] = Field(None, max_length=255)
+    languages: Optional[str] = None
+    work_authorization: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class PersonalProfileResponse(PersonalProfileBase):
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

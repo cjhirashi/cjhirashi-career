@@ -1,6 +1,6 @@
 # Carrera — Identidad Profesional
 
-Recursos del dominio **Identidad Profesional**: quién eres, qué sabes, qué has logrado y en qué proyectos has participado.
+Recursos del dominio **Identidad Profesional**: datos personales de referencia, quién eres profesionalmente, qué sabes, qué has logrado y en qué proyectos has participado.
 
 **Prefijo común:** `/career`  
 **Tag OpenAPI:** `Career - Identity`  
@@ -14,7 +14,7 @@ flowchart TB
     Route --> Factory[build_crud_router]
     Factory --> Schema[schemas/career_identity.py]
     Factory --> Repo[CareerRepository]
-    Repo --> Models[12 modelos Identidad]
+    Repo --> Models[13 modelos Identidad]
     Models --> PG[(PostgreSQL)]
     Repo --> Qdrant[(Qdrant)]
     Bedrock[tools Bedrock] --> Factory
@@ -34,14 +34,15 @@ flowchart TB
 
 ---
 
-## Recursos (12)
+## Recursos (13)
 
 Cada fila expone el patrón CRUD estándar de 6 endpoints. Ver [infrastructure](../infrastructure/README.md).
 
 | Resource key | Path | Modelo | Descripción |
 |--------------|------|--------|-------------|
+| `personal-profile` | `/career/personal-profile` | `PersonalProfile` | Ficha biográfica singleton (nombre, fecha de nacimiento, contacto) |
 | `differentiators` | `/career/differentiators` | `Differentiator` | Diferenciadores profesionales |
-| `identity` | `/career/identity` | `Identity` | Perfil de identidad (singleton por usuario) |
+| `identity` | `/career/identity` | `Identity` | Perfil de identidad narrativa (singleton por usuario) |
 | `identity-reflections` | `/career/identity-reflections` | `IdentityReflection` | Reflexiones sobre identidad |
 | `competencies` | `/career/competencies` | `Competency` | Competencias y niveles |
 | `certifications` | `/career/certifications` | `Certification` | Certificaciones |
@@ -121,7 +122,8 @@ curl -s -X POST http://localhost:8001/career/competencies \
 
 ## Notas
 
-- **`identity`** suele ser un registro único por usuario (el Admin lo trata como singleton)
+- **`personal-profile`** es un registro único por usuario: ficha biográfica de referencia (nombre legal, fecha de nacimiento, ubicación, contacto). El Admin y el agente de identidad la leen antes de redactar CVs o narrativa.
+- **`identity`** suele ser un registro único por usuario (el Admin lo trata como singleton): tagline, bio y UVP — no sustituye a `personal-profile`.
 - Los writes indexan automáticamente en **Qdrant** para búsqueda semántica del agente
 - IDs devueltos siempre en formato prefijado (`ach-17`, `cmp-42`)
 

@@ -47,9 +47,12 @@ CRUD estándar de 6 endpoints. **`vectorize=True`** — cada write indexa en Qdr
 | Campo | Descripción |
 |-------|-------------|
 | `title` | Nombre de la metodología |
-| `section` | Agrupación (ej. "Identidad Profesional", "Búsqueda") |
-| `content` | Texto markdown/HTML de la metodología |
-| `status` | draft / published |
+| `section` | Agrupación (ej. "Identidad Profesional", "Diseño PDF") |
+| `subsection` | Subagrupación opcional |
+| `description` | Resumen corto |
+| `content` | Texto Markdown de la metodología |
+| `agent_profile_ids` | Lista de ids `agent_*` destinatarios. Vacío o `null` = todos los agentes |
+| `notes` | Notas internas |
 
 ---
 
@@ -59,7 +62,7 @@ Perfil **`methodologies`** — especializado en consultar y editar metodologías
 
 Tool principal: `search_knowledge_base` con `type=methodology` para búsqueda semántica.
 
-El Admin Panel muestra metodologías por sección alineadas con `methodology_sections` del perfil.
+El Admin Panel muestra metodologías por sección. El campo `agent_profile_ids` indica para qué agentes aplica cada registro; `search_knowledge_base` (type=methodology) filtra por el perfil caller (el L2 `agent_methodologies` ve todas).
 
 ---
 

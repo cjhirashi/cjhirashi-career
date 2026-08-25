@@ -34,6 +34,7 @@ TABLE_PREFIXES: dict[str, str] = {
     "fit_scoring_factors":        "fsf",
     "github_profile":             "ghp",
     "identity":                   "idn",
+    "personal_profile":           "psp",
     "identity_reflections":       "idr",
     "interviews":                 "ivw",
     "linkedin_connections":       "lnc",

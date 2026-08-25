@@ -83,7 +83,7 @@ I/O de bucket S3-compatible. Sin acceso a BD.
 
 ### `qdrant_service.py` — Búsqueda semántica
 
-Colección de vectores Titan. `upsert_point` / `delete_point` (id determinista `resource_key` + `record_id`), `search` por embedding. `CareerRepository` indexa en background tras create/update/delete si `vectorize=True`.
+Colección de vectores Titan. `upsert_point` / `delete_point` / `set_point_payload` (id determinista `resource_key` + `record_id`), `search` por embedding. `CareerRepository` indexa en background tras create/update/delete si `vectorize=True`. Metodologías llevan `agent_profile_ids` en el payload.
 
 ### `pdf_service.py` — Cliente pdf-generator
 
@@ -97,9 +97,17 @@ Sustitución `{{variable}}` en HTML de plantillas antes de WeasyPrint.
 
 `resolve_template_css`: lee `PdfTemplateStyle` por `style_id` de la plantilla (activo).
 
+### `methodology_scope.py`
+
+`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al filtrar `search_knowledge_base` type=methodology.
+
 ### `github_service.py`
 
-Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`). Sin OAuth. `GitHubError` en 404 o rate limit.
+Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`) para el Admin. Con `GITHUB_TOKEN`, el L3 `agent_github` lee repos (incl. privados), archivos y `search/code`. `GitHubError` en 404, 401 o rate limit. No escribe (issues/PRs/push).
+
+### `web_search_service.py`
+
+Consulta web del L3 `agent_web_search`: `search` (Brave si hay `BRAVE_SEARCH_API_KEY`, si no DuckDuckGo HTML) y `fetch` de URLs públicas con bloqueo SSRF. No toca PostgreSQL.
 
 ### `linkedin_service.py` — OAuth y Posts API
 

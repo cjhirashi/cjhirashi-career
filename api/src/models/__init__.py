@@ -6,10 +6,11 @@ SQLAlchemy models for all database entities.
 from models.user import User
 
 # ----------------------------------------------------------------------------
-# Career Domain (v2) - 30 tables
+# Career Domain (v2) - 31 tables
 # ----------------------------------------------------------------------------
 
 # Dominio 1: Identidad Profesional
+from models.personal_profile import PersonalProfile
 from models.differentiator import Differentiator
 from models.identity import Identity
 from models.identity_reflection import IdentityReflection
@@ -91,6 +92,7 @@ __all__ = [
     # Core
     "User",
     # Identity domain
+    "PersonalProfile",
     "Differentiator",
     "Identity",
     "IdentityReflection",

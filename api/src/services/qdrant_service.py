@@ -71,6 +71,7 @@ async def upsert_point(
     record_id: str,
     text: str,
     vector: List[float],
+    extra_payload: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Index (or re-index) one record. `resource_type` is `"methodology"` or
     `"career_record"` - `operational_methodologies` goes through the same
@@ -78,19 +79,22 @@ async def upsert_point(
     behind `CareerRepository`."""
     await _ensure_collection(len(vector))
     client = _get_client()
+    payload = {
+        "user_id": user_id,
+        "type": resource_type,
+        "resource_key": resource_key,
+        "record_id": record_id,
+        "text": text,
+    }
+    if extra_payload:
+        payload.update(extra_payload)
     await client.upsert(
         collection_name=settings.QDRANT_COLLECTION,
         points=[
             models.PointStruct(
                 id=_point_id(resource_key, record_id),
                 vector=vector,
-                payload={
-                    "user_id": user_id,
-                    "type": resource_type,
-                    "resource_key": resource_key,
-                    "record_id": record_id,
-                    "text": text,
-                },
+                payload=payload,
             )
         ],
     )
@@ -102,6 +106,28 @@ async def delete_point(*, resource_key: str, record_id: str) -> None:
         collection_name=settings.QDRANT_COLLECTION,
         points_selector=models.PointIdsList(points=[_point_id(resource_key, record_id)]),
     )
+
+
+async def set_point_payload(*, resource_key: str, record_id: str, payload: Dict[str, Any]) -> None:
+    """Merge payload fields on an existing point without re-embedding.
+
+    Missing points are ignored: the next CareerRepository write will upsert
+    the full payload including `agent_profile_ids`.
+    """
+    if not await _collection_exists():
+        return
+    client = _get_client()
+    try:
+        await client.set_payload(
+            collection_name=settings.QDRANT_COLLECTION,
+            payload=payload,
+            points=[_point_id(resource_key, record_id)],
+        )
+    except Exception as exc:
+        status = getattr(exc, "status_code", None)
+        if status == 404:
+            return
+        raise
 
 
 # ============================================================================

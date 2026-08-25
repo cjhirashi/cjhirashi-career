@@ -134,6 +134,7 @@ Documentación API: [sections/career-identity/README.md](./sections/career-ident
 
 | Tabla | Modelo | Prefijo |
 |-------|--------|---------|
+| `personal_profile` | `PersonalProfile` | `psp` |
 | `differentiators` | `Differentiator` | `dif` |
 | `identity` | `Identity` | `idn` |
 | `identity_reflections` | `IdentityReflection` | `idr` |
@@ -274,6 +275,9 @@ Definida en migraciones o scripts SQL; agrega métricas semanales de búsqueda.
 | `c2d3e4f5a6b7` | Bedrock agent profile prompts |
 | `d1e2f3a4b5c6` | IDs prefijados + campo notes |
 | `e3f4a5b6c7d8` | Fix user_id en tablas telemetría |
+| `c3d4e5f6a7b8` | Rename agent profile ids |
+| `d4e5f6a7b8c9` | Ficha `personal_profile` (datos personales singleton) |
+| `e5f6a7b8c9d0` | `agent_profile_ids` en `operational_methodologies` |
 
 ```bash
 cd api/
