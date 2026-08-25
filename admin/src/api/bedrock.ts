@@ -282,9 +282,15 @@ export const bedrockApi = {
   // Conversations - server-persisted, same on every device (see
   // models/bedrock_conversation.py). Messages are written by the backend
   // itself as part of /bedrock/chat, not by these calls.
-  listConversations: async (sessionType?: BedrockSessionType): Promise<BedrockConversation[]> => {
+  listConversations: async (
+    sessionType?: BedrockSessionType,
+    agentProfileId?: string
+  ): Promise<BedrockConversation[]> => {
     const response = await axiosInstance.get<BedrockConversation[]>('/bedrock/conversations', {
-      params: sessionType ? { session_type: sessionType } : undefined,
+      params: {
+        ...(sessionType ? { session_type: sessionType } : {}),
+        ...(agentProfileId ? { agent_profile_id: agentProfileId } : {}),
+      },
       timeout: CONTROL_PLANE_TIMEOUT_MS,
     })
     return response.data

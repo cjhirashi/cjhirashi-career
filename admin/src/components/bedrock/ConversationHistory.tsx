@@ -20,6 +20,7 @@ interface ConversationHistoryProps {
   onNew: () => void
   onRename: (sessionId: string, title: string) => void
   onDelete: (sessionId: string) => void
+  agentLabel?: string
 }
 
 /** Past conversations, server-persisted (see hooks/useBedrockChat.ts) - same
@@ -32,6 +33,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
   onNew,
   onRename,
   onDelete,
+  agentLabel,
 }) => {
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -90,7 +92,11 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
             style={{ backgroundColor: 'var(--bg-popover)', borderColor: 'var(--border-glass)', backdropFilter: 'blur(16px)' }}
           >
             {conversations.length === 0 ? (
-              <p className="p-4 text-sm text-text-secondary text-center">Todavía no tienes conversaciones.</p>
+              <p className="p-4 text-sm text-text-secondary text-center">
+                {agentLabel
+                  ? `Todavía no tienes conversaciones con ${agentLabel}.`
+                  : 'Todavía no tienes conversaciones.'}
+              </p>
             ) : (
               <div className="p-1.5">
                 {conversations.map((conversation) => {

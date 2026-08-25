@@ -7,15 +7,13 @@ import {
   Loader2,
   Paperclip,
   Send,
-  UserCircle,
   X,
 } from 'lucide-react'
 import { useBedrockModel } from '@/hooks/useBedrockChat'
 import { useBedrockChatStore } from '@/stores/bedrockChatStore'
-import { CONTEXTUAL_AGENT_PROFILES } from '@/config/agentProfiles'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { filesApi } from '@/api/files'
-import { BedrockChatAttachment, BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
+import { BedrockChatAttachment, BedrockPageContext } from '@/types/bedrock'
 import { getErrorMessage } from '@/utils/errors'
 
 const MIN_ROWS = 1
@@ -35,7 +33,6 @@ interface ComposerAttachment {
 
 interface ChatComposerProps {
   sessionId: string
-  chatSurface: BedrockChatSurface
   pageContext?: BedrockPageContext | null
   onSend: (text: string, attachments?: BedrockChatAttachment[]) => void
   disabled: boolean
@@ -92,7 +89,6 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ item, onRemove })
  */
 export const ChatComposer: React.FC<ChatComposerProps> = ({
   sessionId,
-  chatSurface,
   pageContext,
   onSend,
   disabled,
@@ -100,7 +96,6 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [modelOpen, setModelOpen] = useState(false)
-  const [agentOpen, setAgentOpen] = useState(false)
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([])
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -115,10 +110,6 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
   const selectedModel =
     modelStatus?.available_models.find((m) => m.model_id === defaultModelId) ??
     modelStatus?.available_models.find((m) => m.model_id === modelStatus.current_model_id)
-
-  const selectedAgent = CONTEXTUAL_AGENT_PROFILES.find(
-    (p) => p.id === sessionPrefs.agentProfileIdOverride
-  )
 
   const readyAttachments = attachments.filter((a) => a.file_id && !a.uploading)
   const hasPendingUploads = attachments.some((a) => a.uploading)
@@ -284,69 +275,6 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
     </div>
   )
 
-  const agentDropdown =
-    chatSurface === 'contextual' ? (
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setAgentOpen((v) => !v)}
-          disabled={disabled}
-          aria-haspopup="listbox"
-          aria-expanded={agentOpen}
-          title="Especialista (auto si no eliges)"
-          className="flex items-center gap-1 text-[11px] text-text-secondary hover:text-text px-2 py-1.5 rounded-lg hover:bg-glass transition-colors disabled:opacity-50"
-        >
-          <UserCircle size={13} aria-hidden="true" />
-          <span className="max-w-[110px] truncate">{selectedAgent?.label ?? 'Auto'}</span>
-          <ChevronDown size={11} aria-hidden="true" />
-        </button>
-        {agentOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setAgentOpen(false)} />
-            <div
-              className="popover-menu absolute left-0 bottom-full mb-1 w-52 z-50 max-h-48 overflow-y-auto"
-              role="listbox"
-              aria-label="Seleccionar especialista"
-            >
-              <button
-                type="button"
-                role="option"
-                aria-selected={!sessionPrefs.agentProfileIdOverride}
-                onClick={() => {
-                  setSessionPrefs(sessionId, { agentProfileIdOverride: null })
-                  setAgentOpen(false)
-                }}
-                className="popover-menu-item text-xs"
-              >
-                <span>Auto (por pantalla)</span>
-                {!sessionPrefs.agentProfileIdOverride && (
-                  <Check size={12} className="text-primary flex-shrink-0" aria-hidden="true" />
-                )}
-              </button>
-              {CONTEXTUAL_AGENT_PROFILES.map((profile) => (
-                <button
-                  key={profile.id}
-                  type="button"
-                  role="option"
-                  aria-selected={profile.id === sessionPrefs.agentProfileIdOverride}
-                  onClick={() => {
-                    setSessionPrefs(sessionId, { agentProfileIdOverride: profile.id })
-                    setAgentOpen(false)
-                  }}
-                  className="popover-menu-item text-xs"
-                >
-                  <span>{profile.label}</span>
-                  {profile.id === sessionPrefs.agentProfileIdOverride && (
-                    <Check size={12} className="text-primary flex-shrink-0" aria-hidden="true" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    ) : null
-
   return (
     <div className="flex flex-col gap-1.5 flex-shrink-0">
       <div
@@ -402,7 +330,6 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
               <Paperclip size={16} aria-hidden="true" />
             </button>
             {modelDropdown}
-            {agentDropdown}
           </div>
 
           <button

@@ -1,8 +1,10 @@
+import { useLayoutEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
 import { careerQueryKey } from '@/hooks/useCareerResource'
-import { useBedrockChatStore } from '@/stores/bedrockChatStore'
+import { conversationBucket, useBedrockChatStore } from '@/stores/bedrockChatStore'
+import { resolveAgentProfileId } from '@/config/agentProfiles'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { getErrorMessage } from '@/utils/errors'
 import {
@@ -14,15 +16,20 @@ import {
   BedrockSessionType,
 } from '@/types/bedrock'
 
-const conversationsKey = (sessionType?: BedrockSessionType) =>
-  sessionType ? (['bedrock', 'conversations', sessionType] as const) : (['bedrock', 'conversations'] as const)
+const conversationsKey = (sessionType?: BedrockSessionType, agentProfileId?: string) => {
+  if (sessionType && agentProfileId) {
+    return ['bedrock', 'conversations', sessionType, agentProfileId] as const
+  }
+  if (sessionType) return ['bedrock', 'conversations', sessionType] as const
+  return ['bedrock', 'conversations'] as const
+}
 
 const messagesKey = (sessionId: string) => ['bedrock', 'conversations', sessionId, 'messages'] as const
 
-export function useBedrockConversations(sessionType?: BedrockSessionType) {
+export function useBedrockConversations(sessionType?: BedrockSessionType, agentProfileId?: string) {
   return useQuery({
-    queryKey: conversationsKey(sessionType),
-    queryFn: () => bedrockApi.listConversations(sessionType),
+    queryKey: conversationsKey(sessionType, agentProfileId),
+    queryFn: () => bedrockApi.listConversations(sessionType, agentProfileId),
   })
 }
 
@@ -30,6 +37,7 @@ export function useBedrockConversationMessages(sessionId: string) {
   return useQuery({
     queryKey: messagesKey(sessionId),
     queryFn: () => bedrockApi.getConversationMessages(sessionId),
+    enabled: Boolean(sessionId),
   })
 }
 
@@ -50,7 +58,6 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const sessionType: BedrockSessionType = chatSurface === 'general' ? 'general' : 'contextual'
 
   const queryClient = useQueryClient()
-  const activeSessionId = useBedrockChatStore((s) => s.getActiveSessionId(sessionType))
   const getSessionPrefs = useBedrockChatStore((s) => s.getSessionPrefs)
   const isSending = useBedrockChatStore((s) => s.isSending)
   const statusMessage = useBedrockChatStore((s) => s.statusMessage)
@@ -58,13 +65,25 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const newConversation = useBedrockChatStore((s) => s.newConversation)
   const switchConversation = useBedrockChatStore((s) => s.switchConversation)
 
-  const { data: conversations = [] } = useBedrockConversations(sessionType)
+  const effectiveAgentProfileId = useMemo(
+    () => resolveAgentProfileId({ chatSurface, pageContext }),
+    [chatSurface, pageContext]
+  )
+
+  const bucketKey = conversationBucket(sessionType, effectiveAgentProfileId)
+  const activeSessionId = useBedrockChatStore((s) => s.activeSessionIds[bucketKey] ?? '')
+
+  useLayoutEffect(() => {
+    useBedrockChatStore.getState().ensureSession(sessionType, effectiveAgentProfileId)
+  }, [sessionType, effectiveAgentProfileId])
+
+  const { data: conversations = [] } = useBedrockConversations(sessionType, effectiveAgentProfileId)
   const { data: messages = [] } = useBedrockConversationMessages(activeSessionId)
   const { data: modelStatus } = useBedrockModel()
 
   const send = async (text: string, attachments?: BedrockChatAttachment[]) => {
     const trimmed = text.trim()
-    if ((!trimmed && !attachments?.length) || isSending) return
+    if ((!trimmed && !attachments?.length) || isSending || !activeSessionId) return
 
     const prefs = getSessionPrefs(activeSessionId)
     const modelId =
@@ -95,8 +114,7 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
           chat_surface: chatSurface,
           page_context: chatSurface === 'contextual' ? pageContext : null,
           model_id: modelId,
-          agent_profile_id:
-            chatSurface === 'contextual' ? prefs.agentProfileIdOverride ?? null : null,
+          agent_profile_id: chatSurface === 'contextual' ? effectiveAgentProfileId : null,
           attachments: attachments ?? null,
         },
         {
@@ -108,7 +126,7 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: messagesKey(activeSessionId) }),
-        queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) }),
+        queryClient.invalidateQueries({ queryKey: ['bedrock', 'conversations'] }),
       ])
       affected_resources.forEach((resource) => {
         if (resource === 'pdf-templates') {
@@ -132,15 +150,15 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const renameMutation = useMutation({
     mutationFn: ({ sessionId, title }: { sessionId: string; title: string }) =>
       bedrockApi.renameConversation(sessionId, title),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bedrock', 'conversations'] }),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (sessionId: string) => bedrockApi.deleteConversation(sessionId),
     onSuccess: (_data, sessionId) => {
-      queryClient.invalidateQueries({ queryKey: conversationsKey(sessionType) })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'conversations'] })
       queryClient.removeQueries({ queryKey: messagesKey(sessionId) })
-      if (sessionId === activeSessionId) newConversation(sessionType)
+      if (sessionId === activeSessionId) newConversation(sessionType, effectiveAgentProfileId)
     },
   })
 
@@ -149,14 +167,16 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
     sessionType,
     chatSurface,
     pageContext,
+    effectiveAgentProfileId,
     messages,
     conversations,
     isSending,
     statusMessage,
     error,
     send,
-    newConversation: () => newConversation(sessionType),
-    switchConversation: (sessionId: string) => switchConversation(sessionId, sessionType),
+    newConversation: () => newConversation(sessionType, effectiveAgentProfileId),
+    switchConversation: (sessionId: string) =>
+      switchConversation(sessionId, sessionType, effectiveAgentProfileId),
     renameConversation: (sessionId: string, title: string) => renameMutation.mutate({ sessionId, title }),
     deleteConversation: (sessionId: string) => deleteMutation.mutate(sessionId),
   }

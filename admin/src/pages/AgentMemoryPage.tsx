@@ -6,6 +6,7 @@ import {
   useBedrockMemoryEvents,
   useBedrockMemoryRecords,
 } from '@/hooks/useBedrockChat'
+import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
 import { ThemedSelect } from '@/components/ThemedSelect'
@@ -166,7 +167,13 @@ const EventsSection: React.FC = () => {
             className="mb-4"
             aria-label="Elegir conversación"
             placeholder="Elige una conversación..."
-            options={conversations.map((c) => ({ value: c.session_id, label: c.title }))}
+            options={conversations.map((c) => {
+              const surface = c.session_type === 'general' ? 'General' : 'Contextual'
+              const agent = c.agent_profile_id
+                ? getAgentProfileLabel(c.agent_profile_id)
+                : 'sin agente'
+              return { value: c.session_id, label: `${c.title} · ${surface} · ${agent}` }
+            })}
           />
 
           {isLoading && <LoadingSpinner fullScreen={false} message="Cargando eventos..." />}

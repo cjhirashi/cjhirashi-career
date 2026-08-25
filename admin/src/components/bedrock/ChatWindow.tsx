@@ -1,7 +1,8 @@
 import React from 'react'
 import { AxiosError } from 'axios'
-import { MapPin, Sparkles } from 'lucide-react'
+import { MapPin, Sparkles, UserCircle } from 'lucide-react'
 import { useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
+import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { CHAT_PROFILE_LABELS, resolveChatProfileKey } from '@/config/chatSectionProfiles'
 import { BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
 import { MessageList } from './MessageList'
@@ -27,15 +28,19 @@ const NotConfigured: React.FC = () => (
 interface ContextChipsProps {
   chatSurface: BedrockChatSurface
   pageContext?: BedrockPageContext | null
+  agentLabel: string
 }
 
-/** Shows where the user is chatting from (model/agent live in the composer). */
-const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext }) => {
+/** Section location + specialist of this screen (model lives in the composer). */
+const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, agentLabel }) => {
   if (chatSurface === 'general') {
     return (
       <div className="flex flex-wrap gap-1.5 flex-shrink-0">
         <span className="badge badge-cyan text-[10px]">Chat general</span>
-        <span className="badge badge-slate text-[10px]">Orquestador</span>
+        <span className="inline-flex items-center gap-1 badge badge-slate text-[10px]">
+          <UserCircle size={10} aria-hidden="true" />
+          Orquestador
+        </span>
       </div>
     )
   }
@@ -52,6 +57,10 @@ const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext })
           {pageContext.page_title}
         </span>
       )}
+      <span className="inline-flex items-center gap-1 badge badge-cyan text-[10px]" title="Agente de esta sección">
+        <UserCircle size={10} aria-hidden="true" />
+        {agentLabel}
+      </span>
       {profileKey && CHAT_PROFILE_LABELS[profileKey] && (
         <span className="badge badge-slate text-[10px]">{CHAT_PROFILE_LABELS[profileKey]}</span>
       )}
@@ -69,8 +78,8 @@ export interface ChatWindowProps {
 }
 
 /**
- * Bedrock chat panel: messages, context chips, composer with model/agent
- * pickers, and optional conversation history popover.
+ * Bedrock chat panel: messages, section specialist chip, composer with model
+ * picker, and optional conversation history popover.
  */
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   chatSurface = 'contextual',
@@ -89,6 +98,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     switchConversation,
     renameConversation,
     deleteConversation,
+    effectiveAgentProfileId,
   } = useBedrockChat({ chatSurface, pageContext })
 
   const { isError, error: modelError } = useBedrockModel()
@@ -107,19 +117,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             onNew={newConversation}
             onRename={renameConversation}
             onDelete={deleteConversation}
+            agentLabel={getAgentProfileLabel(effectiveAgentProfileId)}
           />
         </div>
       )}
 
-      <ContextChips chatSurface={chatSurface} pageContext={pageContext} />
+      <ContextChips
+        chatSurface={chatSurface}
+        pageContext={pageContext}
+        agentLabel={getAgentProfileLabel(effectiveAgentProfileId)}
+      />
 
       <MessageList messages={messages} isSending={isSending} statusMessage={statusMessage} />
 
       {error && <p className="text-red-600 dark:text-red-400 text-xs flex-shrink-0">{error}</p>}
 
       <ChatComposer
+        key={sessionId}
         sessionId={sessionId}
-        chatSurface={chatSurface}
         pageContext={pageContext}
         onSend={send}
         disabled={isSending}

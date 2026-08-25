@@ -17,7 +17,7 @@ const relativeTime = (iso: string): string => {
 
 /**
  * Full-page general chat with the orchestrator agent. Conversations are
- * filtered to `session_type=general` on the server (see bedrockApi.listConversations).
+ * filtered to `session_type=general` and `agent_profile_id=orchestrator`.
  */
 export const AgentGeneralChatPage: React.FC = () => {
   const pageContext = useChatPageContext()

@@ -81,6 +81,7 @@ export interface BedrockConversation {
   session_id: string
   title: string
   session_type: BedrockSessionType
+  agent_profile_id?: string | null
   created_at: string
   updated_at: string
 }
