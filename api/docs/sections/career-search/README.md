@@ -76,7 +76,7 @@ Patrón CRUD: ver [infrastructure](../infrastructure/README.md).
 
 ## Agente Bedrock
 
-Perfil **`search`** — acceso a todos los resource keys de esta sección.
+Perfil L2 **`agent_search_operations`** — pipeline de vacantes, aplicaciones y entrevistas. Discovery: L3 **`agent_vacancy_search`**. Redacción: L3 **`agent_cv_writing`** (`cv-versions`) y **`agent_cover_letter_writing`** (`cover-letter-versions`). PDF: L3 **`agent_pdf_render`**.
 
 Tools de job discovery (también expuestas vía `/career/job-discoveries`):
 

@@ -16,7 +16,7 @@ _PROFILE_MODELS = {
     "strategy": "deepseek.v3.2",
     "narrative": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
     "digital_presence": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-    "methodology": "cohere.command-r-v1:0",
+    "methodology": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
     "read_light": "amazon.nova-lite-v1:0",
     "agent_admin": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
     "singleton_identity": "mistral.mistral-large-2402-v1:0",
@@ -38,6 +38,7 @@ _RESOURCE_CHAT_PROFILE = {
     "linkedin-profile": "digital_presence",
     "operational-methodologies": "methodology",
     "identity": "singleton_identity",
+    "personal-profile": "singleton_identity",
 }
 
 _STATIC_ROUTE_PROFILE = {

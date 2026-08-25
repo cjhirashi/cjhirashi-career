@@ -1,8 +1,8 @@
 """
-Tools Converse — schemas y ejecución (CRUD, LinkedIn, PDF, imágenes).
+Tools Converse — schemas y ejecución (CRUD, LinkedIn, PDF, imágenes, web, GitHub).
 
 Tier 1: career CRUD (delegado a bedrock_service._execute_tool).
-Tier 2: LinkedIn, plantillas PDF, estilos CSS, imágenes, delegación.
+Tier 2: LinkedIn, plantillas PDF, estilos CSS, imágenes, vacantes, consulta web, GitHub, delegación.
 Ver api/docs/BEDROCK-HARNESS.md.
 """
 import io
@@ -25,6 +25,26 @@ from services.bedrock.tool_results import truncate_tool_result
 
 _PDF_STYLE_REPO = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
 _PDF_STYLE_UPDATE_FIELDS = {"slug", "title", "description", "css_content", "style_guide", "is_active"}
+
+
+def merge_writable_fields(tool_input: Dict[str, Any], allowed: Set[str]) -> Dict[str, Any]:
+    """Collect writable keys from nested `fields` and the top level.
+
+    Create uses top-level properties (`style_guide`, `css_content`, …). Models
+    often update the same way; requiring a nested `fields` object dropped the
+    payload and the agent then claimed success in chat without writing.
+    Top-level values override nested ones when both are present.
+    """
+    merged: Dict[str, Any] = {}
+    nested = tool_input.get("fields")
+    if isinstance(nested, dict):
+        for key, value in nested.items():
+            if key in allowed:
+                merged[key] = value
+    for key in allowed:
+        if key in tool_input and tool_input[key] is not None:
+            merged[key] = tool_input[key]
+    return merged
 
 # ============================================================================
 # Parámetros compartidos de schemas
@@ -53,20 +73,22 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_career_record", "description": "Lista registros paginados. Para 'lista todos mis X' usa limit=100 sin search (no search_knowledge_base). Incluye TODOS los items; revisa total_count y pagina si has_more.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}, "limit": {"type": "integer"}, "skip": {"type": "integer"}}, "required": ["resource_key"]}},
     {"name": "count_career_records", "description": "Cuenta registros de un resource_key. Usar para '¿cuántos X tengo?'.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}}, "required": ["resource_key"]}},
     {"name": "get_career_record", "description": "Obtiene un registro por id.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
-    {"name": "create_career_record", "description": "Crea registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "fields"]}},
-    {"name": "update_career_record", "description": "Actualiza registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "record_id", "fields"]}},
+    {"name": "create_career_record", "description": "Crea registro. Escribir el contenido en el chat NO guarda: llama esta tool con resource_key y fields.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "fields"]}},
+    {"name": "update_career_record", "description": "Actualiza registro. Escribir el contenido en el chat NO guarda: llama esta tool con resource_key, record_id y fields.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM, "fields": {"type": "object"}}, "required": ["resource_key", "record_id", "fields"]}},
     {"name": "delete_career_record", "description": "Elimina registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
     {"name": "get_linkedin_status", "description": "Estado conexión LinkedIn.", "schema": {"type": "object", "properties": {}}},
     {"name": "list_linkedin_posts", "description": "Cola e historial posts LinkedIn.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
     {"name": "create_linkedin_post", "description": "Publicar ahora (sin scheduled_at) o programar (ISO futuro).", "schema": {"type": "object", "properties": {"text": {"type": "string"}, "image_url": {"type": "string"}, "scheduled_at": {"type": "string"}}, "required": ["text"]}},
     {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "string", "description": "ID prefijado, ej. lnp-3"}}, "required": ["post_id"]}},
-    {"name": "pdf_template", "description": "CRUD de la tabla pdf_output_templates (HTML, IDs pdt-N). No edita CSS. action=list|get|create|update. create requiere slug, document_type, title, html_template. Referencia un estilo con style_id (pds-N).", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID del estilo CSS, ej. pds-1"}, "variables": {"type": "string"}, "default_only": {"type": "boolean"}, "fields": {"type": "object", "description": "Para update: html_template, style_id, variables, title, slug, document_type, is_default, is_active"}}, "required": ["action"]}},
-    {"name": "pdf_style", "description": "CRUD de la tabla pdf_template_styles (CSS reutilizable, IDs pds-N). No edita HTML de plantillas. action=list|get|create|update. create requiere slug, title, css_content. Un estilo puede usarse en muchas plantillas.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string"}, "description": {"type": "string"}, "fields": {"type": "object", "description": "Para update: css_content, style_guide, title, slug, description, is_active"}}, "required": ["action"]}},
-    {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
+    {"name": "pdf_template", "description": "CRUD de pdf_output_templates (HTML, IDs pdt-N). No edita CSS. action=list|get|create|update. create requiere slug, document_type, title, html_template. update requiere template_id y los campos a cambiar (html_template, style_id, variables, …) en el nivel superior o en fields. Escribir HTML en el chat NO guarda.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID del estilo CSS, ej. pds-1"}, "variables": {"type": "string"}, "default_only": {"type": "boolean"}, "fields": {"type": "object", "description": "Opcional en update; también se aceptan html_template/style_id/variables en el nivel superior"}}, "required": ["action"]}},
+    {"name": "pdf_style", "description": "CRUD de pdf_template_styles (CSS reutilizable, IDs pds-N). No edita HTML. action=list|get|create|update. create requiere slug, title, css_content. update requiere style_id y al menos un campo (style_guide, css_content, title, …) en el nivel superior o en fields. Escribir Markdown en el chat NO guarda style_guide.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string", "description": "Markdown de clases/etiquetas. En update puede ir aquí (nivel superior) o en fields.style_guide"}, "description": {"type": "string"}, "fields": {"type": "object", "description": "Opcional en update; también se acepta style_guide/css_content en el nivel superior"}}, "required": ["action"]}},
+    {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables. Preview de diseño, no a partir de un registro de carrera.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
+    {"name": "list_pdf_capable_resources", "description": "Tablas que pueden emitir PDF (cv-versions, cover-letter-versions) y cómo mapear campos al template.", "schema": {"type": "object", "properties": {}}},
+    {"name": "render_record_pdf", "description": "Genera el PDF de un registro con función PDF. resource_key + record_id; template_id opcional (si falta, plantilla default del document_type).", "schema": {"type": "object", "properties": {"resource_key": {"type": "string", "description": "cv-versions o cover-letter-versions"}, "record_id": _RECORD_ID_PARAM, "template_id": {"type": "string", "description": "Opcional, ej. pdt-1"}, "title": {"type": "string"}}, "required": ["resource_key", "record_id"]}},
     {"name": "generate_image", "description": "Genera imagen IA y sube a MinIO.", "schema": {"type": "object", "properties": {"prompt": {"type": "string"}, "purpose": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["prompt"]}},
     {"name": "attach_image_to_record", "description": "Pone image_url en publications o projects.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "record_id": _RECORD_ID_PARAM, "image_url": {"type": "string"}}, "required": ["resource_key", "record_id", "image_url"]}},
     {"name": "list_generated_images", "description": "Lista imágenes ai-generated.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
-    {"name": "delegate_to_specialist", "description": "Orquestador: delega a un especialista (solo chat general).", "schema": {"type": "object", "properties": {"agent_profile_id": {"type": "string"}, "task": {"type": "string"}, "context": {"type": "string"}}, "required": ["agent_profile_id", "task"]}},
+    {"name": "delegate_to_specialist", "description": "Delega a un especialista de nivel inferior (L1→L2|L3, L2→L3). Nunca hacia arriba.", "schema": {"type": "object", "properties": {"agent_profile_id": {"type": "string"}, "task": {"type": "string"}, "context": {"type": "string"}}, "required": ["agent_profile_id", "task"]}},
     {"name": "list_job_providers", "description": "Portales de vacantes habilitados (indeed, linkedin, getonboard, remotive, remoteok, company_boards).", "schema": {"type": "object", "properties": {}}},
     {
         "name": "run_job_discovery",
@@ -116,6 +138,14 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
             "required": ["refs"],
         },
     },
+    {"name": "web_search", "description": "Busca en internet. Devuelve títulos, URLs y snippets. No inventes fuentes.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "max_results": {"type": "integer"}}, "required": ["query"]}},
+    {"name": "web_fetch", "description": "Lee el texto de una URL http/https pública. Bloquea redes privadas. No uses URLs inventadas.", "schema": {"type": "object", "properties": {"url": {"type": "string"}}, "required": ["url"]}},
+    {"name": "get_github_status", "description": "Estado de la conexión GitHub (GITHUB_TOKEN).", "schema": {"type": "object", "properties": {}}},
+    {"name": "list_github_repos", "description": "Lista repos del usuario autenticado o de un owner. query filtra por nombre/descripcion.", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "query": {"type": "string"}, "per_page": {"type": "integer"}}}},
+    {"name": "get_github_repo", "description": "Metadatos de un repo. owner opcional; repo acepta 'owner/name'.", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["repo"]}},
+    {"name": "list_github_contents", "description": "Lista archivos/carpetas de un repo. path vacío = raíz.", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}, "path": {"type": "string"}, "ref": {"type": "string"}}, "required": ["repo"]}},
+    {"name": "get_github_file", "description": "Lee el contenido de un archivo de un repo (texto, truncado).", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}, "path": {"type": "string"}, "ref": {"type": "string"}}, "required": ["repo", "path"]}},
+    {"name": "search_github_code", "description": "Busca código en repos del usuario. Requiere GITHUB_TOKEN.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["query"]}},
 ]
 
 _WRITE_TOOLS = {
@@ -126,6 +156,7 @@ _WRITE_TOOLS = {
     "pdf_template",
     "pdf_style",
     "generate_pdf",
+    "render_record_pdf",
     "generate_image",
     "attach_image_to_record",
     "save_job_listings",
@@ -159,6 +190,20 @@ _PDF_TEMPLATE_UPDATE_FIELDS = {
     "is_default",
 }
 
+# Tablas de carrera con función PDF (L3 agent_pdf_render).
+PDF_CAPABLE_RESOURCES = {
+    "cv-versions": {
+        "document_type": "cv",
+        "content_attr": "content",
+        "title_attr": "title",
+    },
+    "cover-letter-versions": {
+        "document_type": "cover_letter",
+        "content_attr": "body_content",
+        "title_attr": "title",
+    },
+}
+
 _LEGACY = {
     "list_recent_changes", "restore_deleted_record", "describe_resource_schema", "search_knowledge_base",
     "list_career_record", "count_career_records", "get_career_record", "create_career_record", "update_career_record", "delete_career_record",
@@ -173,16 +218,20 @@ def all_tool_names() -> Set[str]:
     return {t["name"] for t in _RAW_TOOLS}
 
 
-def converse_tool_specs(allowed: Optional[Set[str]] = None) -> List[Dict[str, Any]]:
+def converse_tool_specs(allowed: Optional[Set[str]] = None, *, caller_profile=None) -> List[Dict[str, Any]]:
     """Convierte definiciones a formato toolConfig.tools de Converse API."""
     specs = []
     for t in _RAW_TOOLS:
         if allowed is not None and t["name"] not in allowed:
             continue
+        description = t["description"]
+        if t["name"] == "delegate_to_specialist" and caller_profile is not None:
+            from services.bedrock.agent_profiles import delegate_tool_description
+            description = delegate_tool_description(caller_profile)
         specs.append({
             "toolSpec": {
                 "name": t["name"],
-                "description": t["description"],
+                "description": description,
                 "inputSchema": {"json": t["schema"]},
             }
         })
@@ -282,19 +331,16 @@ async def _run_pdf_template(db, user_id: str, action: str, tool_input: Dict[str,
         row = result.scalar_one_or_none()
         if not row:
             return {"error": "not_found"}
-        fields = dict(tool_input.get("fields") or {})
+        fields = merge_writable_fields(tool_input, _PDF_TEMPLATE_UPDATE_FIELDS)
         if fields.get("style_id"):
             fields["style_id"] = normalize_prefixed_id("pdf_template_styles", fields["style_id"])
-        applied = False
+        if not fields:
+            return {"error": "update requires html_template, style_id, variables, title, slug, document_type, is_default, or is_active"}
         for key, value in fields.items():
-            if key in _PDF_TEMPLATE_UPDATE_FIELDS:
-                setattr(row, key, value)
-                applied = True
-        if not applied:
-            return {"error": "fields must include html_template, style_id, variables, title, slug, document_type, is_default, or is_active"}
+            setattr(row, key, value)
         row.version = (row.version or 1) + 1
         await db.commit()
-        return {"item": {"id": row.id, "version": row.version}}
+        return {"item": {"id": row.id, "version": row.version, "updated_fields": sorted(fields.keys())}}
 
     return {"error": f"unknown action: {action}"}
 
@@ -361,19 +407,128 @@ async def _run_pdf_style(db, user_id: str, action: str, tool_input: Dict[str, An
         if not tool_input.get("style_id"):
             return {"error": "update requires style_id"}
         style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
-        fields = {
-            key: value
-            for key, value in (tool_input.get("fields") or {}).items()
-            if key in _PDF_STYLE_UPDATE_FIELDS
-        }
+        fields = merge_writable_fields(tool_input, _PDF_STYLE_UPDATE_FIELDS)
         if not fields:
-            return {"error": "fields must include css_content, style_guide, title, slug, description, or is_active"}
+            return {"error": "update requires style_guide, css_content, title, slug, description, or is_active"}
         row = await _PDF_STYLE_REPO.update_for_user(db, user_id, style_id, fields)
         if not row:
             return {"error": "not_found"}
-        return {"item": {"id": row.id, "slug": row.slug}}
+        payload: Dict[str, Any] = {
+            "id": row.id,
+            "slug": row.slug,
+            "updated_fields": sorted(fields.keys()),
+        }
+        if "style_guide" in fields:
+            payload["style_guide_chars"] = len(row.style_guide or "")
+        return {"item": payload}
 
     return {"error": f"unknown action: {action}"}
+
+
+async def _load_pdf_template(db, user_id: str, template_id: str) -> Optional[PdfOutputTemplate]:
+    template_id = normalize_prefixed_id("pdf_output_templates", template_id)
+    result = await db.execute(
+        select(PdfOutputTemplate).where(
+            PdfOutputTemplate.id == template_id,
+            PdfOutputTemplate.user_id == user_id,
+            PdfOutputTemplate.is_active.is_(True),
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def _default_pdf_template(db, user_id: str, document_type: str) -> Optional[PdfOutputTemplate]:
+    result = await db.execute(
+        select(PdfOutputTemplate).where(
+            PdfOutputTemplate.user_id == user_id,
+            PdfOutputTemplate.document_type == document_type,
+            PdfOutputTemplate.is_default.is_(True),
+            PdfOutputTemplate.is_active.is_(True),
+        )
+    )
+    row = result.scalar_one_or_none()
+    if row:
+        return row
+    fallback = await db.execute(
+        select(PdfOutputTemplate)
+        .where(
+            PdfOutputTemplate.user_id == user_id,
+            PdfOutputTemplate.document_type == document_type,
+            PdfOutputTemplate.is_active.is_(True),
+        )
+        .order_by(PdfOutputTemplate.title)
+        .limit(1)
+    )
+    return fallback.scalar_one_or_none()
+
+
+def _store_generated_pdf(pdf_bytes: bytes, slug: str, title: str, template_id: str) -> Dict[str, Any]:
+    stored = storage_service.upload_file(
+        data=io.BytesIO(pdf_bytes),
+        original_filename=f"{slug}.pdf",
+        size=len(pdf_bytes),
+        content_type="application/pdf",
+        category="pdf-generated",
+        is_public=True,
+    )
+    url = storage_service.get_public_url(stored)
+    return {"pdf_url": url, "filename": stored, "template_id": template_id, "title": title}
+
+
+async def _render_template_to_pdf(db, row: PdfOutputTemplate, variables: Dict[str, Any], title: str) -> Dict[str, Any]:
+    from services.pdf_service import generate_html_template_pdf
+    from services.pdf_template_css import resolve_template_css
+    from services.pdf_template_render import render_template_html
+
+    html = render_template_html(row.html_template, variables)
+    css_content = await resolve_template_css(db, row)
+    pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=css_content)
+    return _store_generated_pdf(pdf_bytes, row.slug, title, row.id)
+
+
+async def _run_generate_pdf(db, user_id: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    row = await _load_pdf_template(db, user_id, tool_input["template_id"])
+    if not row:
+        return {"error": "not_found"}
+    variables = tool_input.get("variables") or {}
+    title = tool_input.get("title") or row.title
+    return await _render_template_to_pdf(db, row, variables, title)
+
+
+async def _run_render_record_pdf(db, user_id: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    resource_key = tool_input.get("resource_key") or ""
+    meta = PDF_CAPABLE_RESOURCES.get(resource_key)
+    if not meta:
+        return {
+            "error": "resource_not_pdf_capable",
+            "allowed": sorted(PDF_CAPABLE_RESOURCES.keys()),
+        }
+    record_id = tool_input.get("record_id")
+    if not record_id:
+        return {"error": "record_id required"}
+    repo = bedrock_service._get_repository(resource_key)
+    record = await repo.get_for_user(db, user_id, record_id)
+    if record is None:
+        return {"error": "not_found"}
+    content = getattr(record, meta["content_attr"], None) or ""
+    if not str(content).strip():
+        return {"error": "record_has_no_content"}
+    title = tool_input.get("title") or getattr(record, meta["title_attr"], None) or resource_key
+    if tool_input.get("template_id"):
+        row = await _load_pdf_template(db, user_id, tool_input["template_id"])
+    else:
+        row = await _default_pdf_template(db, user_id, meta["document_type"])
+    if not row:
+        return {
+            "error": "no_template",
+            "document_type": meta["document_type"],
+            "hint": "Crea una plantilla default con agent_pdf_design o pasa template_id.",
+        }
+    variables = {"title": title, "content": content, "body": content}
+    result = await _render_template_to_pdf(db, row, variables, title)
+    result["resource_key"] = resource_key
+    result["record_id"] = record.id
+    return result
 
 
 async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
@@ -463,37 +618,19 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         action = tool_input.get("action") or _PDF_STYLE_ALIASES.get(name)
         return await _run_pdf_style(db, user_id, action, tool_input)
 
-    if name == "generate_pdf":
-        from services.pdf_service import generate_html_template_pdf
-        from services.pdf_template_css import resolve_template_css
-        from services.pdf_template_render import render_template_html
+    if name == "list_pdf_capable_resources":
+        return {
+            "resources": [
+                {"resource_key": key, **meta}
+                for key, meta in PDF_CAPABLE_RESOURCES.items()
+            ]
+        }
 
-        template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
-        result = await db.execute(
-            select(PdfOutputTemplate).where(
-                PdfOutputTemplate.id == template_id,
-                PdfOutputTemplate.user_id == user_id,
-                PdfOutputTemplate.is_active.is_(True),
-            )
-        )
-        row = result.scalar_one_or_none()
-        if not row:
-            return {"error": "not_found"}
-        variables = tool_input.get("variables") or {}
-        title = tool_input.get("title") or row.title
-        html = render_template_html(row.html_template, variables)
-        css_content = await resolve_template_css(db, row)
-        pdf_bytes = await generate_html_template_pdf(title=title, html_body=html, css_content=css_content)
-        stored = storage_service.upload_file(
-            data=io.BytesIO(pdf_bytes),
-            original_filename=f"{row.slug}.pdf",
-            size=len(pdf_bytes),
-            content_type="application/pdf",
-            category="pdf-generated",
-            is_public=True,
-        )
-        url = storage_service.get_public_url(stored)
-        return {"pdf_url": url, "filename": stored, "template_id": row.id, "title": title}
+    if name == "generate_pdf":
+        return await _run_generate_pdf(db, user_id, tool_input)
+
+    if name == "render_record_pdf":
+        return await _run_render_record_pdf(db, user_id, tool_input)
 
     if name == "generate_image":
         from services.bedrock.image_client import generate_image_bytes
@@ -620,6 +757,65 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
             else None,
         )
 
+    if name == "web_search":
+        from services import web_search_service
+
+        return await web_search_service.search(
+            tool_input.get("query") or "",
+            max_results=tool_input.get("max_results") or 8,
+        )
+
+    if name == "web_fetch":
+        from services import web_search_service
+        from services.web_search_service import WebSearchError
+
+        try:
+            return await web_search_service.fetch(tool_input.get("url") or "")
+        except WebSearchError as exc:
+            return {"error": str(exc)}
+
+    if name == "get_github_status":
+        from services import github_service
+
+        return await github_service.connection_status()
+
+    if name == "list_github_repos":
+        from services import github_service
+
+        return await github_service.list_repos(
+            db,
+            user_id,
+            owner=tool_input.get("owner"),
+            query=tool_input.get("query"),
+            per_page=tool_input.get("per_page") or 30,
+        )
+
+    if name in ("get_github_repo", "list_github_contents", "get_github_file", "search_github_code"):
+        from services import github_service
+
+        repo = tool_input.get("repo") or ""
+        owner = (tool_input.get("owner") or "").strip()
+        if not owner and "/" not in repo:
+            resolved = await github_service.resolve_owner(db, user_id, None)
+            if resolved.get("error"):
+                if name != "search_github_code":
+                    return resolved
+            else:
+                owner = resolved["owner"]
+        if name == "get_github_repo":
+            return await github_service.get_repo(owner, repo)
+        if name == "list_github_contents":
+            return await github_service.list_contents(
+                owner, repo, path=tool_input.get("path") or "", ref=tool_input.get("ref")
+            )
+        if name == "get_github_file":
+            return await github_service.get_file(
+                owner, repo, tool_input.get("path") or "", ref=tool_input.get("ref")
+            )
+        return await github_service.search_code(
+            tool_input.get("query") or "", owner=owner or None, repo=repo or None
+        )
+
     raise BedrockError(f"Unknown extended tool: {name}")
 
 
@@ -627,10 +823,19 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 # Dispatch de tools
 # ============================================================================
 
-async def execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
+async def execute_tool(
+    db,
+    user_id: str,
+    name: str,
+    tool_input: Dict[str, Any],
+    session_id: str,
+    caller_profile_id: Optional[str] = None,
+) -> Dict[str, Any]:
     """Ejecuta una tool y trunca el resultado."""
     if name in _LEGACY:
-        result = await bedrock_service._execute_tool(db, user_id, name, tool_input, session_id)
+        result = await bedrock_service._execute_tool(
+            db, user_id, name, tool_input, session_id, caller_profile_id=caller_profile_id
+        )
     else:
         result = await _execute_extended(db, user_id, name, tool_input, session_id)
     return truncate_tool_result(result)
@@ -656,4 +861,6 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
             return "pdf-template-styles"
     if name == "save_job_listings":
         return "vacancies"
+    if name in ("generate_pdf", "render_record_pdf"):
+        return tool_input.get("resource_key") or "files"
     return None

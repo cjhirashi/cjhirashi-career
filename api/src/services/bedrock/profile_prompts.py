@@ -47,6 +47,8 @@ async def list_profile_prompts(db: AsyncSession) -> List[dict]:
             {
                 "profile_id": profile.id,
                 "label": profile.label,
+                "level": profile.level,
+                "user_facing": profile.user_facing,
                 "default_suffix": profile.system_prompt_suffix,
                 "override_suffix": override,
                 "effective_suffix": effective,
@@ -89,6 +91,8 @@ async def set_profile_prompt_suffix(
     return {
         "profile_id": profile.id,
         "label": profile.label,
+        "level": profile.level,
+        "user_facing": profile.user_facing,
         "default_suffix": profile.system_prompt_suffix,
         "override_suffix": override,
         "effective_suffix": override if override is not None else profile.system_prompt_suffix,

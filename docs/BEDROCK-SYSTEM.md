@@ -1,22 +1,27 @@
 # Sistema Bedrock — Guía maestra
 
-Documento índice del Harness Converse (ADR-008, ADR-009, ADR-010).
+Documento índice del Harness Converse (ADR-008, ADR-012).
 
 ## 1. Resumen
 
-- **Harness** en `api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto.
+- **Harness** en `api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto, jerarquía de 3 niveles.
 - **AWS:** solo `bedrock-runtime` (Converse + Titan Embeddings + Titan Image).
 
-## 2. Dos superficies de chat
+## 2. Tres niveles y dos superficies de chat
 
-| Superficie | UI | Agente | Delegación |
-|------------|-----|--------|------------|
-| contextual | Sidebar derecha | Especialista por sección | No |
-| general | `/agent/chat` | Orquestador | Sí (`delegate_to_specialist`) |
+| Nivel | Agente | Superficie | ¿Usuario? | Delegación |
+|-------|--------|------------|-----------|------------|
+| 1 | Orquestador | `/agent/chat` (general) | Sí | → L2 y L3 |
+| 2 | Especialista de área | Sidebar contextual | Sí | → L3 |
+| 3 | Especialista de tarea | Ninguna | No | — |
 
-## 3. Perfiles agente (9)
+L1 no hace CRUD. L3 no tiene `POST /bedrock/chat` como agente principal.
 
-`orchestrator`, `identity`, `search`, `digital`, `networking`, `support`, `methodologies`, `pdf_design`, `visual_design`
+## 3. Perfiles
+
+**L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`
+
+**L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`
 
 Definidos en `api/src/services/bedrock/agent_profiles.py`.
 
@@ -27,6 +32,7 @@ Ver `.env.example` — `BEDROCK_DEFAULT_MODEL_ID`, `BEDROCK_DAILY_BUDGET_USD`, `
 ## 5. Documentación relacionada
 
 - [ADR-008](09-DECISIONS/008-bedrock-harness-local.md)
+- [ADR-012](09-DECISIONS/012-bedrock-three-level-agents.md)
 - [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md) — IAM y catálogo de modelos
 - [api/docs/sections/bedrock/README.md](../api/docs/sections/bedrock/README.md)
 - [admin/docs/BEDROCK-CHAT.md](../admin/docs/BEDROCK-CHAT.md)

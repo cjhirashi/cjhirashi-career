@@ -9,40 +9,92 @@ import { BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
 export interface AgentProfileOption {
   id: string
   label: string
+  level: 1 | 2 | 3
 }
 
-/** All Bedrock agent profiles exposed to the UI (order: orchestrator first). */
+export const AGENT_ORCHESTRATOR = 'agent_orchestrator'
+export const AGENT_PROFESSIONAL_IDENTITY = 'agent_professional_identity'
+export const AGENT_SEARCH_OPERATIONS = 'agent_search_operations'
+export const AGENT_DIGITAL_PRESENCE = 'agent_digital_presence'
+export const AGENT_NETWORKING = 'agent_networking'
+export const AGENT_SUPPORT = 'agent_support'
+export const AGENT_METHODOLOGIES = 'agent_methodologies'
+export const AGENT_PDF_DESIGN = 'agent_pdf_design'
+export const AGENT_PDF_RENDER = 'agent_pdf_render'
+export const AGENT_VISUAL_DESIGN = 'agent_visual_design'
+export const AGENT_CHANGELOG = 'agent_changelog'
+export const AGENT_TASK_MANAGER = 'agent_task_manager'
+export const AGENT_LINKEDIN_PUBLISHING = 'agent_linkedin_publishing'
+export const AGENT_VACANCY_SEARCH = 'agent_vacancy_search'
+export const AGENT_CV_WRITING = 'agent_cv_writing'
+export const AGENT_COVER_LETTER_WRITING = 'agent_cover_letter_writing'
+export const AGENT_WEB_SEARCH = 'agent_web_search'
+export const AGENT_GITHUB = 'agent_github'
+
+/** User-facing Bedrock agents (L1 + L2). L3 workers are not listed here. */
 export const AGENT_PROFILES: AgentProfileOption[] = [
-  { id: 'orchestrator', label: 'Orquestador' },
-  { id: 'identity', label: 'Identidad Profesional' },
-  { id: 'search', label: 'Operativa de Búsqueda' },
-  { id: 'digital', label: 'Presencia Digital' },
-  { id: 'networking', label: 'Networking' },
-  { id: 'support', label: 'Soporte' },
-  { id: 'methodologies', label: 'Metodologías' },
-  { id: 'pdf_design', label: 'Diseño PDF' },
-  { id: 'visual_design', label: 'Agente Visual' },
+  { id: AGENT_ORCHESTRATOR, label: 'Orquestador', level: 1 },
+  { id: AGENT_PROFESSIONAL_IDENTITY, label: 'Identidad Profesional', level: 2 },
+  { id: AGENT_SEARCH_OPERATIONS, label: 'Operativa de Búsqueda', level: 2 },
+  { id: AGENT_DIGITAL_PRESENCE, label: 'Presencia Digital', level: 2 },
+  { id: AGENT_NETWORKING, label: 'Networking', level: 2 },
+  { id: AGENT_SUPPORT, label: 'Soporte', level: 2 },
+  { id: AGENT_METHODOLOGIES, label: 'Metodologías', level: 2 },
+  { id: AGENT_PDF_DESIGN, label: 'Diseño PDF', level: 2 },
 ]
 
-const PROFILE_BY_ID = Object.fromEntries(AGENT_PROFILES.map((p) => [p.id, p]))
+/** Catálogo completo (L1/L2/L3) — formularios y labels de delegación. */
+export const ALL_AGENT_PROFILES: AgentProfileOption[] = [
+  ...AGENT_PROFILES,
+  { id: AGENT_PDF_RENDER, label: 'Renderizado PDF', level: 3 },
+  { id: AGENT_VISUAL_DESIGN, label: 'Agente Visual', level: 3 },
+  { id: AGENT_CHANGELOG, label: 'Gestor de bitácora', level: 3 },
+  { id: AGENT_TASK_MANAGER, label: 'Gestor de tareas', level: 3 },
+  { id: AGENT_LINKEDIN_PUBLISHING, label: 'Control de publicación LinkedIn', level: 3 },
+  { id: AGENT_VACANCY_SEARCH, label: 'Control de búsqueda de vacantes', level: 3 },
+  { id: AGENT_CV_WRITING, label: 'Redacción de CVs', level: 3 },
+  { id: AGENT_COVER_LETTER_WRITING, label: 'Redacción de cover letters', level: 3 },
+  { id: AGENT_WEB_SEARCH, label: 'Consulta web', level: 3 },
+  { id: AGENT_GITHUB, label: 'Control GitHub', level: 3 },
+]
+
+const AGENT_PROFILE_LABELS: Record<string, string> = Object.fromEntries(
+  ALL_AGENT_PROFILES.map((p) => [p.id, p.label])
+)
 
 /** Resolve a profile label by id; falls back to the raw id if unknown. */
 export function getAgentProfileLabel(profileId: string): string {
-  return PROFILE_BY_ID[profileId]?.label ?? profileId
+  return AGENT_PROFILE_LABELS[profileId] ?? profileId
+}
+
+export function allAgentSelectOptions(): { value: string; label: string }[] {
+  return ALL_AGENT_PROFILES.map((p) => ({
+    value: p.id,
+    label: `${p.label} (L${p.level})`,
+  }))
 }
 
 /** Mirror of `_ROUTE_TO_PROFILE` in agent_profiles.py */
 const ROUTE_TO_PROFILE: Record<string, string> = {
-  '/linkedin': 'digital',
-  '/job-discovery': 'search',
-  '/career/publications': 'digital',
-  '/career/operational-methodologies': 'methodologies',
-  '/agent/chat': 'orchestrator',
-  '/agent/pdf-templates': 'pdf_design',
-  '/agent/pdf-template-styles': 'pdf_design',
+  '/linkedin': AGENT_DIGITAL_PRESENCE,
+  '/job-discovery': AGENT_SEARCH_OPERATIONS,
+  '/career/publications': AGENT_DIGITAL_PRESENCE,
+  '/career/operational-methodologies': AGENT_METHODOLOGIES,
+  '/agent/chat': AGENT_ORCHESTRATOR,
+  '/agent/pdf-templates': AGENT_PDF_DESIGN,
+  '/agent/pdf-template-styles': AGENT_PDF_DESIGN,
+}
+
+function profileIdForRoute(route: string): string | undefined {
+  if (route in ROUTE_TO_PROFILE) return ROUTE_TO_PROFILE[route]
+  const matches = Object.entries(ROUTE_TO_PROFILE)
+    .filter(([path]) => route.startsWith(`${path}/`))
+    .sort((a, b) => b[0].length - a[0].length)
+  return matches[0]?.[1]
 }
 
 const IDENTITY_RESOURCES = [
+  'personal-profile',
   'differentiators',
   'identity',
   'identity-reflections',
@@ -90,15 +142,18 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   'networking-activities': 'networking',
   tags: 'support',
   'operational-methodologies': 'methodologies',
+  'pdf-output-templates': 'document_output',
+  'pdf-template-styles': 'document_output',
 }
 
 /** Mirror of `_DOMAIN_TO_PROFILE` in agent_profiles.py */
 const DOMAIN_TO_PROFILE: Record<string, string> = {
-  identity: 'identity',
-  search: 'search',
-  digital: 'digital',
-  networking: 'networking',
-  support: 'support',
+  identity: AGENT_PROFESSIONAL_IDENTITY,
+  search: AGENT_SEARCH_OPERATIONS,
+  digital: AGENT_DIGITAL_PRESENCE,
+  networking: AGENT_NETWORKING,
+  support: AGENT_SUPPORT,
+  document_output: AGENT_PDF_DESIGN,
 }
 
 /**
@@ -110,16 +165,17 @@ export function resolveAgentProfileId(options: {
   chatSurface: BedrockChatSurface
   pageContext?: BedrockPageContext | null
 }): string {
-  if (options.chatSurface === 'general') return 'orchestrator'
+  if (options.chatSurface === 'general') return AGENT_ORCHESTRATOR
   const page = options.pageContext
   if (page) {
     const route = page.route || ''
-    if (route in ROUTE_TO_PROFILE) return ROUTE_TO_PROFILE[route]
+    const routeProfile = profileIdForRoute(route)
+    if (routeProfile) return routeProfile
     const resourceKey = page.resource_key
     if (resourceKey && resourceKey in RESOURCE_TO_DOMAIN) {
       const domain = RESOURCE_TO_DOMAIN[resourceKey]
-      return DOMAIN_TO_PROFILE[domain] ?? 'orchestrator'
+      return DOMAIN_TO_PROFILE[domain] ?? AGENT_ORCHESTRATOR
     }
   }
-  return 'orchestrator'
+  return AGENT_ORCHESTRATOR
 }

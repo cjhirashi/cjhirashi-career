@@ -11,13 +11,14 @@ flowchart LR
     T3[test_reply_text] --> Reply[reply_text / converse_client]
     T4[test_bedrock_errors] --> Errors[errors.py]
     T5[test_agent_loop_messages] --> Loop[agent_loop messages]
+    T6[test_pdf_style_persist] --> Tools[tools.merge_writable_fields + persist nudge]
 ```
 
 ---
 
 ### `test_agent_profiles_router.py`
 
-`resolve_agent_profile` por ruta/recurso, `pdf_template` y `pdf_style` como tools distintas, y `history_manager` con `agent_profile_id`.
+`resolve_agent_profile` por ruta/recurso, jerarquía L1/L2/L3, `agent_pdf_design` vs `agent_pdf_render`, L3 `agent_web_search` / `agent_github`, y `history_manager` con `agent_profile_id`.
 
 ### `test_profile_prompts.py`
 
@@ -30,6 +31,10 @@ Todo perfil tiene `system_prompt_suffix` no vacío; `get_profile` round-trip por
 ### `test_bedrock_errors.py`
 
 `format_bedrock_client_error`: AccessDenied (IAM), ValidationException (historial debe empezar en user), ResourceNotFound (modelo).
+
+### `test_pdf_style_persist.py`
+
+`merge_writable_fields` acepta `style_guide` en el nivel superior (no solo en `fields`). `should_nudge_persist` reintenta persistir si un L2 (PDF o metodologías) redacta o anuncia un write en el chat sin `update`. Un "ok" no basta; "procede" o "Ahora actualizo opm-N" sí.
 
 ### `test_agent_loop_messages.py`
 

@@ -88,7 +88,7 @@ curl -s -X POST http://localhost:8001/agent-tasks \
     "title": "Actualizar CV para rol DevOps",
     "status": "pending",
     "priority": "high",
-    "agent_profile_id": "search"
+    "agent_profile_id": "agent_search_operations"
   }'
 ```
 

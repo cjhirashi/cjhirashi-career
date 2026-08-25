@@ -150,8 +150,12 @@ services:
       QDRANT_COLLECTION: ${QDRANT_COLLECTION}
       # PDF Generator (render de CVVersion.content a PDF)
       PDF_GENERATOR_URL: ${PDF_GENERATOR_URL}
-      # MinIO (bucket de archivos)
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      # MinIO (bucket de archivos). Hostname MUST be the Compose service
+      # name (`minio`), not localhost and not interpolated from host .env:
+      # a developer MINIO_ENDPOINT=localhost:9000 (pytest on the host)
+      # leaking into this container makes ensure_bucket() fail, uvicorn
+      # exits, and Cloudflare returns 520 on every /api request.
+      MINIO_ENDPOINT: minio:9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET}
@@ -164,6 +168,8 @@ services:
       ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
       ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
       ADZUNA_COUNTRY: ${ADZUNA_COUNTRY:-mx}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
       # Public portal (unauthenticated /public/* routes)
       PUBLIC_PORTAL_USER_ID: ${PUBLIC_PORTAL_USER_ID}
     depends_on:

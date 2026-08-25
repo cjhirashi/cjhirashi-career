@@ -14,25 +14,25 @@ describe('bedrockChatStore', () => {
   })
 
   it('keeps a distinct session id per specialist', () => {
-    const identity = useBedrockChatStore.getState().ensureSession('contextual', 'identity')
-    const search = useBedrockChatStore.getState().ensureSession('contextual', 'search')
-    const general = useBedrockChatStore.getState().ensureSession('general', 'orchestrator')
+    const identity = useBedrockChatStore.getState().ensureSession('contextual', 'agent_professional_identity')
+    const search = useBedrockChatStore.getState().ensureSession('contextual', 'agent_search_operations')
+    const general = useBedrockChatStore.getState().ensureSession('general', 'agent_orchestrator')
 
     expect(identity).not.toBe(search)
     expect(identity).not.toBe(general)
-    expect(useBedrockChatStore.getState().activeSessionIds[conversationBucket('contextual', 'identity')]).toBe(
+    expect(useBedrockChatStore.getState().activeSessionIds[conversationBucket('contextual', 'agent_professional_identity')]).toBe(
       identity
     )
-    expect(useBedrockChatStore.getState().ensureSession('contextual', 'identity')).toBe(identity)
+    expect(useBedrockChatStore.getState().ensureSession('contextual', 'agent_professional_identity')).toBe(identity)
   })
 
   it('newConversation only rotates the current agent bucket', () => {
-    const identity = useBedrockChatStore.getState().ensureSession('contextual', 'identity')
-    const search = useBedrockChatStore.getState().ensureSession('contextual', 'search')
+    const identity = useBedrockChatStore.getState().ensureSession('contextual', 'agent_professional_identity')
+    const search = useBedrockChatStore.getState().ensureSession('contextual', 'agent_search_operations')
 
-    useBedrockChatStore.getState().newConversation('contextual', 'identity')
+    useBedrockChatStore.getState().newConversation('contextual', 'agent_professional_identity')
 
-    expect(useBedrockChatStore.getState().getActiveSessionId('contextual', 'identity')).not.toBe(identity)
-    expect(useBedrockChatStore.getState().getActiveSessionId('contextual', 'search')).toBe(search)
+    expect(useBedrockChatStore.getState().getActiveSessionId('contextual', 'agent_professional_identity')).not.toBe(identity)
+    expect(useBedrockChatStore.getState().getActiveSessionId('contextual', 'agent_search_operations')).toBe(search)
   })
 })

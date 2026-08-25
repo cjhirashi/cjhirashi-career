@@ -5,6 +5,7 @@ Punto de entrada del Harness local. Ver ADR-008.
 """
 import json
 import logging
+import re
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, List, Optional
 
@@ -13,7 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import settings
 from services.bedrock import agent_profiles, budget, converse_client, history_manager, prompt, section_profiles
 from services.bedrock import settings_loader, tools, usage_logger
-from services.bedrock.agent_profiles import resolve_agent_profile
+from services.bedrock.agent_profiles import (
+    resolve_agent_profile,
+    list_profiles,
+    AGENT_PDF_DESIGN,
+    AGENT_METHODOLOGIES,
+)
 from services.bedrock.delegation import run_specialist_sub_turn
 from services.bedrock.attachments import build_user_content_blocks
 from services.bedrock.errors import BedrockBudgetExceeded, BedrockError
@@ -42,7 +48,110 @@ _TOOL_STATUS = {
     "run_job_discovery": "Buscando vacantes...",
     "import_job_url": "Importando vacante por URL...",
     "save_job_listings": "Creando vacantes autorizadas...",
+    "pdf_style": "Actualizando el estilo PDF...",
+    "pdf_template": "Actualizando la plantilla PDF...",
+    "generate_pdf": "Generando PDF...",
+    "render_record_pdf": "Generando PDF del registro...",
+    "list_pdf_capable_resources": "Revisando tablas con PDF...",
+    "web_search": "Buscando en internet...",
+    "web_fetch": "Leyendo la página...",
+    "get_github_status": "Revisando la conexión GitHub...",
+    "list_github_repos": "Listando repositorios GitHub...",
+    "get_github_repo": "Consultando el repositorio...",
+    "list_github_contents": "Listando archivos del repositorio...",
+    "get_github_file": "Leyendo el archivo en GitHub...",
+    "search_github_code": "Buscando código en GitHub...",
 }
+
+
+# Si un L2 anuncia un write o el usuario pide guardar y el turno termina sin
+# tool de escritura, un recordatorio (una vez) obliga a persistir.
+# Ver should_nudge_persist. "ok" solo cuenta si el asistente reivindicó el write.
+_USER_WRITE_INTENT = re.compile(
+    r"(?i)\b(generar|generes|genera|guardar|guardes|guarda|actualizar|actualices|"
+    r"actualiza|escribir|escribas|escribe|documentar|documenta|crear|crea|crees)\b"
+)
+_USER_PROCEED = re.compile(
+    r"(?i)\b(procede|adelante|hazlo|apl[ií]calo|implementa(lo)?|contin[uú]a)\b"
+)
+_ASSISTANT_WRITE_CLAIM = re.compile(
+    r"(?i)("
+    r"ahora actualizo|ahora guardo|ahora escribo|"
+    r"voy a (actualizar|guardar|escribir|crear|documentar)|"
+    r"procedo a (actualizar|guardar|escribir)|"
+    r"actualizo\s+(\*\*)?(opm|pds|pdt|cvv|clv)-|"
+    r"actualizando (el |la )?(registro|metodolog|plantilla|estilo|gu[ií]a|contenido)|"
+    r"guardando (el |la )?(registro|metodolog)"
+    r")"
+)
+_USER_INTENT_NUDGE_PROFILES = frozenset({AGENT_PDF_DESIGN, AGENT_METHODOLOGIES})
+
+_PDF_PERSIST_NUDGE = (
+    "Eso quedó solo en el chat: PostgreSQL no se actualizó. "
+    "Si el usuario pidió generar o guardar, llama ahora `pdf_style` o `pdf_template` "
+    "con action=update (o create) y el contenido. "
+    "Para la guía de clases usa action=update, style_id y style_guide con el Markdown. "
+    "No afirmes que ya lo guardaste hasta que la tool devuelva el id."
+)
+_METHODOLOGIES_PERSIST_NUDGE = (
+    "Eso quedó solo en el chat: PostgreSQL no se actualizó. "
+    "Llama ahora update_career_record con resource_key='operational-methodologies', "
+    "record_id (ej. opm-57) y fields.content con el Markdown completo. "
+    "Si es uno nuevo, create_career_record con title, section y content. "
+    "No afirmes que lo guardaste hasta que la tool devuelva el id."
+)
+_GENERIC_PERSIST_NUDGE = (
+    "Eso quedó solo en el chat: PostgreSQL no se actualizó. "
+    "Llama ahora create_career_record o update_career_record con resource_key, "
+    "record_id si aplica, y fields. No afirmes que lo guardaste hasta que la tool "
+    "devuelva el id."
+)
+
+
+def persist_nudge_text(profile_id: str) -> str:
+    if profile_id == AGENT_PDF_DESIGN:
+        return _PDF_PERSIST_NUDGE
+    if profile_id == AGENT_METHODOLOGIES:
+        return _METHODOLOGIES_PERSIST_NUDGE
+    return _GENERIC_PERSIST_NUDGE
+
+
+def _l2_write_profile_ids() -> set:
+    return {p.id for p in list_profiles() if p.level == 2 and p.write_enabled}
+
+
+def should_nudge_persist(
+    profile_id: str,
+    user_message: str,
+    affected_resources: List[str],
+    already_nudged: bool,
+    assistant_text: str = "",
+) -> bool:
+    """True when an L2 writer ended a turn claiming/being asked to write, with no write."""
+    if already_nudged or affected_resources:
+        return False
+    if profile_id not in _l2_write_profile_ids():
+        return False
+    head = (assistant_text or "")[:400]
+    if _ASSISTANT_WRITE_CLAIM.search(head):
+        return True
+    if profile_id not in _USER_INTENT_NUDGE_PROFILES:
+        return False
+    text = user_message or ""
+    return bool(_USER_WRITE_INTENT.search(text) or _USER_PROCEED.search(text))
+
+
+def should_nudge_pdf_persist(
+    profile_id: str,
+    user_message: str,
+    affected_resources: List[str],
+    already_nudged: bool,
+    assistant_text: str = "",
+) -> bool:
+    """Compat: mismo criterio que should_nudge_persist (histórico: solo PDF)."""
+    return should_nudge_persist(
+        profile_id, user_message, affected_resources, already_nudged, assistant_text
+    )
 
 
 # ============================================================================
@@ -108,7 +217,7 @@ def _effective_model(req: ChatTurnRequest, runtime, profile) -> str:
             return req.model_id
 
     # Si el perfil tiene un modelo por defecto valido, usarlo.
-    if profile.default_model_id:
+    if profile.default_model_id and profile.default_model_id in settings.BEDROCK_AVAILABLE_MODELS:
         return profile.default_model_id
 
     # Como última opción, recomendar modelo basado en el contexto de página actual.
@@ -131,6 +240,8 @@ async def run_single_turn_sync(
     model_id: Optional[str] = None,
     max_round_trips: Optional[int] = None,
     record_history: bool = True,
+    load_session_history: Optional[bool] = None,
+    delegation_depth: int = 0,
 ) -> Dict[str, Any]:
     """
     Ejecuta un único turno de conversación de manera síncrona (sin streaming SSE) utilizando el loop principal del agente Bedrock.
@@ -155,6 +266,8 @@ async def run_single_turn_sync(
         model_id (str, opcional): Modelo explícito a usar en la respuesta.
         max_round_trips (int, opcional): Rondas máximas permitidas para el ciclo de herramientas.
         record_history (bool, opcional): Si True, registra el turno en el historial.
+        load_session_history (bool, opcional): Si None, sigue a record_history. False en sub-turnos.
+        delegation_depth (int, opcional): Profundidad actual (0 user-facing, 1 primer hop, 2 L2→L3).
 
     Returns:
         Dict[str, Any]: Diccionario con la respuesta final generada (evento "done").
@@ -176,6 +289,8 @@ async def run_single_turn_sync(
         ),
         max_round_trips_override=max_round_trips,
         record_history=record_history,
+        load_session_history=load_session_history,
+        delegation_depth=delegation_depth,
     ):
         if event["type"] == "done":
             last = event
@@ -195,6 +310,8 @@ async def chat_stream(
     *,
     max_round_trips_override: Optional[int] = None,
     record_history: bool = True,
+    load_session_history: Optional[bool] = None,
+    delegation_depth: int = 0,
 ) -> AsyncIterator[Dict[str, Any]]:
     """
     Generador asincrónico de eventos para manejar el ciclo de conversación del agente con soporte para SSE (Server-Sent Events).
@@ -226,6 +343,8 @@ async def chat_stream(
         req (ChatTurnRequest): Objeto con detalles del turno/mensaje y contexto.
         max_round_trips_override (int, opcional): Número máximo de rondas para la conversación (override de setting).
         record_history (bool, opcional): Si True, registra el historial de mensajes/conversación.
+        load_session_history (bool, opcional): Cargar historial PG. None = igual a record_history.
+        delegation_depth (int, opcional): 0 user-facing; incrementa en cada delegate.
 
     Yields:
         Dict[str, Any]: Diccionario con eventos de tipo:
@@ -248,17 +367,27 @@ async def chat_stream(
         agent_profile_id=req.agent_profile_id,
         page_context=req.page_context,
     )
+    if profile.level == 3 and record_history:
+        yield {
+            "type": "error",
+            "message": "Los agentes de nivel 3 no tienen chat con el usuario. Delega desde L1 o L2.",
+        }
+        return
     model_id = _effective_model(req, runtime, profile)
     system_prompt = await prompt.compose_system_prompt(db, profile, req.page_context)
 
     # 3. Determinar herramientas permitidas para el perfil, y construir especificaciones de herramientas
     allowed = agent_profiles.tools_for_profile(profile, tools.all_tool_names())
-    tool_specs = tools.converse_tool_specs(allowed)
+    tool_specs = tools.converse_tool_specs(allowed, caller_profile=profile)
 
     # 4. Determinar tipo de sesión y cargar historial de conversación
     session_type = "general" if req.chat_surface == "general" else "contextual"
     conversation = None
-    history = await history_manager.load_converse_messages(db, user_id, req.session_id, runtime.history_window)
+    include_history = record_history if load_session_history is None else load_session_history
+    if include_history:
+        history = await history_manager.load_converse_messages(db, user_id, req.session_id, runtime.history_window)
+    else:
+        history = []
     user_content = await build_user_content_blocks(db, user_id, req.message, req.attachments)
     messages = history + [{"role": "user", "content": user_content}]
 
@@ -278,12 +407,13 @@ async def chat_stream(
     total_usage = {"inputTokens": 0, "outputTokens": 0}
     max_rounds = max_round_trips_override or runtime.max_round_trips
     delegations_used = 0
+    persist_nudge_sent = False
 
     # 7. Emitir un evento de status inicial ("Pensando...")
     yield {"type": "status", "message": "Pensando..."}
 
     # 8. Loop principal de rondas de conversación
-    first_round = True
+    force_tool_this_round = True
     for _ in range(max_rounds):
         try:
             # 8.1. Invocar al cliente converse con el modelo y el historial de mensajes actual
@@ -292,13 +422,13 @@ async def chat_stream(
                 messages=messages,
                 system_prompt=system_prompt,
                 tools=tool_specs,
-                force_tool_use=first_round and bool(tool_specs),
+                force_tool_use=force_tool_this_round and bool(tool_specs),
             )
         except BedrockError as e:
             # 8.2. Si hubo un error de Bedrock, emite evento de error y termina
             yield {"type": "error", "message": str(e)}
             return
-        first_round = False
+        force_tool_this_round = False
 
         # 8.3. Acumular tokens consumidos (input/output) y loggear el uso de la ronda
         total_usage["inputTokens"] += result["usage"]["inputTokens"]
@@ -314,6 +444,24 @@ async def chat_stream(
 
         # 9. Si el modelo NO requiere uso de herramientas (ya tiene respuesta final)
         if result["stop_reason"] != "tool_use":
+            if should_nudge_persist(
+                profile.id, req.message, affected, persist_nudge_sent, result.get("text") or ""
+            ):
+                persist_nudge_sent = True
+                force_tool_this_round = True
+                yield {"type": "status", "message": "Persistiendo el contenido en la base de datos..."}
+                assistant_blocks: List[Dict[str, Any]] = []
+                if result["text"]:
+                    assistant_blocks.append({"text": result["text"]})
+                if not assistant_blocks:
+                    assistant_blocks.append({"text": "(sin texto)"})
+                messages.extend(
+                    [
+                        {"role": "assistant", "content": assistant_blocks},
+                        {"role": "user", "content": [{"text": persist_nudge_text(profile.id)}]},
+                    ]
+                )
+                continue
             # 9.1. Loggear uso total de la vuelta
             await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
             # 9.2. Registrar mensajes en historial si corresponde
@@ -340,45 +488,63 @@ async def chat_stream(
         for t in result["tool_uses"]:
             name = t["name"]
             try:
+                status = "success"
                 # 10.3.1. Si la herramienta es "delegate_to_specialist" (delegación a especialista)
                 if name == "delegate_to_specialist":
-                    # Solo permitido en chat general
-                    if req.chat_surface != "general":
-                        tool_result = {"error": "delegation only in general chat"}
-                    # Limitar cantidad de delegaciones por turno
+                    spec_id = t["input"].get("agent_profile_id", "")
+                    deny = None
+                    if not profile.can_delegate:
+                        deny = "this profile cannot delegate"
+                    elif delegation_depth >= 2:
+                        deny = "max delegation depth exceeded"
                     elif delegations_used >= settings.BEDROCK_MAX_DELEGATIONS_PER_TURN:
-                        tool_result = {"error": "max delegations per turn exceeded"}
+                        deny = "max delegations per turn exceeded"
                     else:
-                        spec_id = t["input"].get("agent_profile_id", "")
-                        # Emitir evento de inicio de delegación
-                        yield {
-                            "type": "delegation_start",
-                            "agent_profile_id": spec_id,
-                            "label": agent_profiles.get_profile(spec_id).label,
-                            "task_preview": (t["input"].get("task") or "")[:120],
-                        }
-                        # Ejecutar sub-turno del especialista
-                        sub = await run_specialist_sub_turn(
-                            db,
-                            user_id=user_id,
-                            session_id=req.session_id,
-                            profile=agent_profiles.get_profile(spec_id),
-                            task=t["input"].get("task", ""),
-                            context=t["input"].get("context"),
-                        )
-                        delegations_used += 1
-                        tool_result = sub
-                        # Emitir evento de fin de delegación
-                        yield {
-                            "type": "delegation_end",
-                            "agent_profile_id": spec_id,
-                            "success": True,
-                            "summary_preview": sub.get("summary", "")[:200],
-                        }
+                        deny = agent_profiles.delegation_error(profile, spec_id)
+                    if deny:
+                        tool_result = {"error": deny}
+                        status = "error"
+                    else:
+                        try:
+                            target = agent_profiles.get_profile(spec_id)
+                        except KeyError:
+                            tool_result = {"error": f"unknown agent profile: {spec_id}"}
+                            status = "error"
+                        else:
+                            yield {
+                                "type": "delegation_start",
+                                "agent_profile_id": spec_id,
+                                "label": target.label,
+                                "level": target.level,
+                                "task_preview": (t["input"].get("task") or "")[:120],
+                            }
+                            sub = await run_specialist_sub_turn(
+                                db,
+                                user_id=user_id,
+                                session_id=req.session_id,
+                                profile=target,
+                                task=t["input"].get("task", ""),
+                                context=t["input"].get("context"),
+                                delegation_depth=delegation_depth,
+                            )
+                            delegations_used += 1
+                            tool_result = sub
+                            yield {
+                                "type": "delegation_end",
+                                "agent_profile_id": spec_id,
+                                "success": True,
+                                "summary_preview": sub.get("summary", "")[:200],
+                            }
                 else:
                     # 10.3.2. Ejecución de herramientas normales
-                    tool_result = await tools.execute_tool(db, user_id, name, t["input"], req.session_id)
-                status = "success"
+                    if t.get("input_parse_error"):
+                        tool_result = {"error": t["input_parse_error"]}
+                        status = "error"
+                    else:
+                        tool_result = await tools.execute_tool(
+                            db, user_id, name, t["input"], req.session_id, caller_profile_id=profile.id
+                        )
+                        status = "success"
                 # 10.3.3. Registrar recursos afectados por la delegación si es el caso
                 if name == "delegate_to_specialist" and isinstance(tool_result, dict):
                     for key in tool_result.get("affected_resources") or []:

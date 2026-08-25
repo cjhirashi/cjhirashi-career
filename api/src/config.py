@@ -129,13 +129,6 @@ class Settings(BaseSettings):
             "price_input_per_million": 0.62,
             "price_output_per_million": 1.85,
         },
-        "cohere.command-r-v1:0": {
-            "label": "Command R",
-            "tier": "economy",
-            "invoke_via": "foundation",
-            "price_input_per_million": 0.15,
-            "price_output_per_million": 0.60,
-        },
         "us.anthropic.claude-haiku-4-5-20251001-v1:0": {
             "label": "Claude Haiku 4.5",
             "tier": "standard",
@@ -208,6 +201,16 @@ class Settings(BaseSettings):
     JOB_DISCOVERY_TIMEOUT_SECONDS: float = 8.0
     JOB_DISCOVERY_MAX_RESULTS: int = 50
     JOB_DISCOVERY_USER_AGENT: str = "Portafolio-cjhirashi/1.0 (job-discovery; +https://cjhirashi.com)"
+
+    # -------------------------------------------------------------------------
+    # GitHub — PAT de solo lectura para el L3 agent_github
+    # -------------------------------------------------------------------------
+    GITHUB_TOKEN: str = ""
+
+    # -------------------------------------------------------------------------
+    # Consulta web — Brave Search opcional; si vacío se usa DuckDuckGo
+    # -------------------------------------------------------------------------
+    BRAVE_SEARCH_API_KEY: str = ""
 
     # -------------------------------------------------------------------------
     # Portal público — usuario único cuyos datos sirve /public/*

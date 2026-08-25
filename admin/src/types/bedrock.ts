@@ -121,6 +121,8 @@ export interface BedrockInstructions {
 export interface BedrockAgentProfilePrompt {
   profile_id: string
   label: string
+  level?: number
+  user_facing?: boolean
   default_suffix: string
   override_suffix: string | null
   effective_suffix: string

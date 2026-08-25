@@ -260,17 +260,35 @@ async def _record_audit(
     await db.commit()
 
 
-async def _execute_tool(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
+async def _execute_tool(
+    db,
+    user_id: str,
+    name: str,
+    tool_input: Dict[str, Any],
+    session_id: str,
+    caller_profile_id: Optional[str] = None,
+) -> Dict[str, Any]:
     """Run one tool call, scoped to `user_id` throughout - same isolation
     guarantee as every other authenticated route in this API."""
     if name == "search_knowledge_base":
+        from services.methodology_scope import applies_to_agent
+
         vector = await embed_text(tool_input["query"])
+        resource_type = tool_input.get("type")
+        top_k = tool_input.get("top_k", 5)
+        fetch_k = top_k * 3 if resource_type == "methodology" else top_k
         results = await qdrant_service.search(
             user_id=user_id,
             vector=vector,
-            top_k=tool_input.get("top_k", 5),
-            resource_type=tool_input.get("type"),
+            top_k=fetch_k,
+            resource_type=resource_type,
         )
+        if resource_type == "methodology":
+            results = [
+                row
+                for row in results
+                if applies_to_agent(row.get("agent_profile_ids"), caller_profile_id)
+            ][:top_k]
         return {"results": results}
 
     if name == "list_career_record":
@@ -512,6 +530,8 @@ def default_system_prompt() -> str:
         "Tienes acceso completo de lectura y escritura sobre sus datos de carrera a través de tus "
         "herramientas - puedes listar, obtener, crear, actualizar y eliminar registros directamente, "
         "sin pedir confirmación adicional del sistema (Carlos ya te la dio al usarte). "
+        "Redactar el contenido en el chat no lo persiste: debes llamar las tools de escritura "
+        "en el mismo turno; no afirmes que guardaste hasta que la tool devuelva el id. "
         "Antes de operar una tabla que no conozcas bien, usa search_knowledge_base para consultar la "
         "metodología operativa correspondiente - ahí está documentado cómo se relacionan las tablas "
         "entre sí y qué disciplina seguir en cada una. Esas metodologías (resource_key "

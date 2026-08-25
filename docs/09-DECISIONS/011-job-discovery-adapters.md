@@ -45,7 +45,7 @@ Rechazado: viola el orquestador único.
 ## Implicaciones
 
 - [x] Endpoints `/career/job-discoveries/*`
-- [x] Tools Bedrock en perfil `search`
+- [x] Tools Bedrock en perfil `agent_search_operations`
 - [x] Campos `career_board_*` en `target_companies`
 
 ## Seguimiento

@@ -121,7 +121,7 @@ Solo cancela posts con `status=scheduled`. Posts ya publicados no se pueden borr
 
 ## Agente Bedrock
 
-Tools disponibles (perfil `digital`):
+Tools disponibles (perfil L3 `agent_linkedin_publishing`; el chat contextual sigue en L2 `agent_digital_presence`):
 
 - `get_linkedin_status`
 - `list_linkedin_posts`

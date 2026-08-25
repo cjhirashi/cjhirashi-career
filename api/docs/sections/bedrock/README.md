@@ -130,7 +130,7 @@ Bloqueo: si gasto UTC del día ≥ `BEDROCK_DAILY_BUDGET_USD`, el chat retorna e
 | `GET` | `/bedrock/agent-profiles` | Lista perfiles + suffix prompts |
 | `PUT` | `/bedrock/agent-profiles/{profile_id}/prompt` | Suffix por perfil |
 
-**9 perfiles:** `orchestrator`, `identity`, `search`, `digital`, `networking`, `support`, `methodologies`, `pdf_design`, `visual_design`
+**Jerarquía de 3 niveles (ADR-012 / ADR-013):** L1 `agent_orchestrator`; L2 `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`; L3 `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github` (sin chat).
 
 Definidos en `services/bedrock/agent_profiles.py`.
 
@@ -140,7 +140,7 @@ Definidos en `services/bedrock/agent_profiles.py`.
 
 | Método | Path | Descripción |
 |--------|------|-------------|
-| `GET` | `/bedrock/conversations` | Listar (`?session_type=general\|contextual` y `?agent_profile_id=identity\|search\|orchestrator\|…`) |
+| `GET` | `/bedrock/conversations` | Listar (`?session_type=general\|contextual` y `?agent_profile_id=agent_professional_identity\|agent_search_operations\|agent_orchestrator\|…`) |
 | `GET` | `/bedrock/conversations/{session_id}/messages` | Mensajes de una conversación |
 | `PUT` | `/bedrock/conversations/{session_id}` | Renombrar |
 | `DELETE` | `/bedrock/conversations/{session_id}` | Eliminar |
@@ -193,20 +193,24 @@ Ejecutadas en `services/bedrock/tools.py` → `bedrock_service._execute_tool`:
 | CRUD carrera | `list/get/create/update/delete_career_record`, `count_career_records` |
 | Conocimiento | `search_knowledge_base`, `describe_resource_schema` |
 | Auditoría | `list_recent_changes`, `restore_deleted_record` |
-| LinkedIn | `get_linkedin_status`, `create_linkedin_post`, … |
-| PDF | `pdf_template` (tabla plantillas), `pdf_style` (tabla estilos), `generate_pdf` |
-| Imágenes | `generate_image`, `attach_image_to_record` |
-| Vacantes | `run_job_discovery`, `import_job_url`, `save_job_listings` |
-| Delegación | `delegate_to_specialist` (solo chat general) |
+| LinkedIn | `get_linkedin_status`, `create_linkedin_post`, … (L3 `agent_linkedin_publishing`) |
+| PDF | `pdf_template` / `pdf_style` (L2 `agent_pdf_design`); `generate_pdf` / `render_record_pdf` (L3 `agent_pdf_render`) |
+| Imágenes | `generate_image`, `attach_image_to_record` (L3 `agent_visual_design`) |
+| Vacantes | `run_job_discovery`, `import_job_url`, `save_job_listings` (L3 `agent_vacancy_search`) |
+| Redacción | CRUD `cv-versions` (L3 `agent_cv_writing`); CRUD `cover-letter-versions` (L3 `agent_cover_letter_writing`) |
+| Web | `web_search`, `web_fetch` (L3 `agent_web_search`) |
+| GitHub | `get_github_status`, `list_github_repos`, `get_github_file`, … (L3 `agent_github`, solo lectura) |
+| Delegación | `delegate_to_specialist` (L1→L2|L3, L2→L3) |
 
 ---
 
-## Dos superficies de chat
+## Superficies de chat y niveles
 
 | Superficie | UI | Agente | Delegación |
 |------------|-----|--------|------------|
-| `contextual` | Sidebar derecha | Especialista por sección | No |
-| `general` | `/agent/chat` | Orquestador | Sí |
+| `general` | `/agent/chat` | L1 orquestador (sin CRUD) | Sí, a L2 y L3 |
+| `contextual` | Sidebar derecha | L2 de la sección | Sí, solo a L3 |
+| — | Ninguna | L3 tarea | No |
 
 ---
 

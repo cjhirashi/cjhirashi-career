@@ -117,8 +117,13 @@ def consume_converse_stream(stream) -> Dict[str, Any]:
         raw = tu.pop("input_raw", "")
         try:
             tu["input"] = json.loads(raw) if raw else {}
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as exc:
+            logger.warning("Invalid JSON in streamed tool input name=%s: %s", tu.get("name"), exc)
             tu["input"] = {}
+            tu["input_parse_error"] = (
+                f"Invalid JSON in tool arguments ({exc}). "
+                "Retry with valid JSON; escape quotes and newlines in Markdown."
+            )
         parsed.append(tu)
 
     return {

@@ -150,7 +150,7 @@ Crea registros `Vacancy` con `evaluation=pending_review` para seguimiento en el 
 
 ## Agente Bedrock
 
-Tools equivalentes (perfil `search` / `orchestrator`):
+Tools equivalentes (perfil L3 `agent_vacancy_search`; el chat contextual sigue en L2 `agent_search_operations`):
 
 - `list_job_providers`
 - `run_job_discovery`

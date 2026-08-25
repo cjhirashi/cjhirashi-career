@@ -126,6 +126,8 @@ class BedrockInstructionsUpdateRequest(BaseModel):
 class BedrockAgentProfilePromptResponse(BaseModel):
     profile_id: str
     label: str
+    level: int = 2
+    user_facing: bool = True
     default_suffix: str
     override_suffix: Optional[str] = None
     effective_suffix: str

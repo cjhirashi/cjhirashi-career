@@ -113,7 +113,7 @@ Docs y README **dentro de `api/`** que este paquete usa pero no sustituye. Si el
 
 Motor del asistente IA del Admin Panel. No es un servidor HTTP propio: la ruta FastAPI [`POST /bedrock/chat`](../../../docs/sections/bedrock/README.md) traduce JSON + [JWT](../../../docs/sections/auth/README.md) a un `ChatTurnRequest`, llama a este paquete y serializa sus eventos como SSE (`data: {...}\n\n`). Router: [`routes/bedrock.py`](../../routes/README.md).
 
-El paquete orquesta: presupuesto → perfil → prompt → historial → Converse (AWS) → tools ([PostgreSQL](../../../docs/DATABASE.md) / [Qdrant](../../../docs/sections/infrastructure/README.md) / [LinkedIn](../../../docs/sections/linkedin/README.md) / [PDF](../../../docs/sections/pdf-templates/README.md) / imágenes en [MinIO](../../../docs/sections/files/README.md)) → respuesta. AWS Bedrock nunca toca la base de datos; las tools sí, siempre filtradas por `user_id` ([aislamiento](../../../docs/sections/infrastructure/README.md)).
+El paquete orquesta una jerarquía de 3 niveles (ADR-012): presupuesto → perfil (L1/L2/L3) → prompt → historial (solo L1/L2) → Converse (AWS) → tools o `delegate_to_specialist` → respuesta. L1 no hace CRUD. L3 no tiene chat. AWS Bedrock nunca toca la base de datos; las tools sí, siempre filtradas por `user_id` ([aislamiento](../../../docs/sections/infrastructure/README.md)).
 
 ### Recibe
 
@@ -236,7 +236,7 @@ Contrato HTTP del mismo flujo: [sections/bedrock — Chat (SSE)](../../../docs/s
 
 # Nivel 2 — `agent_loop.py`
 
-Orquestador del turno. No llama a AWS ni a PostgreSQL CRUD por sí mismo: coordina al resto de módulos y **emite eventos**. Es el único sitio que conoce el ciclo completo Converse ↔ tools.
+Orquestador del turno y de la jerarquía L1/L2/L3. No llama a AWS ni a PostgreSQL CRUD por sí mismo: coordina al resto de módulos y **emite eventos**. Es el único sitio que conoce el ciclo completo Converse ↔ tools y que valida `delegate_to_specialist` (nivel del caller, profundidad máxima 2, destinos permitidos).
 
 **Lee también:** [contrato SSE](../../../docs/sections/bedrock/README.md) · [fachada `bedrock_service`](../README.md) · [router](../../routes/README.md)
 
@@ -276,10 +276,14 @@ flowchart TD
     ST --> CV[converse_client.converse]
     CV -->|stop_reason tool_use| TOOL[execute_tool / delegate]
     TOOL --> CV
-    CV -->|end_turn| DONE["yield done"]
+    CV -->|end_turn| NUDGE{write sin persistir?}
+    NUDGE -->|sí, una vez| CV
+    NUDGE -->|no| DONE["yield done"]
     CV -->|BedrockError| ERR["yield error"]
     TOOL -->|max rounds| ERR
 ```
+
+Si un L2 cierra el turno anunciando un write (p. ej. «Ahora actualizo opm-57») o el usuario pidió guardar / procede y no hubo tool de escritura, `should_nudge_persist` inyecta un recordatorio y vuelve a `converse` con `force_tool_use=True` (una sola vez). Un «ok» no basta salvo que el asistente haya reivindicado el write en ese turno.
 
 ---
 
@@ -385,7 +389,7 @@ Delegación interna (historial apagado, máx. 4 vueltas):
 ```python
 result = await run_single_turn_sync(
     db, user_id=uid, session_id=sid, message="Lista proyectos publicados",
-    chat_surface="contextual", agent_profile_id="digital",
+    chat_surface="contextual", agent_profile_id="agent_digital_presence",
     max_round_trips=4, record_history=False,
 )
 # {"type": "done", "reply": "Tienes 3 proyectos...", "affected_resources": ["projects"]}
@@ -422,8 +426,8 @@ record_history: bool = True
 ```python
 {"type": "status", "message": "Pensando..."}
 {"type": "status", "message": "Buscando registros..."}
-{"type": "delegation_start", "agent_profile_id": "digital", "label": "...", "task_preview": "..."}
-{"type": "delegation_end", "agent_profile_id": "digital", "success": True, "summary_preview": "..."}
+{"type": "delegation_start", "agent_profile_id": "agent_digital_presence", "label": "...", "task_preview": "..."}
+{"type": "delegation_end", "agent_profile_id": "agent_digital_presence", "success": True, "summary_preview": "..."}
 {"type": "done", "reply": "...", "affected_resources": ["projects"]}
 {"type": "error", "message": "..."}
 ```
@@ -611,7 +615,7 @@ Dict interno. Fallos AWS → `BedrockError` con mensaje de `format_bedrock_clien
 
 ### Ejemplo
 
-Primera ronda del loop: `force_tool_use=True` → el modelo **debe** llamar una tool. Segunda ronda: `False` → suele devolver texto y `end_turn`.
+Primera ronda del loop: `force_tool_use=True` → el modelo **debe** llamar una tool. Segunda ronda: `False` → suele devolver texto y `end_turn`. Si hay persist-nudge, esa ronda extra también va con `force_tool_use=True`.
 
 ### Flujo
 
@@ -640,7 +644,7 @@ Catálogo de tools Converse (`_RAW_TOOLS`) y dispatcher. El modelo **no** ejecut
 Dos tiers:
 
 - **Legacy (carrera):** `list/get/create/update/delete_career_record`, `count_career_records`, `search_knowledge_base`, schema, auditoría → `bedrock_service._execute_tool`. Recursos: [identidad/proyectos](../../../docs/sections/career-identity/README.md), [búsqueda/vacantes](../../../docs/sections/career-search/README.md), [digital](../../../docs/sections/career-digital/README.md), [tags](../../../docs/sections/career-support/README.md), [metodologías](../../../docs/sections/career-methodologies/README.md). Vector search: [Qdrant](../../../docs/sections/infrastructure/README.md).
-- **Extended:** [LinkedIn](../../../docs/sections/linkedin/README.md), [plantillas PDF](../../../docs/sections/pdf-templates/README.md) (`pdf_template`) y [estilos PDF](../../../docs/sections/pdf-template-styles/README.md) (`pdf_style`), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
+- **Extended:** [LinkedIn](../../../docs/sections/linkedin/README.md), [plantillas PDF](../../../docs/sections/pdf-templates/README.md) (`pdf_template`) y [estilos PDF](../../../docs/sections/pdf-template-styles/README.md) (`pdf_style`), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), consulta web (`web_search` / `web_fetch`), GitHub solo lectura, `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
 
 Todo resultado pasa por `truncate_tool_result`.
 
@@ -715,7 +719,7 @@ Lista `[{toolSpec: {name, description, inputSchema: {json}}}]`.
 
 ### Ejemplo
 
-Perfil digital → specs de CRUD + LinkedIn, **sin** `delegate_to_specialist` ni `run_job_discovery`.
+`agent_digital_presence` → specs de CRUD + `delegate_to_specialist`, **sin** tools de LinkedIn ni `run_job_discovery`. Publicación LinkedIn: `agent_linkedin_publishing`.
 
 ### Flujo
 
@@ -877,7 +881,7 @@ flowchart LR
 
 ### Recibe
 
-`db`, `user_id`, `session_id`, `first_message`, `session_type` (`contextual` | `general`), `agent_profile_id` (id del especialista resuelto, p. ej. `identity`).
+`db`, `user_id`, `session_id`, `first_message`, `session_type` (`contextual` | `general`), `agent_profile_id` (id del especialista resuelto, p. ej. `agent_professional_identity`).
 
 ### Entrega
 
@@ -974,7 +978,7 @@ Lista de `BedrockConversation` ordenada por `updated_at` desc. Usada por [`GET /
 
 ### Ejemplo
 
-`session_type="contextual"` + `agent_profile_id="identity"` → solo chats del especialista de Identidad. Sin `agent_profile_id` → todas las del tipo. Filas con `agent_profile_id` NULL no salen en listas filtradas por agente.
+`session_type="contextual"` + `agent_profile_id="agent_professional_identity"` → solo chats del especialista de Identidad. Sin `agent_profile_id` → todas las del tipo. Filas con `agent_profile_id` NULL no salen en listas filtradas por agente.
 
 ### Flujo
 
@@ -987,11 +991,13 @@ flowchart LR
 
 # Nivel 2 — `agent_profiles.py`
 
-Config **estática** de 9 especialistas (`AgentProfile`). Espejo de `admin/src/config/agentProfiles.ts`. Decide *quién* responde y *qué tools* puede usar.
+Config **estática** de perfiles en 3 niveles (`AgentProfile.level`). Espejo user-facing: `admin/src/config/agentProfiles.ts`. Decide *quién* responde, *qué tools* puede usar y *a quién* puede delegar.
 
-**Lee también:** [GET/PUT agent-profiles](../../../docs/sections/bedrock/README.md)
+**Lee también:** [GET/PUT agent-profiles](../../../docs/sections/bedrock/README.md) · [ADR-012](../../../../docs/09-DECISIONS/012-bedrock-three-level-agents.md) · [ADR-013](../../../../docs/09-DECISIONS/013-l3-web-and-github-agents.md)
 
-Perfiles: `orchestrator`, `identity` ([carrera identidad](../../../docs/sections/career-identity/README.md)), `search` ([búsqueda](../../../docs/sections/career-search/README.md) + [job discovery](../../../docs/sections/job-discovery/README.md)), `digital` ([presencia digital](../../../docs/sections/career-digital/README.md) + [LinkedIn](../../../docs/sections/linkedin/README.md)), `networking`, `support` ([tags](../../../docs/sections/career-support/README.md)), `methodologies` ([metodologías](../../../docs/sections/career-methodologies/README.md)), `pdf_design` ([plantillas](../../../docs/sections/pdf-templates/README.md) + [estilos](../../../docs/sections/pdf-template-styles/README.md)), `visual_design` (imágenes; [files](../../../docs/sections/files/README.md)).
+**L1:** `agent_orchestrator` (solo `delegate_to_specialist`).
+**L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`.
+**L3 (sin chat):** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github`.
 
 ### Recibe
 
@@ -1003,8 +1009,8 @@ Un `AgentProfile` (tools, suffix, modelo default, flags `write_enabled` / `can_d
 
 ### Ejemplo
 
-Contextual + `resource_key=projects` → perfil `digital`.  
-`chat_surface=general` → siempre `orchestrator`.
+Contextual + `resource_key=projects` → perfil `agent_professional_identity`.  
+`chat_surface=general` → siempre `agent_orchestrator`. Contextual → L2 de la ruta/`resource_key`. L3 nunca es agente principal de un chat de usuario.
 
 ### Flujo
 
@@ -1021,15 +1027,15 @@ flowchart TD
 
 ## Nivel 3 — `AgentProfile`
 
-Dataclass frozen: `id`, `label`, `domain_keys`, `resource_keys`, `methodology_sections`, `system_prompt_suffix`, `default_model_id`, `allowed_tool_names`, `write_enabled`, `can_delegate`.
+Dataclass frozen: `id`, `label`, `level` (1|2|3), `domain_keys`, `resource_keys`, `methodology_sections`, `system_prompt_suffix`, `default_model_id`, `allowed_tool_names`, `write_enabled`. Propiedades: `can_delegate` (L1/L2), `user_facing` (L1/L2).
 
 ### Recibe / Entrega
 
-No es una función: es el valor que circula por el loop. `resource_keys=None` = todos los recursos. Solo `orchestrator` tiene `can_delegate=True`.
+No es una función: es el valor que circula por el loop. `resource_keys=None` = todos los recursos. Delegación: L1→L2|L3, L2→L3, L3 nadie.
 
 ### Ejemplo
 
-`visual_design.allowed_tool_names` incluye `generate_image` y no incluye `run_job_discovery`.
+`agent_visual_design.allowed_tool_names` incluye `generate_image` y no incluye `run_job_discovery`.
 
 ### Flujo
 
@@ -1053,7 +1059,7 @@ Un perfil o la lista completa. ID desconocido → `KeyError` (la ruta lo mapea a
 
 ### Ejemplo
 
-`get_profile("digital")` → perfil con LinkedIn + publicaciones.
+`get_profile("agent_digital_presence")` → perfil con LinkedIn + publicaciones.
 
 ### Flujo
 
@@ -1076,19 +1082,19 @@ Router de especialista.
 
 ### Entrega
 
-`AgentProfile`. Fallback: `orchestrator`.
+`AgentProfile`. Fallback: `agent_orchestrator`.
 
 ### Ejemplo
 
 `chat_surface="general"` ignora la página y el `agent_profile_id`.  
-Contextual con `route="/linkedin"` → `digital`.  
-Contextual con `resource_key="achievements"` → `identity`.
+Contextual con `route="/linkedin"` → `agent_digital_presence`.  
+Contextual con `resource_key="achievements"` → `agent_professional_identity`.
 
 ### Flujo
 
 ```mermaid
 flowchart TD
-    A{general?} -->|sí| O[orchestrator]
+    A{general?} -->|sí| O[agent_orchestrator]
     A -->|no| B{agent_profile_id?}
     B -->|sí| G[get_profile]
     B -->|no| C{route en _ROUTE_TO_PROFILE?}
@@ -1110,21 +1116,23 @@ Filtra el catálogo global al subset del perfil.
 
 ### Entrega
 
-`set[str]`. Orquestador = todas + `delegate_to_specialist`. Resto: quita LinkedIn / PDF / imagen / job discovery si no son de su dominio.
+`set[str]`. L1 = solo `delegate_to_specialist`. L2 = CRUD de dominio + delegate a L3. L3 = tools de su tarea, sin delegate.
 
 ### Ejemplo
 
-`identity` no recibe `create_linkedin_post`. `search` sí recibe `run_job_discovery`.
+`agent_professional_identity` no recibe `create_linkedin_post`. `agent_vacancy_search` sí recibe `run_job_discovery`; `agent_search_operations` no (delega).
 
 ### Flujo
 
 ```mermaid
 flowchart TD
-    A{orchestrator?} -->|sí| ALL[all + delegate]
-    A -->|no| B{allowed_tool_names?}
-    B -->|sí| I[intersección]
-    B -->|no| C[builtins menos delegate]
-    C --> D[restar tools de otros dominios]
+    A{allowed_tool_names?} -->|sí| I[intersección con catálogo]
+    A -->|no| B{L1 agent_orchestrator?}
+    B -->|sí| DEL[solo delegate_to_specialist]
+    B -->|no| C[L2 base CRUD]
+    I --> F[delegate según can_delegate]
+    DEL --> F
+    C --> F
 ```
 
 ---
@@ -1191,11 +1199,11 @@ flowchart TD
 
 # Nivel 2 — `delegation.py`
 
-Implementa la tool `delegate_to_specialist` **solo en chat general** ([dos superficies](../../../docs/sections/bedrock/README.md)). El orquestador no hace el CRUD: lanza un sub-turno acotado con el perfil especialista.
+Implementa la tool `delegate_to_specialist` para L1 y L2 ([ADR-012](../../../../docs/09-DECISIONS/012-bedrock-three-level-agents.md)). El caller no ejecuta la tarea del destino: lanza un sub-turno acotado (sin historial de sesión). L2 puede anidar un hop a L3.
 
 **Lee también:** eventos `delegation_*` en [sections/bedrock](../../../docs/sections/bedrock/README.md)
 
-Límites (en `agent_loop`, no aquí): `chat_surface` debe ser `general`; `BEDROCK_MAX_DELEGATIONS_PER_TURN`.
+Límites (en `agent_loop`, no aquí): `can_delegate`, destinos según nivel, profundidad máxima 2, `BEDROCK_MAX_DELEGATIONS_PER_TURN`.
 
 ### Recibe
 
@@ -1207,13 +1215,13 @@ Límites (en `agent_loop`, no aquí): `chat_surface` debe ser `general`; `BEDROC
 
 ### Ejemplo
 
-Orquestador: “lista proyectos” → sub-turno `digital` → `summary` con los 3 proyectos, `affected_resources: ["projects"]`.
+Orquestador: “lista proyectos” → sub-turno `agent_professional_identity` → `summary` con los 3 proyectos, `affected_resources: ["projects"]`.
 
 ### Flujo
 
 ```mermaid
 flowchart TD
-    ORCH[orchestrator tool_use] --> SUB[run_specialist_sub_turn]
+    ORCH[agent_orchestrator tool_use] --> SUB[run_specialist_sub_turn]
     SUB --> SYNC["run_single_turn_sync contextual, history=False, max=4"]
     SYNC --> LOOP[chat_stream del especialista]
     LOOP --> OUT["{summary, affected_resources}"]
@@ -1241,7 +1249,7 @@ El mensaje interno es `task` o `task + "\n\nContexto:\n" + context`. Usa `profil
 ```python
 await run_specialist_sub_turn(
     db, user_id=uid, session_id=sid,
-    profile=get_profile("digital"),
+    profile=get_profile("agent_digital_presence"),
     task="Listar proyectos publicados",
     context="El usuario está en /career/projects",
 )
@@ -1464,7 +1472,7 @@ Keyword-only: `user_id`, `session_id`, `model_id`, `round_type`, `usage`, `tool_
 
 ### Ejemplo
 
-`round_type="converse"`, `agent_profile_id="digital"`, usage de esa ronda.
+`round_type="converse"`, `agent_profile_id="agent_digital_presence"`, usage de esa ronda.
 
 ### Flujo
 
@@ -1490,7 +1498,7 @@ Capas, en orden:
 2. `GROUNDING_RULE` (no alucinar datos de carrera; usar tools)
 3. Suffix del perfil (`profile_prompts.get_effective_suffix`)
 4. Contexto de página si hay `resource_key`
-5. `JOB_DISCOVERY_AUTH_RULE` si perfil `search`/`orchestrator` o ruta `/job-discovery`
+5. `JOB_DISCOVERY_AUTH_RULE` si perfil `agent_search_operations` / `agent_vacancy_search` o ruta `/job-discovery`
 
 ### Recibe
 
@@ -1513,7 +1521,7 @@ flowchart TD
     S --> P{resource_key?}
     P -->|sí| CTX[frase de página]
     P -->|no| J
-    CTX --> J{search / orchestrator / job-discovery?}
+    CTX --> J{agent_search_operations / agent_vacancy_search / job-discovery?}
     J -->|sí| JOB[JOB_DISCOVERY_AUTH_RULE]
     J -->|no| OUT[join \n\n]
     JOB --> OUT
@@ -1581,7 +1589,7 @@ Prompt final concatenado. Partes vacías se omiten.
 
 ### Ejemplo
 
-`compose_system_prompt(db, digital_profile, {"resource_key": "projects", "page_title": "Proyectos"})` → base + grounding + suffix digital + frase de página.
+`compose_system_prompt(db, identity_profile, {"resource_key": "projects", "page_title": "Proyectos"})` → base + grounding + suffix de `agent_professional_identity` + frase de página.
 
 ### Flujo
 
@@ -1605,7 +1613,7 @@ Suffix efectivo, o dicts para la UI (`default_suffix`, `override_suffix`, `effec
 
 ### Ejemplo
 
-Sin override → suffix compilado del perfil `digital`. Con override → el texto de PG.
+Sin override → suffix compilado del perfil `agent_digital_presence`. Con override → el texto de PG.
 
 ### Flujo
 
@@ -1658,7 +1666,7 @@ Lista de dicts, un ítem por perfil estático.
 
 ```python
 {
-  "profile_id": "digital",
+  "profile_id": "agent_digital_presence",
   "label": "...",
   "default_suffix": "...",
   "override_suffix": None,

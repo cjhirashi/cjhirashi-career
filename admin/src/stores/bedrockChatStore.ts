@@ -1,6 +1,52 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import {
+  AGENT_CHANGELOG,
+  AGENT_DIGITAL_PRESENCE,
+  AGENT_METHODOLOGIES,
+  AGENT_NETWORKING,
+  AGENT_ORCHESTRATOR,
+  AGENT_PDF_DESIGN,
+  AGENT_PDF_RENDER,
+  AGENT_PROFESSIONAL_IDENTITY,
+  AGENT_SEARCH_OPERATIONS,
+  AGENT_SUPPORT,
+  AGENT_TASK_MANAGER,
+  AGENT_VISUAL_DESIGN,
+} from '@/config/agentProfiles'
 import { BedrockSessionType } from '@/types/bedrock'
+
+/** One-shot persist migrate: localStorage buckets used pre-`agent_` ids. */
+const LEGACY_PROFILE_IDS: Record<string, string> = {
+  orchestrator: AGENT_ORCHESTRATOR,
+  identity: AGENT_PROFESSIONAL_IDENTITY,
+  search: AGENT_SEARCH_OPERATIONS,
+  digital: AGENT_DIGITAL_PRESENCE,
+  networking: AGENT_NETWORKING,
+  support: AGENT_SUPPORT,
+  methodologies: AGENT_METHODOLOGIES,
+  pdf_design: AGENT_PDF_DESIGN,
+  pdf_render: AGENT_PDF_RENDER,
+  visual_design: AGENT_VISUAL_DESIGN,
+  changelog: AGENT_CHANGELOG,
+  task_manager: AGENT_TASK_MANAGER,
+}
+
+function canonicalPersistedProfileId(profileId: string): string {
+  return LEGACY_PROFILE_IDS[profileId] ?? profileId
+}
+
+function remapLegacyAgentBuckets(ids: Record<string, string>): Record<string, string> {
+  const next: Record<string, string> = {}
+  for (const [key, sessionId] of Object.entries(ids)) {
+    const colon = key.indexOf(':')
+    if (colon === -1) continue
+    const sessionType = key.slice(0, colon)
+    const profileId = canonicalPersistedProfileId(key.slice(colon + 1))
+    next[`${sessionType}:${profileId}`] = sessionId
+  }
+  return next
+}
 
 /** Harness local — session_id UUID; historial en PG. */
 const newSessionId = () => crypto.randomUUID()
@@ -53,7 +99,7 @@ export const useBedrockChatStore = create<BedrockChatState>()(
   persist(
     (set, get) => ({
       activeSessionIds: {
-        'general:orchestrator': newSessionId(),
+        [conversationBucket('general', AGENT_ORCHESTRATOR)]: newSessionId(),
       },
       sessionPrefs: {},
       contextualAgentProfileId: null,
@@ -107,7 +153,7 @@ export const useBedrockChatStore = create<BedrockChatState>()(
     }),
     {
       name: 'bedrock-chat-store',
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         const legacy = persisted as PersistedChatState
         let activeSessionIds: Record<string, string> = { ...(legacy.activeSessionIds ?? {}) }
@@ -121,19 +167,23 @@ export const useBedrockChatStore = create<BedrockChatState>()(
 
         if (version < 2) {
           const next: Record<string, string> = {}
-          const generalId = activeSessionIds['general:orchestrator'] ?? activeSessionIds.general
-          if (generalId) next['general:orchestrator'] = generalId
-          return {
-            activeSessionIds: next,
-            sessionPrefs: legacy.sessionPrefs ?? {},
-            contextualAgentProfileId: null,
-          }
+          const generalId =
+            activeSessionIds[conversationBucket('general', AGENT_ORCHESTRATOR)] ??
+            activeSessionIds['general:orchestrator'] ??
+            activeSessionIds.general
+          if (generalId) next[conversationBucket('general', AGENT_ORCHESTRATOR)] = generalId
+          activeSessionIds = next
         }
 
+        if (version < 3) {
+          activeSessionIds = remapLegacyAgentBuckets(activeSessionIds)
+        }
+
+        const contextual = legacy.contextualAgentProfileId
         return {
           activeSessionIds,
           sessionPrefs: legacy.sessionPrefs ?? {},
-          contextualAgentProfileId: legacy.contextualAgentProfileId ?? null,
+          contextualAgentProfileId: contextual ? canonicalPersistedProfileId(contextual) : null,
         }
       },
       partialize: (state) => ({

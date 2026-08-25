@@ -19,7 +19,7 @@ _METHODOLOGY_TITLE = "Plantillas PDF y estilos CSS"
 _CONTENT = """\
 # Plantillas PDF y estilos CSS
 
-Metodología operativa del agente **pdf_design** y del Admin Panel para CVs, cartas y documentos genéricos (WeasyPrint).
+Metodología operativa del agente **agent_pdf_design** y del Admin Panel para CVs, cartas y documentos genéricos (WeasyPrint).
 
 ## Modelo de dos tablas
 

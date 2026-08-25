@@ -1,5 +1,9 @@
 # ADR-009: Multi-agente — dos chats y delegación
 
+## Estado
+
+**Deprecado** — reemplazado por [ADR-012](./012-bedrock-three-level-agents.md) (2026-08-25).
+
 ## Decisión
 
 - Chat **contextual**: perfiles especialistas, sin delegación.

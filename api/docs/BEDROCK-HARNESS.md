@@ -28,7 +28,7 @@ Body (`BedrockChatRequest`):
 
 ## Otros
 
-- `GET /bedrock/conversations?session_type=general|contextual&agent_profile_id=identity|orchestrator|…`
+- `GET /bedrock/conversations?session_type=general|contextual&agent_profile_id=agent_professional_identity|agent_orchestrator|…`
 - `GET /bedrock/knowledge/search?q=...` — búsqueda semántica Qdrant
 
 Documentación HTTP completa: [sections/bedrock/README.md](sections/bedrock/README.md). Índice de docs API: [README.md](README.md).
@@ -57,7 +57,6 @@ El Harness local usa la API **Converse** de `bedrock-runtime` con el usuario IAM
 | `amazon.nova-micro-v1:0` | foundation | Solo `us-east-1` |
 | `amazon.nova-lite-v1:0` | foundation | Solo `us-east-1` |
 | `deepseek.v3.2` | foundation | |
-| `cohere.command-r-v1:0` | foundation | |
 | `meta.llama3-3-70b-instruct-v1:0` | foundation | |
 | `mistral.mistral-large-2402-v1:0` | foundation | |
 | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | inference_profile | Requiere permiso en us-east-1/2 + us-west-2 |
