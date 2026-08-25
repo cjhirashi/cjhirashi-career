@@ -64,8 +64,14 @@ async def lifespan(app: FastAPI):
         storage_service.ensure_bucket()
         logger.info("MinIO bucket ready")
     except Exception as e:
-        logger.error(f"Failed to initialize MinIO bucket: {e}")
-        raise
+        # Files/uploads will fail until MinIO is reachable, but the rest of
+        # the API (career CRUD, PDF templates, auth, Bedrock) must stay up.
+        # A hard raise here used to crash uvicorn on a bad MINIO_ENDPOINT,
+        # which Cloudflare surfaces as error 520 on every /api request.
+        logger.error(
+            "Failed to initialize MinIO bucket (%s). File storage is unavailable; other routes will still serve.",
+            e,
+        )
 
     scheduler_task = asyncio.create_task(linkedin_scheduler.scheduler_loop())
     logger.info("LinkedIn post scheduler started")

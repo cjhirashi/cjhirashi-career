@@ -28,14 +28,31 @@ export class NetworkError extends Error {
   }
 }
 
+const PROXY_FAILURE_RE =
+  /cloudflare|origin web server|invalid or incomplete response|error 520/i
+
+const isProxyFailureText = (value: unknown): boolean =>
+  typeof value === 'string' && PROXY_FAILURE_RE.test(value)
+
+const PROXY_UNAVAILABLE_MESSAGE =
+  'La API no está disponible en este momento. Reintenta en unos segundos.'
+
 // Extract error message from AxiosError
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
-    if (error.response?.data?.detail) {
-      return error.response.data.detail
+    const data = error.response?.data
+    if (
+      isProxyFailureText(data) ||
+      isProxyFailureText(data?.detail) ||
+      isProxyFailureText(data?.message)
+    ) {
+      return PROXY_UNAVAILABLE_MESSAGE
     }
-    if (error.response?.data?.message) {
-      return error.response.data.message
+    if (data?.detail) {
+      return data.detail
+    }
+    if (data?.message) {
+      return data.message
     }
     if (error.response?.status === 401) {
       return 'Unauthorized. Please login again.'
