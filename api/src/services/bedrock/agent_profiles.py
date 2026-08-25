@@ -43,10 +43,9 @@ _BUILTIN_TOOL_NAMES = {
     "list_linkedin_posts",
     "create_linkedin_post",
     "delete_scheduled_linkedin_post",
-    "list_pdf_templates",
-    "get_pdf_template",
-    "create_pdf_template",
-    "update_pdf_template",
+    "pdf_template",
+    "pdf_style",
+    "generate_pdf",
     "generate_image",
     "attach_image_to_record",
     "list_generated_images",
@@ -111,9 +110,9 @@ _PDF_DESIGN_SUFFIX = (
     "Relación: **un estilo, muchas plantillas**. Varias plantillas pueden compartir el mismo "
     "`style_id`. Al renderizar (`generate_pdf`), el backend combina HTML de la plantilla + CSS "
     "del estilo referenciado.\n"
-    "Flujo obligatorio: (a) crear o elegir estilo con `list/get/create/update_pdf_template_style`; "
-    "(b) documentar clases en `style_guide`; (c) crear plantilla con `create_pdf_template` "
-    "incluyendo `style_id` y `variables`; (d) probar con `generate_pdf`. "
+    "Flujo obligatorio: (a) crear o elegir estilo con la tool `pdf_style` (action=list|get|create|update); "
+    "(b) documentar clases en `style_guide`; (c) crear plantilla con la tool `pdf_template` "
+    "(action=create) incluyendo `style_id` y `variables`; (d) probar con `generate_pdf`. "
     "Si reutilizas un estilo existente, consulta su `style_guide` antes de escribir HTML — usa "
     "solo clases/etiquetas definidas ahí.\n"
     "Consulta también `search_knowledge_base` en la sección «Diseño PDF» (metodologías operativas) "
@@ -228,14 +227,8 @@ _PROFILES: dict[str, AgentProfile] = {
         default_model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
         allowed_tool_names={
             "search_knowledge_base",
-            "list_pdf_templates",
-            "get_pdf_template",
-            "create_pdf_template",
-            "update_pdf_template",
-            "list_pdf_template_styles",
-            "get_pdf_template_style",
-            "create_pdf_template_style",
-            "update_pdf_template_style",
+            "pdf_template",
+            "pdf_style",
             "generate_pdf",
             "describe_resource_schema",
         },
@@ -271,6 +264,8 @@ _ROUTE_TO_PROFILE = {
     "/career/publications": "digital",
     "/career/operational-methodologies": "methodologies",
     "/agent/chat": "orchestrator",
+    "/agent/pdf-templates": "pdf_design",
+    "/agent/pdf-template-styles": "pdf_design",
 }
 
 _RESOURCE_TO_DOMAIN = {
@@ -346,14 +341,9 @@ def tools_for_profile(profile: AgentProfile, all_tool_names: Set[str]) -> Set[st
         }
     if profile.id not in ("pdf_design", "search", "orchestrator"):
         names -= {
-            "list_pdf_templates",
-            "get_pdf_template",
-            "create_pdf_template",
-            "update_pdf_template",
-            "list_pdf_template_styles",
-            "get_pdf_template_style",
-            "create_pdf_template_style",
-            "update_pdf_template_style",
+            "pdf_template",
+            "pdf_style",
+            "generate_pdf",
         }
     if profile.id != "visual_design":
         names -= {"generate_image", "attach_image_to_record", "list_generated_images"}

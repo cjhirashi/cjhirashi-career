@@ -75,6 +75,7 @@ Docs y README **dentro de `api/`** que este paquete usa pero no sustituye. Si el
 | Job discovery HTTP (preview → save) | [sections/job-discovery](../../../docs/sections/job-discovery/README.md) |
 | Adaptadores de portales | [services/job_discovery](../job_discovery/README.md) |
 | Plantillas HTML → PDF | [sections/pdf-templates](../../../docs/sections/pdf-templates/README.md) |
+| Estilos CSS PDF | [sections/pdf-template-styles](../../../docs/sections/pdf-template-styles/README.md) |
 | Upload MinIO, `file_id`, URLs | [sections/files](../../../docs/sections/files/README.md) |
 | OAuth y posts LinkedIn | [sections/linkedin](../../../docs/sections/linkedin/README.md) |
 | Portafolio público (lectura) | [sections/public](../../../docs/sections/public/README.md) |
@@ -639,7 +640,7 @@ Catálogo de tools Converse (`_RAW_TOOLS`) y dispatcher. El modelo **no** ejecut
 Dos tiers:
 
 - **Legacy (carrera):** `list/get/create/update/delete_career_record`, `count_career_records`, `search_knowledge_base`, schema, auditoría → `bedrock_service._execute_tool`. Recursos: [identidad/proyectos](../../../docs/sections/career-identity/README.md), [búsqueda/vacantes](../../../docs/sections/career-search/README.md), [digital](../../../docs/sections/career-digital/README.md), [tags](../../../docs/sections/career-support/README.md), [metodologías](../../../docs/sections/career-methodologies/README.md). Vector search: [Qdrant](../../../docs/sections/infrastructure/README.md).
-- **Extended:** [LinkedIn](../../../docs/sections/linkedin/README.md), [plantillas PDF](../../../docs/sections/pdf-templates/README.md), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
+- **Extended:** [LinkedIn](../../../docs/sections/linkedin/README.md), [plantillas PDF](../../../docs/sections/pdf-templates/README.md) (`pdf_template`) y [estilos PDF](../../../docs/sections/pdf-template-styles/README.md) (`pdf_style`), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
 
 Todo resultado pasa por `truncate_tool_result`.
 
@@ -667,7 +668,7 @@ flowchart TD
     EXT --> TR
     TR --> LOOP
     EXT --> LI[LinkedIn PG]
-    EXT --> PDF[plantillas PDF]
+    EXT --> PDF[plantillas + estilos PDF]
     EXT --> IMG[image_client + MinIO]
     EXT --> JOB[job discovery]
     SVC --> PG[(PostgreSQL career)]
@@ -793,7 +794,7 @@ Clave para que el Admin invalide caché React Query. Si el resultado trae `error
 
 ### Entrega
 
-`str | None`: `resource_key` del input, o `"pdf-templates"` / `"pdf-template-styles"` / `"vacancies"` según la tool.
+`str | None`: `resource_key` del input, o `"pdf-templates"` / `"pdf-template-styles"` / `"vacancies"` según `pdf_template` / `pdf_style` / `save_job_listings`.
 
 ### Ejemplo
 
@@ -876,7 +877,7 @@ flowchart LR
 
 ### Recibe
 
-`db`, `user_id`, `session_id`, `first_message`, `session_type` (`contextual` | `general`).
+`db`, `user_id`, `session_id`, `first_message`, `session_type` (`contextual` | `general`), `agent_profile_id` (id del especialista resuelto, p. ej. `identity`).
 
 ### Entrega
 
@@ -891,8 +892,10 @@ Mismo `session_id` en el segundo turno → la misma fila; no duplica.
 ```mermaid
 flowchart TD
     Q[SELECT por user + session] --> H{existe?}
-    H -->|sí| R[return row]
-    H -->|no| N[INSERT title + session_type]
+    H -->|sí, sin perfil| S[stamp agent_profile_id]
+    S --> R[return row]
+    H -->|sí, con perfil| R
+    H -->|no| N[INSERT title + session_type + agent_profile_id]
     N --> C[commit]
     C --> R
 ```
@@ -963,7 +966,7 @@ flowchart TD
 
 ### Recibe
 
-`db`, `user_id`, `session_type` opcional.
+`db`, `user_id`, `session_type` opcional, `agent_profile_id` opcional (coincidencia exacta).
 
 ### Entrega
 
@@ -971,13 +974,13 @@ Lista de `BedrockConversation` ordenada por `updated_at` desc. Usada por [`GET /
 
 ### Ejemplo
 
-`session_type="general"` → solo chats de `/agent/chat`.
+`session_type="contextual"` + `agent_profile_id="identity"` → solo chats del especialista de Identidad. Sin `agent_profile_id` → todas las del tipo. Filas con `agent_profile_id` NULL no salen en listas filtradas por agente.
 
 ### Flujo
 
 ```mermaid
 flowchart LR
-    F[filtro user + tipo] --> O[ORDER BY updated_at DESC]
+    F[filtro user + tipo + perfil] --> O[ORDER BY updated_at DESC]
 ```
 
 ---
@@ -988,7 +991,7 @@ Config **estática** de 9 especialistas (`AgentProfile`). Espejo de `admin/src/c
 
 **Lee también:** [GET/PUT agent-profiles](../../../docs/sections/bedrock/README.md)
 
-Perfiles: `orchestrator`, `identity` ([carrera identidad](../../../docs/sections/career-identity/README.md)), `search` ([búsqueda](../../../docs/sections/career-search/README.md) + [job discovery](../../../docs/sections/job-discovery/README.md)), `digital` ([presencia digital](../../../docs/sections/career-digital/README.md) + [LinkedIn](../../../docs/sections/linkedin/README.md)), `networking`, `support` ([tags](../../../docs/sections/career-support/README.md)), `methodologies` ([metodologías](../../../docs/sections/career-methodologies/README.md)), `pdf_design` ([PDF](../../../docs/sections/pdf-templates/README.md)), `visual_design` (imágenes; [files](../../../docs/sections/files/README.md)).
+Perfiles: `orchestrator`, `identity` ([carrera identidad](../../../docs/sections/career-identity/README.md)), `search` ([búsqueda](../../../docs/sections/career-search/README.md) + [job discovery](../../../docs/sections/job-discovery/README.md)), `digital` ([presencia digital](../../../docs/sections/career-digital/README.md) + [LinkedIn](../../../docs/sections/linkedin/README.md)), `networking`, `support` ([tags](../../../docs/sections/career-support/README.md)), `methodologies` ([metodologías](../../../docs/sections/career-methodologies/README.md)), `pdf_design` ([plantillas](../../../docs/sections/pdf-templates/README.md) + [estilos](../../../docs/sections/pdf-template-styles/README.md)), `visual_design` (imágenes; [files](../../../docs/sections/files/README.md)).
 
 ### Recibe
 

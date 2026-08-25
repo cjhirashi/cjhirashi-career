@@ -17,7 +17,7 @@ flowchart LR
 
 ### `test_agent_profiles_router.py`
 
-`resolve_agent_profile` por ruta/recurso (p. ej. `/linkedin` → perfil digital) y `converse_tool_specs` filtrado por perfil.
+`resolve_agent_profile` por ruta/recurso, `pdf_template` y `pdf_style` como tools distintas, y `history_manager` con `agent_profile_id`.
 
 ### `test_profile_prompts.py`
 

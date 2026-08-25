@@ -1,5 +1,6 @@
 """
-CRUD de plantillas PDF y endpoint de render preview (Harness local / agente pdf_design).
+CRUD de plantillas PDF (tabla pdf_output_templates) y endpoint de render.
+El agente pdf_design escribe las mismas filas con la tool `pdf_template`.
 """
 # ============================================================================
 # Imports

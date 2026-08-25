@@ -139,7 +139,8 @@ Engine async, `AsyncSessionLocal`, `get_db()` dependency, `init_db()` / `close_d
 | `job_discovery.py` | Búsqueda multi-proveedor |
 | `bedrock.py` | Agent Bedrock (SSE) |
 | `bedrock_tasks.py` | Tareas del agente |
-| `pdf_templates.py` | Plantillas HTML → PDF |
+| `pdf_templates.py` | Plantillas HTML (`pdf_template`) |
+| `pdf_template_styles.py` | Estilos CSS (`pdf_style`) |
 | `files.py` | Upload MinIO |
 | `linkedin.py` | OAuth + posts |
 | `public.py` | Portal read-only |

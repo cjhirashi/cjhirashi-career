@@ -119,11 +119,11 @@ CRUD de `BedrockTask` con `build_crud_router`. Registrar el módulo mete `agent-
 
 ### `pdf_templates.py` — `/pdf-templates`
 
-CRUD de plantillas HTML + `POST /{id}/render` (WeasyPrint vía `pdf_service`). Registra `pdf-output-templates` y `pdf-template-styles` en el registry (sin vectorizar).
+CRUD de plantillas HTML + `POST /{id}/render` (WeasyPrint vía `pdf_service`). Registra `pdf-output-templates` en el registry (sin vectorizar). Tool del agente: `pdf_template`.
 
 ### `pdf_template_styles.py` — `/pdf-template-styles`
 
-CRUD de estilos CSS reutilizables (`style_id` en plantillas).
+CRUD de estilos CSS reutilizables (`style_id` en plantillas). Tool del agente: `pdf_style`.
 
 ---
 

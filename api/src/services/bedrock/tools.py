@@ -2,7 +2,7 @@
 Tools Converse — schemas y ejecución (CRUD, LinkedIn, PDF, imágenes).
 
 Tier 1: career CRUD (delegado a bedrock_service._execute_tool).
-Tier 2: LinkedIn, plantillas PDF, imágenes, delegación.
+Tier 2: LinkedIn, plantillas PDF, estilos CSS, imágenes, delegación.
 Ver api/docs/BEDROCK-HARNESS.md.
 """
 import io
@@ -23,6 +23,8 @@ from services.id_generator import normalize_prefixed_id
 from services.bedrock.errors import BedrockError
 from services.bedrock.tool_results import truncate_tool_result
 
+_PDF_STYLE_REPO = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
+_PDF_STYLE_UPDATE_FIELDS = {"slug", "title", "description", "css_content", "style_guide", "is_active"}
 
 # ============================================================================
 # Parámetros compartidos de schemas
@@ -58,14 +60,8 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_linkedin_posts", "description": "Cola e historial posts LinkedIn.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
     {"name": "create_linkedin_post", "description": "Publicar ahora (sin scheduled_at) o programar (ISO futuro).", "schema": {"type": "object", "properties": {"text": {"type": "string"}, "image_url": {"type": "string"}, "scheduled_at": {"type": "string"}}, "required": ["text"]}},
     {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "string", "description": "ID prefijado, ej. lnp-3"}}, "required": ["post_id"]}},
-    {"name": "list_pdf_templates", "description": "Lista plantillas PDF del usuario.", "schema": {"type": "object", "properties": {"document_type": {"type": "string"}}}},
-    {"name": "get_pdf_template", "description": "Plantilla por id o slug.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "default_only": {"type": "boolean"}}}},
-    {"name": "list_pdf_template_styles", "description": "Lista estilos CSS reutilizables para plantillas PDF.", "schema": {"type": "object", "properties": {}}},
-    {"name": "get_pdf_template_style", "description": "Obtiene un estilo CSS por id o slug.", "schema": {"type": "object", "properties": {"style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}}, "required": []}},
-    {"name": "create_pdf_template_style", "description": "Crea estilo CSS reutilizable para plantillas PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string"}, "description": {"type": "string"}}, "required": ["slug", "title", "css_content"]}},
-    {"name": "update_pdf_template_style", "description": "Actualiza estilo CSS de plantillas PDF.", "schema": {"type": "object", "properties": {"style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "fields": {"type": "object"}}, "required": ["style_id", "fields"]}},
-    {"name": "create_pdf_template", "description": "Crea plantilla HTML PDF.", "schema": {"type": "object", "properties": {"slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID prefijado del estilo, ej. pds-1"}, "variables": {"type": "string", "description": "Markdown con variables {{nombre}} y su significado"}}, "required": ["slug", "document_type", "title", "html_template"]}},
-    {"name": "update_pdf_template", "description": "Actualiza plantilla PDF.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "fields": {"type": "object"}}, "required": ["template_id", "fields"]}},
+    {"name": "pdf_template", "description": "CRUD de la tabla pdf_output_templates (HTML, IDs pdt-N). No edita CSS. action=list|get|create|update. create requiere slug, document_type, title, html_template. Referencia un estilo con style_id (pds-N).", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID del estilo CSS, ej. pds-1"}, "variables": {"type": "string"}, "default_only": {"type": "boolean"}, "fields": {"type": "object", "description": "Para update: html_template, style_id, variables, title, slug, document_type, is_default, is_active"}}, "required": ["action"]}},
+    {"name": "pdf_style", "description": "CRUD de la tabla pdf_template_styles (CSS reutilizable, IDs pds-N). No edita HTML de plantillas. action=list|get|create|update. create requiere slug, title, css_content. Un estilo puede usarse en muchas plantillas.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string"}, "description": {"type": "string"}, "fields": {"type": "object", "description": "Para update: css_content, style_guide, title, slug, description, is_active"}}, "required": ["action"]}},
     {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
     {"name": "generate_image", "description": "Genera imagen IA y sube a MinIO.", "schema": {"type": "object", "properties": {"prompt": {"type": "string"}, "purpose": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["prompt"]}},
     {"name": "attach_image_to_record", "description": "Pone image_url en publications o projects.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "record_id": _RECORD_ID_PARAM, "image_url": {"type": "string"}}, "required": ["resource_key", "record_id", "image_url"]}},
@@ -122,7 +118,46 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     },
 ]
 
-_WRITE_TOOLS = {"create_career_record", "update_career_record", "delete_career_record", "create_linkedin_post", "create_pdf_template", "update_pdf_template", "create_pdf_template_style", "update_pdf_template_style", "generate_pdf", "generate_image", "attach_image_to_record", "save_job_listings"}
+_WRITE_TOOLS = {
+    "create_career_record",
+    "update_career_record",
+    "delete_career_record",
+    "create_linkedin_post",
+    "pdf_template",
+    "pdf_style",
+    "generate_pdf",
+    "generate_image",
+    "attach_image_to_record",
+    "save_job_listings",
+}
+
+_PDF_TEMPLATE_ALIASES = {
+    "list_pdf_templates": "list",
+    "get_pdf_template": "get",
+    "create_pdf_template": "create",
+    "update_pdf_template": "update",
+}
+
+_PDF_STYLE_ALIASES = {
+    "list_pdf_template_styles": "list",
+    "get_pdf_template_style": "get",
+    "create_pdf_template_style": "create",
+    "update_pdf_template_style": "update",
+}
+
+_PDF_TEMPLATE_UPDATE_FIELDS = {
+    "slug",
+    "document_type",
+    "title",
+    "description",
+    "html_template",
+    "style_id",
+    "variables",
+    "variables_schema",
+    "preview_notes",
+    "is_active",
+    "is_default",
+}
 
 _LEGACY = {
     "list_recent_changes", "restore_deleted_record", "describe_resource_schema", "search_knowledge_base",
@@ -164,6 +199,181 @@ async def _linkedin_connection(db, user_id: str) -> Optional[LinkedInConnection]
     if conn and conn.expires_at > datetime.now(timezone.utc):
         return conn
     return None
+
+
+async def _run_pdf_template(db, user_id: str, action: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """CRUD de pdf_output_templates (HTML)."""
+    if action == "list":
+        q = select(PdfOutputTemplate).where(PdfOutputTemplate.user_id == user_id, PdfOutputTemplate.is_active.is_(True))
+        if tool_input.get("document_type"):
+            q = q.where(PdfOutputTemplate.document_type == tool_input["document_type"])
+        result = await db.execute(q.order_by(PdfOutputTemplate.title))
+        rows = result.scalars().all()
+        return {
+            "items": [
+                {
+                    "id": r.id,
+                    "slug": r.slug,
+                    "document_type": r.document_type,
+                    "title": r.title,
+                    "style_id": r.style_id,
+                    "is_default": r.is_default,
+                }
+                for r in rows
+            ]
+        }
+
+    if action == "get":
+        q = select(PdfOutputTemplate).where(PdfOutputTemplate.user_id == user_id, PdfOutputTemplate.is_active.is_(True))
+        if tool_input.get("template_id"):
+            template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
+            q = q.where(PdfOutputTemplate.id == template_id)
+        elif tool_input.get("slug"):
+            q = q.where(PdfOutputTemplate.slug == tool_input["slug"])
+        elif tool_input.get("default_only") and tool_input.get("document_type"):
+            q = q.where(
+                PdfOutputTemplate.document_type == tool_input["document_type"],
+                PdfOutputTemplate.is_default.is_(True),
+            )
+        else:
+            return {"error": "specify template_id, slug, or default_only+document_type"}
+        result = await db.execute(q.limit(1))
+        row = result.scalar_one_or_none()
+        if not row:
+            return {"error": "not_found"}
+        return {
+            "item": {
+                "id": row.id,
+                "slug": row.slug,
+                "html_template": row.html_template[:2000],
+                "style_id": row.style_id,
+                "variables": row.variables,
+                "variables_schema": row.variables_schema,
+            }
+        }
+
+    if action == "create":
+        missing = [k for k in ("slug", "document_type", "title", "html_template") if not tool_input.get(k)]
+        if missing:
+            return {"error": f"create requires {', '.join(missing)}"}
+        row = PdfOutputTemplate(
+            user_id=user_id,
+            slug=tool_input["slug"],
+            document_type=tool_input["document_type"],
+            title=tool_input["title"],
+            html_template=tool_input["html_template"],
+            style_id=normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+            if tool_input.get("style_id")
+            else None,
+            variables=tool_input.get("variables"),
+        )
+        db.add(row)
+        await db.commit()
+        await db.refresh(row)
+        return {"item": {"id": row.id, "slug": row.slug}}
+
+    if action == "update":
+        if not tool_input.get("template_id"):
+            return {"error": "update requires template_id"}
+        template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
+        result = await db.execute(
+            select(PdfOutputTemplate).where(PdfOutputTemplate.id == template_id, PdfOutputTemplate.user_id == user_id)
+        )
+        row = result.scalar_one_or_none()
+        if not row:
+            return {"error": "not_found"}
+        fields = dict(tool_input.get("fields") or {})
+        if fields.get("style_id"):
+            fields["style_id"] = normalize_prefixed_id("pdf_template_styles", fields["style_id"])
+        applied = False
+        for key, value in fields.items():
+            if key in _PDF_TEMPLATE_UPDATE_FIELDS:
+                setattr(row, key, value)
+                applied = True
+        if not applied:
+            return {"error": "fields must include html_template, style_id, variables, title, slug, document_type, is_default, or is_active"}
+        row.version = (row.version or 1) + 1
+        await db.commit()
+        return {"item": {"id": row.id, "version": row.version}}
+
+    return {"error": f"unknown action: {action}"}
+
+
+async def _run_pdf_style(db, user_id: str, action: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """CRUD de pdf_template_styles (CSS)."""
+    if action == "list":
+        result = await db.execute(
+            select(PdfTemplateStyle)
+            .where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
+            .order_by(PdfTemplateStyle.title)
+        )
+        rows = result.scalars().all()
+        return {
+            "items": [
+                {"id": r.id, "slug": r.slug, "title": r.title, "description": r.description}
+                for r in rows
+            ]
+        }
+
+    if action == "get":
+        q = select(PdfTemplateStyle).where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
+        if tool_input.get("style_id"):
+            style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+            q = q.where(PdfTemplateStyle.id == style_id)
+        elif tool_input.get("slug"):
+            q = q.where(PdfTemplateStyle.slug == tool_input["slug"])
+        else:
+            return {"error": "specify style_id or slug"}
+        result = await db.execute(q.limit(1))
+        row = result.scalar_one_or_none()
+        if not row:
+            return {"error": "not_found"}
+        return {
+            "item": {
+                "id": row.id,
+                "slug": row.slug,
+                "title": row.title,
+                "description": row.description,
+                "css_content": row.css_content,
+                "style_guide": row.style_guide,
+                "is_active": row.is_active,
+            }
+        }
+
+    if action == "create":
+        missing = [k for k in ("slug", "title", "css_content") if not tool_input.get(k)]
+        if missing:
+            return {"error": f"create requires {', '.join(missing)}"}
+        row = await _PDF_STYLE_REPO.create_for_user(
+            db,
+            user_id,
+            {
+                "slug": tool_input["slug"],
+                "title": tool_input["title"],
+                "css_content": tool_input["css_content"],
+                "style_guide": tool_input.get("style_guide"),
+                "description": tool_input.get("description"),
+            },
+        )
+        return {"item": {"id": row.id, "slug": row.slug}}
+
+    if action == "update":
+        if not tool_input.get("style_id"):
+            return {"error": "update requires style_id"}
+        style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
+        fields = {
+            key: value
+            for key, value in (tool_input.get("fields") or {}).items()
+            if key in _PDF_STYLE_UPDATE_FIELDS
+        }
+        if not fields:
+            return {"error": "fields must include css_content, style_guide, title, slug, description, or is_active"}
+        row = await _PDF_STYLE_REPO.update_for_user(db, user_id, style_id, fields)
+        if not row:
+            return {"error": "not_found"}
+        return {"item": {"id": row.id, "slug": row.slug}}
+
+    return {"error": f"unknown action: {action}"}
 
 
 async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
@@ -245,120 +455,13 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
         await db.commit()
         return {"deleted": True}
 
-    if name == "list_pdf_templates":
-        q = select(PdfOutputTemplate).where(PdfOutputTemplate.user_id == user_id, PdfOutputTemplate.is_active.is_(True))
-        if tool_input.get("document_type"):
-            q = q.where(PdfOutputTemplate.document_type == tool_input["document_type"])
-        result = await db.execute(q.order_by(PdfOutputTemplate.title))
-        rows = result.scalars().all()
-        return {"items": [{"id": r.id, "slug": r.slug, "document_type": r.document_type, "title": r.title, "is_default": r.is_default} for r in rows]}
+    if name == "pdf_template" or name in _PDF_TEMPLATE_ALIASES:
+        action = tool_input.get("action") or _PDF_TEMPLATE_ALIASES.get(name)
+        return await _run_pdf_template(db, user_id, action, tool_input)
 
-    if name == "get_pdf_template":
-        q = select(PdfOutputTemplate).where(PdfOutputTemplate.user_id == user_id, PdfOutputTemplate.is_active.is_(True))
-        if tool_input.get("template_id"):
-            template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
-            q = q.where(PdfOutputTemplate.id == template_id)
-        elif tool_input.get("slug"):
-            q = q.where(PdfOutputTemplate.slug == tool_input["slug"])
-        elif tool_input.get("default_only") and tool_input.get("document_type"):
-            q = q.where(PdfOutputTemplate.document_type == tool_input["document_type"], PdfOutputTemplate.is_default.is_(True))
-        else:
-            return {"error": "specify template_id, slug, or default_only+document_type"}
-        result = await db.execute(q.limit(1))
-        row = result.scalar_one_or_none()
-        if not row:
-            return {"error": "not_found"}
-        return {"item": {"id": row.id, "slug": row.slug, "html_template": row.html_template[:2000], "style_id": row.style_id, "variables": row.variables, "variables_schema": row.variables_schema}}
-
-    if name == "list_pdf_template_styles":
-        result = await db.execute(
-            select(PdfTemplateStyle)
-            .where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
-            .order_by(PdfTemplateStyle.title)
-        )
-        rows = result.scalars().all()
-        return {"items": [{"id": r.id, "slug": r.slug, "title": r.title} for r in rows]}
-
-    if name == "get_pdf_template_style":
-        q = select(PdfTemplateStyle).where(PdfTemplateStyle.user_id == user_id, PdfTemplateStyle.is_active.is_(True))
-        if tool_input.get("style_id"):
-            style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
-            q = q.where(PdfTemplateStyle.id == style_id)
-        elif tool_input.get("slug"):
-            q = q.where(PdfTemplateStyle.slug == tool_input["slug"])
-        else:
-            return {"error": "specify style_id or slug"}
-        result = await db.execute(q.limit(1))
-        row = result.scalar_one_or_none()
-        if not row:
-            return {"error": "not_found"}
-        return {
-            "item": {
-                "id": row.id,
-                "slug": row.slug,
-                "title": row.title,
-                "css_content": row.css_content[:4000],
-                "style_guide": row.style_guide,
-            }
-        }
-
-    if name == "create_pdf_template_style":
-        row = PdfTemplateStyle(
-            user_id=user_id,
-            slug=tool_input["slug"],
-            title=tool_input["title"],
-            css_content=tool_input["css_content"],
-            style_guide=tool_input.get("style_guide"),
-            description=tool_input.get("description"),
-        )
-        db.add(row)
-        await db.commit()
-        await db.refresh(row)
-        return {"item": {"id": row.id, "slug": row.slug}}
-
-    if name == "update_pdf_template_style":
-        style_id = normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
-        result = await db.execute(
-            select(PdfTemplateStyle).where(PdfTemplateStyle.id == style_id, PdfTemplateStyle.user_id == user_id)
-        )
-        row = result.scalar_one_or_none()
-        if not row:
-            return {"error": "not_found"}
-        for k, v in tool_input.get("fields", {}).items():
-            if hasattr(row, k):
-                setattr(row, k, v)
-        await db.commit()
-        return {"item": {"id": row.id, "slug": row.slug}}
-
-    if name == "create_pdf_template":
-        row = PdfOutputTemplate(
-            user_id=user_id,
-            slug=tool_input["slug"],
-            document_type=tool_input["document_type"],
-            title=tool_input["title"],
-            html_template=tool_input["html_template"],
-            style_id=normalize_prefixed_id("pdf_template_styles", tool_input["style_id"])
-            if tool_input.get("style_id")
-            else None,
-            variables=tool_input.get("variables"),
-        )
-        db.add(row)
-        await db.commit()
-        await db.refresh(row)
-        return {"item": {"id": row.id, "slug": row.slug}}
-
-    if name == "update_pdf_template":
-        template_id = normalize_prefixed_id("pdf_output_templates", tool_input["template_id"])
-        result = await db.execute(select(PdfOutputTemplate).where(PdfOutputTemplate.id == template_id, PdfOutputTemplate.user_id == user_id))
-        row = result.scalar_one_or_none()
-        if not row:
-            return {"error": "not_found"}
-        for k, v in tool_input.get("fields", {}).items():
-            if hasattr(row, k):
-                setattr(row, k, v)
-        row.version = (row.version or 1) + 1
-        await db.commit()
-        return {"item": {"id": row.id, "version": row.version}}
+    if name == "pdf_style" or name in _PDF_STYLE_ALIASES:
+        action = tool_input.get("action") or _PDF_STYLE_ALIASES.get(name)
+        return await _run_pdf_style(db, user_id, action, tool_input)
 
     if name == "generate_pdf":
         from services.pdf_service import generate_html_template_pdf
@@ -543,10 +646,14 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
         return None
     if tool_input.get("resource_key"):
         return str(tool_input["resource_key"])
-    if name in ("create_pdf_template", "update_pdf_template"):
-        return "pdf-templates"
-    if name in ("create_pdf_template_style", "update_pdf_template_style"):
-        return "pdf-template-styles"
+    if name in ("pdf_template", "create_pdf_template", "update_pdf_template") or name in _PDF_TEMPLATE_ALIASES:
+        action = tool_input.get("action") or _PDF_TEMPLATE_ALIASES.get(name)
+        if action in ("create", "update") or name in ("create_pdf_template", "update_pdf_template"):
+            return "pdf-templates"
+    if name in ("pdf_style", "create_pdf_template_style", "update_pdf_template_style") or name in _PDF_STYLE_ALIASES:
+        action = tool_input.get("action") or _PDF_STYLE_ALIASES.get(name)
+        if action in ("create", "update") or name in ("create_pdf_template_style", "update_pdf_template_style"):
+            return "pdf-template-styles"
     if name == "save_job_listings":
         return "vacancies"
     return None

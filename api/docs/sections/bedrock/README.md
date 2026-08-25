@@ -140,12 +140,12 @@ Definidos en `services/bedrock/agent_profiles.py`.
 
 | Método | Path | Descripción |
 |--------|------|-------------|
-| `GET` | `/bedrock/conversations` | Listar (`?session_type=general\|contextual`) |
+| `GET` | `/bedrock/conversations` | Listar (`?session_type=general\|contextual` y `?agent_profile_id=identity\|search\|orchestrator\|…`) |
 | `GET` | `/bedrock/conversations/{session_id}/messages` | Mensajes de una conversación |
 | `PUT` | `/bedrock/conversations/{session_id}` | Renombrar |
 | `DELETE` | `/bedrock/conversations/{session_id}` | Eliminar |
 
-Historial en PostgreSQL (`bedrock_conversations`, `bedrock_conversation_messages`).
+Historial en PostgreSQL (`bedrock_conversations`, `bedrock_conversation_messages`). Cada especialista y el orquestador tienen su propia lista: el filtro `agent_profile_id` es coincidencia exacta. Conversaciones contextuales anteriores a este campo quedan con `NULL` y no aparecen en las listas filtradas (sí en Memoria, sin filtro).
 
 ---
 
@@ -194,7 +194,7 @@ Ejecutadas en `services/bedrock/tools.py` → `bedrock_service._execute_tool`:
 | Conocimiento | `search_knowledge_base`, `describe_resource_schema` |
 | Auditoría | `list_recent_changes`, `restore_deleted_record` |
 | LinkedIn | `get_linkedin_status`, `create_linkedin_post`, … |
-| PDF | `list/get/create/update_pdf_template`, `generate_pdf` |
+| PDF | `pdf_template` (tabla plantillas), `pdf_style` (tabla estilos), `generate_pdf` |
 | Imágenes | `generate_image`, `attach_image_to_record` |
 | Vacantes | `run_job_discovery`, `import_job_url`, `save_job_listings` |
 | Delegación | `delegate_to_specialist` (solo chat general) |
@@ -267,5 +267,6 @@ Solo docs y README **dentro de `api/`**.
 | Publicaciones / portal | [career-digital](../career-digital/README.md) |
 | Job discovery | [job-discovery](../job-discovery/README.md) |
 | Plantillas PDF | [pdf-templates](../pdf-templates/README.md) |
+| Estilos PDF | [pdf-template-styles](../pdf-template-styles/README.md) |
 | MinIO / `file_id` | [files](../files/README.md) |
 | LinkedIn | [linkedin](../linkedin/README.md) |

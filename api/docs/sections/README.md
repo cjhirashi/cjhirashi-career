@@ -23,6 +23,7 @@ flowchart TB
         Bedrock[bedrock]
         Tasks[bedrock-tasks]
         PDF[pdf-templates]
+        Styles[pdf-template-styles]
     end
     subgraph Ext
         Files[files]
@@ -66,7 +67,8 @@ flowchart TB
 |---------|-------------|
 | [bedrock](bedrock/README.md) | Chat SSE, modelos, memoria, tools, auditoría, presupuesto |
 | [bedrock-tasks](bedrock-tasks/README.md) | Tareas programables del agente |
-| [pdf-templates](pdf-templates/README.md) | Plantillas HTML → PDF |
+| [pdf-templates](pdf-templates/README.md) | Plantillas HTML → tabla `pdf_output_templates` |
+| [pdf-template-styles](pdf-template-styles/README.md) | Estilos CSS → tabla `pdf_template_styles` |
 
 ---
 

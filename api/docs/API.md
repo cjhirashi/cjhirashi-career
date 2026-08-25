@@ -167,6 +167,20 @@ CRUD estándar (6 endpoints).
 
 ---
 
+## Estilos PDF — `/pdf-template-styles`
+
+→ [sections/pdf-template-styles/README.md](sections/pdf-template-styles/README.md)
+
+| Método | Path |
+|--------|------|
+| GET | `/pdf-template-styles` |
+| GET | `/pdf-template-styles/{id}` |
+| POST | `/pdf-template-styles` |
+| PUT | `/pdf-template-styles/{id}` |
+| DELETE | `/pdf-template-styles/{id}` |
+
+---
+
 ## Archivos — `/files`
 
 → [sections/files/README.md](sections/files/README.md)

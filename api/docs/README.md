@@ -40,6 +40,7 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | Agent Bedrock | [sections/bedrock/README.md](sections/bedrock/README.md) |
 | Tareas del agente | [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md) |
 | Plantillas PDF | [sections/pdf-templates/README.md](sections/pdf-templates/README.md) |
+| Estilos PDF | [sections/pdf-template-styles/README.md](sections/pdf-template-styles/README.md) |
 | Archivos (MinIO) | [sections/files/README.md](sections/files/README.md) |
 | LinkedIn | [sections/linkedin/README.md](sections/linkedin/README.md) |
 | Portal público | [sections/public/README.md](sections/public/README.md) |
@@ -76,6 +77,7 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `bedrock` | `/bedrock` | JWT |
 | `bedrock_tasks` | `/agent-tasks` | JWT |
 | `pdf_templates` | `/pdf-templates` | JWT |
+| `pdf_template_styles` | `/pdf-template-styles` | JWT |
 | `files` | `/files` | JWT |
 | `linkedin` | `/linkedin` | JWT (+ callback público) |
 | `public` | `/public` | Ninguna |

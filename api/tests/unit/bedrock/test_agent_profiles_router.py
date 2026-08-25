@@ -47,3 +47,44 @@ def test_converse_tool_specs_subset():
     specs = converse_tool_specs(allowed)
     assert len(specs) == 2
     assert specs[0]["toolSpec"]["name"] in allowed
+
+
+def test_pdf_design_has_separate_template_and_style_tools():
+    from services.bedrock.agent_profiles import tools_for_profile
+    from services.bedrock.tools import all_tool_names
+
+    names = tools_for_profile(get_profile("pdf_design"), all_tool_names())
+    assert "pdf_template" in names
+    assert "pdf_style" in names
+    assert "generate_pdf" in names
+    assert "list_pdf_templates" not in names
+    assert "create_pdf_template_style" not in names
+    assert "delegate_to_specialist" not in names
+
+
+def test_identity_cannot_use_pdf_tools():
+    from services.bedrock.agent_profiles import tools_for_profile
+    from services.bedrock.tools import all_tool_names
+
+    names = tools_for_profile(get_profile("identity"), all_tool_names())
+    assert "pdf_template" not in names
+    assert "pdf_style" not in names
+    assert "generate_pdf" not in names
+
+
+def test_pdf_admin_routes_resolve_to_pdf_design():
+    for route in ("/agent/pdf-templates", "/agent/pdf-template-styles"):
+        profile = resolve_agent_profile(
+            chat_surface="contextual",
+            agent_profile_id=None,
+            page_context={"route": route},
+        )
+        assert profile.id == "pdf_design"
+
+
+def test_history_manager_filters_by_agent_profile():
+    import inspect
+    from services.bedrock.history_manager import get_or_create_conversation, list_conversations
+
+    assert "agent_profile_id" in inspect.signature(get_or_create_conversation).parameters
+    assert "agent_profile_id" in inspect.signature(list_conversations).parameters
