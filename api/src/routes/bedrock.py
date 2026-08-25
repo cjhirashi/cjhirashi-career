@@ -443,12 +443,15 @@ async def add_manual_memory(
 @router.get("/conversations", response_model=list[BedrockConversationResponse], summary="List this user's conversations")
 async def list_conversations(
     session_type: str | None = Query(None, description="Filter: contextual | general"),
+    agent_profile_id: str | None = Query(
+        None, description="Filter by specialist profile id (identity, search, orchestrator, …)"
+    ),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     from services.bedrock.history_manager import list_conversations as list_conv
 
-    return await list_conv(db, current_user.id, session_type)
+    return await list_conv(db, current_user.id, session_type, agent_profile_id)
 
 
 @router.get("/conversations/{session_id}/messages", response_model=list[BedrockConversationMessageResponse], summary="Get one conversation's messages")

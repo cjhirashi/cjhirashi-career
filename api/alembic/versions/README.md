@@ -1,6 +1,6 @@
 # Revisiones Alembic (`alembic/versions/`)
 
-Cadena lineal (head actual: `f5b6c7d8e9f0`).
+Cadena lineal (head actual: `a8b9c0d1e2f3`).
 
 ## Arquitectura
 
@@ -15,6 +15,7 @@ flowchart TD
     G --> H[e3f4a5b6c7d8 system user_ids]
     H --> I[f4a5b6c7d8e9 PDF styles]
     I --> J[f5b6c7d8e9f0 seed metodología PDF]
+    J --> K[a8b9c0d1e2f3 agent_profile_id en conversaciones]
 ```
 
 ```
@@ -28,6 +29,7 @@ ca159800797a
     → e3f4a5b6c7d8
     → f4a5b6c7d8e9
     → f5b6c7d8e9f0
+    → a8b9c0d1e2f3
 ```
 
 ---
@@ -43,6 +45,7 @@ ca159800797a
 | `d1e2f3a4b5c6_prefixed_ids_and_notes.py` | | IDs string prefijados en tablas de negocio + campo `notes` |
 | `e3f4a5b6c7d8_fix_system_table_user_ids.py` | | Ajusta `user_id` en tablas de sistema/telemetría tras el cambio de `users.id` |
 | `f4a5b6c7d8e9_pdf_template_styles.py` | | `pdf_template_styles` + FK `style_id` en plantillas |
-| `f5b6c7d8e9f0_seed_pdf_design_methodology.py` | head | Seed de metodología operativa «Plantillas PDF y estilos CSS» |
+| `f5b6c7d8e9f0_seed_pdf_design_methodology.py` | | Seed de metodología operativa «Plantillas PDF y estilos CSS» |
+| `a8b9c0d1e2f3_conversation_agent_profile.py` | head | `agent_profile_id` en `bedrock_conversations` (historial por especialista) |
 
 Cada archivo define `upgrade()` / `downgrade()`. No editar revisiones ya aplicadas en producción; crear una nueva.

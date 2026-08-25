@@ -28,7 +28,7 @@ Body (`BedrockChatRequest`):
 
 ## Otros
 
-- `GET /bedrock/conversations?session_type=general|contextual`
+- `GET /bedrock/conversations?session_type=general|contextual&agent_profile_id=identity|orchestrator|…`
 - `GET /bedrock/knowledge/search?q=...` — búsqueda semántica Qdrant
 
 Documentación HTTP completa: [sections/bedrock/README.md](sections/bedrock/README.md). Índice de docs API: [README.md](README.md).

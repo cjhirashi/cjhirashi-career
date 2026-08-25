@@ -31,6 +31,7 @@ async def get_or_create_conversation(
     session_id: str,
     first_message: str,
     session_type: str = "contextual",
+    agent_profile_id: Optional[str] = None,
 ) -> BedrockConversation:
     result = await db.execute(
         select(BedrockConversation).where(
@@ -40,12 +41,16 @@ async def get_or_create_conversation(
     )
     row = result.scalar_one_or_none()
     if row:
+        if agent_profile_id and not row.agent_profile_id:
+            row.agent_profile_id = agent_profile_id
+            await db.commit()
         return row
     row = BedrockConversation(
         user_id=user_id,
         session_id=session_id,
         title=conversation_title_from(first_message),
         session_type=session_type,
+        agent_profile_id=agent_profile_id,
     )
     db.add(row)
     await db.flush()
@@ -99,11 +104,16 @@ async def load_converse_messages(
 # ============================================================================
 
 async def list_conversations(
-    db: AsyncSession, user_id: str, session_type: Optional[str] = None
+    db: AsyncSession,
+    user_id: str,
+    session_type: Optional[str] = None,
+    agent_profile_id: Optional[str] = None,
 ) -> List[BedrockConversation]:
     q = select(BedrockConversation).where(BedrockConversation.user_id == user_id)
     if session_type:
         q = q.where(BedrockConversation.session_type == session_type)
+    if agent_profile_id:
+        q = q.where(BedrockConversation.agent_profile_id == agent_profile_id)
     q = q.order_by(BedrockConversation.updated_at.desc())
     result = await db.execute(q)
     return list(result.scalars().all())

@@ -205,6 +205,7 @@ class BedrockConversationResponse(BaseModel):
     session_id: str
     title: str
     session_type: str = "contextual"
+    agent_profile_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     notes: Optional[str] = None

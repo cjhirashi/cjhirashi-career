@@ -4,7 +4,7 @@ BedrockConversation / BedrockConversationMessage — historial de chat en Postgr
 Mismo `session_id` en cliente y servidor (UUID). Una fila por conversación;
 los mensajes viven en bedrock_conversation_messages. Ver history_manager.py.
 """
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -14,6 +14,14 @@ from services.id_generator import register_id_listener
 
 class BedrockConversation(Base):
     __tablename__ = "bedrock_conversations"
+    __table_args__ = (
+        Index(
+            "ix_bedrock_conversations_user_type_profile",
+            "user_id",
+            "session_type",
+            "agent_profile_id",
+        ),
+    )
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True)
@@ -22,6 +30,9 @@ class BedrockConversation(Base):
     session_id = Column(String(100), nullable=False, unique=True, index=True)
     # contextual = sidebar derecha por sección; general = /agent/chat orquestador
     session_type = Column(String(20), nullable=False, default="contextual", index=True)
+    # Especialista dueño de esta sesión (identity, search, orchestrator, …).
+    # Cada agente tiene su propia lista; NULL = conversaciones previas al aislamiento.
+    agent_profile_id = Column(String(50), nullable=True, index=True)
     title = Column(String(255), nullable=False, default="Nueva conversación")
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

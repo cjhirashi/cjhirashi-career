@@ -238,9 +238,11 @@ async def chat_stream(
     Raises:
         BedrockError: Si ocurre un error durante la ejecución de la ronda conversacional (emite evento de error).
     """
+    # 1. Cargar configuración de runtime y verificar presupuesto de usuario
     runtime = await settings_loader.get_runtime_settings(db)
     await budget.assert_budget_available(db, user_id, runtime.daily_budget_usd)
 
+    # 2. Resolver perfil de agente y modelo a usar
     profile = resolve_agent_profile(
         chat_surface=req.chat_surface,
         agent_profile_id=req.agent_profile_id,
@@ -249,30 +251,42 @@ async def chat_stream(
     model_id = _effective_model(req, runtime, profile)
     system_prompt = await prompt.compose_system_prompt(db, profile, req.page_context)
 
+    # 3. Determinar herramientas permitidas para el perfil, y construir especificaciones de herramientas
     allowed = agent_profiles.tools_for_profile(profile, tools.all_tool_names())
     tool_specs = tools.converse_tool_specs(allowed)
 
+    # 4. Determinar tipo de sesión y cargar historial de conversación
     session_type = "general" if req.chat_surface == "general" else "contextual"
     conversation = None
     history = await history_manager.load_converse_messages(db, user_id, req.session_id, runtime.history_window)
     user_content = await build_user_content_blocks(db, user_id, req.message, req.attachments)
     messages = history + [{"role": "user", "content": user_content}]
 
+    # 5. Registrar o crear la conversación en la base de datos si corresponde
     if record_history:
         conversation = await history_manager.get_or_create_conversation(
-            db, user_id, req.session_id, req.message, session_type=session_type
+            db,
+            user_id,
+            req.session_id,
+            req.message,
+            session_type=session_type,
+            agent_profile_id=profile.id,
         )
 
+    # 6. Inicializar variables para recursos afectados, control de uso de tokens, rondas y delegaciones
     affected: List[str] = []
     total_usage = {"inputTokens": 0, "outputTokens": 0}
     max_rounds = max_round_trips_override or runtime.max_round_trips
     delegations_used = 0
 
+    # 7. Emitir un evento de status inicial ("Pensando...")
     yield {"type": "status", "message": "Pensando..."}
 
+    # 8. Loop principal de rondas de conversación
     first_round = True
     for _ in range(max_rounds):
         try:
+            # 8.1. Invocar al cliente converse con el modelo y el historial de mensajes actual
             result = await converse_client.converse(
                 model_id=model_id,
                 messages=messages,
@@ -281,10 +295,12 @@ async def chat_stream(
                 force_tool_use=first_round and bool(tool_specs),
             )
         except BedrockError as e:
+            # 8.2. Si hubo un error de Bedrock, emite evento de error y termina
             yield {"type": "error", "message": str(e)}
             return
         first_round = False
 
+        # 8.3. Acumular tokens consumidos (input/output) y loggear el uso de la ronda
         total_usage["inputTokens"] += result["usage"]["inputTokens"]
         total_usage["outputTokens"] += result["usage"]["outputTokens"]
         await usage_logger.record_round_log(
@@ -296,39 +312,52 @@ async def chat_stream(
             agent_profile_id=profile.id,
         )
 
+        # 9. Si el modelo NO requiere uso de herramientas (ya tiene respuesta final)
         if result["stop_reason"] != "tool_use":
+            # 9.1. Loggear uso total de la vuelta
             await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
+            # 9.2. Registrar mensajes en historial si corresponde
             if record_history and conversation:
                 await history_manager.append_message(db, conversation, "user", req.message)
                 await history_manager.append_message(db, conversation, "assistant", result["text"])
+            # 9.3. Emitir evento "done" con respuesta final y los recursos afectados
             yield {"type": "done", "reply": result["text"], "affected_resources": affected}
             return
 
+        # 10. Si el modelo requiere ejecución de herramientas
+        # 10.1. Emitir eventos de status por cada herramienta a usar
         for t in result["tool_uses"]:
             yield {"type": "status", "message": _TOOL_STATUS.get(t["name"], f"Usando {t['name']}...")}
 
+        # 10.2. Preparar contenido para mensajes siguientes (contenido de herramientas usadas)
         assistant_content = [
             {"toolUse": {"toolUseId": t["toolUseId"], "name": t["name"], "input": t["input"]}}
             for t in result["tool_uses"]
         ]
         tool_result_content = []
 
+        # 10.3. Ejecutar cada herramienta solicitada y recopilar sus resultados
         for t in result["tool_uses"]:
             name = t["name"]
             try:
+                # 10.3.1. Si la herramienta es "delegate_to_specialist" (delegación a especialista)
                 if name == "delegate_to_specialist":
+                    # Solo permitido en chat general
                     if req.chat_surface != "general":
                         tool_result = {"error": "delegation only in general chat"}
+                    # Limitar cantidad de delegaciones por turno
                     elif delegations_used >= settings.BEDROCK_MAX_DELEGATIONS_PER_TURN:
                         tool_result = {"error": "max delegations per turn exceeded"}
                     else:
                         spec_id = t["input"].get("agent_profile_id", "")
+                        # Emitir evento de inicio de delegación
                         yield {
                             "type": "delegation_start",
                             "agent_profile_id": spec_id,
                             "label": agent_profiles.get_profile(spec_id).label,
                             "task_preview": (t["input"].get("task") or "")[:120],
                         }
+                        # Ejecutar sub-turno del especialista
                         sub = await run_specialist_sub_turn(
                             db,
                             user_id=user_id,
@@ -339,6 +368,7 @@ async def chat_stream(
                         )
                         delegations_used += 1
                         tool_result = sub
+                        # Emitir evento de fin de delegación
                         yield {
                             "type": "delegation_end",
                             "agent_profile_id": spec_id,
@@ -346,19 +376,24 @@ async def chat_stream(
                             "summary_preview": sub.get("summary", "")[:200],
                         }
                 else:
+                    # 10.3.2. Ejecución de herramientas normales
                     tool_result = await tools.execute_tool(db, user_id, name, t["input"], req.session_id)
                 status = "success"
+                # 10.3.3. Registrar recursos afectados por la delegación si es el caso
                 if name == "delegate_to_specialist" and isinstance(tool_result, dict):
                     for key in tool_result.get("affected_resources") or []:
                         if key not in affected:
                             affected.append(key)
+                # 10.3.4. Determinar clave de invalidación de recursos y registrar si es necesario
                 inv_key = tools.invalidation_key(name, t["input"], tool_result)
                 if inv_key and inv_key not in affected:
                     affected.append(inv_key)
             except Exception as e:
+                # 10.3.5. Si ocurre un error al ejecutar la herramienta
                 tool_result = {"error": str(e)}
                 status = "error"
 
+            # 10.3.6. Acumular resultado de la herramienta para el mensaje siguiente
             tool_result_content.append({
                 "toolResult": {
                     "toolUseId": t["toolUseId"],
@@ -367,10 +402,12 @@ async def chat_stream(
                 }
             })
 
+        # 10.4. Agregar los resultados de la ronda al historial de mensajes para la próxima interacción
         messages.extend([
             {"role": "assistant", "content": assistant_content},
             {"role": "user", "content": tool_result_content},
         ])
 
+    # 11. Si se agotaron las vueltas sin obtener respuesta final, registrar el uso y emitir un error final
     await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
     yield {"type": "error", "message": "Se agotaron las vueltas del agente sin respuesta final."}

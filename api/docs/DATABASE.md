@@ -213,7 +213,7 @@ Documentación API: [sections/bedrock/README.md](./sections/bedrock/README.md)
 | Tabla | Modelo | Propósito |
 |-------|--------|-----------|
 | `bedrock_settings` | `BedrockSettings` | Modelo activo, presupuesto, límites runtime |
-| `bedrock_conversations` | `BedrockConversation` | Sesiones de chat (`session_type`: general/contextual) |
+| `bedrock_conversations` | `BedrockConversation` | Sesiones de chat (`session_type` + `agent_profile_id` por especialista) |
 | `bedrock_conversation_messages` | `BedrockConversationMessage` | Historial user/assistant |
 | `bedrock_usage_logs` | `BedrockUsageLog` | Tokens y costo por turno |
 | `bedrock_usage_round_logs` | `BedrockUsageRoundLog` | Tokens por ronda Converse dentro de un turno |
@@ -320,7 +320,7 @@ WHERE user_id = 'usr-1'
   AND created_at >= date_trunc('day', NOW() AT TIME ZONE 'UTC');
 
 -- Conversaciones recientes
-SELECT session_id, title, session_type, updated_at
+SELECT session_id, title, session_type, agent_profile_id, updated_at
 FROM bedrock_conversations
 WHERE user_id = 'usr-1'
 ORDER BY updated_at DESC

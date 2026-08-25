@@ -102,7 +102,7 @@ flowchart TB
 | `bedrock_settings.py` | Fila única: modelo, presupuesto, prompt override, límites |
 | `bedrock_agent_profile_prompt.py` | Suffix editable por perfil de agente |
 | `bedrock_custom_tool.py` | Servidores MCP remotos registrados |
-| `bedrock_conversation.py` | `BedrockConversation` + `BedrockConversationMessage` |
+| `bedrock_conversation.py` | `BedrockConversation` + `BedrockConversationMessage` (historial por `session_type` + `agent_profile_id`) |
 | `bedrock_usage_log.py` | Costo/tokens por turno |
 | `bedrock_usage_round_log.py` | Costo granular (Converse, tool, imagen) |
 | `bedrock_task.py` | Tareas/plan del agente (`/agent-tasks`) |
