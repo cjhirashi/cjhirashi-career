@@ -27,6 +27,7 @@ from routes import pdf_templates, pdf_template_styles
 from routes import files
 from routes import linkedin
 from routes import public
+from routes import notifications
 from services import storage_service, linkedin_scheduler, task_scheduler
 
 # ============================================================================
@@ -181,6 +182,7 @@ app.include_router(career_metrics.router)
 app.include_router(career_methodologies.router)
 app.include_router(bedrock.router)
 app.include_router(bedrock_tasks.router)
+app.include_router(notifications.router)
 app.include_router(admin_sections.router)
 app.include_router(pdf_templates.router)
 app.include_router(pdf_template_styles.router)

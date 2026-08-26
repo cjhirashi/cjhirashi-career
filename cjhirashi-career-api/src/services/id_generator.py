@@ -23,6 +23,7 @@ TABLE_PREFIXES: dict[str, str] = {
     "bedrock_conversation_messages": "bcm",
     "bedrock_custom_tools":       "bct",
     "bedrock_tasks":              "btk",
+    "user_notifications":         "ntf",
     "career_reviews":             "crv",
     "certifications":             "crt",
     "competencies":               "cmp",

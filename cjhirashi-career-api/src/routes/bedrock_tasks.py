@@ -29,6 +29,7 @@ router = build_crud_router(
     update_schema=BedrockTaskUpdate,
     response_schema=BedrockTaskResponse,
     entity_name="tarea",
+    after_write=lambda obj: task_scheduler.enqueue_advance(getattr(obj, "id", None), getattr(obj, "parent_id", None)),
 )
 
 

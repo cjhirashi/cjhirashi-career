@@ -217,7 +217,8 @@ _PDF_DESIGN_SUFFIX = (
     "registro hasta que la tool devuelva el id.\n"
     "Flujo de diseño: (a) pdf_style action=get o create; (b) pdf_style action=update con style_guide; "
     "(c) pdf_template action=create con style_id y variables. Si reutilizas un estilo, lee su "
-    "style_guide antes de escribir HTML. Consulta `search_knowledge_base` en «Diseño PDF»."
+    "style_guide antes de escribir HTML. Consulta `search_knowledge_base` (type=methodology) "
+    "solo para las metodologías asignadas a este perfil."
 )
 
 _METHODOLOGIES_SUFFIX = (
@@ -234,6 +235,8 @@ _METHODOLOGIES_SUFFIX = (
     "Si Carlos dice procede, adelante o hazlo, llama la tool EN ESTE TURNO sin anunciar "
     "primero. No sustituyas la escritura por un plan en agent-tasks: actualizar un opm-N "
     "es un solo update_career_record. "
+    "Al crear o editar, usa agent_profile_ids para asignar la metodología al agente dueño; "
+    "ese agente la asume como suya en el siguiente turno. Vacío = compartida (todos). "
     "Bitácora → agent_changelog; plan multi-paso → agent_task_manager."
 )
 
@@ -509,10 +512,22 @@ _PROFILES: dict[str, AgentProfile] = {
         resource_keys=["agent-tasks"],
         methodology_sections=[],
         system_prompt_suffix=(
-            "Especialista L3 del plan de tareas (resource_key agent-tasks). No hablas con el usuario. "
-            "Campos: title, description, status (pending|in_progress|done|cancelled). "
-            "Crea una fila por paso, actualiza a in_progress al empezar y done al terminar. "
-            "Solo opera agent-tasks. Devuelve ids y el estado del plan."
+            "Especialista L3 del tablero de tareas (resource_key agent-tasks). No hablas con el usuario. "
+            "Campos: title, description, status (pending|in_progress|done|cancelled|failed), "
+            "assignee_type (user|agent), agent_profile_id (obligatorio si agent), "
+            "scheduled_at (ISO UTC: cuándo debe ejecutar el agente si no es por turno), due_at, "
+            "priority (low|medium|high), parent_id (subtarea de un plan), sort_order, "
+            "is_blocking (si True, las hermanas posteriores esperan a done/cancelled), "
+            "execute_on_turn (agente: corre al desbloquearse, sin esperar scheduled_at). "
+            "Un padre con hijas es el orquestador: no lo ejecutes como agente. "
+            "Si Carlos pide que un agente haga algo a cierta hora, crea la fila con "
+            "assignee_type=agent, el agent_profile_id del especialista adecuado y scheduled_at. "
+            "Si pide un plan con pasos, crea el padre y subtareas (parent_id). "
+            "El scheduler las ejecuta aunque Carlos no esté en sesión; si el responsable es user, "
+            "se le notifica cuando le toca el turno. "
+            "El scheduler la ejecutará aunque Carlos no esté en sesión. "
+            "No uses agent-tasks solo como checklist de un turno si la petición es programar trabajo. "
+            "Solo opera agent-tasks. Devuelve ids y el estado."
         ),
         default_model_id="amazon.nova-lite-v1:0",
         allowed_tool_names=_TASK_MANAGER_TOOL_NAMES,
@@ -656,7 +671,11 @@ def can_delegate_to(caller: AgentProfile, target: AgentProfile) -> bool:
     return False
 
 
-def delegation_error(caller: AgentProfile, target_id: str) -> Optional[str]:
+def delegation_error(
+    caller: AgentProfile,
+    target_id: str,
+    allowed_ids: Optional[Set[str]] = None,
+) -> Optional[str]:
     """None si la delegación es válida; mensaje de error si no."""
     try:
         target = get_profile(target_id)
@@ -667,6 +686,10 @@ def delegation_error(caller: AgentProfile, target_id: str) -> Optional[str]:
             f"delegation not allowed: {caller.id} (L{caller.level}) "
             f"cannot call {target.id} (L{target.level})"
         )
+    if allowed_ids is not None and target_id not in allowed_ids:
+        return (
+            f"delegation not allowed: {target_id} is not in this agent's configured targets"
+        )
     return None
 
 
@@ -674,8 +697,19 @@ def delegation_targets(caller: AgentProfile) -> List[AgentProfile]:
     return [p for p in list_profiles() if can_delegate_to(caller, p)]
 
 
-def delegate_tool_description(caller: AgentProfile) -> str:
-    targets = delegation_targets(caller)
+def delegate_tool_description(
+    caller: AgentProfile,
+    target_ids: Optional[List[str]] = None,
+) -> str:
+    if target_ids is None:
+        targets = delegation_targets(caller)
+    else:
+        targets = []
+        for tid in target_ids:
+            try:
+                targets.append(get_profile(tid))
+            except KeyError:
+                continue
     if not targets:
         return "Esta herramienta no está disponible para este perfil."
     listed = ", ".join(f"{p.id} ({p.label}, L{p.level})" for p in targets)
@@ -734,3 +768,10 @@ def tools_for_profile(profile: AgentProfile, all_tool_names: Set[str]) -> Set[st
     else:
         names.discard("delegate_to_specialist")
     return names
+
+
+def profile_can_search_knowledge(profile: AgentProfile) -> bool:
+    """True si el perfil tiene `search_knowledge_base` (consulta metodologías asignadas)."""
+    if profile.allowed_tool_names is not None:
+        return "search_knowledge_base" in profile.allowed_tool_names
+    return profile.level == 2
