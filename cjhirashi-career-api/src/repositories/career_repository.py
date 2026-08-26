@@ -303,29 +303,80 @@ class CareerRepository(Generic[ModelType]):
             db.expire_all()
         return await self.get_for_user(db, user_id, item_id)
 
+    async def _validate_task_parent(
+        self, db: AsyncSession, user_id: str, parent_id: Optional[str], self_id: Optional[str] = None
+    ) -> None:
+        if not parent_id:
+            return
+        if self_id and parent_id == self_id:
+            raise ValueError("una tarea no puede ser padre de sí misma")
+        from models.bedrock_task import BedrockTask
+
+        parent = await db.get(BedrockTask, parent_id)
+        if parent is None or parent.user_id != user_id:
+            raise ValueError("parent_id no existe o no es tuyo")
+        if parent.parent_id:
+            raise ValueError("las subtareas no pueden tener subtareas")
+
     async def _apply_virtual_fields(
         self, db: AsyncSession, user_id: str, obj: ModelType, virtual: dict
     ) -> None:
-        if "achievement_ids" not in virtual:
-            return
-        from models.achievement import Achievement
+        if "achievement_ids" in virtual:
+            from models.achievement import Achievement
 
-        wanted = [str(item_id) for item_id in (virtual["achievement_ids"] or []) if item_id]
-        await db.execute(
-            update(Achievement)
-            .where(
-                Achievement.user_id == user_id,
-                Achievement.work_history_id == obj.id,
-                *([Achievement.id.notin_(wanted)] if wanted else []),
-            )
-            .values(work_history_id=None)
-        )
-        if wanted:
+            wanted = [str(item_id) for item_id in (virtual["achievement_ids"] or []) if item_id]
             await db.execute(
                 update(Achievement)
-                .where(Achievement.user_id == user_id, Achievement.id.in_(wanted))
-                .values(work_history_id=obj.id)
+                .where(
+                    Achievement.user_id == user_id,
+                    Achievement.work_history_id == obj.id,
+                    *([Achievement.id.notin_(wanted)] if wanted else []),
+                )
+                .values(work_history_id=None)
             )
+            if wanted:
+                await db.execute(
+                    update(Achievement)
+                    .where(Achievement.user_id == user_id, Achievement.id.in_(wanted))
+                    .values(work_history_id=obj.id)
+                )
+        if "subtasks" in virtual:
+            await self._sync_subtasks(db, user_id, obj, virtual.get("subtasks") or [])
+
+    async def _sync_subtasks(self, db: AsyncSession, user_id: str, parent, items: list) -> None:
+        from models.bedrock_task import BedrockTask
+        from schemas.bedrock_task import SubtaskInput
+
+        if getattr(parent, "parent_id", None):
+            raise ValueError("las subtareas no pueden tener subtareas")
+        result = await db.execute(
+            select(BedrockTask).where(BedrockTask.user_id == user_id, BedrockTask.parent_id == parent.id)
+        )
+        existing = {child.id: child for child in result.scalars().all()}
+        keep: set[str] = set()
+        for index, raw in enumerate(items):
+            payload = raw if isinstance(raw, dict) else raw.model_dump()
+            payload = {**payload, "parent_id": parent.id, "sort_order": index}
+            payload.pop("subtasks", None)
+            parsed = SubtaskInput.model_validate(payload)
+            data = parsed.model_dump(exclude={"id", "subtasks"})
+            data["parent_id"] = parent.id
+            data["sort_order"] = index
+            child_id = parsed.id
+            if child_id and child_id in existing:
+                child = existing[child_id]
+                for key, value in data.items():
+                    setattr(child, key, value)
+                keep.add(child_id)
+            else:
+                child = BedrockTask(user_id=user_id, **data)
+                db.add(child)
+                await db.flush()
+                keep.add(child.id)
+        for child_id, child in existing.items():
+            if child_id not in keep:
+                await db.delete(child)
+
 
     # ------------------------------------------------------------------------
     # Indexación vectorial — búsqueda semántica (Qdrant)
