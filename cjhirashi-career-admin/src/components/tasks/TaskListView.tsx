@@ -6,10 +6,12 @@ import { formatCellValue } from '@/components/career/careerFieldUtils'
 import { TableColumnSettings } from '@/components/career/TableColumnSettings'
 import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
-import { SelectCapsule, SelectCapsuleGroup } from '@/components/SelectCapsule'
+import { PersonChip } from '@/components/PersonAvatar'
 import { formatDateTime } from '@/utils/formatters'
 import {
+  assigneeDisplay,
   assigneeLabel,
+  AssigneeContext,
   canRunAgentTask,
   TASK_PRIORITY_LABELS,
   TASK_STATUS_LABELS,
@@ -38,10 +40,7 @@ const PRIORITY_OPTIONS: SelectOption[] = Object.entries(TASK_PRIORITY_LABELS).ma
   label,
 }))
 
-const ASSIGNEE_TYPE_OPTIONS: SelectOption[] = [
-  { value: 'user', label: 'Tú' },
-  { value: 'agent', label: 'Agente' },
-]
+const ASSIGNEE_TYPE_OPTIONS_BASE: SelectOption[] = [{ value: 'agent', label: 'Agente' }]
 
 type TaskFilters = {
   status: string[]
@@ -53,7 +52,7 @@ const EMPTY_FILTERS: TaskFilters = { status: [], assignee_type: [], priority: []
 
 interface TaskListViewProps {
   tasks: BedrockTask[]
-  agentLabels: Record<string, string>
+  assignees: AssigneeContext
   subtaskCount?: Record<string, number>
   onOpen: (task: BedrockTask) => void
   onEdit: (task: BedrockTask) => void
@@ -62,12 +61,8 @@ interface TaskListViewProps {
   runningId?: string
 }
 
-const cellValue = (
-  task: BedrockTask,
-  key: string,
-  agentLabels: Record<string, string>
-): unknown => {
-  if (key === 'assignee') return assigneeLabel(task, agentLabels)
+const cellValue = (task: BedrockTask, key: string, assignees: AssigneeContext): unknown => {
+  if (key === 'assignee') return assigneeLabel(task, assignees)
   return task[key as keyof BedrockTask]
 }
 
@@ -80,7 +75,7 @@ const compareCells = (a: unknown, b: unknown, dir: 'asc' | 'desc'): number => {
 
 export const TaskListView: React.FC<TaskListViewProps> = ({
   tasks,
-  agentLabels,
+  assignees,
   subtaskCount = {},
   onOpen,
   onEdit,
@@ -107,6 +102,11 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
   const filtersActive = filters.status.length + filters.assignee_type.length + filters.priority.length > 0
 
+  const assigneeTypeOptions: SelectOption[] = [
+    { value: 'user', label: assignees.userName },
+    ...ASSIGNEE_TYPE_OPTIONS_BASE,
+  ]
+
   const rows = useMemo(() => {
     let next = tasks
     if (search) {
@@ -115,7 +115,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
           task.id,
           task.title,
           task.description,
-          assigneeLabel(task, agentLabels),
+          assigneeLabel(task, assignees),
           TASK_STATUS_LABELS[task.status],
           TASK_PRIORITY_LABELS[task.priority],
         ]
@@ -131,10 +131,12 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
     }
     if (filters.priority.length) next = next.filter((task) => filters.priority.includes(task.priority))
     if (sortBy) {
-      next = [...next].sort((a, b) => compareCells(cellValue(a, sortBy, agentLabels), cellValue(b, sortBy, agentLabels), sortDir))
+      next = [...next].sort((a, b) =>
+        compareCells(cellValue(a, sortBy, assignees), cellValue(b, sortBy, assignees), sortDir)
+      )
     }
     return next
-  }, [tasks, search, filters, sortBy, sortDir, agentLabels])
+  }, [tasks, search, filters, sortBy, sortDir, assignees])
 
   const toggleSort = (key: string) => {
     setSortBy((current) => {
@@ -166,7 +168,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
           aria-label="Asignada a"
           value={filters.assignee_type}
           onChange={(assignee_type) => setFilters((current) => ({ ...current, assignee_type }))}
-          options={ASSIGNEE_TYPE_OPTIONS}
+          options={assigneeTypeOptions}
         />
       )
     }
@@ -287,31 +289,28 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     if (col.key === 'status') {
                       return (
                         <td key={col.key} className="px-6 py-2">
-                          <SelectCapsuleGroup>
-                            <SelectCapsule code={task.status} label={TASK_STATUS_LABELS[task.status] ?? task.status} />
-                          </SelectCapsuleGroup>
+                          <StateCapsule
+                            tone={task.status}
+                            label={TASK_STATUS_LABELS[task.status] ?? task.status}
+                          />
                         </td>
                       )
                     }
                     if (col.key === 'priority') {
                       return (
                         <td key={col.key} className="px-6 py-2">
-                          <SelectCapsuleGroup>
-                            <SelectCapsule
-                              code={task.priority}
-                              label={TASK_PRIORITY_LABELS[task.priority] ?? task.priority}
-                            />
-                          </SelectCapsuleGroup>
+                          <StateCapsule
+                            tone={task.priority}
+                            label={TASK_PRIORITY_LABELS[task.priority] ?? task.priority}
+                          />
                         </td>
                       )
                     }
                     if (col.key === 'assignee') {
-                      const code = task.assignee_type === 'agent' ? task.agent_profile_id ?? 'agent' : 'user'
+                      const person = assigneeDisplay(task, assignees)
                       return (
                         <td key={col.key} className="px-6 py-2">
-                          <SelectCapsuleGroup>
-                            <SelectCapsule code={code} label={assigneeLabel(task, agentLabels)} />
-                          </SelectCapsuleGroup>
+                          <PersonChip src={person.imageUrl} name={person.name} />
                         </td>
                       )
                     }
@@ -325,7 +324,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     }
                     return (
                       <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
-                        {formatCellValue(cellValue(task, col.key, agentLabels), col.format)}
+                        {formatCellValue(cellValue(task, col.key, assignees), col.format)}
                         {col.key === 'title' && (subtaskCount[task.id] ?? 0) > 0 && (
                           <span className="ml-2 text-[11px] text-text-muted">
                             {subtaskCount[task.id]} subtarea{subtaskCount[task.id] === 1 ? '' : 's'}

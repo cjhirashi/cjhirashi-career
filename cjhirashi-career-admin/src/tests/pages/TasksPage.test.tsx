@@ -68,6 +68,12 @@ describe('TasksPage', () => {
     expect(screen.getByText('Control de búsqueda de vacantes')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/buscar en tareas/i)).toBeInTheDocument()
     expect(screen.getByText('btk-1')).toBeInTheDocument()
+    expect(screen.getByText('Pendiente')).toBeInTheDocument()
+    expect(screen.getByText('Alta')).toBeInTheDocument()
+    expect(screen.queryByText('pending')).not.toBeInTheDocument()
+    expect(screen.queryByText('high')).not.toBeInTheDocument()
+    expect(screen.getByText('Pendiente').closest('[data-tone]')).toHaveAttribute('data-tone', 'pending')
+    expect(screen.getByText('Alta').closest('[data-tone]')).toHaveAttribute('data-tone', 'high')
   })
 
   it('switches to kanban, calendar and gantt', async () => {

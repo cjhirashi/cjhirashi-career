@@ -1,13 +1,16 @@
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Bot, Lock, User } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { MarkdownTable } from '@/components/MarkdownTable'
 import { ThemedSelect } from '@/components/ThemedSelect'
+import { StateCapsule } from '@/components/StateCapsule'
+import { PersonChip } from '@/components/PersonAvatar'
 import { BedrockTask, TaskStatus } from '@/types/bedrock'
 import { formatDateTime } from '@/utils/formatters'
 import {
-  assigneeLabel,
+  assigneeDisplay,
+  AssigneeContext,
   isTaskBlocked,
   TASK_PRIORITY_LABELS,
   TASK_STATUS_LABELS,
@@ -16,7 +19,7 @@ import {
 interface TaskRecordViewProps {
   task: BedrockTask
   subtasks?: BedrockTask[]
-  agentLabels: Record<string, string>
+  assignees: AssigneeContext
   onStatus: (task: BedrockTask, status: TaskStatus) => void
   onOpenSubtask?: (task: BedrockTask) => void
 }
@@ -49,7 +52,7 @@ const StatusSelect: React.FC<{
 export const TaskRecordView: React.FC<TaskRecordViewProps> = ({
   task,
   subtasks = [],
-  agentLabels,
+  assignees,
   onStatus,
   onOpenSubtask,
 }) => (
@@ -62,12 +65,14 @@ export const TaskRecordView: React.FC<TaskRecordViewProps> = ({
           <StatusSelect task={task} onStatus={onStatus} />
         </Field>
         <Field label="Responsable">
-          <span className="inline-flex items-center gap-1.5">
-            {task.assignee_type === 'agent' ? <Bot size={13} aria-hidden="true" /> : <User size={13} aria-hidden="true" />}
-            {assigneeLabel(task, agentLabels)}
-          </span>
+          <PersonChip src={assigneeDisplay(task, assignees).imageUrl} name={assigneeDisplay(task, assignees).name} />
         </Field>
-        <Field label="Prioridad">{TASK_PRIORITY_LABELS[task.priority] ?? task.priority}</Field>
+        <Field label="Prioridad">
+          <StateCapsule
+            tone={task.priority}
+            label={TASK_PRIORITY_LABELS[task.priority] ?? task.priority}
+          />
+        </Field>
         <Field label="Inicio / ejecución">{task.scheduled_at ? formatDateTime(task.scheduled_at) : '—'}</Field>
         <Field label="Fecha límite">{task.due_at ? formatDateTime(task.due_at) : '—'}</Field>
         {task.parent_id && (
@@ -115,8 +120,11 @@ export const TaskRecordView: React.FC<TaskRecordViewProps> = ({
                     {index + 1}. {child.title}
                   </button>
                   <p className="text-[11px] text-text-muted mt-0.5 inline-flex items-center gap-1.5 flex-wrap">
-                    {child.assignee_type === 'agent' ? <Bot size={11} /> : <User size={11} />}
-                    {assigneeLabel(child, agentLabels)}
+                    <PersonChip
+                      src={assigneeDisplay(child, assignees).imageUrl}
+                      name={assigneeDisplay(child, assignees).name}
+                      size={16}
+                    />
                     {child.is_blocking !== false ? ' · bloqueante' : ' · no bloquea'}
                     {child.execute_on_turn ? ' · al turno' : ''}
                     {blocked && (
