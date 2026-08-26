@@ -11,8 +11,10 @@ import asyncio
 import logging
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
-from sqlalchemy import String, Text, func as sa_func, inspect, or_, select
+from sqlalchemy import Boolean as SABoolean, String, Text, func as sa_func, inspect, or_, select, update
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from database import Base
 
@@ -23,6 +25,14 @@ from database import Base
 ModelType = TypeVar("ModelType", bound=Base)
 
 logger = logging.getLogger(__name__)
+
+# Fields accepted on the API payload that are not columns of the SQLAlchemy
+# model. work-history.achievement_ids syncs Achievement.work_history_id.
+# agent-tasks.subtasks crea/actualiza/borra filas hijas (ADR-016).
+_VIRTUAL_FIELDS = {
+    "work-history": frozenset({"achievement_ids"}),
+    "agent-tasks": frozenset({"subtasks"}),
+}
 
 # ============================================================================
 # Utilidades — tareas en segundo plano
@@ -69,9 +79,64 @@ class CareerRepository(Generic[ModelType]):
         ]
         self._indexable_columns = [c for c in self._column_names if c not in ("id", "user_id")]
 
+    def _eager_options(self):
+        rel = getattr(self.model, "linked_achievements", None)
+        if rel is None:
+            return []
+        return [selectinload(rel)]
+
+    def _pop_virtual_fields(self, data: dict) -> dict:
+        virtual = _VIRTUAL_FIELDS.get(self.resource_key or "", frozenset())
+        return {key: data.pop(key) for key in list(data) if key in virtual}
+
     # ------------------------------------------------------------------------
     # Consultas — listado, conteo y obtención
     # ------------------------------------------------------------------------
+
+    def _apply_search(self, stmt, search: Optional[str]):
+        if search and self._text_columns:
+            like = f"%{search}%"
+            stmt = stmt.where(or_(*(getattr(self.model, col).ilike(like) for col in self._text_columns)))
+        return stmt
+
+    def _apply_filters(self, stmt, filters: Optional[dict]):
+        """AND equality / membership filters. Unknown keys are ignored."""
+        if not filters:
+            return stmt
+        for field, raw in filters.items():
+            if field not in self._column_names or field in ("id", "user_id"):
+                continue
+            column = getattr(self.model, field)
+            values = raw if isinstance(raw, list) else [raw]
+            values = [item for item in values if item is not None and item != ""]
+            if not values:
+                continue
+            col_type = column.type
+            if isinstance(col_type, SABoolean):
+                wanted = [self._as_bool(item) for item in values]
+                wanted = [item for item in wanted if item is not None]
+                if not wanted:
+                    continue
+                stmt = stmt.where(column.in_(wanted) if len(wanted) > 1 else column.is_(wanted[0]))
+            elif isinstance(col_type, JSONB):
+                stmt = stmt.where(or_(*(column.contains([str(item)]) for item in values)))
+            elif len(values) == 1:
+                stmt = stmt.where(column == values[0])
+            else:
+                stmt = stmt.where(column.in_([str(item) for item in values]))
+        return stmt
+
+    @staticmethod
+    def _as_bool(value) -> Optional[bool]:
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in ("true", "1", "yes", "si", "sí"):
+                return True
+            if lowered in ("false", "0", "no"):
+                return False
+        return None
 
     async def list_for_user(
         self,
@@ -82,19 +147,19 @@ class CareerRepository(Generic[ModelType]):
         sort_by: Optional[str] = None,
         sort_dir: str = "asc",
         search: Optional[str] = None,
+        filters: Optional[dict] = None,
     ) -> Sequence[ModelType]:
         """Return a page of rows belonging to `user_id`.
 
         `sort_by` defaults to newest-first (`id desc`) when absent or not a
         real column on this model - never trusted blindly, since it comes
         straight from the query string. `search` does a case-insensitive
-        OR-match across every string/text column of the model.
+        OR-match across every string/text column of the model. `filters` is
+        an optional {column: value | [values]} map for categorized fields.
         """
-        stmt = select(self.model).where(self.model.user_id == user_id)
-
-        if search and self._text_columns:
-            like = f"%{search}%"
-            stmt = stmt.where(or_(*(getattr(self.model, col).ilike(like) for col in self._text_columns)))
+        stmt = select(self.model).options(*self._eager_options()).where(self.model.user_id == user_id)
+        stmt = self._apply_search(stmt, search)
+        stmt = self._apply_filters(stmt, filters)
 
         if sort_by and sort_by in self._column_names:
             column = getattr(self.model, sort_by)
@@ -106,17 +171,60 @@ class CareerRepository(Generic[ModelType]):
         result = await db.execute(stmt)
         return result.scalars().all()
 
-    async def count_for_user(self, db: AsyncSession, user_id: str) -> int:
-        """Return the total number of rows belonging to `user_id`."""
+    async def count_for_user(
+        self,
+        db: AsyncSession,
+        user_id: str,
+        search: Optional[str] = None,
+        filters: Optional[dict] = None,
+    ) -> int:
+        """Return the number of rows belonging to `user_id`, with the same
+        search/filters as the list endpoint so pagination stays accurate."""
         stmt = select(sa_func.count()).select_from(self.model).where(self.model.user_id == user_id)
+        stmt = self._apply_search(stmt, search)
+        stmt = self._apply_filters(stmt, filters)
         result = await db.execute(stmt)
         return result.scalar_one()
+
+    def is_distinct_field(self, field: str) -> bool:
+        """True when `field` is a string/text column that may back a creatable select."""
+        return field in self._text_columns and field not in ("id", "user_id")
+
+    async def distinct_values_for_user(
+        self, db: AsyncSession, user_id: str, field: str
+    ) -> list[str]:
+        """Unique non-empty values of a text column for `user_id`, sorted.
+
+        Powers creatable selects: options already saved on other rows reappear
+        as listed choices; a newly typed value is stored on the record and
+        shows up here on the next load.
+        """
+        if not self.is_distinct_field(field):
+            raise ValueError(f"Field {field!r} is not a text column on this resource")
+        column = getattr(self.model, field)
+        stmt = (
+            select(column)
+            .where(self.model.user_id == user_id, column.is_not(None), column != "")
+            .distinct()
+            .order_by(column.asc())
+            .limit(500)
+        )
+        result = await db.execute(stmt)
+        values: list[str] = []
+        seen: set[str] = set()
+        for raw in result.scalars().all():
+            text = str(raw).strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            values.append(text)
+        return values
 
     async def get_for_user(
         self, db: AsyncSession, user_id: str, item_id: str
     ) -> Optional[ModelType]:
         """Fetch a single row by id, scoped to `user_id`. Never trusts a bare id lookup."""
-        stmt = select(self.model).where(
+        stmt = select(self.model).options(*self._eager_options()).where(
             self.model.id == item_id, self.model.user_id == user_id
         )
         result = await db.execute(stmt)
@@ -143,18 +251,17 @@ class CareerRepository(Generic[ModelType]):
         """
         data = dict(data)
         data.pop("user_id", None)
+        virtual = self._pop_virtual_fields(data)
+        if self.resource_key == "agent-tasks":
+            await self._validate_task_parent(db, user_id, data.get("parent_id"))
         obj = self.model(user_id=user_id, **data)
         db.add(obj)
         await db.flush()
-        await db.refresh(obj)
+        await self._apply_virtual_fields(db, user_id, obj, virtual)
         await db.commit()
-        # Fire-and-forget, not awaited: indexing is best-effort and can be
-        # noticeably slower than the write itself (a real embedding call to
-        # Bedrock over however much text the record has), so awaiting it
-        # here would make the client wait - and risk a client-side timeout -
-        # for something that was never allowed to fail the write anyway.
-        _fire_and_forget(self._index_for_search(obj, user_id))
-        return obj
+        loaded = await self._reload_after_write(db, user_id, obj.id, virtual)
+        _fire_and_forget(self._index_for_search(loaded or obj, user_id))
+        return loaded or obj
 
     async def update_for_user(
         self, db: AsyncSession, user_id: str, item_id: str, data: dict
@@ -165,13 +272,17 @@ class CareerRepository(Generic[ModelType]):
             return None
         data = dict(data)
         data.pop("user_id", None)
+        virtual = self._pop_virtual_fields(data)
+        if self.resource_key == "agent-tasks" and "parent_id" in data:
+            await self._validate_task_parent(db, user_id, data.get("parent_id"), item_id)
         for key, value in data.items():
             setattr(obj, key, value)
         await db.flush()
-        await db.refresh(obj)
+        await self._apply_virtual_fields(db, user_id, obj, virtual)
         await db.commit()
-        _fire_and_forget(self._index_for_search(obj, user_id))
-        return obj
+        loaded = await self._reload_after_write(db, user_id, item_id, virtual)
+        _fire_and_forget(self._index_for_search(loaded or obj, user_id))
+        return loaded or obj
 
     async def delete_for_user(self, db: AsyncSession, user_id: str, item_id: str) -> bool:
         """Delete a row scoped to `user_id`. Returns False if not found/not owned."""
@@ -182,6 +293,39 @@ class CareerRepository(Generic[ModelType]):
         await db.commit()
         _fire_and_forget(self._remove_from_search(item_id))
         return True
+
+    async def _reload_after_write(
+        self, db: AsyncSession, user_id: str, item_id: str, virtual: dict
+    ) -> Optional[ModelType]:
+        # Core UPDATEs for virtual FKs bypass the identity map; expire so
+        # selectinload sees the new Achievement.work_history_id values.
+        if virtual:
+            db.expire_all()
+        return await self.get_for_user(db, user_id, item_id)
+
+    async def _apply_virtual_fields(
+        self, db: AsyncSession, user_id: str, obj: ModelType, virtual: dict
+    ) -> None:
+        if "achievement_ids" not in virtual:
+            return
+        from models.achievement import Achievement
+
+        wanted = [str(item_id) for item_id in (virtual["achievement_ids"] or []) if item_id]
+        await db.execute(
+            update(Achievement)
+            .where(
+                Achievement.user_id == user_id,
+                Achievement.work_history_id == obj.id,
+                *([Achievement.id.notin_(wanted)] if wanted else []),
+            )
+            .values(work_history_id=None)
+        )
+        if wanted:
+            await db.execute(
+                update(Achievement)
+                .where(Achievement.user_id == user_id, Achievement.id.in_(wanted))
+                .values(work_history_id=obj.id)
+            )
 
     # ------------------------------------------------------------------------
     # Indexación vectorial — búsqueda semántica (Qdrant)
