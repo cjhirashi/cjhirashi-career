@@ -1,4 +1,4 @@
-# Glosario de Términos - Portafolio-cjhirashi
+# Glosario de Términos - cjhirashi-career
 
 **GLOSARIO DEL PROYECTO**
 
@@ -24,7 +24,7 @@
 
 Este documento es la sección 12, la última de la documentación Arc42, y existe para eliminar ambigüedad: cada término técnico o de dominio usado en `docs/01-*` a `docs/11-*` tiene aquí una definición única y su referencia a dónde se detalla. Si un término se usa en más de un documento con el mismo significado, esta es la fuente de verdad de esa definición — evita que cada sección Arc42 tenga que redefinirlo.
 
-Este glosario reemplaza por completo la versión anterior del documento, redactada para el alcance previo de generador de documentos. Todos los términos aquí corresponden al nuevo alcance de portafolio profesional (Portal Público, Admin Panel, Agent Bedrock, MCP Server, API REST, PDF Generator, PostgreSQL) descrito desde [01-INTRODUCTION.md](./01-INTRODUCTION.md).
+Este glosario reemplaza por completo la versión anterior del documento, redactada para el alcance previo de generador de documentos. Todos los términos aquí corresponden al alcance de portafolio profesional (Portal Público, Admin Panel, MCP Server, API REST con Bedrock y PDF, PostgreSQL) descrito desde [01-INTRODUCTION.md](./01-INTRODUCTION.md).
 
 ## 📚 Glosario (A–W)
 
@@ -34,7 +34,7 @@ Canal 2 del sistema: SPA privada de un único usuario (Carlos Jiménez Hirashi),
 
 ### Agent Bedrock
 
-Asistente de IA gestionado sobre AWS Bedrock, embebido exclusivamente dentro del Admin Panel. No es un canal de acceso al sistema — no tiene puerto propio, no se expone a Internet y solo puede invocarse desde una sesión ya autenticada del Admin Panel. Hereda siempre el contexto de autorización de esa sesión. Ver [01-INTRODUCTION — Componente 4️⃣](./01-INTRODUCTION.md#4️⃣-agent-bedrock-asistente-interno-del-admin-panel).
+Asistente de IA gestionado sobre AWS Bedrock, embebido en la API REST. El chat vive en el Admin Panel (sesión JWT). El scheduler de tareas (`task_scheduler`) también puede invocarlo sin SPA, con el `user_id` dueño de la fila, cuando una tarea asignada a un agente vence. Ver [01-INTRODUCTION — Componente 4️⃣](./01-INTRODUCTION.md#4️⃣-agent-bedrock-asistente-interno-del-admin-panel) y [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
 
 ### Aislamiento de Usuario (*User Isolation*)
 
@@ -118,7 +118,7 @@ Dato cuantitativo de observabilidad almacenado en el dominio correspondiente de 
 
 ### Módulo / Componente
 
-Unidad mínima de despliegue del sistema — un contenedor Docker independiente (o, en el caso de Agent Bedrock, un servicio gestionado sin contenedor). El sistema tiene siete: Portal Público, Admin Panel, Agent Bedrock, MCP Server, API REST, PDF Generator y PostgreSQL. Ver [01-INTRODUCTION — Componentes](./01-INTRODUCTION.md#-componentes).
+Unidad mínima de despliegue del sistema — un contenedor Docker independiente. Los **módulos de aplicación** son cuatro: Portal Público, Admin Panel, API REST y MCP Server. PostgreSQL, MinIO y Qdrant son infra. Bedrock y PDF son capacidades de la API. Ver [ADR-014](./09-DECISIONS/014-four-application-modules.md).
 
 ### `network-cjhirashi-srv`
 
@@ -128,9 +128,9 @@ Red Docker tipo *bridge*, **externa** al proyecto — preexiste en el host compa
 
 *Open Web Application Security Project* — organización de referencia cuyo "Top 10" de riesgos de seguridad web es la línea base de cumplimiento exigida en los tres canales expuestos a Internet (Portal Público, Admin Panel, MCP Server). Ver [02-ARCHITECTURE-GOALS — Restricciones](./02-ARCHITECTURE-GOALS.md#-restricciones) y el escenario S4 en [10-QUALITY-SCENARIOS.md](./10-QUALITY-SCENARIOS.md#-seguridad).
 
-### PDF Generator
+### PDF (WeasyPrint)
 
-Servicio interno, herramienta exclusiva del Admin Panel, que transforma datos estructurados de carrera profesional en documentos PDF (CV, Cover Letter). Ni el Portal Público ni el MCP Server tienen acceso a él. Ver [01-INTRODUCTION — Componente 6️⃣](./01-INTRODUCTION.md#6️⃣-pdf-generator).
+Capacidad de la API REST (`api/src/services/pdf/`): transforma plantillas HTML o Markdown de CV en PDF. El Admin Panel y Bedrock lo invocan por endpoints JWT de la API; no hay contenedor ni carpeta propios. Ver [01-INTRODUCTION — API REST](./01-INTRODUCTION.md#3️⃣-api-rest).
 
 ### Portal Público
 
@@ -163,6 +163,10 @@ Los cinco principios de diseño orientado a objetos (Single Responsibility, Open
 ### Stakeholder
 
 Persona o rol con interés o responsabilidad sobre el sistema — de negocio (Carlos Jiménez Hirashi, visitantes anónimos, agentes de IA externos), de equipo (los 5 agentes globales y especialistas de módulo definidos en `CLAUDE.md`) o de infraestructura (administrador de `cjhirashi-srv`, DevOps). Ver [03-STAKEHOLDERS.md](./03-STAKEHOLDERS.md).
+
+### Tarea programada
+
+Fila de `bedrock_tasks` asignada a un agente (`assignee_type=agent`) con `scheduled_at`. El `task_scheduler` de la API la ejecuta a esa hora sin que el Admin esté abierto. Ver [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
 
 ### Tiempo Real (*Real-time*)
 

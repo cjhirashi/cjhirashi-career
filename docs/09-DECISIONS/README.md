@@ -1,4 +1,4 @@
-# Registro de Decisiones Arquitectónicas (ADR) - Portafolio-cjhirashi
+# Registro de Decisiones Arquitectónicas (ADR) - cjhirashi-career
 
 **ARCHITECTURE DECISION RECORDS**
 
@@ -135,6 +135,7 @@ Las siguientes seis decisiones ya están **tomadas y en vigor** en el diseño ob
 | 011 | Descubrimiento de vacantes por adaptadores (Indeed vía Adzuna, LinkedIn por URL oficial, sin scraping) | ✅ Aceptado — ver `011-job-discovery-adapters.md` | [011-job-discovery-adapters.md](./011-job-discovery-adapters.md) |
 | 012 | Jerarquía de agentes Bedrock en 3 niveles (L1 orquestador, L2 área, L3 tarea; delegación solo hacia abajo) | ✅ Aceptado — ver `012-bedrock-three-level-agents.md` | [012-bedrock-three-level-agents.md](./012-bedrock-three-level-agents.md) |
 | 013 | L3 consulta web (`agent_web_search`) y L3 GitHub solo lectura (`agent_github`) | ✅ Aceptado — ver `013-l3-web-and-github-agents.md` | [013-l3-web-and-github-agents.md](./013-l3-web-and-github-agents.md) |
+| 015 | Tareas de primer nivel y ejecución autónoma de agentes a `scheduled_at` (scheduler in-process) | ✅ Aceptado — ver `015-scheduled-agent-tasks.md` | [015-scheduled-agent-tasks.md](./015-scheduled-agent-tasks.md) |
 
 **Sobre por qué son exactamente estas seis y no más**: `04-SOLUTION-STRATEGY.md` es hoy la única fuente de decisiones de alto nivel ya tomadas para este alcance; su propia sección de [Trazabilidad hacia ADRs](../04-SOLUTION-STRATEGY.md#-trazabilidad-hacia-adrs) marca como candidatas mínimas la 1, la 3 y la ligada a la 6 (mecanismo de autenticación del MCP Server). Este registro amplía esa lista mínima a las seis decisiones completas porque las seis cumplen los criterios de la sección [Cuándo Crear un ADR](#-cuándo-crear-y-cuándo-no-un-adr): afectan la estructura del sistema, se compararon contra alternativas concretas (ver la tabla comparativa en `04-SOLUTION-STRATEGY.md`), y su impacto es de largo plazo. No se agregan decisiones adicionales especulativas — las preguntas de validación abiertas listadas en [01-INTRODUCTION.md](../01-INTRODUCTION.md#-preguntas-de-validación-abiertas) (por ejemplo, el mecanismo exacto de autenticación del MCP Server) **no son ADRs todavía** porque aún no son decisiones tomadas; se convertirán en un séptimo ADR (o más) una vez resueltas.
 

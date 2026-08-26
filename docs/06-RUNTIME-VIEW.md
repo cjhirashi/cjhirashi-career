@@ -1,4 +1,4 @@
-# Vista de Tiempo de Ejecución - Portafolio-cjhirashi
+# Vista de Tiempo de Ejecución - cjhirashi-career
 
 **VISTA DE TIEMPO DE EJECUCIÓN**
 
@@ -22,6 +22,7 @@
 - [Escenario 4 — Carlos Usa Agent Bedrock](#-escenario-4--carlos-usa-agent-bedrock)
 - [Escenario 5 — Agente Externo Opera vía MCP Server](#-escenario-5--agente-externo-opera-vía-mcp-server)
 - [Escenario 6 — Descubrimiento de vacantes](#-escenario-6--descubrimiento-de-vacantes)
+- [Escenario 7 — Tarea programada de un agente](#-escenario-7--tarea-programada-de-un-agente)
 - [Métricas en Tiempo Real](#-métricas-en-tiempo-real)
 - [Comparación de Escenarios](#-comparación-de-escenarios)
 
@@ -227,6 +228,44 @@ sequenceDiagram
     API->>DB: INSERT vacancies pending_review
 ```
 
+## ⏰ Escenario 7 — Tarea programada de un agente
+
+Carlos crea una tarea en `/tasks`, la asigna a un agente del catálogo y pone `scheduled_at`. El Admin puede cerrarse. Un loop asyncio en la API (`task_scheduler`, mismo patrón que LinkedIn) reclama la fila y corre el harness Bedrock con el `user_id` dueño — sin JWT ni SPA. Ver [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
+
+```mermaid
+sequenceDiagram
+    participant Carlos
+    participant Admin as Admin_Panel
+    participant API as API_REST
+    participant Sched as task_scheduler
+    participant Bedrock as Harness_Bedrock
+    participant DB as PostgreSQL
+
+    Carlos->>Admin: Crea tarea assignee=agent scheduled_at
+    Admin->>API: POST /agent-tasks
+    API->>DB: INSERT bedrock_tasks pending
+    Note over Carlos,Admin: Carlos cierra el Admin
+    loop cada 30s
+        Sched->>DB: SELECT due agent tasks
+        DB-->>Sched: filas vencidas
+        Sched->>DB: status=in_progress
+        Sched->>Bedrock: run_single_turn_sync(user_id, profile)
+        Bedrock->>API: tools CRUD / dominio
+        API->>DB: escrituras + audit_logs
+        Bedrock-->>Sched: reply
+        Sched->>DB: status=done execution_result
+    end
+    Carlos->>Admin: GET /tasks (cuando vuelva)
+    Admin->>API: GET /agent-tasks
+    API-->>Admin: resultado
+```
+
+**Pasos:**
+1. Carlos asigna la tarea a un agente y una hora (Ciudad de México en la UI; UTC en PostgreSQL).
+2. El scheduler de la API, no el navegador, espera `scheduled_at`.
+3. Al vencer, invoca el mismo harness que el chat: L1/L2 con historial `scheduled-task-{id}`; L3 sin historial de usuario.
+4. Si Bedrock o el presupuesto fallan, la tarea queda `failed` con `error_message`. "Ejecutar ahora" (`POST /agent-tasks/{id}/run`) usa el mismo runner.
+
 ## 📡 Métricas en Tiempo Real
 
 ### Flujo: Eventos del Portal Público
@@ -293,6 +332,8 @@ El Admin Panel combina dos vías de lectura, coherente con lo descrito en [05-BU
 | 3 — Edición manual (CRUD directo) | Canal 2 | Sí | Sí (`channel: admin_panel`) | No |
 | 4 — Asistencia de Bedrock | Canal 2 (interno) | Sí, si hay escritura | Sí (`channel: bedrock`), si hay escritura | No |
 | 5 — Agente externo vía MCP | Canal 3 | Sí, si hay escritura | Sí (`channel: mcp_server`), si hay escritura | Sí (`mcp_agent_metrics`), en toda solicitud |
+| 6 — Descubrimiento de vacantes | Canal 2 | Sí, al autorizar el save | Sí (`channel: bedrock` o `admin_panel`) | No |
+| 7 — Tarea programada de agente | Canal 2 (sin SPA) | Sí, si el agente escribe | Sí (`channel: bedrock`), si hay escritura | No |
 
 **Lectura del panorama completo**: los tres canales convergen en la misma API REST y la misma base de datos, pero dejan huellas distintas — solo el MCP Server genera métricas de uso en cada solicitud (por ser el canal de mayor autonomía y menor supervisión humana en tiempo real), mientras que los tres canales de escritura (Admin Panel manual, Bedrock, MCP Server) generan auditoría, distinguible por el campo `channel` de `audit_logs`.
 
