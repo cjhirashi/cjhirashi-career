@@ -141,20 +141,20 @@ Custodio de la **calidad de código y seguridad** del proyecto:
 ### Python/FastAPI
 ```bash
 # Linting & formatting
-black api/src --line-length 100
-flake8 api/src --max-line-length=100
-pylint api/src
+black cjhirashi-career-api/src --line-length 100
+flake8 cjhirashi-career-api/src --max-line-length=100
+pylint cjhirashi-career-api/src
 
 # Security
-bandit -r api/src
+bandit -r cjhirashi-career-api/src
 pip-audit
 
 # Coverage
-pytest --cov=api/src --cov-report=html --cov-fail-under=80
+pytest --cov=cjhirashi-career-api/src --cov-report=html --cov-fail-under=80
 
 # SonarQube (CI/CD)
 sonar-scanner \
-  -Dsonar.projectKey=portafolio-cjhirashi \
+  -Dsonar.projectKey=cjhirashi-career \
   -Dsonar.sources=. \
   -Dsonar.host.url=http://sonar...
 ```
@@ -162,8 +162,8 @@ sonar-scanner \
 ### JavaScript/React
 ```bash
 # Linting
-eslint admin/src --fix
-prettier admin/src --write
+eslint cjhirashi-career-admin/src --fix
+prettier cjhirashi-career-admin/src --write
 
 # Security
 npm audit

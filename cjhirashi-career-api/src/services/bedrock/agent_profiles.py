@@ -60,6 +60,30 @@ AGENT_COVER_LETTER_WRITING = "agent_cover_letter_writing"
 AGENT_WEB_SEARCH = "agent_web_search"
 AGENT_GITHUB = "agent_github"
 
+# PK de catálogo (formato PREFIX-n, igual que el resto de tablas).
+# `agent_*` sigue siendo el nombre de sistema usado en código, FKs y Bedrock.
+_AGENT_RECORD_IDS: dict[str, str] = {
+    AGENT_ORCHESTRATOR: "agent-1",
+    AGENT_PROFESSIONAL_IDENTITY: "agent-2",
+    AGENT_SEARCH_OPERATIONS: "agent-3",
+    AGENT_DIGITAL_PRESENCE: "agent-4",
+    AGENT_NETWORKING: "agent-5",
+    AGENT_SUPPORT: "agent-6",
+    AGENT_METHODOLOGIES: "agent-7",
+    AGENT_PDF_DESIGN: "agent-8",
+    AGENT_PDF_RENDER: "agent-9",
+    AGENT_VISUAL_DESIGN: "agent-10",
+    AGENT_CHANGELOG: "agent-11",
+    AGENT_TASK_MANAGER: "agent-12",
+    AGENT_LINKEDIN_PUBLISHING: "agent-13",
+    AGENT_VACANCY_SEARCH: "agent-14",
+    AGENT_CV_WRITING: "agent-15",
+    AGENT_COVER_LETTER_WRITING: "agent-16",
+    AGENT_WEB_SEARCH: "agent-17",
+    AGENT_GITHUB: "agent-18",
+}
+_PROFILE_BY_RECORD_ID: dict[str, str] = {record_id: key for key, record_id in _AGENT_RECORD_IDS.items()}
+
 # ============================================================================
 # Constantes y recursos por dominio
 # ============================================================================
@@ -645,9 +669,23 @@ _DOMAIN_TO_PROFILE = {
 # ============================================================================
 
 def get_profile(profile_id: str) -> AgentProfile:
-    if profile_id not in _PROFILES:
+    key = _PROFILE_BY_RECORD_ID.get(profile_id, profile_id)
+    if key not in _PROFILES:
         raise KeyError(f"Unknown agent profile: {profile_id}")
-    return _PROFILES[profile_id]
+    return _PROFILES[key]
+
+
+def agent_record_id(profile_id: str) -> str:
+    """PK de catálogo (`agent-1`). Acepta nombre de sistema o el propio record id."""
+    key = _PROFILE_BY_RECORD_ID.get(profile_id, profile_id)
+    if key not in _AGENT_RECORD_IDS:
+        raise KeyError(f"Unknown agent profile: {profile_id}")
+    return _AGENT_RECORD_IDS[key]
+
+
+def canonical_profile_id(profile_id: str) -> str:
+    """Nombre de sistema (`agent_orchestrator`)."""
+    return get_profile(profile_id).id
 
 
 def list_profiles() -> List[AgentProfile]:

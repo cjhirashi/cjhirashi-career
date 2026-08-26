@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from models.bedrock_task import BedrockTask
-from schemas.bedrock_task import BedrockTaskCreate, BedrockTaskUpdate
+from schemas.bedrock_task import BedrockTaskCreate, BedrockTaskUpdate, SubtaskInput
 from services import task_scheduler
 from services.admin_sections import list_section_specs, match_section
 from services.bedrock.agent_profiles import AGENT_VACANCY_SEARCH
@@ -30,9 +30,11 @@ def test_create_user_task_clears_agent_profile():
         title="Revisar CV",
         assignee_type="user",
         agent_profile_id=AGENT_VACANCY_SEARCH,
+        execute_on_turn=True,
     )
     assert payload.agent_profile_id is None
     assert payload.assignee_type == "user"
+    assert payload.execute_on_turn is False
 
 
 def test_create_agent_task_requires_profile():
@@ -73,6 +75,28 @@ def test_partial_update_status_does_not_require_assignee():
     payload = BedrockTaskUpdate(status="done")
     assert payload.status == "done"
     assert payload.assignee_type is None
+
+
+def test_nested_subtasks_on_create():
+    payload = BedrockTaskCreate(
+        title="Plan de trabajo",
+        assignee_type="user",
+        subtasks=[
+            SubtaskInput(
+                title="Buscar",
+                assignee_type="agent",
+                agent_profile_id=AGENT_VACANCY_SEARCH,
+                execute_on_turn=True,
+                is_blocking=True,
+            ),
+            SubtaskInput(title="Revisar", assignee_type="user", execute_on_turn=True),
+        ],
+    )
+    assert payload.subtasks is not None
+    assert payload.subtasks[0].execute_on_turn is True
+    assert payload.subtasks[0].is_blocking is True
+    assert payload.subtasks[1].assignee_type == "user"
+    assert payload.subtasks[1].execute_on_turn is False
 
 
 def test_build_execution_prompt_includes_title():
@@ -119,7 +143,9 @@ async def test_claim_task_for_user_only_runnable_agents():
         assignee_type="agent",
         agent_profile_id=AGENT_VACANCY_SEARCH,
     )
-    db.execute = AsyncMock(return_value=_execute_result(agent_task))
+    no_children = MagicMock()
+    no_children.scalar_one_or_none.return_value = None
+    db.execute = AsyncMock(side_effect=[_execute_result(agent_task), no_children])
     claimed = await task_scheduler.claim_task_for_user(db, "usr-1", "btk-agent")
     assert claimed is not None
     assert claimed.status == "in_progress"
@@ -182,6 +208,7 @@ async def test_execute_claimed_task_marks_done(monkeypatch):
             return False
 
     monkeypatch.setattr(task_scheduler, "AsyncSessionLocal", lambda: _SessionCM())
+    monkeypatch.setattr(task_scheduler, "enqueue_advance", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
         "services.bedrock.agent_loop.run_single_turn_sync",
         AsyncMock(return_value={"type": "done", "reply": "Guardé L1"}),
@@ -218,6 +245,7 @@ async def test_execute_claimed_task_marks_failed_on_bedrock_error(monkeypatch):
             return False
 
     monkeypatch.setattr(task_scheduler, "AsyncSessionLocal", lambda: _SessionCM())
+    monkeypatch.setattr(task_scheduler, "enqueue_advance", lambda *_args, **_kwargs: None)
 
     async def _boom(*_args, **_kwargs):
         raise BedrockError("presupuesto agotado")
@@ -227,3 +255,92 @@ async def test_execute_claimed_task_marks_failed_on_bedrock_error(monkeypatch):
 
     assert task.status == "failed"
     assert "presupuesto" in (task.error_message or "")
+
+
+def test_blocking_sibling_gates_later_subtask():
+    first = BedrockTask(
+        id="btk-a",
+        user_id="usr-1",
+        title="A",
+        status="pending",
+        parent_id="btk-plan",
+        sort_order=0,
+        is_blocking=True,
+    )
+    second = BedrockTask(
+        id="btk-b",
+        user_id="usr-1",
+        title="B",
+        status="pending",
+        parent_id="btk-plan",
+        sort_order=1,
+        is_blocking=True,
+    )
+    siblings = [first, second]
+    assert task_scheduler.is_blocked(first, siblings) is False
+    assert task_scheduler.is_blocked(second, siblings) is True
+    first.status = "done"
+    assert task_scheduler.is_blocked(second, siblings) is False
+
+
+def test_non_blocking_sibling_does_not_gate():
+    first = BedrockTask(
+        id="btk-a",
+        user_id="usr-1",
+        title="A",
+        status="pending",
+        parent_id="btk-plan",
+        sort_order=0,
+        is_blocking=False,
+    )
+    second = BedrockTask(
+        id="btk-b",
+        user_id="usr-1",
+        title="B",
+        status="pending",
+        parent_id="btk-plan",
+        sort_order=1,
+        is_blocking=True,
+    )
+    assert task_scheduler.is_blocked(second, [first, second]) is False
+
+
+def test_agent_ready_on_turn_without_schedule():
+    now = datetime(2026, 8, 26, 12, 0, tzinfo=timezone.utc)
+    task = BedrockTask(
+        id="btk-t",
+        user_id="usr-1",
+        title="Al turno",
+        status="pending",
+        assignee_type="agent",
+        agent_profile_id=AGENT_VACANCY_SEARCH,
+        execute_on_turn=True,
+        scheduled_at=None,
+        parent_id="btk-plan",
+        is_blocking=True,
+    )
+    assert task_scheduler.is_agent_ready(task, [task], now, orchestrator=False) is True
+    assert task_scheduler.is_agent_ready(task, [task], now, orchestrator=True) is False
+
+
+def test_user_turn_when_unblocked():
+    task = BedrockTask(
+        id="btk-u",
+        user_id="usr-1",
+        title="Manual",
+        status="pending",
+        assignee_type="user",
+        parent_id="btk-plan",
+        is_blocking=True,
+    )
+    assert task_scheduler.is_user_turn(task, [task], orchestrator=False) is True
+
+
+def test_parent_rollup_completes_when_children_done():
+    parent = BedrockTask(id="btk-plan", user_id="usr-1", title="Plan", status="in_progress")
+    children = [
+        BedrockTask(id="btk-a", user_id="usr-1", title="A", status="done", parent_id="btk-plan"),
+        BedrockTask(id="btk-b", user_id="usr-1", title="B", status="cancelled", parent_id="btk-plan"),
+    ]
+    task_scheduler.rollup_parent_status(parent, children)
+    assert parent.status == "done"

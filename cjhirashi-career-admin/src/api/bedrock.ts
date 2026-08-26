@@ -8,6 +8,10 @@ import {
   BedrockCustomTool,
   BedrockInstructions,
   BedrockAgentProfilePrompt,
+  BedrockAgentCatalogItem,
+  BedrockAgentCatalogMethodology,
+  BedrockAgentMemory,
+  BedrockAgentNote,
   BedrockMemoryEvent,
   BedrockMemoryRecord,
   BedrockModelStatus,
@@ -230,6 +234,83 @@ export const bedrockApi = {
       { timeout: CONTROL_PLANE_TIMEOUT_MS }
     )
     return response.data
+  },
+
+  listAgentCatalog: async (): Promise<BedrockAgentCatalogItem[]> => {
+    const response = await axiosInstance.get<BedrockAgentCatalogItem[]>(
+      '/bedrock/agent-profiles/catalog',
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  getAgentCatalogItem: async (profileId: string): Promise<BedrockAgentCatalogItem> => {
+    const response = await axiosInstance.get<BedrockAgentCatalogItem>(
+      `/bedrock/agent-profiles/${profileId}/catalog`,
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  updateAgentMethodologies: async (
+    profileId: string,
+    methodologyIds: string[]
+  ): Promise<BedrockAgentCatalogMethodology[]> => {
+    const response = await axiosInstance.put<BedrockAgentCatalogMethodology[]>(
+      `/bedrock/agent-profiles/${profileId}/methodologies`,
+      { methodology_ids: methodologyIds },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  updateAgentDelegation: async (
+    profileId: string,
+    targetIds: string[] | null
+  ): Promise<{
+    profile_id: string
+    default_ids: string[]
+    effective_ids: string[]
+    is_default: boolean
+  }> => {
+    const response = await axiosInstance.put(
+      `/bedrock/agent-profiles/${profileId}/delegation`,
+      { target_ids: targetIds },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  updateAgentSections: async (profileId: string, sectionIds: string[]): Promise<unknown> => {
+    const response = await axiosInstance.put(
+      `/bedrock/agent-profiles/${profileId}/sections`,
+      { section_ids: sectionIds },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  getAgentMemory: async (profileId: string): Promise<BedrockAgentMemory> => {
+    const response = await axiosInstance.get<BedrockAgentMemory>(
+      `/bedrock/agent-profiles/${profileId}/memory`,
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  addAgentMemoryNote: async (profileId: string, text: string): Promise<BedrockAgentNote> => {
+    const response = await axiosInstance.post<BedrockAgentNote>(
+      `/bedrock/agent-profiles/${profileId}/memory/notes`,
+      { text },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  deleteAgentMemoryNote: async (profileId: string, noteId: string): Promise<void> => {
+    await axiosInstance.delete(`/bedrock/agent-profiles/${profileId}/memory/notes/${noteId}`, {
+      timeout: CONTROL_PLANE_TIMEOUT_MS,
+    })
   },
 
   listTools: async (): Promise<BedrockCustomTool[]> => {

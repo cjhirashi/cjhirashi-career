@@ -26,36 +26,36 @@ Responsable de toda la infraestructura Docker del proyecto:
 
 ## 📋 Responsabilidades Principales
 
-1. **docker-compose.yml**: Orquestación completa de 7 servicios
-2. **Dockerfiles individuales**: Por cada módulo (API, Admin Panel, Portal, PDF Generator, MCP, Bedrock)
+1. **docker-compose.yml**: 4 módulos (`cjhirashi-career-admin`, `cjhirashi-career-portfolio`, `cjhirashi-career-api`, `cjhirashi-career-mcp`) + infra (postgres, minio, qdrant)
+2. **Dockerfiles individuales**: Por cada módulo (API, Admin, Portfolio, MCP)
 3. **Redes Docker**: Bridge network `network-cjhirashi-srv` (compartida con cjhirashi-srv)
-4. **Volúmenes**: PostgreSQL, uploads, backups en `/mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/`
+4. **Volúmenes**: PostgreSQL, uploads, backups en `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/`
 5. **Variables de entorno**: Integración con `.env.local` para desarrollo
 6. **Health checks**: Validación de servicios (especialmente PostgreSQL)
 7. **Performance**: Optimización de layers, caching, tamaños de imagen
 8. **CI/CD**: Preparar entorno para GitHub Actions (builds reproducibles)
 
-## 🏗️ Arquitectura de Contenedores (7 servicios)
+## 🏗️ Arquitectura de Contenedores (4 módulos + infra)
 
-| Servicio | Puerto (Host) | Puerto (Int) | Imagen | Red | Volúmenes |
-|----------|---------------|--------------|--------|-----|-----------|
-| Admin Panel | 8002 | 8000 | `admin-panel:latest` | `network-cjhirashi-srv` | — |
-| Portal Público | 8003 | 8000 | `portal-publico:latest` | `network-cjhirashi-srv` | — |
-| MCP Server | 8004 | 8000 | `mcp-server:latest` | `network-cjhirashi-srv` | — |
-| API REST | — | 8001 | `api-rest:latest` | `network-cjhirashi-srv` | `uploads/` |
-| PDF Generator | — | 8080 | `pdf-generator:latest` | `network-cjhirashi-srv` | — |
-| Agent Bedrock | — | interno | `bedrock-agent:latest` | `network-cjhirashi-srv` | — |
-| PostgreSQL | — | 5432 | `postgres:15-alpine` | `network-cjhirashi-srv` | `postgres_data` |
+| Servicio Compose | Puerto (Host) | Puerto (Int) | Carpeta | container_name (Caddy) |
+|----------|---------------|--------------|--------|-----------|
+| Admin Panel | 8002 | 8000 | `cjhirashi-career-admin` | `cjhirashi-career-admin` |
+| Portal Público | 8003 | 8000 | `cjhirashi-career-portfolio` | `cjhirashi-career-portfolio` |
+| MCP Server | 8004 | 8000 | `cjhirashi-career-mcp` | `cjhirashi-career-mcp` |
+| API REST | — | 8001 | `cjhirashi-career-api` | `cjhirashi-career-api` |
+| PostgreSQL | — | 5432 | — | `postgres_db` |
+| MinIO | — | 9000 | — | `minio_storage` |
+| Qdrant | — | 6333 | — | `qdrant` |
 
 ## 📌 Reglas Clave
 
 - ✅ Network: siempre `network-cjhirashi-srv` (externa, compartida)
-- ✅ Volúmenes: ruta única `/mnt/disco1/cjhirashi-data/portafolio-cjhirashi-volumes/{postgres,uploads,backups}`
+- ✅ Volúmenes: ruta única `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/{postgres,uploads,backups}`
 - ✅ Variables: **NUNCA hardcoded** en compose, siempre vía `env_file: .env.local`
 - ✅ Health checks: obligatorios en PostgreSQL
 - ✅ Restart policy: `unless-stopped` para todos
 - ✅ Expose solo: Admin (8002), Portal (8003), MCP (8004)
-- ✅ API, PDF, Bedrock: **INTERNOS** (no exponen puertos)
+- ✅ API, Postgres, MinIO, Qdrant: **INTERNOS** (no exponen puertos al host salvo lo que ya documente Compose)
 
 ## 🔧 Guía de Invocación
 

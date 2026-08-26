@@ -111,11 +111,11 @@ No es CRUD genérico. Preview-then-save:
 
 ### `bedrock.py` — `/bedrock`
 
-Chat SSE (`POST /chat`), modelo activo, presupuesto, instrucciones, perfiles, tools MCP, memoria, conversaciones, auditoría. Delega el loop a `services.bedrock.chat_stream`. Ver [services/bedrock/README.md](../services/bedrock/README.md).
+Chat SSE (`POST /chat`), modelo activo, presupuesto, instrucciones, **catálogo de agentes**, tools MCP, memoria, conversaciones, auditoría. Delega el loop a `services.bedrock.chat_stream`. Ver [services/bedrock/README.md](../services/bedrock/README.md).
 
 ### `bedrock_tasks.py` — `/agent-tasks`
 
-CRUD de `BedrockTask` con `build_crud_router`. Registrar el módulo mete `agent-tasks` en `RESOURCE_REGISTRY` para las tools genéricas del agente.
+CRUD de `BedrockTask` con `build_crud_router` más `POST /{id}/run`. Registrar el módulo mete `agent-tasks` en `RESOURCE_REGISTRY`. El scheduler (`task_scheduler`) ejecuta filas de agente a `scheduled_at` sin JWT.
 
 ### `pdf_templates.py` — `/pdf-templates`
 

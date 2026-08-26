@@ -4,9 +4,11 @@ import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
 import { invalidateAdminDataViews } from '@/hooks/invalidateAdminDataViews'
 import { conversationBucket, useBedrockChatStore } from '@/stores/bedrockChatStore'
-import { resolveAgentProfileId } from '@/config/agentProfiles'
+import { AGENT_ORCHESTRATOR, resolveAgentProfileId } from '@/config/agentProfiles'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { getErrorMessage } from '@/utils/errors'
+import { useAdminSections } from '@/hooks/useAdminSections'
+import { matchAdminSection } from '@/types/adminSections'
 import {
   BedrockAgentProfilePrompt,
   BedrockChatMessage,
@@ -16,13 +18,8 @@ import {
   BedrockSessionType,
 } from '@/types/bedrock'
 
-const conversationsKey = (sessionType?: BedrockSessionType, agentProfileId?: string) => {
-  if (sessionType && agentProfileId) {
-    return ['bedrock', 'conversations', sessionType, agentProfileId] as const
-  }
-  if (sessionType) return ['bedrock', 'conversations', sessionType] as const
-  return ['bedrock', 'conversations'] as const
-}
+const conversationsKey = (sessionType?: BedrockSessionType, agentProfileId?: string) =>
+  ['bedrock', 'conversations', sessionType ?? 'all', agentProfileId ?? 'all'] as const
 
 const messagesKey = (sessionId: string) => ['bedrock', 'conversations', sessionId, 'messages'] as const
 
@@ -65,10 +62,15 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const newConversation = useBedrockChatStore((s) => s.newConversation)
   const switchConversation = useBedrockChatStore((s) => s.switchConversation)
 
-  const effectiveAgentProfileId = useMemo(
-    () => resolveAgentProfileId({ chatSurface, pageContext }),
-    [chatSurface, pageContext]
-  )
+  const { data: adminSections } = useAdminSections()
+  const effectiveAgentProfileId = useMemo(() => {
+    if (chatSurface === 'general') return AGENT_ORCHESTRATOR
+    const match = matchAdminSection(pageContext?.route ?? '', adminSections ?? [])
+    if (match?.section.chat_agent_profile_id) {
+      return match.section.chat_agent_profile_id
+    }
+    return resolveAgentProfileId({ chatSurface, pageContext })
+  }, [chatSurface, pageContext, adminSections])
 
   const bucketKey = conversationBucket(sessionType, effectiveAgentProfileId)
   const activeSessionId = useBedrockChatStore((s) => s.activeSessionIds[bucketKey] ?? '')
@@ -238,6 +240,7 @@ export function useBedrockAgentProfilePromptUpdate() {
         if (!prev) return [data]
         return prev.map((p) => (p.profile_id === data.profile_id ? data : p))
       })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
     },
   })
 }
@@ -307,7 +310,12 @@ export function useBedrockAuditRestore() {
 }
 
 export function useAgentTasks() {
-  return useQuery({ queryKey: ['agent-tasks'], queryFn: agentTasksApi.list })
+  return useQuery({
+    queryKey: ['agent-tasks'],
+    queryFn: agentTasksApi.list,
+    refetchInterval: (query) =>
+      query.state.data?.some((task) => task.status === 'in_progress') ? 4000 : false,
+  })
 }
 
 export function useAgentTaskMutations() {
@@ -321,6 +329,83 @@ export function useAgentTaskMutations() {
     onSuccess: invalidate,
   })
   const deleteMutation = useMutation({ mutationFn: agentTasksApi.remove, onSuccess: invalidate })
+  const runMutation = useMutation({ mutationFn: agentTasksApi.run, onSuccess: invalidate })
 
-  return { createMutation, updateMutation, deleteMutation }
+  return { createMutation, updateMutation, deleteMutation, runMutation }
+}
+
+export function useAgentCatalog() {
+  return useQuery({
+    queryKey: ['bedrock', 'agent-catalog'],
+    queryFn: bedrockApi.listAgentCatalog,
+  })
+}
+
+export function useAgentCatalogItem(profileId: string | undefined) {
+  return useQuery({
+    queryKey: ['bedrock', 'agent-catalog', profileId],
+    queryFn: () => bedrockApi.getAgentCatalogItem(profileId as string),
+    enabled: Boolean(profileId),
+  })
+}
+
+export function useAgentMethodologiesUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ profileId, methodologyIds }: { profileId: string; methodologyIds: string[] }) =>
+      bedrockApi.updateAgentMethodologies(profileId, methodologyIds),
+    onSuccess: (_data, { profileId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
+    },
+  })
+}
+
+export function useAgentDelegationUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ profileId, targetIds }: { profileId: string; targetIds: string[] | null }) =>
+      bedrockApi.updateAgentDelegation(profileId, targetIds),
+    onSuccess: (_data, { profileId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
+    },
+  })
+}
+
+export function useAgentSectionsUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ profileId, sectionIds }: { profileId: string; sectionIds: string[] }) =>
+      bedrockApi.updateAgentSections(profileId, sectionIds),
+    onSuccess: (_data, { profileId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] })
+    },
+  })
+}
+
+export function useAgentMemory(profileId: string | undefined) {
+  return useQuery({
+    queryKey: ['bedrock', 'agent-memory', profileId],
+    queryFn: () => bedrockApi.getAgentMemory(profileId as string),
+    enabled: Boolean(profileId),
+  })
+}
+
+export function useAgentMemoryNoteMutations(profileId: string) {
+  const queryClient = useQueryClient()
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-memory', profileId] })
+  return {
+    add: useMutation({
+      mutationFn: (text: string) => bedrockApi.addAgentMemoryNote(profileId, text),
+      onSuccess: invalidate,
+    }),
+    remove: useMutation({
+      mutationFn: (noteId: string) => bedrockApi.deleteAgentMemoryNote(profileId, noteId),
+      onSuccess: invalidate,
+    }),
+  }
 }

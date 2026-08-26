@@ -23,6 +23,7 @@
 - [Escenario 5 — Agente Externo Opera vía MCP Server](#-escenario-5--agente-externo-opera-vía-mcp-server)
 - [Escenario 6 — Descubrimiento de vacantes](#-escenario-6--descubrimiento-de-vacantes)
 - [Escenario 7 — Tarea programada de un agente](#-escenario-7--tarea-programada-de-un-agente)
+- [Escenario 8 — Plan con subtareas y turno](#-escenario-8--plan-con-subtareas-y-turno)
 - [Métricas en Tiempo Real](#-métricas-en-tiempo-real)
 - [Comparación de Escenarios](#-comparación-de-escenarios)
 
@@ -265,6 +266,43 @@ sequenceDiagram
 2. El scheduler de la API, no el navegador, espera `scheduled_at`.
 3. Al vencer, invoca el mismo harness que el chat: L1/L2 con historial `scheduled-task-{id}`; L3 sin historial de usuario.
 4. Si Bedrock o el presupuesto fallan, la tarea queda `failed` con `error_message`. "Ejecutar ahora" (`POST /agent-tasks/{id}/run`) usa el mismo runner.
+
+## 🧩 Escenario 8 — Plan con subtareas y turno
+
+Carlos crea un padre (responsable general) y subtareas con distintos responsables. Las bloqueantes se ejecutan en `sort_order`; al completar una, el scheduler pasa el turno: agente con `execute_on_turn` corre el harness; usuario recibe un aviso en `user_notifications`. Ver [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md).
+
+```mermaid
+sequenceDiagram
+    participant Carlos
+    participant Admin as Admin_Panel
+    participant API as API_REST
+    participant Sched as task_scheduler
+    participant Bedrock as Harness_Bedrock
+    participant DB as PostgreSQL
+
+    Carlos->>Admin: Padre + subtareas (blocking / on_turn)
+    Admin->>API: POST /agent-tasks (subtasks)
+    API->>DB: INSERT padre e hijas
+    Sched->>DB: primera subtarea desbloqueada
+    alt assignee=agent execute_on_turn
+        Sched->>Bedrock: run_single_turn_sync
+        Bedrock-->>Sched: reply
+        Sched->>DB: hija done; resume padre
+    else assignee=user
+        Sched->>DB: INSERT user_notifications
+        Admin->>API: GET /notifications
+        API-->>Carlos: Campana /tasks?task=id
+        Carlos->>Admin: Marca status=done en Vista
+        Admin->>API: PUT /agent-tasks/id
+    end
+    Sched->>DB: desbloquea la siguiente hija
+```
+
+**Pasos:**
+1. El padre no se ejecuta como agente mientras tenga hijas: orquesta.
+2. Una hija está bloqueada si una hermana anterior `is_blocking` no está `done`/`cancelled`.
+3. Agente: `scheduled_at` **o** `execute_on_turn` al quedar libre.
+4. Usuario: notificación `task_turn`; en Vista solo se edita el estado.
 
 ## 📡 Métricas en Tiempo Real
 

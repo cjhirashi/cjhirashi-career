@@ -44,3 +44,44 @@ def test_schema_rejects_unknown_ids():
             content="# h",
             agent_profile_ids=["not_an_agent"],
         )
+
+
+def test_is_shared_when_empty():
+    from services.methodology_scope import is_shared_methodology
+
+    assert is_shared_methodology(None)
+    assert is_shared_methodology([])
+    assert not is_shared_methodology(["agent_pdf_design"])
+
+
+def test_next_ids_assign_appends_to_exclusive_list():
+    from services.methodology_scope import next_agent_profile_ids
+
+    known = known_agent_profile_ids()
+    nxt = next_agent_profile_ids(["agent_search_operations"], AGENT_PDF_DESIGN, True, known)
+    assert nxt == ["agent_search_operations", AGENT_PDF_DESIGN]
+
+
+def test_next_ids_unassign_shared_expands_to_everyone_else():
+    from services.methodology_scope import next_agent_profile_ids
+
+    known = known_agent_profile_ids()
+    nxt = next_agent_profile_ids([], AGENT_PDF_DESIGN, False, known)
+    assert AGENT_PDF_DESIGN not in nxt
+    assert AGENT_METHODOLOGIES in nxt
+    assert set(nxt) == known - {AGENT_PDF_DESIGN}
+
+
+def test_next_ids_unassign_last_owner_parks_with_guardian():
+    from services.methodology_scope import next_agent_profile_ids
+
+    nxt = next_agent_profile_ids(
+        [AGENT_PDF_DESIGN], AGENT_PDF_DESIGN, False, known_agent_profile_ids()
+    )
+    assert nxt == [AGENT_METHODOLOGIES]
+
+
+def test_next_ids_noop_when_already_shared_and_assigning():
+    from services.methodology_scope import next_agent_profile_ids
+
+    assert next_agent_profile_ids([], AGENT_PDF_DESIGN, True, known_agent_profile_ids()) is None

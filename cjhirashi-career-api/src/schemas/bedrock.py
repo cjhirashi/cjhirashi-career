@@ -141,6 +141,82 @@ class BedrockAgentProfilePromptUpdateRequest(BaseModel):
     system_prompt_suffix: Optional[str] = None
 
 
+class BedrockAgentCatalogMethodology(BaseModel):
+    id: str
+    title: str
+    section: Optional[str] = None
+    shared: bool
+    assigned: bool
+
+
+class BedrockAgentCatalogSection(BaseModel):
+    id: str
+    label: str
+    section_type: str
+    path: str
+
+
+class BedrockAgentDelegationTarget(BaseModel):
+    id: str
+    label: str
+    level: int
+
+
+class BedrockAgentCatalogItem(BaseModel):
+    id: str
+    system_name: str
+    profile_id: str
+    label: str
+    level: int
+    user_facing: bool
+    can_delegate: bool
+    write_enabled: bool
+    domain_keys: List[str]
+    resource_keys: Optional[List[str]] = None
+    sections: List[BedrockAgentCatalogSection] = []
+    default_model_id: Optional[str] = None
+    tools: List[str]
+    has_own_memory: bool
+    default_suffix: str
+    override_suffix: Optional[str] = None
+    effective_suffix: str
+    prompt_is_default: bool
+    methodology_count: int = 0
+    assigned_methodologies: List[BedrockAgentCatalogMethodology] = []
+    methodologies: Optional[List[BedrockAgentCatalogMethodology]] = None
+    conversation_count: int = 0
+    delegation_targets: List[BedrockAgentDelegationTarget] = []
+    delegation_target_ids: List[str] = []
+    default_delegation_target_ids: List[str] = []
+    allowed_delegation_ids: List[str] = []
+    delegation_is_default: bool = True
+
+
+class BedrockAgentMethodologiesUpdateRequest(BaseModel):
+    methodology_ids: List[str]
+
+
+class BedrockAgentDelegationUpdateRequest(BaseModel):
+    """`target_ids=None` restaura los destinos por nivel definidos en código."""
+
+    target_ids: Optional[List[str]] = None
+
+
+class BedrockAgentSectionsUpdateRequest(BaseModel):
+    section_ids: List[str]
+
+
+class BedrockAgentNote(BaseModel):
+    id: str
+    text: str
+
+
+class BedrockAgentMemoryResponse(BaseModel):
+    has_own_memory: bool
+    conversation_count: int
+    notes: List[BedrockAgentNote] = []
+
+
 # ============================================================================
 # Herramientas personalizadas — solicitudes y respuestas
 # ============================================================================

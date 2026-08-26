@@ -1581,19 +1581,35 @@ flowchart TD
 
 ### Recibe
 
-`db`, `profile`, `page_context`.
+`db`, `profile`, `page_context`, `user_id` (opcional; carga el catálogo de metodologías asignadas).
 
 ### Entrega
 
-Prompt final concatenado. Partes vacías se omiten.
+Prompt final concatenado. Partes vacías se omiten. Incluye la regla de metodologías asignadas al perfil y, si hay `user_id`, el catálogo vigente (títulos `opm-N`).
 
 ### Ejemplo
 
-`compose_system_prompt(db, identity_profile, {"resource_key": "projects", "page_title": "Proyectos"})` → base + grounding + suffix de `agent_professional_identity` + frase de página.
+`compose_system_prompt(db, identity_profile, {"resource_key": "projects", "page_title": "Proyectos"}, user_id=...)` → base + grounding + catálogo de metodologías asignadas + suffix de `agent_professional_identity` + frase de página.
 
 ### Flujo
 
 Ver diagrama del módulo (Nivel 2).
+
+---
+
+# Nivel 2 — `profile_catalog.py`
+
+Catálogo del Admin (`GET /bedrock/agent-profiles/catalog`). Junta la definición de código (`tools_for_profile`, `resource_keys`, nivel) con el estado editable (prompt override, metodologías asignadas, conteo de chats).
+
+**Lee también:** [GET catalog](../../../docs/sections/bedrock/README.md)
+
+### Recibe
+
+`db`, `user_id`; en detalle, `profile_id`.
+
+### Entrega
+
+Lista o ítem con tools, tablas, prompt, metodologías y `has_own_memory` (L1/L2).
 
 ---
 

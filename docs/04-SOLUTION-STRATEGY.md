@@ -1,4 +1,4 @@
-# Estrategia de Solución - Portafolio-cjhirashi
+# Estrategia de Solución - cjhirashi-career
 
 **ESTRATEGIA DE SOLUCIÓN**
 
@@ -100,9 +100,8 @@ graph TB
     end
 
     subgraph Capa2["Capa 2 — Orquestación (punto de convergencia único)"]
-        API["🚀 API REST"]
+        API["🚀 API REST<br/>(PDF WeasyPrint in-process)"]
         Bedrock["☁️ Agent Bedrock<br/>(interno al Admin Panel)"]
-        PDF["🌱 PDF Generator<br/>(exclusivo del Admin Panel)"]
     end
 
     subgraph Capa3["Capa 3 — Persistencia (fuente única de verdad)"]
@@ -113,7 +112,6 @@ graph TB
     Admin --> API
     Admin -.-> Bedrock
     Bedrock --> API
-    Admin --> PDF
     MCP --> API
     API --> DB
 
@@ -122,14 +120,13 @@ graph TB
     class MCP utility
     class API nodejs
     class Bedrock s3
-    class PDF utility
     class DB postgres
 ```
 
 | Capa | Módulos | Criterio de organización |
 |------|---------|-----------------------------|
 | **Capa 1 — Canales de entrada** | Portal Público, Admin Panel, MCP Server | Cada módulo responde a una audiencia distinta y no depende de los otros dos módulos de su misma capa |
-| **Capa 2 — Orquestación** | API REST, Agent Bedrock, PDF Generator | Concentra reglas de negocio y servicios de apoyo; ningún módulo de esta capa es alcanzable directamente desde fuera de la red interna, salvo la API REST a través de los canales de la Capa 1 |
+| **Capa 2 — Orquestación** | API REST (incluye Bedrock y PDF) | Concentra reglas de negocio; no es alcanzable desde fuera de la red interna salvo a través de los canales de la Capa 1 |
 | **Capa 3 — Persistencia** | PostgreSQL | Fuente única de verdad; solo la API REST tiene acceso de lectura/escritura sobre ella |
 
 ## ⚖️ Comparativa Frente a Alternativas Consideradas
@@ -151,14 +148,13 @@ Quién se comunica con quién, y bajo qué protocolo — vista consolidada de la
 | Carlos Jiménez Hirashi | Admin Panel | HTTPS (navegador) | Sesión autenticada |
 | Agente de IA externo | MCP Server | Protocolo MCP | Mecanismo propio del canal (pendiente de definir, ver `01-INTRODUCTION.md`) |
 | Portal Público | API REST | REST JSON | Ninguna (solo lectura) |
-| Admin Panel | API REST | REST JSON | Token de sesión del Admin Panel |
+| Admin Panel | API REST | REST JSON (CRUD, PDF, chat Bedrock) | Token de sesión del Admin Panel |
 | Admin Panel | Agent Bedrock | Invocación interna (misma sesión, sin red externa) | Heredada de la sesión del Admin Panel |
 | Agent Bedrock | API REST | REST JSON | Token heredado de la sesión del Admin Panel que lo invocó |
-| Admin Panel | PDF Generator | Petición de renderizado | Interna, restringida por red |
 | MCP Server | API REST | REST JSON | Mecanismo propio del canal (pendiente de definir) |
 | API REST | PostgreSQL | SQL (vía SQLAlchemy async / asyncpg) | Credenciales de servicio, internas a la red Docker |
 
-**Conexiones deliberadamente ausentes de esta matriz** (ya explicadas en detalle en `01-INTRODUCTION.md`): MCP Server ↔ Admin Panel, MCP Server ↔ Agent Bedrock, Agent Bedrock ↔ cualquier componente que no sea la API REST, Portal Público ↔ Admin Panel/Bedrock/MCP Server/PDF Generator, y cualquier componente ↔ PostgreSQL salvo la API REST.
+**Conexiones deliberadamente ausentes de esta matriz** (ya explicadas en detalle en `01-INTRODUCTION.md`): MCP Server ↔ Admin Panel, MCP Server ↔ Agent Bedrock, Agent Bedrock ↔ cualquier componente que no sea la API REST, Portal Público ↔ Admin Panel/Bedrock/MCP Server, y cualquier componente ↔ PostgreSQL salvo la API REST.
 
 ## 📎 Trazabilidad hacia ADRs
 

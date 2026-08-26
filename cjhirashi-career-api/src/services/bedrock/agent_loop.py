@@ -15,7 +15,6 @@ from config import settings
 from services.bedrock import agent_profiles, budget, converse_client, history_manager, prompt, section_profiles
 from services.bedrock import settings_loader, tools, usage_logger
 from services.bedrock.agent_profiles import (
-    resolve_agent_profile,
     list_profiles,
     AGENT_PDF_DESIGN,
     AGENT_METHODOLOGIES,
@@ -362,7 +361,10 @@ async def chat_stream(
     await budget.assert_budget_available(db, user_id, runtime.daily_budget_usd)
 
     # 2. Resolver perfil de agente y modelo a usar
-    profile = resolve_agent_profile(
+    from services.section_catalog import resolve_profile_for_turn
+
+    profile = await resolve_profile_for_turn(
+        db,
         chat_surface=req.chat_surface,
         agent_profile_id=req.agent_profile_id,
         page_context=req.page_context,
@@ -373,12 +375,19 @@ async def chat_stream(
             "message": "Los agentes de nivel 3 no tienen chat con el usuario. Delega desde L1 o L2.",
         }
         return
+    from services.bedrock import profile_delegation
+
+    allowed_delegate_ids = await profile_delegation.get_effective_delegation_ids(db, profile)
     model_id = _effective_model(req, runtime, profile)
-    system_prompt = await prompt.compose_system_prompt(db, profile, req.page_context)
+    system_prompt = await prompt.compose_system_prompt(
+        db, profile, req.page_context, user_id=user_id, delegate_ids=allowed_delegate_ids
+    )
 
     # 3. Determinar herramientas permitidas para el perfil, y construir especificaciones de herramientas
     allowed = agent_profiles.tools_for_profile(profile, tools.all_tool_names())
-    tool_specs = tools.converse_tool_specs(allowed, caller_profile=profile)
+    tool_specs = tools.converse_tool_specs(
+        allowed, caller_profile=profile, delegate_ids=allowed_delegate_ids
+    )
 
     # 4. Determinar tipo de sesión y cargar historial de conversación
     session_type = "general" if req.chat_surface == "general" else "contextual"
@@ -500,7 +509,9 @@ async def chat_stream(
                     elif delegations_used >= settings.BEDROCK_MAX_DELEGATIONS_PER_TURN:
                         deny = "max delegations per turn exceeded"
                     else:
-                        deny = agent_profiles.delegation_error(profile, spec_id)
+                        deny = agent_profiles.delegation_error(
+                            profile, spec_id, allowed_ids=set(allowed_delegate_ids)
+                        )
                     if deny:
                         tool_result = {"error": deny}
                         status = "error"

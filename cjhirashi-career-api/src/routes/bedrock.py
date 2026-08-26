@@ -23,6 +23,13 @@ from models.user import User
 from schemas.bedrock import (
     BedrockAgentProfilePromptResponse,
     BedrockAgentProfilePromptUpdateRequest,
+    BedrockAgentCatalogItem,
+    BedrockAgentCatalogMethodology,
+    BedrockAgentDelegationUpdateRequest,
+    BedrockAgentMemoryResponse,
+    BedrockAgentMethodologiesUpdateRequest,
+    BedrockAgentNote,
+    BedrockAgentSectionsUpdateRequest,
     BedrockAuditLogResponse,
     BedrockChatRequest,
     BedrockConversationMessageResponse,
@@ -300,6 +307,20 @@ async def list_agent_profile_prompts(
     return await profile_prompts.list_profile_prompts(db)
 
 
+@router.get(
+    "/agent-profiles/catalog",
+    response_model=list[BedrockAgentCatalogItem],
+    summary="Catálogo de agentes: definición de código + estado editable",
+)
+async def list_agent_catalog(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock import profile_catalog
+
+    return await profile_catalog.list_catalog(db, current_user.id)
+
+
 @router.put(
     "/agent-profiles/{profile_id}/prompt",
     response_model=BedrockAgentProfilePromptResponse,
@@ -323,6 +344,165 @@ async def update_agent_profile_prompt(
         )
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+
+
+@router.get(
+    "/agent-profiles/{profile_id}/catalog",
+    response_model=BedrockAgentCatalogItem,
+    summary="Detalle de un agente del catálogo",
+)
+async def get_agent_catalog_item(
+    profile_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock import profile_catalog
+
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    return await profile_catalog.get_catalog_item(db, current_user.id, profile_id)
+
+
+@router.put(
+    "/agent-profiles/{profile_id}/delegation",
+    summary="Destinos de delegación editables (subset de los permitidos por nivel)",
+)
+async def update_agent_delegation(
+    profile_id: str,
+    payload: BedrockAgentDelegationUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock import profile_delegation
+
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    return await profile_delegation.set_delegation_targets(db, profile_id, payload.target_ids)
+
+
+@router.put(
+    "/agent-profiles/{profile_id}/sections",
+    summary="Secciones del Admin que este agente gestiona",
+)
+async def update_agent_sections(
+    profile_id: str,
+    payload: BedrockAgentSectionsUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services import section_catalog
+
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    try:
+        return await section_catalog.set_agent_sections(db, profile_id, payload.section_ids)
+    except KeyError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+@router.put(
+    "/agent-profiles/{profile_id}/methodologies",
+    response_model=list[BedrockAgentCatalogMethodology],
+    summary="Asigna las metodologías que este agente debe consultar",
+)
+async def update_agent_methodologies(
+    profile_id: str,
+    payload: BedrockAgentMethodologiesUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.methodology_scope import set_agent_methodologies
+
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    return await set_agent_methodologies(
+        db, current_user.id, profile_id, payload.methodology_ids
+    )
+
+
+@router.get(
+    "/agent-profiles/{profile_id}/memory",
+    response_model=BedrockAgentMemoryResponse,
+    summary="Memoria propia del agente (L1/L2: notas + conversaciones)",
+)
+async def get_agent_memory(
+    profile_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock import history_manager, local_memory
+
+    try:
+        profile = get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    conversations = await history_manager.list_conversations(
+        db, current_user.id, agent_profile_id=profile.id
+    )
+    notes = []
+    if profile.user_facing:
+        notes = await local_memory.list_agent_notes(current_user.id, profile.id)
+    return BedrockAgentMemoryResponse(
+        has_own_memory=profile.user_facing,
+        conversation_count=len(conversations),
+        notes=notes,
+    )
+
+
+@router.post(
+    "/agent-profiles/{profile_id}/memory/notes",
+    response_model=BedrockAgentNote,
+    summary="Añade una nota de memoria propia (solo L1/L2)",
+)
+async def create_agent_memory_note(
+    profile_id: str,
+    payload: BedrockManualMemoryRequest,
+    current_user: User = Depends(get_current_user),
+):
+    from services.bedrock import local_memory
+
+    try:
+        profile = get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    if not profile.user_facing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los agentes L3 no tienen memoria propia",
+        )
+    return await local_memory.create_agent_note(current_user.id, profile.id, payload.text)
+
+
+@router.delete(
+    "/agent-profiles/{profile_id}/memory/notes/{note_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Elimina una nota de memoria propia",
+)
+async def delete_agent_memory_note(
+    profile_id: str,
+    note_id: str,
+    current_user: User = Depends(get_current_user),
+):
+    from services.bedrock import local_memory
+
+    try:
+        profile = get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    if not profile.user_facing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Los agentes L3 no tienen memoria propia",
+        )
+    await local_memory.delete_agent_note(note_id)
 
 
 # ---------------------------------------------------------------------------

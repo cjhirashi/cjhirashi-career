@@ -1,6 +1,6 @@
 # Revisiones Alembic (`alembic/versions/`)
 
-Cadena lineal (head actual: `f6a7b8c9d0e1`).
+Cadena lineal (head actual: `a7b8c9d0e1f2`).
 
 ## Arquitectura
 
@@ -21,6 +21,7 @@ flowchart TD
     M --> N[e5f6a7b8c9d0 methodology agent_profile_ids]
     N --> O[a6b7c8d9e0f1 admin sections]
     O --> P[f6a7b8c9d0e1 scheduled agent tasks]
+    P --> Q[a7b8c9d0e1f2 task subtasks notifications]
 ```
 
 ```
@@ -40,6 +41,7 @@ ca159800797a
     → e5f6a7b8c9d0
     → a6b7c8d9e0f1
     → f6a7b8c9d0e1
+    → a7b8c9d0e1f2
 ```
 
 ---
@@ -61,6 +63,7 @@ ca159800797a
 | `d4e5f6a7b8c9_personal_profile.py` | | Ficha singleton `personal_profile` (datos biográficos) |
 | `e5f6a7b8c9d0_methodology_agent_profile_ids.py` | | `agent_profile_ids` en metodologías operativas |
 | `a6b7c8d9e0f1_admin_sections_and_delegation.py` | | Overrides de secciones Admin + destinos de delegación |
-| `f6a7b8c9d0e1_scheduled_agent_tasks.py` | head | Asignación y `scheduled_at` en `bedrock_tasks` (ADR-015) |
+| `f6a7b8c9d0e1_scheduled_agent_tasks.py` | | Asignación y `scheduled_at` en `bedrock_tasks` (ADR-015) |
+| `a7b8c9d0e1f2_task_subtasks_notifications.py` | head | Subtareas, orquestación y `user_notifications` (ADR-016) |
 
 Cada archivo define `upgrade()` / `downgrade()`. No editar revisiones ya aplicadas en producción; crear una nueva.

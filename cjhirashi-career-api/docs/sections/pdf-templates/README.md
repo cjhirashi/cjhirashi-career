@@ -18,7 +18,7 @@ flowchart TB
     Tpl --> Render[pdf_template_render]
     Tpl --> CSS[pdf_template_css]
     Tpl --> PDF[pdf_service]
-    PDF --> Gen[pdf_generator WeasyPrint]
+    PDF --> Gen[WeasyPrint in-process]
     Tpl --> Repo[CareerRepository]
     Repo --> Model[PdfOutputTemplate]
     Model -->|style_id| Style[PdfTemplateStyle]
@@ -95,7 +95,7 @@ El HTML no debe incluir CSS. El estilo se referencia con `style_id`.
 1. Carga plantilla del usuario
 2. `render_template_html()` — sustituye variables
 3. `resolve_template_css()` — CSS del `style_id`
-4. `generate_html_template_pdf()` — WeasyPrint
+4. `generate_html_template_pdf()` — WeasyPrint in-process (`services/pdf/`)
 
 ---
 

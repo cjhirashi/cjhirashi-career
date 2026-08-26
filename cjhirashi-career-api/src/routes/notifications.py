@@ -44,6 +44,23 @@ async def unread_count(
     return UnreadCountResponse(count=int(result.scalar() or 0))
 
 
+@router.post("/read-all", response_model=UnreadCountResponse)
+async def mark_all_read(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(UserNotification).where(
+            UserNotification.user_id == current_user.id, UserNotification.read_at.is_(None)
+        )
+    )
+    now = datetime.now(timezone.utc)
+    for item in result.scalars().all():
+        item.read_at = now
+    await db.commit()
+    return UnreadCountResponse(count=0)
+
+
 @router.post("/{item_id}/read", response_model=UserNotificationResponse)
 async def mark_read(
     item_id: str,
@@ -63,20 +80,3 @@ async def mark_read(
         await db.commit()
         await db.refresh(item)
     return item
-
-
-@router.post("/read-all", response_model=UnreadCountResponse)
-async def mark_all_read(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(UserNotification).where(
-            UserNotification.user_id == current_user.id, UserNotification.read_at.is_(None)
-        )
-    )
-    now = datetime.now(timezone.utc)
-    for item in result.scalars().all():
-        item.read_at = now
-    await db.commit()
-    return UnreadCountResponse(count=0)

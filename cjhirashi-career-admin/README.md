@@ -418,7 +418,7 @@ npm test -- --clearCache
 
 ## License
 
-Proprietary - Portafolio-cjhirashi Project
+Proprietary - cjhirashi-career Project
 
 ## Support
 

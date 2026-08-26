@@ -129,6 +129,12 @@ Bloqueo: si gasto UTC del día ≥ `BEDROCK_DAILY_BUDGET_USD`, el chat retorna e
 | `PUT` | `/bedrock/instructions` | Override del system prompt |
 | `GET` | `/bedrock/agent-profiles` | Lista perfiles + suffix prompts |
 | `PUT` | `/bedrock/agent-profiles/{profile_id}/prompt` | Suffix por perfil |
+| `GET` | `/bedrock/agent-profiles/catalog` | Catálogo: definición de código + metodologías/memoria |
+| `GET` | `/bedrock/agent-profiles/{profile_id}/catalog` | Detalle de un agente |
+| `PUT` | `/bedrock/agent-profiles/{profile_id}/methodologies` | Asigna metodologías que el agente consulta |
+| `GET` | `/bedrock/agent-profiles/{profile_id}/memory` | Memoria propia L1/L2 (notas + conteo de chats) |
+| `POST` | `/bedrock/agent-profiles/{profile_id}/memory/notes` | Añade nota de memoria propia |
+| `DELETE` | `/bedrock/agent-profiles/{profile_id}/memory/notes/{note_id}` | Elimina una nota |
 
 **Jerarquía de 3 niveles (ADR-012 / ADR-013):** L1 `agent_orchestrator`; L2 `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`; L3 `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github` (sin chat).
 

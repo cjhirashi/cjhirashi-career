@@ -4,7 +4,7 @@ Documento índice del Harness Converse (ADR-008, ADR-012).
 
 ## 1. Resumen
 
-- **Harness** en `api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto, jerarquía de 3 niveles.
+- **Harness** en `cjhirashi-career-api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto, jerarquía de 3 niveles.
 - **AWS:** solo `bedrock-runtime` (Converse + Titan Embeddings + Titan Image).
 
 ## 2. Tres niveles y dos superficies de chat
@@ -23,7 +23,7 @@ L1 no hace CRUD. L3 no tiene `POST /bedrock/chat` como agente principal.
 
 **L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`
 
-Definidos en `api/src/services/bedrock/agent_profiles.py`.
+Definidos en `cjhirashi-career-api/src/services/bedrock/agent_profiles.py`.
 
 ## 4. Variables de entorno
 
@@ -33,6 +33,6 @@ Ver `.env.example` — `BEDROCK_DEFAULT_MODEL_ID`, `BEDROCK_DAILY_BUDGET_USD`, `
 
 - [ADR-008](09-DECISIONS/008-bedrock-harness-local.md)
 - [ADR-012](09-DECISIONS/012-bedrock-three-level-agents.md)
-- [api/docs/BEDROCK-HARNESS.md](../api/docs/BEDROCK-HARNESS.md) — IAM y catálogo de modelos
-- [api/docs/sections/bedrock/README.md](../api/docs/sections/bedrock/README.md)
-- [admin/docs/BEDROCK-CHAT.md](../admin/docs/BEDROCK-CHAT.md)
+- [cjhirashi-career-api/docs/BEDROCK-HARNESS.md](../cjhirashi-career-api/docs/BEDROCK-HARNESS.md) — IAM y catálogo de modelos
+- [cjhirashi-career-api/docs/sections/bedrock/README.md](../cjhirashi-career-api/docs/sections/bedrock/README.md)
+- [cjhirashi-career-admin/docs/BEDROCK-CHAT.md](../cjhirashi-career-admin/docs/BEDROCK-CHAT.md)

@@ -1,4 +1,4 @@
-# Vista de Bloques de Construcción - Portafolio-cjhirashi
+# Vista de Bloques de Construcción - cjhirashi-career
 
 **VISTA DE BLOQUES DE CONSTRUCCIÓN**
 
@@ -34,14 +34,14 @@ Este documento es la sección 5 de la documentación Arc42 y responde a **qué p
 
 La descomposición sigue dos niveles:
 
-- **Nivel 1**: los siete módulos ya presentados en `01-INTRODUCTION.md` — la unidad mínima de despliegue (un contenedor Docker, o un servicio gestionado en el caso de Agent Bedrock).
-- **Nivel 2**: la descomposición interna de los tres módulos de mayor complejidad — **Admin Panel**, **API REST** y **PostgreSQL** — porque son el punto de mayor riesgo de diseño (SPA con múltiples secciones y tiempo real) y el punto único de convergencia de los tres canales, respectivamente. Portal Público, MCP Server, Agent Bedrock y PDF Generator no se descomponen en este documento porque su complejidad interna es menor y ya queda suficientemente cubierta por sus responsabilidades descritas en `01-INTRODUCTION.md`.
+- **Nivel 1**: los cuatro módulos de aplicación (Admin, Portal, API, MCP) más infra (PostgreSQL, MinIO, Qdrant), ya presentados en `01-INTRODUCTION.md` y ADR-014.
+- **Nivel 2**: la descomposición interna de los tres módulos de mayor complejidad — **Admin Panel**, **API REST** y **PostgreSQL**. Portal Público, MCP Server y Agent Bedrock no se descomponen aquí; el PDF vive dentro de la API (`api/src/services/pdf/`).
 
 Este documento describe el **diseño objetivo** — la estructura acordada a construir, coherente con el alcance de portafolio profesional definido en `01-INTRODUCTION.md` a `04-SOLUTION-STRATEGY.md`. No es un inventario de código existente.
 
 ## 🧩 Nivel 1 — Sistema Completo
 
-Los siete módulos de nivel 1 — Portal Público, Admin Panel, Agent Bedrock, MCP Server, API REST, PDF Generator y PostgreSQL —, sus responsabilidades y el diagrama de conexiones completo ya están documentados en [01-INTRODUCTION.md — Componentes](./01-INTRODUCTION.md#-componentes) y [01-INTRODUCTION.md — Diagrama del Sistema](./01-INTRODUCTION.md#-diagrama-del-sistema). Este documento no repite ese contenido; lo usa como punto de partida para descomponer los tres módulos de mayor complejidad interna.
+Los módulos de nivel 1 — Portal Público, Admin Panel, MCP Server, API REST (con Bedrock y PDF in-process) y PostgreSQL —, sus responsabilidades y el diagrama de conexiones ya están documentados en [01-INTRODUCTION.md — Componentes](./01-INTRODUCTION.md#-componentes) y [ADR-014](./09-DECISIONS/014-four-application-modules.md).
 
 ## 🖥️ Nivel 2 — Descomposición del Admin Panel
 
@@ -192,7 +192,7 @@ graph LR
 | Admin Panel | API REST (canal de tiempo real) | Suscripción al canal de métricas para actualizaciones en vivo | WebSocket/SSE, token de sesión |
 | Admin Panel | Agent Bedrock | Invocación interna, misma sesión (ver `01-INTRODUCTION.md — Componente 4️⃣`) | Invocación en proceso, sin red externa |
 | Agent Bedrock | API REST | Lectura/escritura de contexto de carrera en nombre de la sesión activa | REST/JSON, token heredado |
-| Admin Panel | PDF Generator | Renderizado de CV / Cover Letter | HTTP directo, exclusivo del Admin Panel |
+| Admin Panel | API REST | Renderizado de CV / plantillas HTML (`POST /pdf-templates/{id}/render`, `POST /career/cv-versions/{id}/pdf`) | REST/JSON + JWT |
 | MCP Server | API REST | CRUD completo de carrera, canal independiente | REST/JSON, autenticación propia del canal |
 | API REST | PostgreSQL | Único lector/escritor de los tres dominios de datos | SQL vía SQLAlchemy async / asyncpg |
 
@@ -210,7 +210,7 @@ graph LR
 | API REST | PyJWT, passlib/bcrypt | Emisión/validación de JWT, hashing de contraseñas |
 | API REST | Librería de WebSocket/SSE de FastAPI (`fastapi.WebSocket` / `sse-starlette`) | Servidor del canal de tiempo real consumido por el Admin Panel |
 | MCP Server | FastMCP | Framework del protocolo MCP |
-| PDF Generator | WeasyPrint, Jinja2 | Renderizado de HTML a PDF y motor de plantillas |
+| API REST | WeasyPrint, markdown | Renderizado HTML/Markdown a PDF in-process |
 | Agent Bedrock | SDK de AWS Bedrock (`boto3` o equivalente, invocado desde la API REST o desde un servicio intermedio) | Invocación del modelo gestionado por AWS |
 | PostgreSQL | Imagen `postgres:15` | Motor de base de datos |
 

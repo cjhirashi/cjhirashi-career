@@ -158,3 +158,29 @@ async def search(
         limit=top_k,
     )
     return [{"score": point.score, **point.payload} for point in result.points]
+
+
+async def scroll_points(
+    *,
+    user_id: str,
+    resource_type: Optional[str] = None,
+    extra_must: Optional[Dict[str, Any]] = None,
+    limit: int = 50,
+) -> List[Dict[str, Any]]:
+    """Lista puntos por payload (sin vector). Vacío si la colección no existe."""
+    if not await _collection_exists():
+        return []
+    client = _get_client()
+    must = [models.FieldCondition(key="user_id", match=models.MatchValue(value=user_id))]
+    if resource_type:
+        must.append(models.FieldCondition(key="type", match=models.MatchValue(value=resource_type)))
+    for key, value in (extra_must or {}).items():
+        must.append(models.FieldCondition(key=key, match=models.MatchValue(value=value)))
+    points, _ = await client.scroll(
+        collection_name=settings.QDRANT_COLLECTION,
+        scroll_filter=models.Filter(must=must),
+        limit=limit,
+        with_payload=True,
+        with_vectors=False,
+    )
+    return [dict(point.payload or {}) for point in points]

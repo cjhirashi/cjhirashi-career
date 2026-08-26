@@ -1,8 +1,8 @@
-# API REST — Portafolio-cjhirashi
+# API REST — cjhirashi-career
 
-API central del ecosistema Portafolio-cjhirashi. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (LinkedIn, GitHub, MinIO) y endpoints públicos para el Portal.
+API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (LinkedIn, GitHub, MinIO) y endpoints públicos para el Portal.
 
-**URL base (Docker interno):** `http://api_rest:8001`  
+**URL base (Docker interno):** `http://cjhirashi-career-api:8001`  
 **URL base (local):** `http://localhost:8001`  
 **OpenAPI interactivo:** `/docs`  
 **Health check:** `/health`
@@ -29,7 +29,6 @@ flowchart TB
     MinIO[(MinIO)]
     Qdrant[(Qdrant)]
     AWS[AWS Bedrock]
-    PDF[pdf_generator]
 
     Admin -->|JWT| Routes
     MCP -->|JWT| Routes
@@ -38,7 +37,6 @@ flowchart TB
     Services --> MinIO
     Services --> Qdrant
     Services --> AWS
-    Services --> PDF
 ```
 
 ---

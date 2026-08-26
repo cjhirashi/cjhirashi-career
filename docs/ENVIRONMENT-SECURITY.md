@@ -26,8 +26,8 @@ Este documento define la **mejor práctica de la industria** para manejar variab
 # Contiene valores REALES (cambiar por los tuyos):
 POSTGRES_USER=mcpuser
 POSTGRES_PASSWORD=mcppass123-dev-only
-SECRET_KEY=portafolio-cjhirashi-dev-secret-key-32chars-minimum
-DATABASE_URL=postgresql+asyncpg://mcpuser:mcppass123-dev-only@postgres:5432/portafolio_db
+SECRET_KEY=cjhirashi-career-dev-secret-key-32chars-minimum
+DATABASE_URL=postgresql+asyncpg://mcpuser:mcppass123-dev-only@postgres:5432/career_db
 ```
 
 **Cómo se carga**:

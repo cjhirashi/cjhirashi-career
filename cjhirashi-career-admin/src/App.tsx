@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 
 // Components
@@ -19,10 +19,12 @@ import { FilesPage } from '@/pages/FilesPage'
 import { LinkedInPage } from '@/pages/LinkedInPage'
 import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
 import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
+import { AgentCatalogPage } from '@/pages/AgentCatalogPage'
+import { AdminSectionsPage, AdminSectionDetailPage } from '@/pages/AdminSectionsPage'
 import { AgentToolsPage } from '@/pages/AgentToolsPage'
 import { AgentMemoryPage } from '@/pages/AgentMemoryPage'
 import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
-import { AgentTasksPage } from '@/pages/AgentTasksPage'
+import { TasksPage } from '@/pages/TasksPage'
 import { AgentGeneralChatPage } from '@/pages/AgentGeneralChatPage'
 import { AgentPdfTemplatesPage } from '@/pages/AgentPdfTemplatesPage'
 import { AgentPdfTemplateStylesPage } from '@/pages/AgentPdfTemplateStylesPage'
@@ -110,6 +112,17 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <FilesPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/tasks"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <TasksPage />
                 </Layout>
               </PrivateRoute>
             }
@@ -206,6 +219,38 @@ export const App: React.FC = () => {
             }
           />
           <Route
+            path="/settings/agents/:profileId?"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentCatalogPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/sections"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AdminSectionsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/sections/:sectionId"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AdminSectionDetailPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route path="/agent/catalog" element={<Navigate to="/settings/agents" replace />} />
+          <Route path="/agent/catalog/:profileId" element={<LegacyAgentCatalogRedirect />} />
+          <Route
             path="/agent/memory"
             element={
               <PrivateRoute>
@@ -245,16 +290,7 @@ export const App: React.FC = () => {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/agent/tasks"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentTasksPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
+          <Route path="/agent/tasks" element={<Navigate to="/tasks" replace />} />
 
           {/* Fallback - redirect to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -264,6 +300,11 @@ export const App: React.FC = () => {
     </QueryClientProvider>
     </ErrorBoundary>
   )
+}
+
+const LegacyAgentCatalogRedirect: React.FC = () => {
+  const { profileId } = useParams()
+  return <Navigate to={`/settings/agents/${profileId}`} replace />
 }
 
 export default App

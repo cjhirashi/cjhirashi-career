@@ -191,7 +191,7 @@ Error: Red
 ## 🔧 Implementation Checklist
 
 ### Phase 1: Setup (2 tasks)
-- [ ] Create `portal/` directory
+- [ ] Create `cjhirashi-career-portfolio/` directory
 - [ ] Setup Vite + React + TypeScript
 - [ ] Setup Tailwind CSS
 - [ ] Setup testing framework

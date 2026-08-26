@@ -110,7 +110,7 @@ curl http://localhost:8001/health
 ```json
 {
   "status": "healthy",
-  "app_name": "Portafolio-cjhirashi API",
+  "app_name": "cjhirashi-career API",
   "version": "1.0.0"
 }
 ```

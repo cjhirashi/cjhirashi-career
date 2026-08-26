@@ -16,7 +16,9 @@ flowchart TB
     Routes --> Qdrant[qdrant_service]
     BedrockS --> Harness[bedrock/]
     Routes --> JD[job_discovery/]
+    Routes --> TaskSched[task_scheduler]
     LI --> Sched[linkedin_scheduler]
+    TaskSched --> Harness
     PDF --> Render[pdf_template_render]
     PDF --> CSS[pdf_template_css]
     Harness --> AWS[AWS Bedrock]
@@ -85,9 +87,9 @@ I/O de bucket S3-compatible. Sin acceso a BD.
 
 Colección de vectores Titan. `upsert_point` / `delete_point` / `set_point_payload` (id determinista `resource_key` + `record_id`), `search` por embedding. `CareerRepository` indexa en background tras create/update/delete si `vectorize=True`. Metodologías llevan `agent_profile_ids` en el payload.
 
-### `pdf_service.py` — Cliente pdf-generator
+### `pdf_service.py` — Generación PDF (WeasyPrint in-process)
 
-HTTP interno al contenedor `pdf_generator`. `generate_markdown_document` y `generate_html_template_pdf` → bytes PDF. Timeout 30 s. `PDFGeneratorError` si el servicio no responde.
+`generate_markdown_document` y `generate_html_template_pdf` → bytes PDF. WeasyPrint corre en un `ProcessPoolExecutor` (fork en Linux) para que un crash nativo no tumbe uvicorn. Timeout 60 s. `PDFGeneratorError` si falla el render.
 
 ### `pdf_template_render.py`
 
@@ -99,7 +101,11 @@ Sustitución `{{variable}}` en HTML de plantillas antes de WeasyPrint.
 
 ### `methodology_scope.py`
 
-`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al filtrar `search_knowledge_base` type=methodology.
+`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al filtrar `search_knowledge_base` type=methodology y al armar el catálogo del system prompt.
+
+`list_assigned_methodologies(db, user_id, caller_id)`: títulos vigentes asignados al agente (Admin → Agentes). Se inyecta cada turno en `compose_system_prompt` para que una metodología nueva asignada se asuma sin cambiar código.
+
+`set_agent_methodologies(db, user_id, profile_id, ids)`: asigna desde el catálogo de agentes (Admin). Vacío = compartida; al quitar el último dueño se aparca en `agent_methodologies`.
 
 ### `github_service.py`
 
@@ -124,6 +130,10 @@ LinkedIn no programa posts: `scheduled_at` lo cumple `linkedin_scheduler`.
 ### `linkedin_scheduler.py`
 
 Task asyncio en el lifespan de `app.py`. Cada 60 s publica filas `linkedin_posts` con `status=scheduled` y `scheduled_at <= now`. Un solo worker uvicorn → sin carrera entre procesos.
+
+### `task_scheduler.py`
+
+Task asyncio en el mismo lifespan. Cada 30 s reclama `bedrock_tasks` con `assignee_type=agent`, `status=pending` y `scheduled_at <= now`, e invoca `run_single_turn_sync` (ADR-015). `POST /agent-tasks/{id}/run` usa el mismo runner.
 
 ### `__init__.py`
 

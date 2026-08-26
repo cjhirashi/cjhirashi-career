@@ -1,5 +1,5 @@
 """
-Portafolio-cjhirashi ORM Models
+cjhirashi-career ORM Models
 SQLAlchemy models for all database entities.
 """
 # Core Models
@@ -59,9 +59,12 @@ from models.bedrock_usage_log import BedrockUsageLog
 from models.bedrock_usage_round_log import BedrockUsageRoundLog
 from models.bedrock_settings import BedrockSettings
 from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
+from models.bedrock_agent_delegation import BedrockAgentDelegation
+from models.admin_section_override import AdminSectionOverride
 from models.bedrock_custom_tool import BedrockCustomTool
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
 from models.bedrock_task import BedrockTask
+from models.user_notification import UserNotification
 from models.pdf_output_template import PdfOutputTemplate
 from models.pdf_template_style import PdfTemplateStyle
 
@@ -136,10 +139,13 @@ __all__ = [
     "BedrockUsageRoundLog",
     "BedrockSettings",
     "BedrockAgentProfilePrompt",
+    "BedrockAgentDelegation",
+    "AdminSectionOverride",
     "BedrockCustomTool",
     "BedrockConversation",
     "BedrockConversationMessage",
     "BedrockTask",
+    "UserNotification",
     "PdfOutputTemplate",
     "PdfTemplateStyle",
     # LinkedIn integration

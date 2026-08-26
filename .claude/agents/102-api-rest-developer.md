@@ -153,7 +153,7 @@ api/
 ## 🔧 Implementation Checklist
 
 ### Phase 1: Setup (2 tasks)
-- [ ] Create `api/` directory structure
+- [ ] Create `cjhirashi-career-api/` directory structure
 - [ ] Setup FastAPI project
   - [ ] `requirements.txt` with all dependencies
   - [ ] `Dockerfile` optimized for production

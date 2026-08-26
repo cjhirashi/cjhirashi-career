@@ -2,7 +2,7 @@
 PdfOutputTemplate — plantillas HTML para salida PDF (WeasyPrint).
 
 Los estilos CSS viven en PdfTemplateStyle y se referencian con style_id.
-Agente agent_pdf_design las diseña; agent_search_operations y pdf-generator las consumen.
+Agente agent_pdf_design las diseña; agent_search_operations y pdf_service (WeasyPrint) las consumen.
 """
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB

@@ -168,6 +168,14 @@ Persona o rol con interés o responsabilidad sobre el sistema — de negocio (Ca
 
 Fila de `bedrock_tasks` asignada a un agente (`assignee_type=agent`) con `scheduled_at`. El `task_scheduler` de la API la ejecuta a esa hora sin que el Admin esté abierto. Ver [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
 
+### Subtarea / plan orquestado
+
+Hija de `bedrock_tasks` (`parent_id`). Puede ser bloqueante (`is_blocking`) y dispararse a hora fija o al turno (`execute_on_turn`). El padre resume el plan. Ver [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md).
+
+### Notificación in-app
+
+Fila de `user_notifications`. Cuando una tarea de usuario queda desbloqueada, el scheduler avisa a Carlos; la campana del Admin abre `/tasks?task={id}`. Ver [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md).
+
 ### Tiempo Real (*Real-time*)
 
 Capacidad del Admin Panel de recibir actualizaciones del Metrics Dashboard sin refrescar la página ni hacer *polling* manual, con una latencia objetivo menor a 500 ms desde que el evento se persiste en PostgreSQL. Implementado vía WebSocket o SSE, consumido únicamente por el Admin Panel. Ver [08-CROSSCUTTING-CONCEPTS — Tiempo Real](./08-CROSSCUTTING-CONCEPTS.md#-tiempo-real).

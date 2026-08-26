@@ -26,6 +26,10 @@ const sampleTask: BedrockTask = {
   scheduled_at: '2026-08-27T15:00:00Z',
   due_at: '2026-08-27T18:00:00Z',
   priority: 'high',
+  parent_id: null,
+  sort_order: 0,
+  is_blocking: true,
+  execute_on_turn: false,
   execution_result: null,
   executed_at: null,
   error_message: null,
@@ -62,6 +66,8 @@ describe('TasksPage', () => {
     expect(await screen.findByText('Buscar vacantes DevOps')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByText('Control de búsqueda de vacantes')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/buscar en tareas/i)).toBeInTheDocument()
+    expect(screen.getByText('btk-1')).toBeInTheDocument()
   })
 
   it('switches to kanban, calendar and gantt', async () => {
@@ -89,7 +95,7 @@ describe('TasksPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Nuevo' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByLabelText(/asignada a/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/responsable/i)).toBeInTheDocument()
   })
 
   it('opens record and edit views when a task is selected', async () => {
@@ -107,6 +113,39 @@ describe('TasksPage', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Vista' }))
     expect(screen.getByRole('heading', { name: /Información/ })).toBeInTheDocument()
+  })
+
+  it('changes status from the record view without entering edit', async () => {
+    renderPage()
+    fireEvent.click(await screen.findByText('Buscar vacantes DevOps'))
+    fireEvent.click(screen.getByRole('button', { name: 'Estado de Buscar vacantes DevOps' }))
+    fireEvent.click(screen.getByRole('option', { name: /Hecha/i }))
+    await waitFor(() =>
+      expect(mockedTasksApi.update).toHaveBeenCalledWith(
+        'btk-1',
+        expect.objectContaining({ status: 'done' })
+      )
+    )
+  })
+
+  it('lists subtasks on the parent record view', async () => {
+    mockedTasksApi.list.mockResolvedValue([
+      sampleTask,
+      {
+        ...sampleTask,
+        id: 'btk-2',
+        parent_id: 'btk-1',
+        title: 'Revisar resultados',
+        assignee_type: 'user',
+        agent_profile_id: null,
+        sort_order: 0,
+        is_blocking: true,
+      },
+    ])
+    renderPage()
+    fireEvent.click(await screen.findByText('Buscar vacantes DevOps'))
+    expect(screen.getByRole('heading', { name: /Subtareas/ })).toBeInTheDocument()
+    expect(screen.getByText('1. Revisar resultados')).toBeInTheDocument()
   })
 
   it('shows an empty state when there are no tasks', async () => {

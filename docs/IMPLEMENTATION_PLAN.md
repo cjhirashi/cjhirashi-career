@@ -1,4 +1,4 @@
-# 🚀 Plan de Implementación - Portafolio-cjhirashi
+# 🚀 Plan de Implementación - cjhirashi-career
 
 **Última actualización:** 2026-08-16  
 **Estado:** Fase de Planificación → Fase 1 (Inicio)
@@ -7,7 +7,7 @@
 
 ## 📋 Resumen Ejecutivo
 
-Plan de 3 fases para implementar Portafolio-cjhirashi desde 0 hasta producción:
+Plan de 3 fases para implementar cjhirashi-career desde 0 hasta producción:
 
 1. **FASE 1 (MVP):** Sistema funcional para usuario manual (6-8 semanas)
 2. **FASE 2:** MCP Server operacional (2-3 semanas)

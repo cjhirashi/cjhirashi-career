@@ -10,8 +10,11 @@ const STATIC_PAGE_TITLES: Record<string, string> = {
   '/search-metrics': 'Métricas de Búsqueda',
   '/job-discovery': 'Descubrir vacantes',
   '/files': 'Archivos',
+  '/tasks': 'Tareas',
   '/linkedin': 'LinkedIn · Publicar',
   '/agent/chat': 'Chat General',
+  '/settings/agents': 'Catálogo de Agentes',
+  '/settings/sections': 'Secciones del Admin',
   '/profile': 'Perfil',
   '/change-password': 'Cambiar contraseña',
 }

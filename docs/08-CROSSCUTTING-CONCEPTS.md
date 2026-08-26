@@ -1,4 +1,4 @@
-# Conceptos Transversales - Portafolio-cjhirashi
+# Conceptos Transversales - cjhirashi-career
 
 **CONCEPTOS TRANSVERSALES**
 
@@ -34,7 +34,7 @@
 
 Este documento es la sección 8 de la documentación Arc42 y describe **patrones que cruzan varios módulos** — decisiones que no pertenecen a un solo componente sino que los tres canales y sus servicios de apoyo deben respetar por igual. No repite el detalle de endpoints ([05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md)) ni de flujos ([06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md)) ni de infraestructura ([07-DEPLOYMENT-VIEW.md](./07-DEPLOYMENT-VIEW.md)); enlaza a ellos donde corresponde.
 
-El marco de calidad que rige estos conceptos está definido en `CLAUDE.md` (framework de calidad integral: Arc42, SOLID, testing 80%, code review, CI/CD, seguridad). Este documento describe el **diseño objetivo** de cómo ese marco se aplica al alcance de Portafolio-cjhirashi — no es un inventario de lo ya implementado, dado que el sistema está en fase de diseño (ver estado en todos los documentos Arc42 previos).
+El marco de calidad que rige estos conceptos está definido en `CLAUDE.md` (framework de calidad integral: Arc42, SOLID, testing 80%, code review, CI/CD, seguridad). Este documento describe el **diseño objetivo** de cómo ese marco se aplica al alcance de cjhirashi-career — no es un inventario de lo ya implementado, dado que el sistema está en fase de diseño (ver estado en todos los documentos Arc42 previos).
 
 ## 🔐 Autenticación y Autorización
 
@@ -126,11 +126,10 @@ Unit Tests (60%)         — Servicios de dominio, validadores, utilidades de fo
 
 | Módulo | Enfoque de testing objetivo |
 |---|---|
-| API REST | Unit tests por servicio de dominio (los siete descritos en [05-BUILDING-BLOCK-VIEW.md — API REST Detallada](./05-BUILDING-BLOCK-VIEW.md#-api-rest-detallada)); integration tests contra una base de datos de prueba para cada grupo de endpoints |
+| API REST | Unit tests por servicio de dominio (incluye `services/pdf/`); integration tests contra una base de datos de prueba para cada grupo de endpoints |
 | Admin Panel | Unit tests de componentes y hooks (React Testing Library); integration tests del flujo CRUD y del canal de tiempo real con mocks de WebSocket/SSE |
 | Portal Público | Unit tests de renderizado; E2E de navegación básica |
-| MCP Server | Unit tests por herramienta MCP; integration tests que verifiquen la llamada saliente hacia la API REST (a diferencia del proyecto heredado, donde esta llamada no existía) |
-| PDF Generator | Unit tests del motor de plantillas; integration test de renderizado end-to-end (JSON → PDF) |
+| MCP Server | Unit tests por herramienta MCP; integration tests que verifiquen la llamada saliente hacia la API REST |
 
 **Gate obligatorio**: ningún módulo se considera "listo" (checklist de `CLAUDE.md`) sin 80% de cobertura, validado por el QA Engineer antes de cualquier merge a `main`.
 
@@ -138,7 +137,7 @@ Unit Tests (60%)         — Servicios de dominio, validadores, utilidades de fo
 
 - **Arc42**: esta serie de documentos (`docs/01-*` a `docs/12-*`) sigue la estructura definida en `CLAUDE.md`, con responsabilidad editorial del Arquitecto de Soluciones y redacción del Documentador.
 - **ADRs**: `docs/09-DECISIONS/` es donde se formalizan las decisiones arquitectónicas de este alcance como Architecture Decision Records — inmutables una vez aceptados; una decisión que cambia genera un ADR nuevo que deprecia al anterior, nunca una edición del original.
-- **READMEs modulares**: cada uno de los siete módulos (Portal Público, Admin Panel, API REST, Agent Bedrock, MCP Server, PDF Generator, y el propio despliegue vía `docker-compose.yml`) debe mantener su propio `README.md` con quick start y ejemplos específicos — complementan, no duplican, la vista Arc42 de nivel de sistema.
+- **READMEs modulares**: cada módulo de aplicación (Portal Público, Admin Panel, API REST, MCP Server) mantiene su propio `README.md` con quick start — complementan, no duplican, la vista Arc42.
 - **Diagramas**: todo diagrama de arquitectura de este proyecto usa Mermaid (versionable en Git) con la paleta de colores semántica estándar — ver [protocolo de paleta de colores](../COLOR_PALETTE.md).
 
 ## 🧱 Convenciones de Código
@@ -147,7 +146,7 @@ Unit Tests (60%)         — Servicios de dominio, validadores, utilidades de fo
 
 - **Separación de capas en la API REST**: `Controllers → Services → Repository → Models` (ver [05-BUILDING-BLOCK-VIEW.md — Nivel 2: API REST](./05-BUILDING-BLOCK-VIEW.md#-nivel-2--descomposición-de-la-api-rest)), con los siete servicios de dominio como unidad de responsabilidad única (*Single Responsibility*).
 - **Naming**: consistente en español para entidades y conceptos del dominio de negocio (`competencias`, `evidencia`, `vacantes`) e inglés para infraestructura y framework (`get_current_user`, `AuditService`, `EntityDataTable`) — mismo patrón ya usado en el proyecto heredado.
-- **Linters y formateadores**: obligatorios desde el inicio del desarrollo — `ruff`/`black` en Python (API REST, MCP Server, PDF Generator), `eslint`/`prettier` en TypeScript (Portal Público, Admin Panel) — como parte del gate de CI/CD.
+- **Linters y formateadores**: obligatorios desde el inicio del desarrollo — `ruff`/`black` en Python (API REST, MCP Server), `eslint`/`prettier` en TypeScript (Portal Público, Admin Panel) — como parte del gate de CI/CD.
 - **Code review**: obligatorio antes de cualquier merge a `main`, ejecutado por Code Quality Guardian contra un checklist de SOLID, Clean Code y cobertura de tests.
 
 ## 📡 Sistema de Métricas

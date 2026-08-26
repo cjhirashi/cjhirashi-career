@@ -62,7 +62,15 @@ Perfil **`methodologies`** — especializado en consultar y editar metodologías
 
 Tool principal: `search_knowledge_base` con `type=methodology` para búsqueda semántica.
 
-El Admin Panel muestra metodologías por sección. El campo `agent_profile_ids` indica para qué agentes aplica cada registro; `search_knowledge_base` (type=methodology) filtra por el perfil caller (el L2 `agent_methodologies` ve todas).
+El Admin Panel muestra metodologías por sección. El campo `agent_profile_ids` es la fuente de verdad de **qué agente consulta qué metodología**:
+
+- Lista con ids `agent_*` → solo esos agentes la asumen como suya.
+- Vacío o `null` → compartida (todos los agentes).
+- El L2 `agent_methodologies` ve y mantiene todas.
+
+Cada turno, `compose_system_prompt` inyecta el catálogo asignado al caller. Si Carlos crea una metodología nueva y se la asigna a un agente **desde el catálogo de agentes** (`/agent/catalog`) o desde esta tabla (campo Agentes), ese agente la consulta en el siguiente mensaje — no hace falta nombrarla en código.
+
+`search_knowledge_base` (type=methodology) filtra por el mismo campo.
 
 ---
 

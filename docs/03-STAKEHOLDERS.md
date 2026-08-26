@@ -1,4 +1,4 @@
-# Usuarios, Roles y Expectativas - Portafolio-cjhirashi
+# Usuarios, Roles y Expectativas - cjhirashi-career
 
 **STAKEHOLDERS DEL PROYECTO**
 
@@ -45,12 +45,12 @@ El equipo trabaja bajo el modelo de 5 agentes globales definido en `CLAUDE.md`, 
 | Rol | Qué necesita | Qué espera |
 |-----|----------------|--------------|
 | **Arquitecto de Soluciones** (Carlos, en este rol) | Visibilidad completa de la arquitectura y trazabilidad de cada decisión, para poder diseñar sin ambigüedad y coordinar al resto del equipo | Que cada especialista respete el diseño acordado y escale las desviaciones en lugar de improvisarlas |
-| **Experto Docker** (global) | Definición clara de los 7 módulos, sus puertos y sus dependencias, para poder construir y mantener `docker-compose.yml` y el pipeline de CI/CD | Que cualquier cambio de topología (nuevo servicio, cambio de puerto) se le comunique antes de implementarse en código |
+| **Experto Docker** (global) | Definición clara de los 4 módulos y la infra (puertos y dependencias), para poder construir y mantener `docker-compose.yml` y el pipeline de CI/CD | Que cualquier cambio de topología (nuevo servicio, cambio de puerto) se le comunique antes de implementarse en código |
 | **Documentador** (global, este agente) | Directivas explícitas del Arquitecto sobre qué documentar y protocolos/templates centralizados para no improvisar formato | Que la arquitectura no cambie sin que se le informe, para evitar que la documentación quede desincronizada del diseño real |
 | **QA Engineer** (global) | Criterios de calidad claros (80% de cobertura mínima) y visibilidad de qué módulos están en desarrollo activo | Que cada especialista entregue unit tests de su módulo antes de solicitar validación de cobertura |
 | **Code Quality Guardian** (global) | Acceso a todo el código para ejecutar revisiones y validar SOLID, Clean Code y seguridad | Que ningún cambio se integre a `main` sin pasar por su revisión |
 | **Git Especialista** (global) | Convención de commits (Conventional Commits) y estrategia de ramas acordada | Que los especialistas de módulo sigan la convención de commits sin necesidad de corrección posterior |
-| **Especialistas de módulo** (por contenedor: Portal, Admin Panel, API, MCP Server, PDF Generator) | Especificación de su módulo dentro de la arquitectura general, y las interfaces exactas con los módulos vecinos | Que la arquitectura general no cambie sus interfaces sin previo aviso, dado que su trabajo depende de contratos estables con la API REST |
+| **Especialistas de módulo** (Portal, Admin Panel, API, MCP Server) | Especificación de su módulo dentro de la arquitectura general, y las interfaces exactas con los módulos vecinos | Que la arquitectura general no cambie sus interfaces sin previo aviso, dado que su trabajo depende de contratos estables con la API REST |
 
 ## 🏗️ Stakeholders de Infraestructura
 
@@ -58,7 +58,7 @@ Estos stakeholders no interactúan con la funcionalidad de negocio del sistema, 
 
 | Stakeholder | Qué necesita | Qué espera |
 |-------------|----------------|--------------|
-| **Administrador de `cjhirashi-srv`** | Conocer con anticipación qué puertos y qué nombre de red Docker (`network-cjhirashi-srv`) requiere el proyecto, para configurar correctamente el proxy/reverse-proxy del servidor compartido | Que solo los tres canales realmente públicos (Portal 8003, Admin 8002, MCP 8004) se expongan, y que ningún componente interno (API REST, PostgreSQL, PDF Generator) intente publicarse directamente |
+| **Administrador de `cjhirashi-srv`** | Conocer con anticipación qué puertos y qué nombre de red Docker (`network-cjhirashi-srv`) requiere el proyecto, para configurar correctamente el proxy/reverse-proxy del servidor compartido | Que solo los tres canales realmente públicos (Portal 8003, Admin 8002, MCP 8004) se expongan, y que ningún componente interno (API REST, PostgreSQL) intente publicarse directamente |
 | **DevOps (CI/CD)** | Definición de los gates de calidad obligatorios (build, tests, cobertura, seguridad, despliegue) para poder automatizarlos en el pipeline | Que el pipeline sea la única vía de despliegue a producción, sin despliegues manuales que salten los gates de calidad |
 
 ## 📊 Matriz de Prioridades

@@ -63,7 +63,8 @@ async def set_profile_prompt_suffix(
     profile_id: str,
     system_prompt_suffix: Optional[str],
 ) -> dict:
-    get_profile(profile_id)
+    profile = get_profile(profile_id)
+    profile_id = profile.id
     text = system_prompt_suffix.strip() if system_prompt_suffix else None
 
     result = await db.execute(
@@ -87,7 +88,7 @@ async def set_profile_prompt_suffix(
 
     profile = get_profile(profile_id)
     overrides = await _overrides_map(db)
-    override = overrides.get(profile_id)
+    override = overrides.get(profile.id)
     return {
         "profile_id": profile.id,
         "label": profile.label,

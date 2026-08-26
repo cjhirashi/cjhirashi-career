@@ -24,7 +24,7 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-_USER_AGENT = "Portafolio-cjhirashi/1.0 (web-search; +https://cjhirashi.com)"
+_USER_AGENT = "cjhirashi-career/1.0 (web-search; +https://cjhirashi.com)"
 _MAX_RESULTS = 8
 _MAX_TEXT_CHARS = 12_000
 _MAX_FETCH_BYTES = 120_000

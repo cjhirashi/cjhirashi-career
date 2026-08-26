@@ -1,4 +1,4 @@
-# Portafolio-cjhirashi
+# cjhirashi-career
 
 ![Python](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
@@ -8,7 +8,7 @@
 
 ---
 
-**Portafolio-cjhirashi** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público profesional, un panel de administración privado para gestión de carrera, y una interfaz MCP para agentes de IA externos — todo convergiendo en una única fuente de verdad centralizada.
+**cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público profesional, un panel de administración privado para gestión de carrera, y una interfaz MCP para agentes de IA externos — todo convergiendo en una única fuente de verdad centralizada.
 
 ---
 
@@ -27,9 +27,9 @@ Interfaz para agentes IA externos (Claude, etc.) — operan el sistema de forma 
 
 ## 🏗️ Arquitectura
 
-- **7 módulos independientes**: Portal Público, Admin Panel, MCP Server, API REST, Agent Bedrock, PDF Generator, PostgreSQL
-- **Stack**: React 18 + FastAPI + PostgreSQL + FastMCP + AWS Bedrock + WeasyPrint
-- **Docker**: 5 contenedores expuestos (Admin 8002, Portal 8003, MCP 8004) + internos (API, PDF, BD)
+- **4 módulos**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio`, `cjhirashi-career-api`, `cjhirashi-career-mcp` (Bedrock y PDF son capacidades de la API; Postgres/MinIO/Qdrant son infraestructura)
+- **Stack**: React 18 + FastAPI + PostgreSQL + AWS Bedrock + WeasyPrint
+- **Docker**: 3 contenedores de app expuestos (Admin 8002, Portal 8003, MCP 8004) + internos (API con PDF WeasyPrint, Qdrant, Postgres, MinIO)
 - **Métricas**: Tracking de visitantes, actividad del agente, auditoría centralizada
 - **Real-time**: WebSocket/SSE para dashboards vivos
 
@@ -94,15 +94,15 @@ docker compose --env-file .env.local up -d
 
 ```bash
 docker compose ps
-docker compose logs -f api_rest
+docker compose logs -f cjhirashi-career-api
 ```
 
 ### Acceso
 
 - **Portal Público**: http://localhost:8003
 - **Admin Panel**: http://localhost:8002 (credenciales: ver setup inicial)
-- **MCP Server**: http://localhost:8004/sse (protocolo MCP)
-- **API REST**: http://localhost:8001/docs (Swagger)
+- **MCP Server**: http://localhost:8004 (SSE)
+- **API REST**: interna (Swagger en `http://localhost:8001/docs` solo si se publica el puerto en depuración)
 
 ---
 
@@ -127,10 +127,10 @@ docker compose logs -f api_rest
 |-----------|--------|-------|
 | Portal Público | 🟡 En diseño | Réplica mejorada de cjhirashi.com |
 | Admin Panel SPA | 🟡 En diseño | Dashboard dinámico con métricas |
-| MCP Server | ✅ Base heredada | Refactor para nuevo alcance |
+| MCP Server | ✅ `cjhirashi-career-mcp/` | FastMCP; contenedor `cjhirashi-career-mcp` (8004) |
 | API REST | ✅ Base heredada | Evolución para gestión carrera |
-| Agent Bedrock | 🟡 En diseño | Asistente IA interno |
-| PDF Generator | ✅ Base heredada | Generación CV/Cover Letter |
+| Agent Bedrock | ✅ En la API | Asistente IA interno (sin contenedor propio) |
+| PDF (WeasyPrint) | ✅ En la API | CV / plantillas HTML; no es un módulo ni un contenedor |
 | PostgreSQL | 🟡 En diseño | Nuevas tablas para carrera/métricas |
 
 ---
@@ -139,8 +139,8 @@ docker compose logs -f api_rest
 
 El proyecto está integrado con **cjhirashi-srv** (Caddy + Cloudflare Tunnel) para acceso público:
 
-- Documentación: `/mnt/disco2/cjhirashi-data/proyectos/cjhirashi-srv/servicios-externos/mcp-server.md`
-- 3 módulos expuestos: Admin Panel (8002), Portal Público (8003), MCP Server (8004)
+- Documentación: `servicios-externos/cjhirashi-career.md`
+- 3 módulos de app expuestos: Admin Panel (8002), Portal Público (8003), MCP (8004)
 - Proxy: Caddy reverse proxy + Cloudflare Tunnel
 - Dominio: Configurado en cjhirashi-srv
 

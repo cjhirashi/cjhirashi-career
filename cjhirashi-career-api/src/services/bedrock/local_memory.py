@@ -101,3 +101,48 @@ async def create_manual_memory(user_id: str, text: str) -> None:
         text=trimmed,
         vector=vector,
     )
+
+
+_AGENT_NOTE_KEY = "agent-notes"
+
+
+async def list_agent_notes(user_id: str, profile_id: str, limit: int = 40) -> List[Dict[str, Any]]:
+    """Notas propias de un agente L1/L2 (Qdrant type=agent_note)."""
+    rows = await qdrant_service.scroll_points(
+        user_id=user_id,
+        resource_type="agent_note",
+        extra_must={"agent_profile_id": profile_id},
+        limit=limit,
+    )
+    notes: List[Dict[str, Any]] = []
+    for row in rows:
+        notes.append(
+            {
+                "id": str(row.get("record_id") or ""),
+                "text": row.get("text") or "",
+            }
+        )
+    return [note for note in notes if note["id"] and note["text"]]
+
+
+async def create_agent_note(user_id: str, profile_id: str, text: str) -> Dict[str, Any]:
+    """Indexa una nota de memoria propia del perfil."""
+    trimmed = text.strip()
+    if not trimmed:
+        raise BedrockError("El texto de memoria no puede estar vacío")
+    record_id = str(int(hashlib.sha256(f"{profile_id}:{trimmed}".encode()).hexdigest()[:8], 16) % 2_000_000_000)
+    vector = await embed_text(trimmed)
+    await qdrant_service.upsert_point(
+        user_id=user_id,
+        resource_type="agent_note",
+        resource_key=_AGENT_NOTE_KEY,
+        record_id=record_id,
+        text=trimmed,
+        vector=vector,
+        extra_payload={"agent_profile_id": profile_id},
+    )
+    return {"id": record_id, "text": trimmed}
+
+
+async def delete_agent_note(record_id: str) -> None:
+    await qdrant_service.delete_point(resource_key=_AGENT_NOTE_KEY, record_id=record_id)

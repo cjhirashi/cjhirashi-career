@@ -4,6 +4,7 @@ import { Menu, PanelRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useThemeStore } from '@/stores/themeStore'
 import { ThemeToggle } from './ThemeToggle'
+import { NotificationBell } from './NotificationBell'
 import { clsx } from 'clsx'
 
 interface NavbarProps {
@@ -60,6 +61,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
+
+          <NotificationBell />
 
           <div className="relative">
             <button

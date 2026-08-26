@@ -1,4 +1,4 @@
-# Riesgos Técnicos y Mitigación - Portafolio-cjhirashi
+# Riesgos Técnicos y Mitigación - cjhirashi-career
 
 **RIESGOS TÉCNICOS**
 
@@ -25,7 +25,7 @@
 
 ## 📖 Cómo Leer Este Documento
 
-Este documento es la sección 11 de la documentación Arc42 y responde a **qué puede salir mal en el nuevo alcance de Portafolio-cjhirashi y cómo se previene o mitiga**. No repite el detalle de cada componente ya cubierto en `01-INTRODUCTION.md` a `08-CROSSCUTTING-CONCEPTS.md`, ni el estado de cada atributo de calidad de [10-QUALITY-SCENARIOS.md](./10-QUALITY-SCENARIOS.md); traduce ambos a **riesgo** — probabilidad de que cause un problema real una vez que el sistema esté implementado y en uso, impacto si ocurre, y la mitigación concreta.
+Este documento es la sección 11 de la documentación Arc42 y responde a **qué puede salir mal en el nuevo alcance de cjhirashi-career y cómo se previene o mitiga**. No repite el detalle de cada componente ya cubierto en `01-INTRODUCTION.md` a `08-CROSSCUTTING-CONCEPTS.md`, ni el estado de cada atributo de calidad de [10-QUALITY-SCENARIOS.md](./10-QUALITY-SCENARIOS.md); traduce ambos a **riesgo** — probabilidad de que cause un problema real una vez que el sistema esté implementado y en uso, impacto si ocurre, y la mitigación concreta.
 
 **Probabilidad** se evalúa en escala Alta / Media / Baja como la probabilidad de que el riesgo **cause un incidente** una vez el sistema esté construido y operando con datos reales de carrera profesional — no la probabilidad de que la condición de riesgo ya exista hoy en el diseño (varias sí existen ya, como riesgos de diseño a mitigar antes de implementar). **Impacto** usa la misma escala, más un nivel **Crítico** reservado para riesgos que comprometerían datos personales o credenciales de forma irreversible.
 

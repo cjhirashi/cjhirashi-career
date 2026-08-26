@@ -15,7 +15,7 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://api_rest:8001',
+        target: 'http://cjhirashi-career-api:8001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

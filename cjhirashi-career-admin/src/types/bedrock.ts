@@ -103,15 +103,50 @@ export interface BedrockAuditLogEntry {
   created_at: string
 }
 
+export type TaskStatus = 'pending' | 'in_progress' | 'done' | 'cancelled' | 'failed'
+export type TaskAssigneeType = 'user' | 'agent'
+export type TaskPriority = 'low' | 'medium' | 'high'
+
 export interface BedrockTask {
   id: string
   user_id: string
   title: string
   description: string | null
-  status: 'pending' | 'in_progress' | 'done' | 'cancelled' | string
+  status: TaskStatus | string
+  notes: string | null
+  assignee_type: TaskAssigneeType | string
+  agent_profile_id: string | null
+  scheduled_at: string | null
+  due_at: string | null
+  priority: TaskPriority | string
+  parent_id: string | null
+  sort_order: number
+  is_blocking: boolean
+  execute_on_turn: boolean
+  turn_notified_at?: string | null
+  execution_result: string | null
+  executed_at: string | null
+  error_message: string | null
   created_at: string
   updated_at: string
 }
+
+export type BedrockTaskPayload = Partial<{
+  title: string
+  description: string | null
+  status: string
+  notes: string | null
+  assignee_type: string
+  agent_profile_id: string | null
+  scheduled_at: string | null
+  due_at: string | null
+  priority: string
+  parent_id: string | null
+  sort_order: number
+  is_blocking: boolean
+  execute_on_turn: boolean
+  subtasks: BedrockTaskPayload[]
+}>
 
 export interface BedrockInstructions {
   system_prompt: string
@@ -127,6 +162,68 @@ export interface BedrockAgentProfilePrompt {
   override_suffix: string | null
   effective_suffix: string
   is_default: boolean
+}
+
+export interface BedrockAgentCatalogMethodology {
+  id: string
+  title: string
+  section: string | null
+  shared: boolean
+  assigned: boolean
+}
+
+export interface BedrockAgentCatalogSection {
+  id: string
+  label: string
+  section_type: string
+  path: string
+}
+
+export interface BedrockAgentDelegationTarget {
+  id: string
+  label: string
+  level: number
+}
+
+export interface BedrockAgentCatalogItem {
+  id: string
+  system_name: string
+  profile_id: string
+  label: string
+  level: number
+  user_facing: boolean
+  can_delegate: boolean
+  write_enabled: boolean
+  domain_keys: string[]
+  resource_keys: string[] | null
+  sections: BedrockAgentCatalogSection[]
+  default_model_id: string | null
+  tools: string[]
+  has_own_memory: boolean
+  default_suffix: string
+  override_suffix: string | null
+  effective_suffix: string
+  prompt_is_default: boolean
+  methodology_count: number
+  assigned_methodologies: BedrockAgentCatalogMethodology[]
+  methodologies?: BedrockAgentCatalogMethodology[]
+  conversation_count: number
+  delegation_targets: BedrockAgentDelegationTarget[]
+  delegation_target_ids: string[]
+  default_delegation_target_ids: string[]
+  allowed_delegation_ids: string[]
+  delegation_is_default: boolean
+}
+
+export interface BedrockAgentNote {
+  id: string
+  text: string
+}
+
+export interface BedrockAgentMemory {
+  has_own_memory: boolean
+  conversation_count: number
+  notes: BedrockAgentNote[]
 }
 
 export interface BedrockCustomTool {

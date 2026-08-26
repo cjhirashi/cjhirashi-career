@@ -12,6 +12,8 @@ flowchart LR
     T4[test_bedrock_errors] --> Errors[errors.py]
     T5[test_agent_loop_messages] --> Loop[agent_loop messages]
     T6[test_pdf_style_persist] --> Tools[tools.merge_writable_fields + persist nudge]
+    T7[test_prompt_methodology] --> Prompt[prompt.methodology_assignment_block]
+    T8[test_profile_catalog] --> Catalog[profile_catalog]
 ```
 
 ---
@@ -35,6 +37,14 @@ Todo perfil tiene `system_prompt_suffix` no vacío; `get_profile` round-trip por
 ### `test_pdf_style_persist.py`
 
 `merge_writable_fields` acepta `style_guide` en el nivel superior (no solo en `fields`). `should_nudge_persist` reintenta persistir si un L2 (PDF o metodologías) redacta o anuncia un write en el chat sin `update`. Un "ok" no basta; "procede" o "Ahora actualizo opm-N" sí.
+
+### `test_prompt_methodology.py`
+
+Cada perfil recibe la regla «solo las metodologías asignadas a ti». El catálogo (`opm-N`) se inyecta en `compose_system_prompt` desde `agent_profile_ids`; no se hardcodea la sección. `search_knowledge_base` describe el filtro por caller. Las notas de memoria L1/L2 también entran al prompt.
+
+### `test_profile_catalog.py`
+
+Tools resueltas y campos de definición (tablas, `has_own_memory`) para el catálogo Admin.
 
 ### `test_agent_loop_messages.py`
 

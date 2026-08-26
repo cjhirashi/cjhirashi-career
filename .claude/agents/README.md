@@ -1,6 +1,6 @@
-# Portafolio-cjhirashi — Agentes Locales
+# cjhirashi-career — Agentes Locales
 
-Esta carpeta contiene la **definición de estructura de agentes** del proyecto Portafolio-cjhirashi.
+Esta carpeta contiene la **definición de estructura de agentes** del proyecto cjhirashi-career.
 
 ## 📋 Estructura de Archivos
 
@@ -24,11 +24,10 @@ Desarrolladores responsables de **módulos específicos**:
 
 | ID | Nombre | Módulo | Responsabilidad |
 |----|--------|--------|-----------------|
-| 101 | API REST Specialist | API REST | Diseño: schema, endpoints, seguridad, testing strategy |
-| 102 | API REST Developer | API REST | Implementación: FastAPI, SQLAlchemy, PostgreSQL |
+| 101 | API REST Specialist | API REST | Diseño: schema, endpoints, seguridad, testing strategy (incluye PDF WeasyPrint) |
+| 102 | API REST Developer | API REST | Implementación: FastAPI, SQLAlchemy, PostgreSQL, PDF in-process |
 | 103 | Admin Panel Specialist | Admin Panel | Implementación: React SPA, CRUD, autenticación, métricas |
 | 104 | Portal Público Specialist | Portal Público | Implementación: React SPA read-only, Home (entry point), About, Projects, Blog, Contact |
-| 105 | PDF Generator Specialist | PDF Generator | Implementación: FastAPI, generación de PDFs on-demand |
 
 ## 🎯 Cómo Usar
 
@@ -40,14 +39,12 @@ Arquitecto → [Invoca agente global] → Experto → Entrega
 
 **Ejemplo:**
 ```
-"Docker Expert, diseña docker-compose.yml para 7 servicios:
+"Docker Expert, diseña docker-compose.yml para 3 módulos + infra:
  - Admin Panel (8002)
  - Portal Público (8003)
- - MCP Server (8004)
- - API REST (8001 internal)
- - PDF Generator (8080)
- - Bedrock Agent (internal)
- - PostgreSQL (5432)
+ - API REST (8001 internal; Bedrock + PDF WeasyPrint)
+ - PostgreSQL, MinIO, Qdrant
+ MCP no va en Compose hasta que exista mcp/.
  
  Usa network-cjhirashi-srv y volúmenes en /mnt/disco1/..."
 ```
@@ -78,8 +75,8 @@ API REST Developer → Admin Panel Specialist → Admin Panel ✓
 # Semanas 4-5: Portal Público Specialist
 API REST Developer → Portal Público Specialist → Portal ✓
 
-# Semana 3-4: PDF Generator Specialist
-Admin Panel feedback → PDF Generator Specialist → PDF Service ✓
+# Semanas 3-4: Admin Panel Specialist
+API REST Developer → Admin Panel Specialist → Admin Panel (PDF vía API) ✓
 ```
 
 ## 📌 Responsabilidades Claras
@@ -147,7 +144,7 @@ Admin Panel feedback → PDF Generator Specialist → PDF Service ✓
 ### Fase 1 (MVP - 8 semanas)
 - **Semana 1:** API REST Specialist diseña
 - **Semanas 2-3:** API REST Developer implementa
-- **Semanas 3-4:** Admin Panel Specialist + PDF Generator
+- **Semanas 3-4:** Admin Panel Specialist
 - **Semanas 4-5:** Portal Público Specialist
 - **Semanas 5-8:** Integración, testing, bugfixes
 

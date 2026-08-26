@@ -64,6 +64,8 @@ TABLE_PREFIXES: dict[str, str] = {
     "user_sessions":              "uss",
     "vacancies":                  "vac",
     "work_history":               "wkh",
+    # Catálogo de agentes (IDs asignados en código, no hay secuencia PG).
+    "agent_profiles":             "agent",
 }
 
 

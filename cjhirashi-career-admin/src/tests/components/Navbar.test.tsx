@@ -13,6 +13,15 @@ vi.mock('@/hooks/useAuth', () => ({
   }),
 }))
 
+vi.mock('@/api/notifications', () => ({
+  notificationsApi: {
+    list: vi.fn().mockResolvedValue([]),
+    unreadCount: vi.fn().mockResolvedValue(0),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+  },
+}))
+
 // Navbar renders a react-router <Link>, so it needs a Router in the tree.
 const render = (ui: React.ReactElement) => baseRender(<MemoryRouter>{ui}</MemoryRouter>)
 

@@ -87,6 +87,38 @@ export function canRunAgentTask(task: BedrockTask): boolean {
   )
 }
 
+export function isRootTask(task: BedrockTask): boolean {
+  return !task.parent_id
+}
+
+export function groupSubtasks(tasks: BedrockTask[]): Map<string, BedrockTask[]> {
+  const grouped = new Map<string, BedrockTask[]>()
+  for (const task of tasks) {
+    if (!task.parent_id) continue
+    const list = grouped.get(task.parent_id) ?? []
+    list.push(task)
+    grouped.set(task.parent_id, list)
+  }
+  for (const list of grouped.values()) {
+    list.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id.localeCompare(b.id))
+  }
+  return grouped
+}
+
+export function isTaskBlocked(task: BedrockTask, siblings: BedrockTask[]): boolean {
+  if (!task.parent_id) return false
+  const ordered = [...siblings].sort(
+    (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id.localeCompare(b.id)
+  )
+  for (const sibling of ordered) {
+    if (sibling.id === task.id) return false
+    if (sibling.is_blocking && sibling.status !== 'done' && sibling.status !== 'cancelled') {
+      return true
+    }
+  }
+  return false
+}
+
 export function assigneeLabel(
   task: BedrockTask,
   agentLabels: Record<string, string>

@@ -17,7 +17,7 @@ flowchart TB
     Factory --> Repo[CareerRepository]
     Repo --> Models[14 modelos Búsqueda]
     Models --> PG[(PostgreSQL)]
-    PDF --> Gen[pdf_generator]
+    PDF --> Gen[WeasyPrint in-process]
     Discovery[job-discovery save] --> Vac[vacancies]
     Vac --> Models
 ```

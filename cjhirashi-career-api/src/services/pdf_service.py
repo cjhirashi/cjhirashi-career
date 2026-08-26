@@ -1,67 +1,85 @@
 """
-PDF Generator client - renders a title + Markdown body into a PDF via the
-`pdf_generator` container (internal-only, same `network-cjhirashi-srv`).
-Mirrors github_service.py's thin-httpx-wrapper shape.
+PDF generation — WeasyPrint in-process, isolated in a process pool.
+
+Same public API the routes and Bedrock tools already call:
+`generate_markdown_document` / `generate_html_template_pdf` → PDF bytes.
 """
+import asyncio
 import logging
+from concurrent.futures import ProcessPoolExecutor
 
-import httpx
-
-from config import settings
+from services.pdf.worker import render_html_template_pdf, render_markdown_document_pdf
 
 logger = logging.getLogger(__name__)
 
-# Rendering a full document (Markdown -> HTML -> PDF) can take a while under
-# load - generous on purpose, this is a synchronous user-triggered download,
-# not a hot path.
 _TIMEOUT_SECONDS = 60.0
+_pool: ProcessPoolExecutor | None = None
 
 
 class PDFGeneratorError(Exception):
     pass
 
 
-# ============================================================================
-# Generación desde Markdown
-# ============================================================================
+def _new_pool() -> ProcessPoolExecutor:
+    # Default context is fork on Linux (our Docker image). Isolates
+    # Cairo/Pango crashes from uvicorn.
+    return ProcessPoolExecutor(max_workers=2)
+
+
+def _get_pool() -> ProcessPoolExecutor:
+    global _pool
+    if _pool is None:
+        _pool = _new_pool()
+    return _pool
+
+
+def _reset_pool() -> None:
+    global _pool
+    if _pool is not None:
+        _pool.shutdown(wait=False, cancel_futures=True)
+        _pool = None
+    _pool = _new_pool()
+
+
+async def _run_in_pool(fn, *args) -> bytes:
+    loop = asyncio.get_running_loop()
+    try:
+        return await asyncio.wait_for(
+            loop.run_in_executor(_get_pool(), fn, *args),
+            timeout=_TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        logger.error("PDF generation timed out after %ss", _TIMEOUT_SECONDS)
+        _reset_pool()
+        raise
+    except ValueError:
+        raise
+    except Exception:
+        _reset_pool()
+        raise
+
 
 async def generate_markdown_document(title: str, content: str) -> bytes:
-    """POSTs to pdf_generator's `/generate/markdown-document` and returns the
-    raw PDF bytes."""
-    url = f"{settings.PDF_GENERATOR_URL}/generate/markdown-document"
+    """Render a title + Markdown body to PDF bytes."""
     try:
-        async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
-            response = await client.post(url, json={"title": title, "content": content})
-    except httpx.RequestError as e:
-        logger.error(f"PDF Generator unreachable at {url}: {e}")
-        raise PDFGeneratorError("El servicio de generación de PDF no está disponible") from e
-
-    if response.status_code != 200:
-        logger.error(f"PDF Generator returned {response.status_code}: {response.text}")
-        raise PDFGeneratorError(f"El servicio de generación de PDF respondió con un error ({response.status_code})")
-
-    return response.content
+        return await _run_in_pool(render_markdown_document_pdf, title, content)
+    except ValueError as e:
+        logger.error("Markdown PDF validation failed: %s", e)
+        raise PDFGeneratorError(str(e)) from e
+    except Exception as e:
+        logger.error("Markdown PDF generation failed: %s", e)
+        raise PDFGeneratorError("No se pudo generar el PDF") from e
 
 
-# ============================================================================
-# Generación desde plantilla HTML
-# ============================================================================
-
-async def generate_html_template_pdf(title: str, html_body: str, css_content: str | None = None) -> bytes:
-    """POSTs to pdf_generator `/generate/html-template` — WeasyPrint con HTML/CSS custom."""
-    url = f"{settings.PDF_GENERATOR_URL}/generate/html-template"
+async def generate_html_template_pdf(
+    title: str, html_body: str, css_content: str | None = None
+) -> bytes:
+    """Render custom HTML + optional CSS to PDF bytes (WeasyPrint)."""
     try:
-        async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
-            response = await client.post(
-                url,
-                json={"title": title, "html_body": html_body, "css_content": css_content},
-            )
-    except httpx.RequestError as e:
-        logger.error(f"PDF Generator unreachable at {url}: {e}")
-        raise PDFGeneratorError("El servicio de generación de PDF no está disponible") from e
-
-    if response.status_code != 200:
-        logger.error(f"PDF Generator returned {response.status_code}: {response.text}")
-        raise PDFGeneratorError(f"El servicio de generación de PDF respondió con un error ({response.status_code})")
-
-    return response.content
+        return await _run_in_pool(render_html_template_pdf, title, html_body, css_content)
+    except ValueError as e:
+        logger.error("HTML template PDF validation failed: %s", e)
+        raise PDFGeneratorError(str(e)) from e
+    except Exception as e:
+        logger.error("HTML template PDF generation failed: %s", e)
+        raise PDFGeneratorError("No se pudo generar el PDF") from e

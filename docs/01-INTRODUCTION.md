@@ -1,4 +1,4 @@
-# Introducción y Contexto - Portafolio-cjhirashi
+# Introducción y Contexto - cjhirashi-career
 
 **INTRODUCCIÓN ARQUITECTÓNICA**
 
@@ -29,7 +29,7 @@
 
 ## 🎯 Visión General del Sistema
 
-**Portafolio-cjhirashi** es la plataforma personal e integrada de **Carlos Jiménez Hirashi**, y reemplaza el alcance anterior de este proyecto (un servidor de generación de documentos vía MCP). El sistema combina un sitio de portafolio público, una herramienta interna de gestión de carrera y un canal para agentes de inteligencia artificial, todos convergiendo sobre una única fuente de datos central.
+**cjhirashi-career** es la plataforma personal e integrada de **Carlos Jiménez Hirashi**, y reemplaza el alcance anterior de este proyecto (un servidor de generación de documentos vía MCP). El sistema combina un sitio de portafolio público, una herramienta interna de gestión de carrera y un canal para agentes de inteligencia artificial, todos convergiendo sobre una única fuente de datos central.
 
 El sistema puede **operarse de tres formas completamente independientes**, cada una con su propio punto de entrada, que convergen únicamente en la misma API REST y la misma base de datos — ningún canal depende de otro ni pasa a través de otro:
 
@@ -67,14 +67,13 @@ graph TB
     subgraph Canal2["Canal 2 — Admin Panel — gestión humana, manual o asistida"]
         Admin["⚛️ Admin Panel<br/>SPA · :8002"]
         Bedrock["☁️ Agent Bedrock<br/>Asistente interno — sin puerto, sin exposición"]
-        PDF["🌱 PDF Generator<br/>WeasyPrint · :8080"]
     end
 
     subgraph Canal3["Canal 3 — MCP Server — agentes de IA externos, independiente"]
         MCP["🌱 MCP Server<br/>FastMCP · :8004"]
     end
 
-    API["🚀 API REST<br/>FastAPI · :8001"]
+    API["🚀 API REST<br/>FastAPI · :8001<br/>Bedrock + PDF WeasyPrint"]
     DB["🗄️ PostgreSQL<br/>Base de datos única"]
 
     Visitante -->|HTTPS| Portal
@@ -86,7 +85,6 @@ graph TB
     Admin -->|REST JSON — lectura/escritura, gestión manual| API
     Admin -.->|invoca internamente, uso opcional dentro de la sesión| Bedrock
     Bedrock -->|REST JSON — lectura/escritura, en nombre de la sesión activa| API
-    Admin -->|Renderizado — única vía autorizada| PDF
 
     MCP -->|REST JSON — lectura/escritura, canal independiente y autónomo| API
 
@@ -100,7 +98,6 @@ graph TB
     class MCP utility
     class API nodejs
     class Bedrock s3
-    class PDF utility
     class DB postgres
 ```
 
@@ -110,7 +107,7 @@ graph TB
 - MCP Server → Admin Panel, o viceversa: **no existe**. Son canales independientes; ninguno invoca al otro.
 - MCP Server → Agent Bedrock, o viceversa: **no existe**. Agent Bedrock es exclusivo del Admin Panel.
 - Agent Bedrock → cualquier componente que no sea la API REST: **no existe**. Es un asistente interno, sin salida propia distinta de la API.
-- Portal Público → Admin Panel, Agent Bedrock, MCP Server o PDF Generator: **no existen**. El Portal Público solo conoce a la API REST, en modo lectura.
+- Portal Público → Admin Panel, Agent Bedrock o MCP Server: **no existen**. El Portal Público solo conoce a la API REST, en modo lectura.
 - Cualquier componente → PostgreSQL, salvo la API REST: **no existe**. La API REST es el único escritor y lector de la base de datos.
 
 **Nota de estado actual**: la implementación previa de este proyecto (ver commits `feat: Implement REST API with JWT authentication and PostgreSQL` y anteriores) contaba con Frontend, API REST, MCP Server y PostgreSQL, con un alcance de "generador de documentos" y sin Portal Público, Admin Panel ni Agent Bedrock. Es interesante notar que ese diseño previo ya trataba al MCP Server como un canal de entrada externo e independiente para agentes de IA — el rediseño actual retoma y confirma ese mismo principio para el nuevo alcance, en vez de subordinar el MCP Server al Admin Panel. Ninguno de los 7 módulos existe hoy con el alcance de carrera profesional ni con los puertos aquí definidos — este documento describe el diseño objetivo a construir, reutilizando como base técnica los contenedores API REST, PostgreSQL y el motor de generación de PDF ya existentes.
@@ -125,7 +122,7 @@ graph TB
 - Mostrar las secciones About, Proyectos, Blog y Contacto
 - Consumir en modo **solo lectura** los datos publicables persistidos en la base de datos, sin importar por cuál de los otros dos canales (Admin Panel o MCP Server) hayan sido escritos
 - No requiere autenticación de usuario; sí implementa controles de acceso a nivel de red (CORS, límites de tasa) por estar expuesto a Internet
-- **No** tiene acceso al PDF Generator, al Admin Panel, a Agent Bedrock ni al MCP Server — su única salida es la API REST, en modo lectura
+- **No** tiene acceso al Admin Panel, a Agent Bedrock ni al MCP Server — su única salida es la API REST, en modo lectura
 
 **Tecnología**: React + TypeScript (versión y bundler específicos a confirmar — ver [Preguntas de Validación Abiertas](#-preguntas-de-validación-abiertas))
 
@@ -140,14 +137,14 @@ graph TB
 **Responsabilidades**:
 - Gestionar Identidad Profesional, Inventario de Competencias, Evidencia (proyectos, cargos, logros, casos STAR), Estrategias de Búsqueda de Empleo, Base de Vacantes, Networking y Preparación para Entrevistas — de forma manual, con el usuario operando directamente los formularios
 - Ofrecer, dentro de la misma sesión autenticada, la opción de invocar a Agent Bedrock como asistencia para cualquiera de esas tareas — esta invocación es interna y opcional, no un canal de acceso distinto
-- Ser el **único** módulo autorizado para solicitar la generación de documentos (CV, Cover Letter) al PDF Generator
+- Solicitar generación de documentos (CV, Cover Letter, plantillas HTML) a la API REST — WeasyPrint corre in-process en la API
 - No tiene ninguna relación con el MCP Server: ambos son canales de escritura paralelos, no uno subordinado al otro
 
 **Tecnología**: SPA + TypeScript (framework específico a confirmar — ver [Preguntas de Validación Abiertas](#-preguntas-de-validación-abiertas))
 
 **Interfaces**:
 - Entrada: navegación autenticada de Carlos Jiménez Hirashi (puerto 8002)
-- Salida: peticiones REST JSON de lectura/escritura hacia la API REST (gestión manual); invocación interna hacia Agent Bedrock (gestión asistida); peticiones de renderizado hacia el PDF Generator
+- Salida: peticiones REST JSON de lectura/escritura hacia la API REST (CRUD, PDF y chat Bedrock)
 
 ### 3️⃣ API REST
 
@@ -159,6 +156,7 @@ graph TB
 - CRUD completo sobre todas las entidades de carrera profesional (identidad, competencias, evidencia, vacantes, contactos, entrevistas)
 - Atender lectura/escritura tanto del Admin Panel (gestión manual), de Agent Bedrock (gestión asistida, en nombre de la sesión activa del Admin Panel) y del MCP Server (canal independiente para agentes externos) — los tres con permisos equivalentes de CRUD
 - Ser el único componente con acceso de lectura/escritura a PostgreSQL
+- Renderizar PDF in-process (WeasyPrint): plantillas HTML (`/pdf-templates/{id}/render`) y export de CV markdown
 
 **Tecnología**: FastAPI + SQLAlchemy 2.0 (async) + asyncpg + PyJWT + passlib/bcrypt (base técnica heredada de la implementación previa de este proyecto)
 
@@ -202,25 +200,7 @@ graph TB
 
 **Diferencia clave frente a Agent Bedrock**: ambos tienen permisos de lectura/escritura equivalentes sobre la API REST, pero su naturaleza es opuesta. Agent Bedrock es una capacidad interna del Admin Panel, sin exposición ni identidad propia frente al exterior. El MCP Server es, en sí mismo, un canal de acceso completo al sistema, expuesto e independiente, con su propia audiencia (agentes de IA externos) que no requiere que exista una sesión de Admin Panel activa.
 
-### 6️⃣ PDF Generator
-
-**Propósito**: servicio interno especializado en transformar datos estructurados de carrera profesional en documentos PDF, principalmente CV y Cover Letter. Es una **herramienta exclusiva del Admin Panel**.
-
-**Responsabilidades**:
-- Recibir el JSON del documento a generar, enviado directamente por el Admin Panel — y solo por el Admin Panel
-- Cargar la plantilla correspondiente
-- Renderizar el documento final a PDF
-- Retornar los bytes del PDF a quien lo solicitó
-
-**Tecnología**: WeasyPrint + Jinja2 (base técnica heredada de la implementación previa de este proyecto)
-
-**Interfaces**:
-- Entrada: JSON de documento + identificador de plantilla, exclusivamente desde el Admin Panel
-- Salida: bytes de PDF, devueltos al Admin Panel
-
-**Nota**: ni el Portal Público ni el MCP Server tienen acceso a este servicio. Un agente externo que opere vía MCP Server puede escribir y leer datos de carrera, pero no puede solicitar la generación de un PDF — esa capacidad permanece exclusiva del canal humano (Admin Panel).
-
-### 7️⃣ PostgreSQL
+### 6️⃣ PostgreSQL
 
 **Propósito**: centro de verdad único para todos los datos del sistema, sin importar por cuál de los tres canales hayan sido escritos.
 
@@ -241,11 +221,10 @@ graph TB
 | Módulo | Canal | Acceso | Puerto | Depende de |
 |--------|-------|--------|--------|-----------|
 | Portal Público | Canal 1 — lectura pública | Externo, público, controles de acceso de red (sin login) | 8003 | API REST (lectura) |
-| Admin Panel | Canal 2 — gestión humana | Externo, privado, con autenticación | 8002 | API REST (lectura/escritura) · Agent Bedrock (interno, opcional) · PDF Generator |
+| Admin Panel | Canal 2 — gestión humana | Externo, privado, con autenticación | 8002 | API REST (CRUD, PDF, Bedrock) |
 | Agent Bedrock | Interno al Canal 2 — no es un canal propio | Interno, sin puerto, sin exposición | — | API REST (lectura/escritura) |
 | MCP Server | Canal 3 — agentes de IA externos, **independiente del Canal 2** | Externo, con autenticación propia | 8004 | API REST (lectura/escritura) |
-| API REST | Punto de convergencia de los 3 canales | Interno | 8001 | PostgreSQL |
-| PDF Generator | Herramienta exclusiva del Canal 2 | Interno, exclusivo del Admin Panel | 8080 | Plantillas Jinja2 |
+| API REST | Punto de convergencia de los 3 canales | Interno | 8001 | PostgreSQL · WeasyPrint (PDF in-process) · AWS Bedrock |
 | PostgreSQL | Persistencia central de los 3 canales | Interno | — | Ninguno |
 
 **Aclaración importante**: Admin Panel (Canal 2) y MCP Server (Canal 3) son **dos canales de escritura independientes**, no uno una herramienta del otro. Ambos llegan a la misma API REST, pero ninguno pasa por el otro ni depende de que el otro esté activo. Agent Bedrock, a diferencia de estos dos, no es un canal — es una capacidad interna exclusiva del Canal 2.
@@ -396,8 +375,8 @@ Este proyecto aún no cuenta con Architecture Decision Records (ADRs) formales p
 
 ### Acceso Restringido por Diseño
 - Portal Público (8003), Admin Panel (8002) y MCP Server (8004): acceso externo, cada uno con su propio mecanismo de control de acceso, y cada uno alcanzable de forma independiente de los otros dos
-- API REST (8001), Agent Bedrock (sin puerto) y PDF Generator (8080): solo accesibles dentro de la red Docker interna o, en el caso de Bedrock, ni siquiera como servicio de red propio
-- El PDF Generator tiene un único consumidor autorizado, el Admin Panel; ni el Portal Público ni el MCP Server lo invocan directamente
+- API REST (8001) y PostgreSQL: solo accesibles dentro de la red Docker interna. Agent Bedrock no es un servicio de red propio.
+- El PDF se genera en la API (WeasyPrint in-process); el Admin Panel y Bedrock lo invocan por los endpoints de la API, no hay contenedor 8080.
 
 ### Autenticación Diferenciada por Canal
 - Portal Público: sin login de usuario, pero con controles de acceso de red (CORS, límites de tasa) por estar expuesto públicamente
@@ -420,7 +399,7 @@ Este proyecto aún no cuenta con Architecture Decision Records (ADRs) formales p
 
 ### Protección de Datos
 - CORS restringido a los orígenes conocidos del Portal Público y el Admin Panel; el MCP Server, al servir a clientes de agentes de IA (no navegadores), requiere un modelo de protección distinto, probablemente basado en autenticación por token en cada llamada en lugar de CORS
-- El PDF Generator no implementa autenticación propia: su modelo de seguridad depende de la segmentación de red, siendo el Admin Panel su único consumidor autorizado
+- El PDF se genera detrás de JWT en la API REST; no hay un servicio de render sin autenticación
 - **Agent Bedrock introduce una superficie de seguridad adicional fuera de la red del proyecto**: requiere credenciales de AWS con permisos acotados al servicio de Bedrock, gestionadas fuera del control directo de este proyecto — su manejo (rotación, alcance del rol IAM) queda pendiente de definir
 - **Pendiente**: cifrado en tránsito (HTTPS/TLS), rotación de claves de firma, el mecanismo concreto de autenticación del Admin Panel, y el mecanismo de autenticación y los límites de autorización del MCP Server dado que opera sin supervisión humana en tiempo real
 
@@ -435,7 +414,7 @@ Antes de profundizar en las siguientes capas de documentación Arc42 (interfaces
 3. **Identidad de los agentes externos permitidos**: ¿cualquier cliente MCP con credenciales válidas puede operar el sistema completo, o se necesita una lista de agentes autorizados (allowlist) dado el nivel de acceso que se les concede?
 4. **Stack específico del Admin Panel**: ¿usa el mismo framework que el Portal Público (React) u otro framework distinto? Esto determina si ambos frontends pueden compartir componentes o librerías.
 5. **Mecanismo de autenticación del Admin Panel**: ¿se mantiene JWT heredado del proyecto previo, o se evalúa un mecanismo distinto dado que ahora el sistema es de un único usuario administrador?
-6. **Alcance del PDF Generator**: confirmado como exclusivo del Admin Panel — ¿qué documentos concretos genera (CV, Cover Letter, otros) y si en algún momento un agente externo vía MCP Server necesitará también esta capacidad?
+6. **Alcance del PDF**: resuelto — WeasyPrint in-process en la API (plantillas HTML y export markdown de CV). Admin y Bedrock lo invocan vía API.
 7. **Sincronización entre lo curado y lo publicado**: ¿el Portal Público lee en tiempo real de la API REST en cada visita, o existe una capa de cache o un paso de publicación explícito entre que un cambio se persiste (por cualquiera de los tres canales) y que aparece en el sitio público?
 8. **Gestión de credenciales de AWS Bedrock**: ¿dónde y cómo se almacenan y rotan las credenciales que permiten a Agent Bedrock invocar el servicio gestionado?
 

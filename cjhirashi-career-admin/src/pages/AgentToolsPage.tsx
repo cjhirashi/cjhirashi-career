@@ -6,7 +6,7 @@ import { getErrorMessage } from '@/utils/errors'
 
 const BUILTIN_TOOLS = [
   { name: 'describe_resource_schema', description: 'Consulta los nombres de campo reales de un recurso antes de crear/editar.' },
-  { name: 'search_knowledge_base', description: 'Búsqueda semántica Qdrant (metodologías + registros de carrera).' },
+  { name: 'search_knowledge_base', description: 'Búsqueda semántica Qdrant. type=methodology solo devuelve las asignadas al agente (o compartidas).' },
   { name: 'list_career_record', description: 'Lista/busca registros de un recurso.' },
   { name: 'get_career_record', description: 'Obtiene un registro completo por id.' },
   { name: 'create_career_record', description: 'Crea un registro nuevo.' },

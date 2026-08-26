@@ -69,7 +69,7 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_recent_changes", "description": "Bitácora reciente del agente.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "limit": {"type": "integer"}}}},
     {"name": "restore_deleted_record", "description": "Restaura un delete desde audit_id.", "schema": {"type": "object", "properties": {"audit_id": {"type": "integer"}}, "required": ["audit_id"]}},
     {"name": "describe_resource_schema", "description": "Campos válidos de un resource_key.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM}, "required": ["resource_key"]}},
-    {"name": "search_knowledge_base", "description": "Búsqueda semántica Qdrant por significado. NO usar para 'lista todos mis X' — usa list_career_record.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}, "type": {"type": "string", "enum": ["methodology", "career_record"]}}, "required": ["query"]}},
+    {"name": "search_knowledge_base", "description": "Búsqueda semántica Qdrant. Con type=methodology SOLO devuelve metodologías asignadas a tu perfil (agent_profile_ids) o compartidas (lista vacía). El guardián agent_methodologies ve todas. NO usar para 'lista todos mis X' — usa list_career_record.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer"}, "type": {"type": "string", "enum": ["methodology", "career_record"]}}, "required": ["query"]}},
     {"name": "list_career_record", "description": "Lista registros paginados. Para 'lista todos mis X' usa limit=100 sin search (no search_knowledge_base). Incluye TODOS los items; revisa total_count y pagina si has_more.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}, "limit": {"type": "integer"}, "skip": {"type": "integer"}}, "required": ["resource_key"]}},
     {"name": "count_career_records", "description": "Cuenta registros de un resource_key. Usar para '¿cuántos X tengo?'.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "search": {"type": "string"}}, "required": ["resource_key"]}},
     {"name": "get_career_record", "description": "Obtiene un registro por id.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
@@ -218,7 +218,12 @@ def all_tool_names() -> Set[str]:
     return {t["name"] for t in _RAW_TOOLS}
 
 
-def converse_tool_specs(allowed: Optional[Set[str]] = None, *, caller_profile=None) -> List[Dict[str, Any]]:
+def converse_tool_specs(
+    allowed: Optional[Set[str]] = None,
+    *,
+    caller_profile=None,
+    delegate_ids: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
     """Convierte definiciones a formato toolConfig.tools de Converse API."""
     specs = []
     for t in _RAW_TOOLS:
@@ -227,7 +232,20 @@ def converse_tool_specs(allowed: Optional[Set[str]] = None, *, caller_profile=No
         description = t["description"]
         if t["name"] == "delegate_to_specialist" and caller_profile is not None:
             from services.bedrock.agent_profiles import delegate_tool_description
-            description = delegate_tool_description(caller_profile)
+            description = delegate_tool_description(caller_profile, target_ids=delegate_ids)
+        if t["name"] == "search_knowledge_base" and caller_profile is not None:
+            from services.bedrock.agent_profiles import AGENT_METHODOLOGIES
+            if caller_profile.id == AGENT_METHODOLOGIES:
+                description = (
+                    "Búsqueda semántica Qdrant. Con type=methodology ves TODAS las metodologías "
+                    "(eres el guardián). NO usar para 'lista todos mis X' — usa list_career_record."
+                )
+            else:
+                description = (
+                    f"Búsqueda semántica Qdrant. Con type=methodology SOLO devuelve metodologías "
+                    f"asignadas a {caller_profile.id} (agent_profile_ids) o compartidas (lista vacía). "
+                    "NO usar para 'lista todos mis X' — usa list_career_record."
+                )
         specs.append({
             "toolSpec": {
                 "name": t["name"],

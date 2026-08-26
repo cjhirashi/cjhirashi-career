@@ -136,6 +136,9 @@ async def claim_task_for_user(
     task = result.scalar_one_or_none()
     if task is None or not _is_runnable_agent_task(task):
         return None
+    child = await db.execute(select(BedrockTask.id).where(BedrockTask.parent_id == task_id).limit(1))
+    if child.scalar_one_or_none() is not None:
+        return None
     if task.parent_id:
         siblings_result = await db.execute(
             select(BedrockTask).where(

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.github.com"
 REPOS_URL = "https://api.github.com/users/{username}/repos"
-_USER_AGENT = "Portafolio-cjhirashi (github-agent)"
+_USER_AGENT = "cjhirashi-career (github-agent)"
 _TIMEOUT = 15.0
 _MAX_FILE_CHARS = 12_000
 

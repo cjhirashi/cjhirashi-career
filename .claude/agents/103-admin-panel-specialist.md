@@ -22,7 +22,7 @@ invoke_with: Agent(prompt="...implementa Admin Panel SPA según especificación.
 - Crear **CRUD interfaces** para todos los módulos de carrera
 - Implementar **JWT authentication** (login, token refresh)
 - Diseñar **real-time metrics dashboard** (WebSocket/SSE)
-- Integrar **PDF Generator** para descargar documentos
+- Integrar **descarga de PDF** vía API REST (`/pdf-templates/{id}/render`, export de CV)
 - Implementar **Zustand state management** + **React Query** para API calls
 - Escribir **tests** (80% cobertura)
 - Paleta de colores: **Cyan y Slate**
@@ -73,7 +73,7 @@ invoke_with: Agent(prompt="...implementa Admin Panel SPA según especificación.
    - Interaction tracking
 
 7. **File Upload**:
-   - Direct integration with PDF Generator
+   - PDF download via API REST (WeasyPrint in-process)
    - Download generated CVs, Cover Letters
    - File upload for evidence (images, documents)
 
@@ -188,7 +188,7 @@ Warning: amber-500
 ## 🔧 Implementation Checklist
 
 ### Phase 1: Setup (3 tasks)
-- [ ] Create `admin/` directory
+- [ ] Create `cjhirashi-career-admin/` directory
 - [ ] Setup Vite + React + TypeScript
 - [ ] Setup Tailwind CSS with Cyan/Slate theme
 - [ ] Setup testing (Vitest + React Testing Library)
@@ -227,7 +227,7 @@ Warning: amber-500
 - [ ] useMetrics hook with auto-refresh
 
 ### Phase 6: File Integration (2 tasks)
-- [ ] File upload component (PDF Generator)
+- [ ] File upload component (MinIO vía API)
 - [ ] Download generated documents (CV, Cover Letter)
 
 ### Phase 7: Testing (5 tasks)

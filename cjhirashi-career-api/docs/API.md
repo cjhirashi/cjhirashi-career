@@ -3,7 +3,7 @@
 Referencia rápida de todos los endpoints. Para detalle por dominio, ver los README de [sections/](sections/README.md).
 
 **Base URL local:** `http://localhost:8001`  
-**Base URL Docker:** `http://api_rest:8001`  
+**Base URL Docker:** `http://cjhirashi-career-api:8001`  
 **Auth:** `Authorization: Bearer <access_token>` (salvo donde se indique)
 
 ---
@@ -126,6 +126,12 @@ Patrón por cada resource key (37 recursos):
 | PUT | `/bedrock/instructions` |
 | GET | `/bedrock/agent-profiles` |
 | PUT | `/bedrock/agent-profiles/{profile_id}/prompt` |
+| GET | `/bedrock/agent-profiles/catalog` |
+| GET | `/bedrock/agent-profiles/{profile_id}/catalog` |
+| PUT | `/bedrock/agent-profiles/{profile_id}/methodologies` |
+| GET | `/bedrock/agent-profiles/{profile_id}/memory` |
+| POST | `/bedrock/agent-profiles/{profile_id}/memory/notes` |
+| DELETE | `/bedrock/agent-profiles/{profile_id}/memory/notes/{note_id}` |
 | GET | `/bedrock/tools` |
 | POST | `/bedrock/tools` |
 | PUT | `/bedrock/tools/{tool_id}/enabled` |
@@ -147,7 +153,7 @@ Patrón por cada resource key (37 recursos):
 
 → [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md)
 
-CRUD estándar (6 endpoints).
+CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in-process a `scheduled_at`.
 
 ---
 
