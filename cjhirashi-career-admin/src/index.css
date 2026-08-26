@@ -703,6 +703,56 @@
     border-top: 1px solid var(--border-glass);
   }
 
+  /* Table list: pin search + pagination; only rows (and wide columns) scroll. */
+  .card.has-view-tabs .card-body.table-list-body {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+
+  .table-toolbar {
+    flex-shrink: 0;
+  }
+
+  .table-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+  }
+
+  .table-scroll.table-scroll-inset {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .card .table-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--bg-card);
+    box-shadow: 0 1px 0 var(--border-glass);
+  }
+
+  .card .table-scroll thead .table-col-id {
+    background-color: var(--primary-light);
+  }
+
+  .table-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border-glass);
+    background-color: var(--bg-card);
+  }
+
   .view-tabs {
     display: flex;
     align-items: flex-end;
@@ -848,6 +898,30 @@
 
   .person-avatar img {
     @apply w-full h-full object-cover;
+  }
+
+  /* Assignee chip: photo (or initials) + display name. One field, no id rail. */
+  .actor-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 16rem;
+    padding: 0.15rem 0.75rem 0.15rem 0.2rem;
+    border-radius: 100px;
+    border: 1px solid var(--border-glass);
+    background-color: var(--secondary-light);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+
+  .actor-capsule-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Split identity chip (select / multi-select): id rail + name. */

@@ -65,7 +65,11 @@ export const TaskRecordView: React.FC<TaskRecordViewProps> = ({
           <StatusSelect task={task} onStatus={onStatus} />
         </Field>
         <Field label="Responsable">
-          <PersonChip src={assigneeDisplay(task, assignees).imageUrl} name={assigneeDisplay(task, assignees).name} />
+          <PersonChip
+            src={assigneeDisplay(task, assignees).imageUrl}
+            name={assigneeDisplay(task, assignees).name}
+            variant="capsule"
+          />
         </Field>
         <Field label="Prioridad">
           <StateCapsule
@@ -123,7 +127,7 @@ export const TaskRecordView: React.FC<TaskRecordViewProps> = ({
                     <PersonChip
                       src={assigneeDisplay(child, assignees).imageUrl}
                       name={assigneeDisplay(child, assignees).name}
-                      size={16}
+                      variant="capsule"
                     />
                     {child.is_blocking !== false ? ' · bloqueante' : ' · no bloquea'}
                     {child.execute_on_turn ? ' · al turno' : ''}
