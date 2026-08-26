@@ -213,6 +213,7 @@ export interface BedrockAgentCatalogItem {
   default_delegation_target_ids: string[]
   allowed_delegation_ids: string[]
   delegation_is_default: boolean
+  photo_url?: string | null
 }
 
 export interface BedrockAgentNote {

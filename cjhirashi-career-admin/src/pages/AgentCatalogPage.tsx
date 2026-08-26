@@ -32,6 +32,7 @@ import {
   useAgentMemory,
   useAgentMemoryNoteMutations,
   useAgentMethodologiesUpdate,
+  useAgentPhotoUpdate,
   useAgentSectionsUpdate,
   useBedrockAgentProfilePromptUpdate,
   useBedrockConversations,
@@ -48,6 +49,8 @@ import { recordSegmentFromPath } from '@/utils/recordUrl'
 import { ADMIN_SECTION_TYPE_LABEL } from '@/types/adminSections'
 import { BedrockAgentCatalogItem } from '@/types/bedrock'
 import { allAgentSelectOptions } from '@/config/agentProfiles'
+import { PersonChip } from '@/components/PersonAvatar'
+import { BucketImagePicker } from '@/components/BucketImagePicker'
 
 const LIST_PATH = '/settings/agents'
 const PAGE_SIZE = 20
@@ -315,7 +318,7 @@ export const AgentCatalogPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="card-body">
+        <div className={`card-body${viewState === 'list' ? ' table-list-body' : ''}`}>
           {viewState === 'view' && (
             <AgentCatalogRecordView
               profileId={profileId}
@@ -334,7 +337,7 @@ export const AgentCatalogPage: React.FC = () => {
 
           {viewState === 'list' && (
             <>
-              <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
                 <div className="relative flex-1 min-w-[200px]">
                   <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
                   <input
@@ -371,10 +374,14 @@ export const AgentCatalogPage: React.FC = () => {
                 </div>
               </div>
 
-              {isLoading && <LoadingSpinner fullScreen={false} message="Cargando..." />}
+              {isLoading && (
+                <div className="table-scroll table-scroll-inset">
+                  <LoadingSpinner fullScreen={false} message="Cargando..." />
+                </div>
+              )}
 
               {isError && (
-                <div className="text-center py-6">
+                <div className="table-scroll table-scroll-inset text-center py-6">
                   <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
                   <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
                     Reintentar
@@ -383,7 +390,7 @@ export const AgentCatalogPage: React.FC = () => {
               )}
 
               {!isLoading && !isError && pageRows.length === 0 && (
-                <p className="text-text-secondary text-sm text-center py-6">
+                <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
                   {search || filtersActive
                     ? 'Sin resultados para esa búsqueda o filtros.'
                     : `No hay ${agentCatalogConfig.label.toLowerCase()} todavía.`}
@@ -391,7 +398,7 @@ export const AgentCatalogPage: React.FC = () => {
               )}
 
               {!isLoading && !isError && pageRows.length > 0 && (
-                <div className="overflow-x-auto -mx-6">
+                <div className="table-scroll">
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="border-b border-border text-left text-text-secondary">
@@ -452,6 +459,13 @@ export const AgentCatalogPage: React.FC = () => {
                               )
                             }
                             const field = fieldForColumn(col.key)
+                            if (col.key === 'label') {
+                              return (
+                                <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
+                                  <PersonChip src={typeof item.photo_url === 'string' ? item.photo_url : null} name={String(item.label ?? '')} />
+                                </td>
+                              )
+                            }
                             if (col.format === 'boolean' || field?.type === 'boolean') {
                               return (
                                 <td key={col.key} className="px-6 py-2 whitespace-nowrap">
@@ -497,7 +511,7 @@ export const AgentCatalogPage: React.FC = () => {
               )}
 
               {!isLoading && !isError && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                <div className="table-footer">
                   <button
                     type="button"
                     onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
@@ -558,6 +572,12 @@ const AgentCatalogRecordView: React.FC<{
       <div>
         <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Información</h3>
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <dt className="text-xs text-text-secondary mb-1">Foto</dt>
+            <dd>
+              <PersonChip src={agent.photo_url} name={agent.label} size={36} />
+            </dd>
+          </div>
           <ViewField label="Agente" value={agent.label} />
           <ViewField label="ID" value={agent.id} mono />
           <ViewField label="Nombre sistema" value={agent.system_name || agent.profile_id} mono />
@@ -663,6 +683,7 @@ const AgentCatalogEditors: React.FC<{
   const methodologiesUpdate = useAgentMethodologiesUpdate()
   const delegationUpdate = useAgentDelegationUpdate()
   const sectionsUpdate = useAgentSectionsUpdate()
+  const photoUpdate = useAgentPhotoUpdate()
   const notes = useAgentMemoryNoteMutations(profileId)
   const [promptDraft, setPromptDraft] = useState('')
   const [selectedMethodologyIds, setSelectedMethodologyIds] = useState<string[]>([])
@@ -729,6 +750,18 @@ const AgentCatalogEditors: React.FC<{
 
   return (
     <div className="space-y-8">
+      <EditorBlock title="Foto" editable>
+        <BucketImagePicker
+          value={data.photo_url}
+          name={data.label}
+          onChange={(url) => photoUpdate.mutate({ profileId: data.profile_id, photoUrl: url })}
+          disabled={photoUpdate.isPending}
+        />
+        {photoUpdate.isError && (
+          <p className="text-red-600 dark:text-red-400 text-xs">{getErrorMessage(photoUpdate.error)}</p>
+        )}
+      </EditorBlock>
+
       <EditorBlock
         title="Secciones que gestiona"
         editable

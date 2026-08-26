@@ -290,6 +290,15 @@ export const bedrockApi = {
     return response.data
   },
 
+  updateAgentPhoto: async (profileId: string, photoUrl: string | null): Promise<{ profile_id: string; photo_url: string | null }> => {
+    const response = await axiosInstance.put<{ profile_id: string; photo_url: string | null }>(
+      `/bedrock/agent-profiles/${profileId}/photo`,
+      { photo_url: photoUrl },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
   getAgentMemory: async (profileId: string): Promise<BedrockAgentMemory> => {
     const response = await axiosInstance.get<BedrockAgentMemory>(
       `/bedrock/agent-profiles/${profileId}/memory`,

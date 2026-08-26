@@ -72,6 +72,8 @@ export type FieldType =
 export interface SelectOption {
   value: string
   label: string
+  /** When set (including null), the select shows a photo/initials instead of the id rail. */
+  imageUrl?: string | null
 }
 
 export interface FieldConfig {

@@ -59,6 +59,7 @@ from models.bedrock_usage_log import BedrockUsageLog
 from models.bedrock_usage_round_log import BedrockUsageRoundLog
 from models.bedrock_settings import BedrockSettings
 from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
+from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
 from models.bedrock_agent_delegation import BedrockAgentDelegation
 from models.admin_section_override import AdminSectionOverride
 from models.bedrock_custom_tool import BedrockCustomTool
@@ -139,6 +140,7 @@ __all__ = [
     "BedrockUsageRoundLog",
     "BedrockSettings",
     "BedrockAgentProfilePrompt",
+    "BedrockAgentProfilePhoto",
     "BedrockAgentDelegation",
     "AdminSectionOverride",
     "BedrockCustomTool",

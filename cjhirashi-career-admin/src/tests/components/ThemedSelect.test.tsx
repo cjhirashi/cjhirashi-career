@@ -27,7 +27,26 @@ describe('ThemedSelect', () => {
     expect(onChange).toHaveBeenCalledWith('cv')
   })
 
-  it('shows the selected label on the trigger', () => {
+  it('renders option photos when imageUrl is set', () => {
+    render(
+      <ThemedSelect
+        aria-label="Responsable"
+        value="user"
+        onChange={() => undefined}
+        allowEmpty={false}
+        options={[
+          { value: 'user', label: 'Carlos', imageUrl: 'https://example.com/me.jpg' },
+          { value: 'agent_x', label: 'Buscador', imageUrl: null },
+        ]}
+      />
+    )
+    const trigger = screen.getByRole('button', { name: 'Responsable' })
+    expect(trigger.querySelector('img')?.getAttribute('src')).toBe('https://example.com/me.jpg')
+    fireEvent.click(trigger)
+    expect(screen.getByRole('option', { name: /Buscador/ })).toHaveTextContent('BU')
+  })
+
+  it('shows the selected option label', () => {
     render(
       <ThemedSelect
         aria-label="Tipo"

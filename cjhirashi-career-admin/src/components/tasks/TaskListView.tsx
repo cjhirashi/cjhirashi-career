@@ -7,6 +7,7 @@ import { TableColumnSettings } from '@/components/career/TableColumnSettings'
 import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
 import { PersonChip } from '@/components/PersonAvatar'
+import { StateCapsule } from '@/components/StateCapsule'
 import { formatDateTime } from '@/utils/formatters'
 import {
   assigneeDisplay,
@@ -188,7 +189,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 mb-4">
+      <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
           <input
@@ -227,18 +228,18 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
       {rows.length === 0 ? (
         search || filtersActive ? (
-          <p className="text-text-secondary text-sm text-center py-6">
+          <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
             Sin resultados para esa búsqueda o filtros.
           </p>
         ) : (
-          <div className="py-8 text-center">
+          <div className="table-scroll table-scroll-inset py-8 text-center">
             <p className="text-text-secondary text-sm">
               Aún no hay tareas. Crea una para ti o asígnasela a un agente con fecha y hora.
             </p>
           </div>
         )
       ) : (
-        <div className="overflow-x-auto -mx-6">
+        <div className="table-scroll">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-text-secondary">
@@ -310,7 +311,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                       const person = assigneeDisplay(task, assignees)
                       return (
                         <td key={col.key} className="px-6 py-2">
-                          <PersonChip src={person.imageUrl} name={person.name} />
+                          <PersonChip src={person.imageUrl} name={person.name} variant="capsule" />
                         </td>
                       )
                     }
@@ -371,6 +372,11 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
           </table>
         </div>
       )}
+      <div className="table-footer">
+        <span className="text-xs text-text-secondary">
+          Mostrando {rows.length === 0 ? 0 : 1}–{rows.length}
+        </span>
+      </div>
     </>
   )
 }

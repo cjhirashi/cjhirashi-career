@@ -1,5 +1,5 @@
 import { axiosInstance } from './client'
-import { FileUploadEntity } from '@/types/files'
+import { FileType, FileUploadEntity } from '@/types/files'
 
 export interface UploadFileOptions {
   description?: string
@@ -17,9 +17,13 @@ export interface UploadFileOptions {
  * to the authenticated user.
  */
 export const filesApi = {
-  list: async (params: { skip?: number; limit?: number; category?: string } = {}): Promise<FileUploadEntity[]> => {
-    const { skip = 0, limit = 50, category } = params
-    const response = await axiosInstance.get<FileUploadEntity[]>('/files', { params: { skip, limit, category } })
+  list: async (
+    params: { skip?: number; limit?: number; category?: string; fileType?: FileType } = {}
+  ): Promise<FileUploadEntity[]> => {
+    const { skip = 0, limit = 50, category, fileType } = params
+    const response = await axiosInstance.get<FileUploadEntity[]>('/files', {
+      params: { skip, limit, category, file_type: fileType },
+    })
     return response.data
   },
 

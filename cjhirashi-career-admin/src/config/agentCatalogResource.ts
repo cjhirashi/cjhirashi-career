@@ -84,5 +84,6 @@ export function catalogItemToRow(agent: BedrockAgentCatalogItem): CareerEntity {
     conversation_count: agent.has_own_memory ? agent.conversation_count : null,
     memory_label: agent.has_own_memory ? `${agent.conversation_count} chats` : '—',
     domain_keys: agent.domain_keys,
+    photo_url: agent.photo_url ?? null,
   }
 }

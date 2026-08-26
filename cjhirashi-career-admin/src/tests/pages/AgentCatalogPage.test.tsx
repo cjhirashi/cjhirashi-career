@@ -8,6 +8,14 @@ import { BedrockAgentCatalogItem } from '@/types/bedrock'
 
 vi.mock('@/api/bedrock')
 vi.mock('@/api/adminSections')
+vi.mock('@/api/files', () => ({
+  filesApi: {
+    list: vi.fn().mockResolvedValue([]),
+    upload: vi.fn(),
+    setVisibility: vi.fn(),
+    getDownloadUrl: vi.fn(),
+  },
+}))
 
 const mockedApi = vi.mocked(bedrockApi)
 const mockedSections = vi.mocked(adminSectionsApi)
@@ -174,6 +182,7 @@ describe('AgentCatalogPage', () => {
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('agent-8')
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Diseño PDF')
     expect(screen.getByText('pdf_style')).toBeInTheDocument()
+    expect(screen.getByText('Foto')).toBeInTheDocument()
     expect(screen.queryByLabelText('Prompt del especialista')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('tab', { name: 'Edición' }))
@@ -190,6 +199,7 @@ describe('AgentCatalogPage', () => {
     expect(screen.getByRole('button', { name: /guardar secciones/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /guardar delegación/i })).toBeInTheDocument()
     expect(screen.getByText('Usar paleta cyan')).toBeInTheDocument()
+    expect(screen.getByText(/elige una imagen del bucket/i)).toBeInTheDocument()
   })
 
   it('tells L3 agents they have no own memory', async () => {

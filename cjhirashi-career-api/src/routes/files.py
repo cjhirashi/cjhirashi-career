@@ -14,7 +14,7 @@ URL: the bucket policy only grants anonymous access under `public/`.
 import io
 import logging
 import re
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
@@ -174,12 +174,18 @@ async def list_files(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     category: str = Query(None, description="Filter by folder/category slug"),
+    file_type: Optional[str] = Query(None, description="document|image|archive|other"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     conditions = [FileUpload.user_id == current_user.id, FileUpload.is_active == True]  # noqa: E712
     if category is not None:
         conditions.append(FileUpload.category == category)
+    if file_type:
+        try:
+            conditions.append(FileUpload.file_type == FileType(file_type))
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="file_type inválido")
     stmt = (
         select(FileUpload)
         .where(*conditions)

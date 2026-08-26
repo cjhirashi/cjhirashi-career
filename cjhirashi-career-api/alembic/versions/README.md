@@ -1,6 +1,6 @@
 # Revisiones Alembic (`alembic/versions/`)
 
-Cadena lineal (head actual: `a7b8c9d0e1f2`).
+Cadena lineal (head actual: `b8c9d0e1f2a3`).
 
 ## Arquitectura
 
@@ -22,6 +22,7 @@ flowchart TD
     N --> O[a6b7c8d9e0f1 admin sections]
     O --> P[f6a7b8c9d0e1 scheduled agent tasks]
     P --> Q[a7b8c9d0e1f2 task subtasks notifications]
+    Q --> R[b8c9d0e1f2a3 agent profile photos]
 ```
 
 ```
@@ -42,6 +43,7 @@ ca159800797a
     → a6b7c8d9e0f1
     → f6a7b8c9d0e1
     → a7b8c9d0e1f2
+    → b8c9d0e1f2a3
 ```
 
 ---
@@ -64,6 +66,7 @@ ca159800797a
 | `e5f6a7b8c9d0_methodology_agent_profile_ids.py` | | `agent_profile_ids` en metodologías operativas |
 | `a6b7c8d9e0f1_admin_sections_and_delegation.py` | | Overrides de secciones Admin + destinos de delegación |
 | `f6a7b8c9d0e1_scheduled_agent_tasks.py` | | Asignación y `scheduled_at` en `bedrock_tasks` (ADR-015) |
-| `a7b8c9d0e1f2_task_subtasks_notifications.py` | head | Subtareas, orquestación y `user_notifications` (ADR-016) |
+| `a7b8c9d0e1f2_task_subtasks_notifications.py` | | Subtareas, orquestación y `user_notifications` (ADR-016) |
+| `b8c9d0e1f2a3_agent_profile_photos.py` | head | Foto de agente del catálogo (URL del bucket) |
 
 Cada archivo define `upgrade()` / `downgrade()`. No editar revisiones ya aplicadas en producción; crear una nueva.

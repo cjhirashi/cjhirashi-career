@@ -4,12 +4,13 @@ import remarkGfm from 'remark-gfm'
 import { Trash2 } from 'lucide-react'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { MarkdownTable } from '@/components/MarkdownTable'
+import { PersonChip } from '@/components/PersonAvatar'
 import { BedrockTask, TaskStatus } from '@/types/bedrock'
-import { assigneeLabel, TASK_STATUS_COLUMNS, TASK_STATUS_LABELS } from './taskUtils'
+import { assigneeDisplay, AssigneeContext, TASK_STATUS_COLUMNS, TASK_STATUS_LABELS } from './taskUtils'
 
 interface TaskKanbanViewProps {
   tasks: BedrockTask[]
-  agentLabels: Record<string, string>
+  assignees: AssigneeContext
   onOpen: (task: BedrockTask) => void
   onStatus: (task: BedrockTask, status: TaskStatus) => void
   onDelete: (task: BedrockTask) => void
@@ -17,7 +18,7 @@ interface TaskKanbanViewProps {
 
 export const TaskKanbanView: React.FC<TaskKanbanViewProps> = ({
   tasks,
-  agentLabels,
+  assignees,
   onOpen,
   onStatus,
   onDelete,
@@ -51,7 +52,11 @@ export const TaskKanbanView: React.FC<TaskKanbanViewProps> = ({
                     <Trash2 size={13} aria-hidden="true" />
                   </button>
                 </div>
-                <p className="text-[11px] text-text-muted">{assigneeLabel(task, agentLabels)}</p>
+                <PersonChip
+                  src={assigneeDisplay(task, assignees).imageUrl}
+                  name={assigneeDisplay(task, assignees).name}
+                  variant="capsule"
+                />
                 {task.description && (
                   <div className="markdown-body markdown-body-compact text-xs">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: MarkdownTable }}>

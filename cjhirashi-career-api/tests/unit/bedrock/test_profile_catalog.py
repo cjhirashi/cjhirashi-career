@@ -45,6 +45,7 @@ def test_pdf_render_has_no_own_memory_or_tables():
     }
     item = _serialize_definition(profile, meta)
     assert item["id"] == "agent-9"
+    assert item["photo_url"] is None
     assert item["system_name"] == AGENT_PDF_RENDER
     assert item["profile_id"] == AGENT_PDF_RENDER
     assert item["has_own_memory"] is False
@@ -61,8 +62,8 @@ def test_pdf_design_lists_template_tables():
         "effective_suffix": "custom",
         "is_default": False,
     }
-    item = _serialize_definition(profile, meta)
-    assert item["id"] == "agent-8"
+    item = _serialize_definition(profile, meta, "https://files.example/agent.png")
+    assert item["photo_url"] == "https://files.example/agent.png"
     assert item["system_name"] == AGENT_PDF_DESIGN
     assert "pdf-output-templates" in item["resource_keys"]
     assert "pdf-template-styles" in item["resource_keys"]

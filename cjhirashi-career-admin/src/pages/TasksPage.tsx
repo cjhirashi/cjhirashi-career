@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, ClipboardList, Pencil, Play, Plus, Trash2, X } from 'lucide-react'
 import { useAgentCatalog, useAgentTaskMutations, useAgentTasks } from '@/hooks/useBedrockChat'
+import { useAuthStore } from '@/stores/authStore'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { SectionViewTabs, SectionViewTab } from '@/components/SectionViewTabs'
 import { getErrorMessage } from '@/utils/errors'
@@ -12,7 +13,7 @@ import { TaskListView } from '@/components/tasks/TaskListView'
 import { TaskKanbanView } from '@/components/tasks/TaskKanbanView'
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView'
 import { TaskGanttView } from '@/components/tasks/TaskGanttView'
-import { canRunAgentTask, groupSubtasks, isRootTask, isTaskBlocked } from '@/components/tasks/taskUtils'
+import { canRunAgentTask, groupSubtasks, isRootTask, isTaskBlocked, AssigneeContext } from '@/components/tasks/taskUtils'
 
 const BOARD_VIEW_TABS: SectionViewTab[] = [
   { key: 'list', label: 'Lista' },
@@ -48,13 +49,21 @@ export const TasksPage: React.FC = () => {
   const [activeTask, setActiveTask] = useState<BedrockTask | null>(null)
   const formOpenGuardAt = useRef(0)
 
-  const agentLabels = useMemo(() => {
-    const map: Record<string, string> = {}
+  const user = useAuthStore((state) => state.user)
+  const assignees = useMemo<AssigneeContext>(() => {
+    const agentLabels: Record<string, string> = {}
+    const agentPhotos: Record<string, string | null> = {}
     for (const agent of catalog ?? []) {
-      map[agent.profile_id] = agent.label
+      agentLabels[agent.profile_id] = agent.label
+      agentPhotos[agent.profile_id] = agent.photo_url ?? null
     }
-    return map
-  }, [catalog])
+    return {
+      userName: user?.full_name?.trim() || user?.username || 'Usuario',
+      userPhoto: user?.photo_url ?? null,
+      agentLabels,
+      agentPhotos,
+    }
+  }, [catalog, user])
 
   const list = tasks ?? []
   const roots = useMemo(() => list.filter(isRootTask), [list])
@@ -300,7 +309,7 @@ export const TasksPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="card-body">
+        <div className={`card-body${isBoard && boardView === 'list' ? ' table-list-body' : ''}`}>
           {isBoard && isLoading && <LoadingSpinner fullScreen={false} message="Cargando tareas..." />}
           {isBoard && isError && (
             <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
@@ -318,7 +327,7 @@ export const TasksPage: React.FC = () => {
           {isBoard && !isLoading && !isError && boardView === 'list' && (
             <TaskListView
               tasks={roots}
-              agentLabels={agentLabels}
+              assignees={assignees}
               subtaskCount={subtaskCount}
               onOpen={openView}
               onEdit={openEdit}
@@ -330,7 +339,7 @@ export const TasksPage: React.FC = () => {
           {isBoard && !isLoading && roots.length > 0 && boardView === 'kanban' && (
             <TaskKanbanView
               tasks={roots}
-              agentLabels={agentLabels}
+              assignees={assignees}
               onOpen={openView}
               onStatus={handleStatus}
               onDelete={handleDelete}
@@ -340,14 +349,14 @@ export const TasksPage: React.FC = () => {
             <TaskCalendarView tasks={datedTasks} onOpen={openView} />
           )}
           {isBoard && !isLoading && list.length > 0 && boardView === 'gantt' && (
-            <TaskGanttView tasks={datedTasks} agentLabels={agentLabels} onOpen={openView} />
+            <TaskGanttView tasks={datedTasks} assignees={assignees} onOpen={openView} />
           )}
 
           {recordState === 'view' && activeTask && (
             <TaskRecordView
               task={activeTask}
               subtasks={childrenByParent.get(activeTask.id) ?? []}
-              agentLabels={agentLabels}
+              assignees={assignees}
               onStatus={handleStatus}
               onOpenSubtask={openView}
             />

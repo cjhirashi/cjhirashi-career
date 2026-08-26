@@ -5,7 +5,7 @@ instructions, custom tools, and memory.
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # ============================================================================
 # Configuración compartida
@@ -190,6 +190,16 @@ class BedrockAgentCatalogItem(BaseModel):
     default_delegation_target_ids: List[str] = []
     allowed_delegation_ids: List[str] = []
     delegation_is_default: bool = True
+    photo_url: Optional[str] = None
+
+
+class BedrockAgentPhotoUpdateRequest(BaseModel):
+    photo_url: Optional[str] = Field(None, max_length=1024)
+
+
+class BedrockAgentPhotoResponse(BaseModel):
+    profile_id: str
+    photo_url: Optional[str] = None
 
 
 class BedrockAgentMethodologiesUpdateRequest(BaseModel):

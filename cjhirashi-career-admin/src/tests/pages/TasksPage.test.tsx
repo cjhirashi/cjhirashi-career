@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor } from '../utils'
 import { TasksPage } from '@/pages/TasksPage'
 import { agentTasksApi } from '@/api/agentTasks'
 import { bedrockApi } from '@/api/bedrock'
+import { mockUser } from '../fixtures/mockData'
+import { useAuthStore } from '@/stores/authStore'
 import { BedrockTask } from '@/types/bedrock'
 
 vi.mock('@/api/agentTasks')
@@ -47,6 +49,7 @@ const renderPage = (path = '/tasks') =>
 describe('TasksPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useAuthStore.setState({ user: mockUser })
     mockedTasksApi.list.mockResolvedValue([sampleTask])
     mockedTasksApi.count.mockResolvedValue(1)
     mockedTasksApi.create.mockResolvedValue(sampleTask)
@@ -57,6 +60,7 @@ describe('TasksPage', () => {
         label: 'Control de búsqueda de vacantes',
         level: 3,
         user_facing: false,
+        photo_url: 'https://example.com/agent.png',
       } as never,
     ])
   })
@@ -74,6 +78,25 @@ describe('TasksPage', () => {
     expect(screen.queryByText('high')).not.toBeInTheDocument()
     expect(screen.getByText('Pendiente').closest('[data-tone]')).toHaveAttribute('data-tone', 'pending')
     expect(screen.getByText('Alta').closest('[data-tone]')).toHaveAttribute('data-tone', 'high')
+    const assignee = screen.getByText('Control de búsqueda de vacantes').closest('.actor-capsule')
+    expect(assignee).toBeTruthy()
+    expect(assignee?.querySelector('img')?.getAttribute('src')).toBe('https://example.com/agent.png')
+    expect(screen.queryByText('agent_vacancy_search')).not.toBeInTheDocument()
+  })
+
+  it('shows a user assignee as photo + name, not the user|Tú chip', async () => {
+    mockedTasksApi.list.mockResolvedValue([
+      { ...sampleTask, assignee_type: 'user', agent_profile_id: null },
+    ])
+    useAuthStore.setState({
+      user: { ...mockUser, photo_url: 'https://example.com/me.jpg' },
+    })
+    renderPage()
+    await screen.findByText('Buscar vacantes DevOps')
+    const chip = screen.getByText('Demo User').closest('.actor-capsule')
+    expect(chip).toBeTruthy()
+    expect(chip?.querySelector('img')?.getAttribute('src')).toBe('https://example.com/me.jpg')
+    expect(screen.queryByText('Tú')).not.toBeInTheDocument()
   })
 
   it('switches to kanban, calendar and gantt', async () => {
@@ -102,6 +125,8 @@ describe('TasksPage', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByLabelText(/responsable/i)).toBeInTheDocument()
+    expect(screen.getAllByText('Demo User').length).toBeGreaterThan(0)
+    expect(screen.queryByText(/Tú \(manual\)/)).not.toBeInTheDocument()
   })
 
   it('opens record and edit views when a task is selected', async () => {

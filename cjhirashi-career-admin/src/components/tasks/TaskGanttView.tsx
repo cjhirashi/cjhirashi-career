@@ -2,15 +2,15 @@ import React, { useMemo } from 'react'
 import { addDays, differenceInCalendarDays, format, max, min, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { BedrockTask } from '@/types/bedrock'
-import { assigneeLabel, priorityBarClass, taskEndDate, taskStartDate } from './taskUtils'
+import { assigneeDisplay, AssigneeContext, priorityBarClass, taskEndDate, taskStartDate } from './taskUtils'
 
 interface TaskGanttViewProps {
   tasks: BedrockTask[]
-  agentLabels: Record<string, string>
+  assignees: AssigneeContext
   onOpen: (task: BedrockTask) => void
 }
 
-export const TaskGanttView: React.FC<TaskGanttViewProps> = ({ tasks, agentLabels, onOpen }) => {
+export const TaskGanttView: React.FC<TaskGanttViewProps> = ({ tasks, assignees, onOpen }) => {
   const dated = useMemo(
     () =>
       tasks
@@ -75,7 +75,7 @@ export const TaskGanttView: React.FC<TaskGanttViewProps> = ({ tasks, agentLabels
                 >
                   {task.title}
                   <span className="block text-[10px] text-text-muted truncate">
-                    {assigneeLabel(task, agentLabels)}
+                    {assigneeDisplay(task, assignees).name}
                   </span>
                 </button>
                 <div className="flex-1 relative h-8 rounded-md bg-glass/40">

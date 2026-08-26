@@ -276,6 +276,7 @@ export const FilesPage: React.FC = () => {
 
   return (
     <>
+    <div className="flex-1 min-h-0 flex flex-col">
     <div className="card has-view-tabs">
       <div className="card-header">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -339,8 +340,8 @@ export const FilesPage: React.FC = () => {
         <SectionViewTabs views={sectionViews} activeKey={sectionViews[0]?.key ?? 'main'} />
       </div>
 
-      <div className="card-body">
-        <div className="flex items-center justify-end mb-4">
+      <div className="card-body table-list-body">
+        <div className="table-toolbar flex items-center justify-end mb-4">
           <TableColumnSettings
             options={fileColumnOptions}
             value={visibleFileKeys}
@@ -349,11 +350,17 @@ export const FilesPage: React.FC = () => {
             onMove={moveFileColumn}
           />
         </div>
-        {uploadError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{uploadError}</p>}
-        {isLoading && <LoadingSpinner fullScreen={false} message="Cargando archivos..." />}
+        {uploadError && (
+          <p className="table-toolbar text-red-600 dark:text-red-400 text-sm mb-4">{uploadError}</p>
+        )}
+        {isLoading && (
+          <div className="table-scroll table-scroll-inset">
+            <LoadingSpinner fullScreen={false} message="Cargando archivos..." />
+          </div>
+        )}
 
         {isError && (
-          <div className="text-center py-6">
+          <div className="table-scroll table-scroll-inset text-center py-6">
             <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
             <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
               Reintentar
@@ -362,13 +369,13 @@ export const FilesPage: React.FC = () => {
         )}
 
         {!isLoading && !isError && (data?.length ?? 0) === 0 && (
-          <p className="text-text-secondary text-sm text-center py-6">
+          <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
             {categoryFilter ? `No hay archivos en "${categoryFilter}".` : 'No has subido ningún archivo todavía.'}
           </p>
         )}
 
         {!isLoading && !isError && (data?.length ?? 0) > 0 && (
-          <div className="overflow-x-auto -mx-6">
+          <div className="table-scroll">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-text-secondary">
@@ -403,7 +410,15 @@ export const FilesPage: React.FC = () => {
             </table>
           </div>
         )}
+        {!isLoading && !isError && (
+          <div className="table-footer">
+            <span className="text-xs text-text-secondary">
+              Mostrando {(data?.length ?? 0) === 0 ? 0 : 1}–{data?.length ?? 0}
+            </span>
+          </div>
+        )}
       </div>
+    </div>
     </div>
 
     {/* Rendered outside the `.card` above on purpose: that card can pick up

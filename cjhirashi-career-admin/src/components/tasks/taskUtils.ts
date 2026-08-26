@@ -119,15 +119,29 @@ export function isTaskBlocked(task: BedrockTask, siblings: BedrockTask[]): boole
   return false
 }
 
-export function assigneeLabel(
-  task: BedrockTask,
+export interface AssigneeContext {
+  userName: string
+  userPhoto: string | null
   agentLabels: Record<string, string>
-): string {
+  agentPhotos: Record<string, string | null>
+}
+
+export function assigneeDisplay(
+  task: BedrockTask,
+  ctx: AssigneeContext
+): { name: string; imageUrl: string | null } {
   if (task.assignee_type === 'agent') {
-    if (!task.agent_profile_id) return 'Agente'
-    return agentLabels[task.agent_profile_id] ?? task.agent_profile_id
+    const profileId = task.agent_profile_id ?? ''
+    return {
+      name: (profileId && ctx.agentLabels[profileId]) || profileId || 'Agente',
+      imageUrl: (profileId && ctx.agentPhotos[profileId]) || null,
+    }
   }
-  return 'Tú'
+  return { name: ctx.userName, imageUrl: ctx.userPhoto }
+}
+
+export function assigneeLabel(task: BedrockTask, ctx: AssigneeContext): string {
+  return assigneeDisplay(task, ctx).name
 }
 
 export function statusChipClass(status: string): string {

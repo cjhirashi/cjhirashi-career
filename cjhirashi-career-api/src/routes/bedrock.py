@@ -29,6 +29,8 @@ from schemas.bedrock import (
     BedrockAgentMemoryResponse,
     BedrockAgentMethodologiesUpdateRequest,
     BedrockAgentNote,
+    BedrockAgentPhotoResponse,
+    BedrockAgentPhotoUpdateRequest,
     BedrockAgentSectionsUpdateRequest,
     BedrockAuditLogResponse,
     BedrockChatRequest,
@@ -363,6 +365,26 @@ async def get_agent_catalog_item(
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
     return await profile_catalog.get_catalog_item(db, current_user.id, profile_id)
+
+
+@router.put(
+    "/agent-profiles/{profile_id}/photo",
+    response_model=BedrockAgentPhotoResponse,
+    summary="Foto del agente (URL pública del bucket)",
+)
+async def update_agent_photo(
+    profile_id: str,
+    payload: BedrockAgentPhotoUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services.bedrock import profile_photos
+
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    return await profile_photos.set_photo(db, profile_id, payload.photo_url)
 
 
 @router.put(

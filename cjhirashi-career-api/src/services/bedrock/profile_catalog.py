@@ -45,7 +45,7 @@ def _methodology_entries(rows: Sequence[Any], profile_id: str) -> List[Dict[str,
     return items
 
 
-def _serialize_definition(profile: AgentProfile, prompt_meta: dict) -> Dict[str, Any]:
+def _serialize_definition(profile: AgentProfile, prompt_meta: dict, photo_url: Optional[str] = None) -> Dict[str, Any]:
     return {
         "id": agent_record_id(profile.id),
         "system_name": profile.id,
@@ -65,6 +65,7 @@ def _serialize_definition(profile: AgentProfile, prompt_meta: dict) -> Dict[str,
         "override_suffix": prompt_meta["override_suffix"],
         "effective_suffix": prompt_meta["effective_suffix"],
         "prompt_is_default": prompt_meta["is_default"],
+        "photo_url": photo_url,
     }
 
 
@@ -130,7 +131,10 @@ def _attach_delegation(item: Dict[str, Any], state: dict) -> None:
 
 
 async def list_catalog(db: AsyncSession, user_id: str) -> List[Dict[str, Any]]:
+    from services.bedrock import profile_photos
+
     prompts = {item["profile_id"]: item for item in await profile_prompts.list_profile_prompts(db)}
+    photos = await profile_photos.photos_map(db)
     conv_counts = await _conversation_counts(db, user_id)
     rows = await _methodology_rows(db, user_id)
     delegation = await profile_delegation.list_delegation_state(db)
@@ -141,7 +145,7 @@ async def list_catalog(db: AsyncSession, user_id: str) -> List[Dict[str, Any]]:
             owned_by_agent.setdefault(owner, []).append(row)
     items: List[Dict[str, Any]] = []
     for profile in list_profiles():
-        item = _serialize_definition(profile, prompts[profile.id])
+        item = _serialize_definition(profile, prompts[profile.id], photos.get(profile.id))
         item["conversation_count"] = conv_counts.get(profile.id, 0)
         _attach_sections(item, owned_by_agent.get(profile.id, []))
         _attach_delegation(item, delegation[profile.id])
@@ -155,13 +159,16 @@ async def get_catalog_item(
     profile_id: str,
 ) -> Dict[str, Any]:
     profile = get_profile(profile_id)
+    from services.bedrock import profile_photos
+
     prompt_meta = next(
         item for item in await profile_prompts.list_profile_prompts(db) if item["profile_id"] == profile.id
     )
+    photos = await profile_photos.photos_map(db)
     rows = await _methodology_rows(db, user_id)
     conv_counts = await _conversation_counts(db, user_id)
     delegation = await profile_delegation.list_delegation_state(db)
-    item = _serialize_definition(profile, prompt_meta)
+    item = _serialize_definition(profile, prompt_meta, photos.get(profile.id))
     item["conversation_count"] = conv_counts.get(profile.id, 0)
     owned = [row for row in await list_admin_sections(db) if row.get("agent_profile_id") == profile.id]
     _attach_sections(item, owned)

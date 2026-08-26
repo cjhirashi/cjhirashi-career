@@ -139,13 +139,21 @@ export const AdminSectionsPage: React.FC = () => {
             <SectionViewTabs views={SECTION_TABS} activeKey="list" interactiveKeys={[]} />
           </div>
         </div>
-        <div className="card-body">
-          {isLoading && <LoadingSpinner fullScreen={false} message="Cargando secciones..." />}
-          {isError && <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>}
+        <div className="card-body table-list-body">
+          {isLoading && (
+            <div className="table-scroll table-scroll-inset">
+              <LoadingSpinner fullScreen={false} message="Cargando secciones..." />
+            </div>
+          )}
+          {isError && (
+            <p className="table-scroll table-scroll-inset text-red-600 dark:text-red-400 text-sm">
+              {getErrorMessage(error)}
+            </p>
+          )}
 
           {!isLoading && !isError && (
             <>
-              <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
                 <div className="relative flex-1 min-w-[200px]">
                   <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
                   <input
@@ -187,13 +195,13 @@ export const AdminSectionsPage: React.FC = () => {
               </div>
 
               {rows.length === 0 ? (
-                <p className="text-text-secondary text-sm text-center py-6">
+                <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
                   {search || filtersActive
                     ? 'Sin resultados para esa búsqueda o filtros.'
                     : 'No hay secciones.'}
                 </p>
               ) : (
-                <div className="overflow-x-auto -mx-6">
+                <div className="table-scroll">
                   <table className="min-w-full text-sm">
                     <thead>
                       <tr className="border-b border-border text-left text-text-secondary">
@@ -301,6 +309,11 @@ export const AdminSectionsPage: React.FC = () => {
                   </table>
                 </div>
               )}
+              <div className="table-footer">
+                <span className="text-xs text-text-secondary">
+                  Mostrando {rows.length === 0 ? 0 : 1}–{rows.length}
+                </span>
+              </div>
             </>
           )}
         </div>

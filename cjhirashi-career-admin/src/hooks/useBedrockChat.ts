@@ -386,6 +386,18 @@ export function useAgentSectionsUpdate() {
   })
 }
 
+export function useAgentPhotoUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ profileId, photoUrl }: { profileId: string; photoUrl: string | null }) =>
+      bedrockApi.updateAgentPhoto(profileId, photoUrl),
+    onSuccess: (_data, { profileId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
+    },
+  })
+}
+
 export function useAgentMemory(profileId: string | undefined) {
   return useQuery({
     queryKey: ['bedrock', 'agent-memory', profileId],

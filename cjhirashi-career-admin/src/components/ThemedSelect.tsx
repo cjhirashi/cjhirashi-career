@@ -3,6 +3,7 @@ import { Check, ChevronDown, Plus } from 'lucide-react'
 import { clsx } from 'clsx'
 import { SelectOption } from '@/config/careerResources'
 import { SelectCapsule, SelectOptionIdentity } from '@/components/SelectCapsule'
+import { PersonChip } from '@/components/PersonAvatar'
 
 export interface ThemedSelectProps {
   id?: string
@@ -203,7 +204,11 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
       >
         {selected ? (
           <span className="min-w-0 flex-1">
-            <SelectCapsule code={selected.value} label={selected.label} />
+            {'imageUrl' in selected ? (
+              <PersonChip src={selected.imageUrl} name={selected.label} size={22} />
+            ) : (
+              <SelectCapsule code={selected.value} label={selected.label} />
+            )}
           </span>
         ) : (
           <span className="min-w-0 truncate">{placeholder}</span>
@@ -272,6 +277,8 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
                       <Plus size={14} className="flex-shrink-0" aria-hidden="true" />
                       <span className="min-w-0 truncate">{opt.label}</span>
                     </span>
+                  ) : 'imageUrl' in opt ? (
+                    <PersonChip src={opt.imageUrl} name={opt.label} size={22} />
                   ) : (
                     <SelectOptionIdentity
                       code={isPlaceholder ? undefined : opt.value}

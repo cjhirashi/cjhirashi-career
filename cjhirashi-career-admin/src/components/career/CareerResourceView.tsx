@@ -871,8 +871,8 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   // Table / view / edit / create all render in place of each other, inside
   // the same card - no popup. `.card.has-view-tabs` fills the main pane
-  // (see Layout.tsx) so the title + tabs stay pinned and only `.card-body`
-  // scrolls.
+  // (see Layout.tsx) so the title + tabs stay pinned. On the list, only
+  // `.table-scroll` scrolls; search and the pagination footer stay put.
   const [viewState, setViewState] = useState<ViewState>('list')
   const [activeItem, setActiveItem] = useState<CareerEntity | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -1436,7 +1436,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         </div>
       )}
 
-      <div className={hideTitle ? '' : 'card-body'}>
+      <div className={hideTitle ? '' : `card-body${viewState === 'list' ? ' table-list-body' : ''}`}>
         {viewState === 'view' && pdfError && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
             <p className="text-red-800 dark:text-red-300 text-sm font-medium">{pdfError}</p>
@@ -1508,7 +1508,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         {viewState === 'list' && (
           <>
             {(supportsListControls || !isCards) && (
-              <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
                 {supportsListControls && (
                   <div className="relative flex-1 min-w-[200px]">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
@@ -1575,7 +1575,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
             )}
 
             {supportsListControls && isCards && config.columns.some((col) => isFilterableField(fieldForColumn(config, col.key))) && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+              <div className="table-toolbar flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
                 {config.columns.map((col) => {
                   const field = fieldForColumn(config, col.key)
                   if (!isFilterableField(field)) return null
@@ -1597,10 +1597,14 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
               </div>
             )}
 
-            {isLoading && <LoadingSpinner fullScreen={false} message="Cargando..." />}
+            {isLoading && (
+              <div className="table-scroll table-scroll-inset">
+                <LoadingSpinner fullScreen={false} message="Cargando..." />
+              </div>
+            )}
 
             {isError && (
-              <div className="text-center py-6">
+              <div className="table-scroll table-scroll-inset text-center py-6">
                 <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
                 <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
                   Reintentar
@@ -1609,7 +1613,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
             )}
 
             {!isLoading && !isError && items.length === 0 && (
-              <p className="text-text-secondary text-sm text-center py-6">
+              <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
                 {search || filtersActive
                   ? 'Sin resultados para esa búsqueda o filtros.'
                   : `No hay ${config.label.toLowerCase()} todavía.`}
@@ -1617,6 +1621,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
             )}
 
             {!isLoading && !isError && items.length > 0 && isCards && (
+              <div className="table-scroll table-scroll-inset">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {items.map((item) => (
                   <ProjectCard
@@ -1629,10 +1634,11 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                   />
                 ))}
               </div>
+              </div>
             )}
 
             {!isLoading && !isError && items.length > 0 && !isCards && (
-              <div className="overflow-x-auto -mx-6">
+              <div className="table-scroll">
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-border text-left text-text-secondary">
@@ -1769,7 +1775,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
             )}
 
             {!isNested && !isLoading && !isError && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+              <div className="table-footer">
                 <button
                   type="button"
                   onClick={() => setSkip((s) => Math.max(0, s - pageSize))}

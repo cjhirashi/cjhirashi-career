@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedSwitch } from '@/components/ThemedSwitch'
+import { SelectOption } from '@/config/careerResources'
+import { useAuthStore } from '@/stores/authStore'
 import { BedrockAgentCatalogItem, BedrockTask, BedrockTaskPayload } from '@/types/bedrock'
 import { getErrorMessage } from '@/utils/errors'
 import { datetimeLocalToIso, isoToDatetimeLocal, TASK_PRIORITY_LABELS, TASK_STATUS_LABELS } from './taskUtils'
@@ -82,6 +84,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   const [drafts, setDrafts] = useState<SubtaskDraft[]>([])
   const [error, setError] = useState<string | null>(null)
   const isChild = Boolean(task?.parent_id)
+  const user = useAuthStore((state) => state.user)
+  const userName = user?.full_name?.trim() || user?.username || 'Usuario'
 
   useEffect(() => {
     if (!task) {
@@ -104,16 +108,24 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     setError(null)
   }, [task, subtasks, isChild])
 
-  const agentOptions = useMemo(
-    () =>
-      [...agents]
+  const responsableOptions = useMemo<SelectOption[]>(
+    () => [
+      { value: 'user', label: userName, imageUrl: user?.photo_url ?? null },
+      ...[...agents]
         .sort((a, b) => a.level - b.level || a.label.localeCompare(b.label))
         .map((agent) => ({
           value: agent.profile_id,
-          label: `L${agent.level} · ${agent.label}`,
+          label: agent.label,
+          imageUrl: agent.photo_url ?? null,
         })),
-    [agents]
+    ],
+    [agents, userName, user?.photo_url]
   )
+
+  const applyResponsable = (value: string): { assignee_type: string; agent_profile_id: string } =>
+    value === 'user' || !value
+      ? { assignee_type: 'user', agent_profile_id: '' }
+      : { assignee_type: 'agent', agent_profile_id: value }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -208,29 +220,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </label>
           <ThemedSelect
             id="task-assignee"
-            value={form.assignee_type}
-            onChange={(v) => setField('assignee_type', v)}
+            value={form.assignee_type === 'agent' ? form.agent_profile_id : 'user'}
+            onChange={(v) => {
+              const next = applyResponsable(v)
+              setForm((current) => ({ ...current, ...next }))
+            }}
             allowEmpty={false}
-            options={[
-              { value: 'user', label: 'Tú (manual)' },
-              { value: 'agent', label: 'Un agente' },
-            ]}
+            options={responsableOptions}
           />
         </div>
-        {form.assignee_type === 'agent' && (
-          <div className="form-group">
-            <label className="form-label" htmlFor="task-agent">
-              Agente
-            </label>
-            <ThemedSelect
-              id="task-agent"
-              value={form.agent_profile_id}
-              onChange={(v) => setField('agent_profile_id', v)}
-              options={agentOptions}
-              placeholder="Elige un agente"
-            />
-          </div>
-        )}
         <div className="form-group">
           <label className="form-label" htmlFor="task-priority">
             Prioridad
@@ -306,7 +304,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             </button>
           </div>
           <p className="text-xs text-text-muted">
-            El responsable de arriba orquesta el plan. Cada subtarea puede ir a ti o a un agente, ser
+            El responsable de arriba orquesta el plan. Cada subtarea puede ir a {userName} o a un agente, ser
             bloqueante (las siguientes esperan) y ejecutarse a una hora o cuando le toque el turno.
           </p>
           {drafts.length === 0 && (
@@ -334,24 +332,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <ThemedSelect
-                  value={row.assignee_type}
-                  onChange={(v) => setDraft(row.key, { assignee_type: v, execute_on_turn: v === 'agent' ? row.execute_on_turn : false })}
+                  value={row.assignee_type === 'agent' ? row.agent_profile_id : 'user'}
+                  onChange={(v) => {
+                    const next = applyResponsable(v)
+                    setDraft(row.key, {
+                      ...next,
+                      execute_on_turn: next.assignee_type === 'agent' ? row.execute_on_turn : false,
+                    })
+                  }}
                   allowEmpty={false}
                   aria-label={`Responsable de subtarea ${index + 1}`}
-                  options={[
-                    { value: 'user', label: 'Tú (manual)' },
-                    { value: 'agent', label: 'Un agente' },
-                  ]}
+                  options={responsableOptions}
                 />
-                {row.assignee_type === 'agent' && (
-                  <ThemedSelect
-                    value={row.agent_profile_id}
-                    onChange={(v) => setDraft(row.key, { agent_profile_id: v })}
-                    options={agentOptions}
-                    placeholder="Elige un agente"
-                    aria-label={`Agente de subtarea ${index + 1}`}
-                  />
-                )}
                 <input
                   type="datetime-local"
                   className="input-field"
