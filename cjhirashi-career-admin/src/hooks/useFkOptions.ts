@@ -19,11 +19,22 @@ export function resolveFkLabel(
 
 export type FkApiMode = 'career' | 'pdf-template-styles'
 
+/** Career list endpoints cap `limit` at 100 (`le=100` in career_common). */
+const FK_PAGE_SIZE = 100
+
 async function fetchFkRecords(apiMode: FkApiMode, resource: string): Promise<Record<string, unknown>[]> {
   if (apiMode === 'pdf-template-styles') {
-    return pdfTemplateStylesApi.list({ skip: 0, limit: 100 }) as unknown as Record<string, unknown>[]
+    return pdfTemplateStylesApi.list({ skip: 0, limit: FK_PAGE_SIZE }) as unknown as Record<string, unknown>[]
   }
-  return careerApi.list(resource, { limit: 500 })
+  const records: Record<string, unknown>[] = []
+  let skip = 0
+  while (true) {
+    const page = await careerApi.list(resource, { skip, limit: FK_PAGE_SIZE })
+    records.push(...page)
+    if (page.length < FK_PAGE_SIZE) break
+    skip += FK_PAGE_SIZE
+  }
+  return records
 }
 
 /**
@@ -46,7 +57,7 @@ export function useFkOptions(
     return data.map((record) => {
       const id = String(record.id ?? '')
       const label = resolveFkLabel(record, labelField)
-      return { value: id, label: `${id} — ${label}` }
+      return { value: id, label }
     })
   }, [data, labelField])
 

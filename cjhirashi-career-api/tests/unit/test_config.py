@@ -103,6 +103,37 @@ class TestSettingsConfiguration:
 
         assert "postgresql" in settings.DATABASE_URL
 
+    def test_public_portal_user_id_is_prefixed_string(self):
+        """user_id en PostgreSQL es VARCHAR (usr-2), no un entero."""
+        from config import Settings
+
+        settings = Settings(
+            DATABASE_URL="postgresql://localhost/db",
+            SECRET_KEY="a" * 32,
+            PUBLIC_PORTAL_USER_ID="usr-2",
+        )
+
+        assert settings.PUBLIC_PORTAL_USER_ID == "usr-2"
+        assert isinstance(settings.PUBLIC_PORTAL_USER_ID, str)
+
+    def test_public_portal_user_id_coerces_legacy_integer(self):
+        """Regresión: PUBLIC_PORTAL_USER_ID=2 hacía 500 en /public/* (varchar = int)."""
+        from config import Settings
+
+        from_int = Settings(
+            DATABASE_URL="postgresql://localhost/db",
+            SECRET_KEY="a" * 32,
+            PUBLIC_PORTAL_USER_ID=2,
+        )
+        from_digit_str = Settings(
+            DATABASE_URL="postgresql://localhost/db",
+            SECRET_KEY="a" * 32,
+            PUBLIC_PORTAL_USER_ID="2",
+        )
+
+        assert from_int.PUBLIC_PORTAL_USER_ID == "usr-2"
+        assert from_digit_str.PUBLIC_PORTAL_USER_ID == "usr-2"
+
     def test_algorithm_defaults_to_hs256(self):
         """Verificar que ALGORITHM tiene default HS256."""
         from config import Settings
@@ -122,7 +153,7 @@ class TestSettingsConfiguration:
         class TestSettings(BaseSettings):
             DATABASE_URL: str = Field(..., description="PostgreSQL connection string")
             SECRET_KEY: str = Field(..., min_length=32, description="JWT secret key")
-            APP_NAME: str = "Portafolio-cjhirashi API"
+            APP_NAME: str = "cjhirashi-career API"
             DEBUG: bool = False
             ACCESS_TOKEN_EXPIRE_DAYS: int = 7
             REFRESH_TOKEN_EXPIRE_DAYS: int = 30
@@ -137,7 +168,7 @@ class TestSettingsConfiguration:
 
         assert settings.ACCESS_TOKEN_EXPIRE_DAYS == 7
         assert settings.REFRESH_TOKEN_EXPIRE_DAYS == 30
-        assert settings.APP_NAME == "Portafolio-cjhirashi API"
+        assert settings.APP_NAME == "cjhirashi-career API"
         assert settings.DEBUG is False
         assert settings.RATE_LIMIT_ENABLED is True
 

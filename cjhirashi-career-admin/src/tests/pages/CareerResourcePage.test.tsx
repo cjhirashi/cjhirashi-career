@@ -39,6 +39,13 @@ describe('CareerResourcePage', () => {
     )
     expect(screen.getByText('Vacantes')).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Acme Corp')).toBeInTheDocument())
+    expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
+  })
+
+  it('does not show the section description in the view window', async () => {
+    renderAt('/career/differentiators')
+    await waitFor(() => expect(mockedCareerApi.list).toHaveBeenCalled())
+    expect(screen.queryByText(/pilares de ventaja competitiva/i)).not.toBeInTheDocument()
   })
 
   it('shows a not-found message for an unknown resource key', () => {

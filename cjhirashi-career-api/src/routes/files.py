@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import StreamingResponse
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTask
 
@@ -189,6 +189,25 @@ async def list_files(
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+class CountResponse(BaseModel):
+    count: int
+
+
+@router.get("/count", response_model=CountResponse)
+async def count_files(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Total active files for the authenticated user (sidebar table badge)."""
+    stmt = (
+        select(func.count())
+        .select_from(FileUpload)
+        .where(FileUpload.user_id == current_user.id, FileUpload.is_active == True)  # noqa: E712
+    )
+    result = await db.execute(stmt)
+    return CountResponse(count=result.scalar_one())
 
 
 @router.get("/categories", response_model=List[str])

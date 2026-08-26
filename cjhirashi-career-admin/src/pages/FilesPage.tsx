@@ -18,9 +18,27 @@ import { filesApi } from '@/api/files'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
+import { SectionViewTabs, useSectionViewTabs } from '@/components/SectionViewTabs'
 import { ThemedSelect } from '@/components/ThemedSelect'
+import { ThemedSwitch } from '@/components/ThemedSwitch'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { Modal } from '@/components/Modal'
+import { TableColumnSettings } from '@/components/career/TableColumnSettings'
+import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
+import { ColumnConfig } from '@/config/careerResources'
+
+const FILE_TABLE_COLUMNS: ColumnConfig[] = [
+  { key: 'id', label: 'ID' },
+  { key: 'file_type', label: 'Tipo' },
+  { key: 'original_filename', label: 'Nombre' },
+  { key: 'category', label: 'Carpeta' },
+  { key: 'file_size', label: 'Tamaño' },
+  { key: 'created_at', label: 'Subido' },
+  { key: 'is_public', label: 'Estado' },
+]
+
+const FILE_TABLE_DEFAULT_KEYS = FILE_TABLE_COLUMNS.map((col) => col.key)
+const FILE_PINNED_KEYS = ['id', 'original_filename']
 
 const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type }) => {
   if (type === 'document') return <FileText size={18} className="text-text-secondary" aria-hidden="true" />
@@ -30,11 +48,12 @@ const FileTypeIcon: React.FC<{ type: FileUploadEntity['file_type'] }> = ({ type 
 
 const FileRow: React.FC<{
   file: FileUploadEntity
+  visibleKeys: string[]
   onDelete: () => void
   onToggleVisibility: () => void
   isTogglingVisibility: boolean
   onPreviewImage: (url: string) => void
-}> = ({ file, onDelete, onToggleVisibility, isTogglingVisibility, onPreviewImage }) => {
+}> = ({ file, visibleKeys, onDelete, onToggleVisibility, isTogglingVisibility, onPreviewImage }) => {
   const [copied, setCopied] = useState(false)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState<string | null>(null)
@@ -96,36 +115,74 @@ const FileRow: React.FC<{
     }
   }
 
+  const show = (key: string) => visibleKeys.includes(key)
+
+  const cell = (key: string) => {
+    switch (key) {
+      case 'id':
+        return (
+          <td key="id" className="px-4 py-2.5 table-col-id" title={file.id}>
+            {file.id}
+          </td>
+        )
+      case 'file_type':
+        return (
+          <td key="file_type" className="px-4 py-2.5 w-8">
+            <FileTypeIcon type={file.file_type} />
+          </td>
+        )
+      case 'original_filename':
+        return (
+          <td key="original_filename" className="px-4 py-2.5 min-w-0">
+            <p className="text-sm text-text truncate" title={file.original_filename}>
+              {file.original_filename}
+            </p>
+            {(previewError || downloadError) && (
+              <p className="text-red-600 dark:text-red-400 text-xs mt-0.5">{previewError || downloadError}</p>
+            )}
+          </td>
+        )
+      case 'category':
+        return (
+          <td key="category" className="px-4 py-2.5 whitespace-nowrap">
+            {file.category ? (
+              <span className="badge badge-slate flex items-center gap-1 w-fit">
+                <Folder size={10} aria-hidden="true" /> {file.category}
+              </span>
+            ) : (
+              <span className="text-text-muted text-xs">—</span>
+            )}
+          </td>
+        )
+      case 'file_size':
+        return (
+          <td key="file_size" className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">
+            {formatFileSize(file.file_size)}
+          </td>
+        )
+      case 'created_at':
+        return (
+          <td key="created_at" className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">
+            {formatDateTime(file.created_at)}
+          </td>
+        )
+      case 'is_public':
+        return (
+          <td key="is_public" className="px-4 py-2.5 whitespace-nowrap">
+            <span className={`badge ${file.is_public ? 'badge-cyan' : 'badge-slate'} flex items-center gap-1 w-fit`}>
+              {file.is_public ? <Globe size={10} aria-hidden="true" /> : <Lock size={10} aria-hidden="true" />}
+              {file.is_public ? 'Público' : 'Privado'}
+            </span>
+          </td>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
     <tr className="border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-      <td className="px-4 py-2.5 w-8">
-        <FileTypeIcon type={file.file_type} />
-      </td>
-      <td className="px-4 py-2.5 min-w-0">
-        <p className="text-sm text-text truncate" title={file.original_filename}>
-          {file.original_filename}
-        </p>
-        {(previewError || downloadError) && (
-          <p className="text-red-600 dark:text-red-400 text-xs mt-0.5">{previewError || downloadError}</p>
-        )}
-      </td>
-      <td className="px-4 py-2.5 whitespace-nowrap">
-        {file.category ? (
-          <span className="badge badge-slate flex items-center gap-1 w-fit">
-            <Folder size={10} aria-hidden="true" /> {file.category}
-          </span>
-        ) : (
-          <span className="text-text-muted text-xs">—</span>
-        )}
-      </td>
-      <td className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">{formatFileSize(file.file_size)}</td>
-      <td className="px-4 py-2.5 whitespace-nowrap text-text-secondary text-sm">{formatDateTime(file.created_at)}</td>
-      <td className="px-4 py-2.5 whitespace-nowrap">
-        <span className={`badge ${file.is_public ? 'badge-cyan' : 'badge-slate'} flex items-center gap-1 w-fit`}>
-          {file.is_public ? <Globe size={10} aria-hidden="true" /> : <Lock size={10} aria-hidden="true" />}
-          {file.is_public ? 'Público' : 'Privado'}
-        </span>
-      </td>
+      {visibleKeys.map((key) => cell(key))}
       <td className="px-4 py-2.5 text-right whitespace-nowrap">
         <div className="flex justify-end items-center gap-1">
           <button
@@ -189,6 +246,9 @@ export const FilesPage: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [uploadCategory, setUploadCategory] = useState('')
   const [uploadIsPublic, setUploadIsPublic] = useState(true)
+  const sectionViews = useSectionViewTabs([{ key: 'main', label: 'Principal' }])
+  const { columns: fileColumns, selectedKeys: visibleFileKeys, toggleColumn: toggleFileColumn, moveColumn: moveFileColumn, pinnedKeys: filePinnedKeys, options: fileColumnOptions } =
+    useVisibleTableColumns('files', FILE_TABLE_COLUMNS, FILE_TABLE_DEFAULT_KEYS, FILE_PINNED_KEYS)
   const { data, isLoading, isError, error, refetch } = useFilesList(
     categoryFilter ? { category: categoryFilter } : {}
   )
@@ -216,11 +276,12 @@ export const FilesPage: React.FC = () => {
 
   return (
     <>
-    <div className="card">
-      <div className="card-header flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold text-text">Archivos</h2>
+    <div className="card has-view-tabs">
+      <div className="card-header">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold text-text">Archivos</h2>
 
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           <label className="sr-only" htmlFor="category-filter">
             Filtrar por carpeta
           </label>
@@ -249,15 +310,14 @@ export const FilesPage: React.FC = () => {
             ))}
           </datalist>
 
-          <label className="flex items-center gap-1.5 text-sm text-text-secondary select-none">
-            <input
-              type="checkbox"
+          <span className="inline-flex items-center gap-2">
+            <ThemedSwitch
               checked={uploadIsPublic}
-              onChange={(e) => setUploadIsPublic(e.target.checked)}
-              className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+              onChange={setUploadIsPublic}
+              aria-label="Público"
             />
-            Público
-          </label>
+            <span className="text-sm font-medium text-text">Público</span>
+          </span>
 
           <input
             ref={fileInputRef}
@@ -275,9 +335,20 @@ export const FilesPage: React.FC = () => {
             <Upload size={14} /> {uploadMutation.isPending ? 'Subiendo...' : 'Subir archivo'}
           </button>
         </div>
+        </div>
+        <SectionViewTabs views={sectionViews} activeKey={sectionViews[0]?.key ?? 'main'} />
       </div>
 
       <div className="card-body">
+        <div className="flex items-center justify-end mb-4">
+          <TableColumnSettings
+            options={fileColumnOptions}
+            value={visibleFileKeys}
+            pinnedKeys={filePinnedKeys}
+            onToggle={toggleFileColumn}
+            onMove={moveFileColumn}
+          />
+        </div>
         {uploadError && <p className="text-red-600 dark:text-red-400 text-sm mb-4">{uploadError}</p>}
         {isLoading && <LoadingSpinner fullScreen={false} message="Cargando archivos..." />}
 
@@ -301,12 +372,14 @@ export const FilesPage: React.FC = () => {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-text-secondary">
-                  <th className="px-4 py-2 font-medium"></th>
-                  <th className="px-4 py-2 font-medium">Nombre</th>
-                  <th className="px-4 py-2 font-medium">Carpeta</th>
-                  <th className="px-4 py-2 font-medium">Tamaño</th>
-                  <th className="px-4 py-2 font-medium">Subido</th>
-                  <th className="px-4 py-2 font-medium">Estado</th>
+                  {fileColumns.map((col) => (
+                    <th
+                      key={col.key}
+                      className={`px-4 py-2 font-medium${col.key === 'id' ? ' table-col-id' : ''}`}
+                    >
+                      {col.key === 'file_type' ? '' : col.label}
+                    </th>
+                  ))}
                   <th className="px-4 py-2 font-medium text-right">Acciones</th>
                 </tr>
               </thead>
@@ -315,6 +388,7 @@ export const FilesPage: React.FC = () => {
                   <FileRow
                     key={file.id}
                     file={file}
+                    visibleKeys={visibleFileKeys}
                     onDelete={() => handleDelete(file)}
                     onToggleVisibility={() =>
                       visibilityMutation.mutate({ id: file.id, isPublic: !file.is_public })

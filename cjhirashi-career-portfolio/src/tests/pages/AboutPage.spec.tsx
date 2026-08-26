@@ -83,14 +83,18 @@ describe('AboutPage', () => {
     expect(habilidadesIdx).toBeLessThan(certificacionesIdx)
   })
 
-  it('renders work_history entries with company and role', async () => {
+  it('renders work_history with description and achievements', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
-      expect(screen.getByText(mockAbout.work_history[0].role_title)).toBeInTheDocument()
-      expect(screen.getByText(mockAbout.work_history[0].company)).toBeInTheDocument()
+      const entry = mockAbout.work_history[0]
+      expect(screen.getByText(entry.role_title)).toBeInTheDocument()
+      expect(screen.getByText(entry.company)).toBeInTheDocument()
+      expect(screen.getByText(entry.description!)).toBeInTheDocument()
+      expect(screen.getByText(entry.achievements[0].title)).toBeInTheDocument()
+      expect(screen.getByText('Caso de éxito:')).toBeInTheDocument()
     })
   })
 
@@ -109,13 +113,14 @@ describe('AboutPage', () => {
     })
   })
 
-  it('renders certifications', async () => {
+  it('renders certifications with description', async () => {
     vi.mocked(aboutApi.getAbout).mockResolvedValue(mockAbout)
 
     render(<AboutPage />)
 
     await waitFor(() => {
       expect(screen.getByText(mockAbout.certifications[0].name)).toBeInTheDocument()
+      expect(screen.getByText(mockAbout.certifications[0].description!)).toBeInTheDocument()
     })
   })
 

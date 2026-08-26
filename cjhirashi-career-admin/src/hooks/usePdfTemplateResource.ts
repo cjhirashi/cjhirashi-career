@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ListParams } from '@/api/career'
 import { pdfTemplatesApi } from '@/api/pdfTemplates'
 import { CareerEntity } from '@/types/career'
+import { recordMatchesFilters } from '@/utils/listFilters'
 
 export const pdfTemplateQueryKey = (extra?: unknown) =>
   extra === undefined ? (['pdf-templates'] as const) : (['pdf-templates', extra] as const)
@@ -23,22 +24,23 @@ const PDF_TEMPLATE_FETCH_LIMIT = 100
  * `/pdf-templates` API has no server-side search yet, and the dataset is
  * small enough for this to stay responsive. */
 export function usePdfTemplateList(params: ListParams = {}, enabled = true) {
-  const { skip = 0, limit = 20, sortBy, sortDir = 'asc', search } = params
+  const { skip = 0, limit = 20, sortBy, sortDir = 'asc', search, filters } = params
   return useQuery({
-    queryKey: pdfTemplateQueryKey({ skip, limit, sortBy, sortDir, search }),
+    queryKey: pdfTemplateQueryKey({ skip, limit, sortBy, sortDir, search, filters }),
     queryFn: async (): Promise<CareerEntity[]> => {
       const all = await pdfTemplatesApi.list({ skip: 0, limit: PDF_TEMPLATE_FETCH_LIMIT })
-      let filtered = all
+      let filtered = all as unknown as Record<string, unknown>[]
       if (search) {
         const q = search.toLowerCase()
         filtered = filtered.filter(
           (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.slug.toLowerCase().includes(q) ||
-            item.document_type.toLowerCase().includes(q) ||
-            (item.description ?? '').toLowerCase().includes(q)
+            String(item.title ?? '').toLowerCase().includes(q) ||
+            String(item.slug ?? '').toLowerCase().includes(q) ||
+            String(item.document_type ?? '').toLowerCase().includes(q) ||
+            String(item.description ?? '').toLowerCase().includes(q)
         )
       }
+      filtered = filtered.filter((item) => recordMatchesFilters(item, filters))
       if (sortBy) {
         filtered = [...filtered].sort((a, b) =>
           compareValues(a[sortBy], b[sortBy], sortDir)
@@ -50,12 +52,24 @@ export function usePdfTemplateList(params: ListParams = {}, enabled = true) {
   })
 }
 
-export function usePdfTemplateCount(enabled = true) {
+export function usePdfTemplateCount(params: Pick<ListParams, 'search' | 'filters'> = {}, enabled = true) {
+  const { search, filters } = params
   return useQuery({
-    queryKey: pdfTemplateQueryKey({ count: true }),
+    queryKey: pdfTemplateQueryKey({ count: true, search, filters }),
     queryFn: async () => {
       const all = await pdfTemplatesApi.list({ skip: 0, limit: PDF_TEMPLATE_FETCH_LIMIT })
-      return all.length
+      let filtered = all as unknown as Record<string, unknown>[]
+      if (search) {
+        const q = search.toLowerCase()
+        filtered = filtered.filter(
+          (item) =>
+            String(item.title ?? '').toLowerCase().includes(q) ||
+            String(item.slug ?? '').toLowerCase().includes(q) ||
+            String(item.document_type ?? '').toLowerCase().includes(q) ||
+            String(item.description ?? '').toLowerCase().includes(q)
+        )
+      }
+      return filtered.filter((item) => recordMatchesFilters(item, filters)).length
     },
     enabled,
   })

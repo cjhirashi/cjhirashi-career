@@ -144,7 +144,6 @@ CREATE TABLE IF NOT EXISTS work_history (
     people_managed VARCHAR(100),
     description TEXT,
     narrative TEXT,
-    achievements TEXT,
     key_metrics JSONB,
     learnings TEXT,
     contract_type VARCHAR(50),

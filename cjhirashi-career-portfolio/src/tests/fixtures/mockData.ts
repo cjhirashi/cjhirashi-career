@@ -2,7 +2,7 @@ import { AboutContent, BlogPost, ContactContent, HomeContent, Project } from '@/
 
 export const mockProjects: Project[] = [
   {
-    id: 1,
+    id: '1',
     title: 'E-Commerce Platform',
     category: 'Systems',
     industry: 'Retail',
@@ -24,7 +24,7 @@ export const mockProjects: Project[] = [
     is_anchor: true,
   },
   {
-    id: 2,
+    id: '2',
     title: 'SaaS Dashboard',
     category: 'ML Ops',
     industry: 'SaaS',
@@ -46,7 +46,7 @@ export const mockProjects: Project[] = [
     is_anchor: false,
   },
   {
-    id: 3,
+    id: '3',
     title: 'Mobile App',
     category: 'Mobile',
     industry: null,
@@ -73,7 +73,7 @@ export const mockFeaturedProjects = mockProjects.filter(p => p.is_featured)
 
 export const mockBlogPosts: BlogPost[] = [
   {
-    id: 1,
+    id: '1',
     title: 'Understanding System Design',
     slug: 'understanding-system-design',
     excerpt: 'Deep dive into system design principles and best practices.',
@@ -87,7 +87,7 @@ export const mockBlogPosts: BlogPost[] = [
     publication_url: null,
   },
   {
-    id: 2,
+    id: '2',
     title: 'React Best Practices',
     slug: 'react-best-practices',
     excerpt: 'Essential practices for writing better React code.',
@@ -101,7 +101,7 @@ export const mockBlogPosts: BlogPost[] = [
     publication_url: null,
   },
   {
-    id: 3,
+    id: '3',
     title: 'TypeScript Tips',
     slug: 'typescript-tips',
     excerpt: 'Advanced TypeScript techniques.',
@@ -150,8 +150,13 @@ export const mockAbout: AboutContent = {
       start_date: '2020-01-01',
       end_date: null,
       description: 'Leading architecture and design of enterprise-scale applications.',
-      narrative: 'Led the redesign of the core platform architecture.',
-      achievements: 'Reduced downtime by 80% in the first year.',
+      achievements: [
+        {
+          id: 'ach-1',
+          title: 'Reduced downtime by 80% in the first year.',
+          executive_storytelling: null,
+        },
+      ],
       key_metrics: { downtime_reduction: '80%' },
     },
   ],
@@ -159,7 +164,14 @@ export const mockAbout: AboutContent = {
     { category: 'Frontend', skills: ['React', 'TypeScript'] },
     { category: 'Cloud', skills: ['AWS'] },
   ],
-  certifications: [{ name: 'AWS Certified', institution: 'Amazon', year: 2023 }],
+  certifications: [
+    {
+      name: 'AWS Certified',
+      institution: 'Amazon',
+      year: 2023,
+      description: 'Arquitectura de soluciones en AWS (SAA-C03).',
+    },
+  ],
 }
 
 export const mockContact: ContactContent = {

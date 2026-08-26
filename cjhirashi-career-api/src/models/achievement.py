@@ -4,6 +4,7 @@ Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
 
@@ -39,6 +40,8 @@ class Achievement(Base):
     visible_on_portal = Column(Boolean, default=False, nullable=True)
 
     notes = Column(Text, nullable=True)
+
+    work_history_record = relationship("WorkHistory", back_populates="linked_achievements")
 
 
     # --- Auditoría temporal ---

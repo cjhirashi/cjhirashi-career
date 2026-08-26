@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { render, screen, fireEvent, waitFor } from '../utils'
 import { FilesPage } from '@/pages/FilesPage'
 import { filesApi } from '@/api/files'
@@ -18,19 +19,27 @@ const sampleFile = {
   description: null,
   category: 'certificaciones',
   is_public: true,
-  download_url: 'https://files.cjhirashi.com/portafolio-cjhirashi/public/certificaciones/abc123.png',
+  download_url: 'https://files.cjhirashi.com/cjhirashi-career/public/certificaciones/abc123.png',
   created_at: '2026-08-19T00:00:00Z',
 }
 
+const renderPage = () =>
+  render(
+    <MemoryRouter>
+      <FilesPage />
+    </MemoryRouter>
+  )
+
 describe('FilesPage', () => {
   beforeEach(() => {
+    localStorage.clear()
     vi.clearAllMocks()
     mockedFilesApi.list.mockResolvedValue([sampleFile])
     mockedFilesApi.categories.mockResolvedValue(['certificaciones', 'proyectos'])
   })
 
   it('lists uploaded files as a table row with size, folder and status', async () => {
-    const { container } = render(<FilesPage />)
+    const { container } = renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
     expect(screen.getByRole('table')).toBeInTheDocument()
     const badges = Array.from(container.querySelectorAll('.badge')).map((b) => b.textContent)
@@ -41,7 +50,7 @@ describe('FilesPage', () => {
 
   it('shows an empty state when there are no files', async () => {
     mockedFilesApi.list.mockResolvedValue([])
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText(/no has subido/i)).toBeInTheDocument())
   })
 
@@ -49,7 +58,7 @@ describe('FilesPage', () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     Object.assign(navigator, { clipboard: { writeText } })
 
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /copiar link/i }))
@@ -58,7 +67,7 @@ describe('FilesPage', () => {
   })
 
   it('opens a preview for a public image without an extra request', async () => {
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /^ver$/i }))
@@ -71,7 +80,7 @@ describe('FilesPage', () => {
     mockedFilesApi.list.mockResolvedValue([{ ...sampleFile, is_public: false, download_url: null }])
     mockedFilesApi.getDownloadUrl.mockResolvedValue('https://files.cjhirashi.com/...signed...')
 
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     expect(screen.queryByRole('button', { name: /copiar link/i })).not.toBeInTheDocument()
@@ -87,7 +96,7 @@ describe('FilesPage', () => {
     ])
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
 
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('cv.pdf')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /^ver$/i }))
@@ -105,7 +114,7 @@ describe('FilesPage', () => {
     Object.assign(URL, { createObjectURL, revokeObjectURL })
     const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /descargar/i }))
@@ -119,7 +128,7 @@ describe('FilesPage', () => {
 
   it('uploads a selected file with no folder by default', async () => {
     mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     const file = new File(['contenido'], 'nuevo.png', { type: 'image/png' })
@@ -131,12 +140,12 @@ describe('FilesPage', () => {
     )
   })
 
-  it('uploads as private when the "Público" checkbox is unchecked', async () => {
+  it('uploads as private when the "Público" switch is turned off', async () => {
     mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
-    fireEvent.click(screen.getByRole('checkbox', { name: /público/i }))
+    fireEvent.click(screen.getByRole('switch', { name: /público/i }))
     const file = new File(['contenido'], 'nuevo.png', { type: 'image/png' })
     fireEvent.change(screen.getByLabelText(/seleccionar archivo/i), { target: { files: [file] } })
 
@@ -147,7 +156,7 @@ describe('FilesPage', () => {
 
   it('uploads to the typed folder when one is set', async () => {
     mockedFilesApi.upload.mockResolvedValue({ ...sampleFile, id: 'flu-2', original_filename: 'nuevo.png' })
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.change(screen.getByLabelText(/carpeta para el próximo archivo/i), {
@@ -161,8 +170,19 @@ describe('FilesPage', () => {
     )
   })
 
+  it('lets the user hide a table column from the settings menu', async () => {
+    renderPage()
+    await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
+    expect(screen.getByRole('columnheader', { name: 'Carpeta' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Columnas visibles' }))
+    fireEvent.click(screen.getByRole('option', { name: /Carpeta/ }))
+
+    await waitFor(() => expect(screen.queryByRole('columnheader', { name: 'Carpeta' })).not.toBeInTheDocument())
+  })
+
   it('filters the list by folder', async () => {
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
     mockedFilesApi.list.mockClear()
 
@@ -176,7 +196,7 @@ describe('FilesPage', () => {
 
   it('toggles a public file to private', async () => {
     mockedFilesApi.setVisibility.mockResolvedValue({ ...sampleFile, is_public: false, download_url: null })
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /hacer privado/i }))
@@ -187,7 +207,7 @@ describe('FilesPage', () => {
   it('asks for confirmation and deletes a file', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockedFilesApi.remove.mockResolvedValue(undefined)
-    render(<FilesPage />)
+    renderPage()
     await waitFor(() => expect(screen.getByText('diagrama.png')).toBeInTheDocument())
 
     fireEvent.click(screen.getByRole('button', { name: /eliminar/i }))

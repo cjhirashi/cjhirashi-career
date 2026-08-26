@@ -334,7 +334,7 @@ class WorkHistoryBase(BaseModel):
     people_managed: Optional[str] = Field(None, max_length=100)
     description: Optional[str] = None
     narrative: Optional[str] = None
-    achievements: Optional[str] = None
+    achievement_ids: List[str] = Field(default_factory=list)
     key_metrics: Optional[Dict[str, Any]] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = Field(None, max_length=50)
@@ -355,7 +355,7 @@ class WorkHistoryUpdate(BaseModel):
     people_managed: Optional[str] = None
     description: Optional[str] = None
     narrative: Optional[str] = None
-    achievements: Optional[str] = None
+    achievement_ids: Optional[List[str]] = None
     key_metrics: Optional[Dict[str, Any]] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = None

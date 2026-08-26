@@ -529,6 +529,10 @@ textarea:focus-visible {
  * panel's pipeline (no syntax highlighting/Mermaid/raw HTML) - a public blog
  * post is prose, not a data-editing surface.
  */
+.markdown-content {
+  min-width: 0;
+  max-width: 100%;
+}
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3,
@@ -673,9 +677,22 @@ textarea:focus-visible {
 }
 
 .markdown-content table {
-  width: 100%;
-  margin-bottom: 1.25rem;
+  width: max-content;
+  min-width: 100%;
+  margin-bottom: 0;
   font-size: 0.9rem;
+  border-collapse: collapse;
+}
+
+.markdown-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  margin-bottom: 1.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown-content > .markdown-table-scroll:last-child {
+  margin-bottom: 0;
 }
 
 .markdown-content th,

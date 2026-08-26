@@ -23,6 +23,7 @@ export const toFormValue = (type: FieldType, value: unknown): string | boolean =
       return value.length >= 16 ? value.slice(0, 16) : value
     case 'string-array':
     case 'multi-select':
+    case 'fk-multi-select':
       return Array.isArray(value) ? value.join('\n') : ''
     case 'number-array':
       return Array.isArray(value) ? value.join(', ') : ''
@@ -72,6 +73,7 @@ export const fromFormValue = (field: FieldConfig, raw: string | boolean): unknow
       return str.trim() === '' ? null : str
     case 'string-array':
     case 'multi-select':
+    case 'fk-multi-select':
       return str
         .split('\n')
         .map((s) => s.trim())

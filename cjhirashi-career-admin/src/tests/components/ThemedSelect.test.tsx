@@ -23,7 +23,7 @@ describe('ThemedSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tipo de documento' }))
     const listbox = screen.getByRole('listbox')
     expect(listbox).toBeInTheDocument()
-    fireEvent.click(within(listbox).getByRole('option', { name: 'CV' }))
+    fireEvent.click(within(listbox).getByRole('option', { name: /CV/ }))
     expect(onChange).toHaveBeenCalledWith('cv')
   })
 
@@ -37,5 +37,25 @@ describe('ThemedSelect', () => {
       />
     )
     expect(screen.getByRole('button', { name: 'Tipo' })).toHaveTextContent('Carta')
+  })
+
+  it('adds a typed value that is not yet in the list', () => {
+    const onChange = vi.fn()
+    render(
+      <ThemedSelect
+        aria-label="Tipo de contrato"
+        value=""
+        onChange={onChange}
+        options={[{ value: 'empleado', label: 'empleado' }]}
+        creatable
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tipo de contrato' }))
+    fireEvent.change(screen.getByLabelText('Filtrar o añadir opción'), {
+      target: { value: 'freelance' },
+    })
+    fireEvent.click(screen.getByRole('option', { name: /Añadir «freelance»/ }))
+    expect(onChange).toHaveBeenCalledWith('freelance')
   })
 })

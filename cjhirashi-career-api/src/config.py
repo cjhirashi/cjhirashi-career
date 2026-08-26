@@ -1,11 +1,11 @@
 """
-Portafolio-cjhirashi API - Application Configuration.
+cjhirashi-career API - Application Configuration.
 
 Carga variables de entorno vía pydantic-settings y expone un singleton
 `settings` usado en toda la aplicación (BD, JWT, Bedrock, MinIO, etc.).
 """
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import Any, Dict, List
 from pathlib import Path
 
@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS_STR: str = "http://localhost:8002,http://localhost:8003,http://localhost:8004"
 
     # Application
-    APP_NAME: str = "Portafolio-cjhirashi API"
+    APP_NAME: str = "cjhirashi-career API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
@@ -180,11 +180,6 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION: str = "career_knowledge"
 
     # -------------------------------------------------------------------------
-    # PDF Generator — servicio interno para renderizar CV/cover letter
-    # -------------------------------------------------------------------------
-    PDF_GENERATOR_URL: str = "http://pdf_generator:8080"
-
-    # -------------------------------------------------------------------------
     # LinkedIn OAuth — publicación y conexión de cuenta
     # -------------------------------------------------------------------------
     LINKEDIN_CLIENT_ID: str = ""
@@ -200,7 +195,7 @@ class Settings(BaseSettings):
     ADZUNA_COUNTRY: str = "mx"
     JOB_DISCOVERY_TIMEOUT_SECONDS: float = 8.0
     JOB_DISCOVERY_MAX_RESULTS: int = 50
-    JOB_DISCOVERY_USER_AGENT: str = "Portafolio-cjhirashi/1.0 (job-discovery; +https://cjhirashi.com)"
+    JOB_DISCOVERY_USER_AGENT: str = "cjhirashi-career/1.0 (job-discovery; +https://cjhirashi.com)"
 
     # -------------------------------------------------------------------------
     # GitHub — PAT de solo lectura para el L3 agent_github
@@ -214,8 +209,19 @@ class Settings(BaseSettings):
 
     # -------------------------------------------------------------------------
     # Portal público — usuario único cuyos datos sirve /public/*
+    # user_id es VARCHAR prefijado (usr-2), no un entero. Un valor numérico
+    # legado (PUBLIC_PORTAL_USER_ID=2) se normaliza a usr-2.
     # -------------------------------------------------------------------------
-    PUBLIC_PORTAL_USER_ID: int = 2
+    PUBLIC_PORTAL_USER_ID: str = "usr-2"
+
+    @field_validator("PUBLIC_PORTAL_USER_ID", mode="before")
+    @classmethod
+    def coerce_legacy_numeric_portal_user_id(cls, value: Any) -> Any:
+        if value is None or value == "":
+            return value
+        if isinstance(value, int) or (isinstance(value, str) and value.strip().isdigit()):
+            return f"usr-{int(value)}"
+        return str(value).strip()
 
     # -------------------------------------------------------------------------
     # Pydantic Settings — carga desde .env

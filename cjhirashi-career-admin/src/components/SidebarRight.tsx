@@ -5,6 +5,8 @@ import { MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { ChatWindow } from '@/components/bedrock/ChatWindow'
 import { useChatPageContext } from '@/hooks/useChatPageContext'
+import { useAdminSections } from '@/hooks/useAdminSections'
+import { matchAdminSection } from '@/types/adminSections'
 
 type RightPanelTab = 'chat' | 'instructions'
 
@@ -30,9 +32,25 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
     title: 'Descubrir vacantes',
     body: 'Pide al agente en el chat que busque (Indeed, Get on Board, Remotive, RemoteOK). Te devolverá refs L1, L2… Autoriza cuáles guardar (“guarda L1 y L3” o “todas menos L2”) y las crea como vacantes pending_review para seguimiento. LinkedIn solo abre la búsqueda oficial: pega cada jobs/view para importar. Marcar y guardar en esta pantalla también autoriza.',
   },
+  '/agent/instructions': {
+    title: 'Instrucciones',
+    body: 'Prompt global y suffix por especialista. Los cambios aplican en el siguiente mensaje.',
+  },
+  '/settings/agents': {
+    title: 'Catálogo de Agentes',
+    body: 'Tabla de agentes del sistema. Ábrelos para verlos o editar overrides (prompt, metodologías, secciones, delegación y memoria). No se pueden crear ni eliminar: están definidos en código.',
+  },
+  '/settings/sections': {
+    title: 'Secciones del Admin',
+    body: 'Registro de pantallas: tipo tabla/funcional/métricas/bucket, agente con dominio, vistas e instrucciones de este sidebar.',
+  },
   '/files': {
     title: 'Archivos',
     body: 'Sube cualquier archivo (imágenes, documentos) y obtén un link público para referenciarlo donde quieras, por ejemplo dentro de un campo Markdown con ![descripción](link). "Copiar link" copia la URL pública; "Eliminar" borra el archivo del bucket de forma permanente.',
+  },
+  '/tasks': {
+    title: 'Tareas',
+    body: 'Tablero de trabajo: lista, kanban, calendario y Gantt. Una tarea puede ser tuya (manual) o de un agente del catálogo. Si asignas un agente y una fecha/hora, el scheduler de la API la ejecuta a esa hora aunque no estés en sesión. "Ejecutar ahora" dispara al agente de inmediato.',
   },
 }
 
@@ -62,6 +80,9 @@ const getCareerResourceInstructions = (resourceKey: string): PageInstructions | 
 
 const getPageInstructions = (pathname: string): PageInstructions => {
   if (STATIC_INSTRUCTIONS[pathname]) return STATIC_INSTRUCTIONS[pathname]
+  if (pathname.startsWith('/settings/agents')) return STATIC_INSTRUCTIONS['/settings/agents']
+  if (pathname.startsWith('/settings/sections')) return STATIC_INSTRUCTIONS['/settings/sections']
+  if (pathname.startsWith('/agent/catalog')) return STATIC_INSTRUCTIONS['/settings/agents']
 
   const careerMatch = pathname.match(/^\/career\/([^/]+)$/)
   if (careerMatch) {
@@ -98,13 +119,17 @@ interface SidebarRightProps {
 export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('instructions')
   const location = useLocation()
-  const instructions = getPageInstructions(location.pathname)
+  const { data: sections } = useAdminSections()
+  const matched = matchAdminSection(location.pathname, sections ?? [])
+  const instructions = matched
+    ? { title: matched.view.sidebar_title, body: matched.view.sidebar_body }
+    : getPageInstructions(location.pathname)
   const pageContext = useChatPageContext()
 
   return (
     <aside
       className={clsx(
-        'glass-panel backdrop-blur-[20px] flex flex-col border-l border-border p-4 gap-4',
+        'glass-panel backdrop-blur-[20px] flex flex-col border-l border-border p-4 gap-4 min-w-0',
         'fixed inset-0 z-50 w-full',
         'md:inset-y-0 md:left-auto md:right-0 md:w-96 md:max-w-[90vw] md:rounded-l-2xl',
         'xl:static xl:z-auto xl:w-80 xl:h-auto xl:flex-shrink-0 xl:rounded-none'

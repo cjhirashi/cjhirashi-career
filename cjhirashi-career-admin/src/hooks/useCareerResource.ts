@@ -12,22 +12,19 @@ export const careerQueryKey = (resource: string, extra?: unknown) =>
   extra === undefined ? (['career', resource] as const) : (['career', resource, extra] as const)
 
 export function useCareerList<T = CareerEntity>(resource: string, params: ListParams = {}, enabled = true) {
-  const { skip = 0, limit = 20, sortBy, sortDir, search } = params
+  const { skip = 0, limit = 20, sortBy, sortDir, search, filters } = params
   return useQuery({
-    queryKey: careerQueryKey(resource, { skip, limit, sortBy, sortDir, search }),
-    queryFn: () => careerApi.list<T>(resource, { skip, limit, sortBy, sortDir, search }),
+    queryKey: careerQueryKey(resource, { skip, limit, sortBy, sortDir, search, filters }),
+    queryFn: () => careerApi.list<T>(resource, { skip, limit, sortBy, sortDir, search, filters }),
     enabled,
   })
 }
 
-/** Total row count for a resource, independent of pagination - shown next
- * to the table's title. Nested under the same `careerQueryKey(resource)`
- * prefix as the list query, so `useCareerMutations`'s invalidation (which
- * uses `exact: false`) refreshes it too after a create/delete. */
-export function useCareerCount(resource: string, enabled = true) {
+export function useCareerCount(resource: string, params: Pick<ListParams, 'search' | 'filters'> = {}, enabled = true) {
+  const { search, filters } = params
   return useQuery({
-    queryKey: careerQueryKey(resource, { count: true }),
-    queryFn: () => careerApi.count(resource),
+    queryKey: careerQueryKey(resource, { count: true, search, filters }),
+    queryFn: () => careerApi.count(resource, { search, filters }),
     enabled,
   })
 }

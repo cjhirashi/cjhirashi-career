@@ -158,7 +158,7 @@ export const AgentGeneralChatPage: React.FC = () => {
         </aside>
 
         {/* Chat area */}
-        <div className="card flex-1 flex flex-col min-h-0 p-4">
+        <div className="card flex-1 flex flex-col min-h-0 min-w-0 p-4">
           <ChatWindow
             chatSurface="general"
             pageContext={pageContext}

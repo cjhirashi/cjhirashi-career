@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowUp,
   ArrowUpDown,
   Check,
@@ -37,18 +36,29 @@ import {
   usePdfTemplateStyleCount,
 } from '@/hooks/usePdfTemplateStyleResource'
 import { careerApi } from '@/api/career'
+import { ListFilters } from '@/api/career'
 import { pdfTemplatesApi } from '@/api/pdfTemplates'
 import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
 import { CareerEntity } from '@/types/career'
 import { getBlobErrorMessage, getErrorMessage, assertPdfBlob } from '@/utils/errors'
 import { matchesRecordSegment, recordSegmentFromPath, recordUrlSegment } from '@/utils/recordUrl'
+import { hasActiveFilters } from '@/utils/listFilters'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { SectionViewTabs, useSectionViewTabs } from '@/components/SectionViewTabs'
 import { ResourceForm } from './ResourceForm'
+import { ColumnFilterButton, isFilterableField } from './ResourceListFilters'
+import { SelectFieldHint } from './SelectFieldHint'
+import { StatusIndicator } from '@/components/StatusIndicator'
 import { useFkLabel } from '@/hooks/useFkOptions'
 import { GitHubReposPanel } from './GitHubReposPanel'
 import { formatCellValue } from './careerFieldUtils'
 import { formatDate, formatDateTime } from '@/utils/formatters'
+import { availableTableColumns, defaultTableColumns, nameColumnKey, pinnedColumnKeys } from '@/utils/tableColumns'
+import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
+import { TableColumnSettings } from './TableColumnSettings'
 import { ThemedSelect } from '@/components/ThemedSelect'
+import { SelectCapsule, SelectCapsuleGroup } from '@/components/SelectCapsule'
+import { MarkdownTable } from '@/components/MarkdownTable'
 
 export interface ParentFilter {
   field: string
@@ -314,53 +324,136 @@ interface CareerResourceViewProps {
  * a fixed height, and the page itself scrolls if needed. */
 type ViewState = 'list' | 'view' | 'edit' | 'create'
 
+const LIST_VIEW_TABS = [
+  { key: 'list', label: 'Lista' },
+  { key: 'view', label: 'Vista' },
+  { key: 'edit', label: 'Edición' },
+]
+const SINGLETON_VIEW_TABS = [{ key: 'main', label: 'Ficha' }]
+
+const recordNameLabel = (item: CareerEntity, config: ResourceConfig): string => {
+  const key = nameColumnKey(config)
+  if (!key) return ''
+  const raw = item[key]
+  if (raw == null || raw === '') return ''
+  const field = config.fields.find((entry) => entry.name === key)
+  const option = field?.options?.find((entry) => entry.value === String(raw))
+  return option?.label ?? String(raw)
+}
+
 const Badge: React.FC<{ color: 'cyan' | 'slate' | 'success' | 'error' | 'warning'; children: React.ReactNode }> = ({
   color,
   children,
 }) => <span className={`badge badge-${color}`}>{children}</span>
 
-/** Resolves and displays a FK id as "id — Name". Separate component so the
- * hook call is always at the top level (rules of hooks). */
-const FkFieldValue: React.FC<{
+const SELECT_FIELD_TYPES: FieldType[] = [
+  'select',
+  'creatable-select',
+  'fk-select',
+  'multi-select',
+  'fk-multi-select',
+]
+
+const fieldForColumn = (config: ResourceConfig, columnKey: string): FieldConfig | undefined =>
+  config.fields.find((field) => field.name === columnKey)
+
+const isSelectField = (field?: FieldConfig): field is FieldConfig =>
+  Boolean(field && SELECT_FIELD_TYPES.includes(field.type))
+
+/** Resolves a FK id into a split id/name capsule. Hook lives here (rules of hooks). */
+const FkSelectCapsule: React.FC<{
   id: string
   fkResource: string
   fkLabelField?: string | string[]
   fkApi?: 'career' | 'pdf-template-styles'
 }> = ({ id, fkResource, fkLabelField, fkApi = 'career' }) => {
-  const label = useFkLabel(fkResource, id, fkLabelField, fkApi)
-  return <span className="font-mono text-xs">{label}</span>
+  const name = useFkLabel(fkResource, id, fkLabelField, fkApi)
+  return <SelectCapsule code={id} label={name} />
+}
+
+const SelectFieldCapsules: React.FC<{
+  value: unknown
+  type: FieldType
+  field?: FieldConfig
+}> = ({ value, type, field }) => {
+  const empty = value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)
+
+  if (type === 'multi-select') {
+    if (!Array.isArray(value) || value.length === 0) {
+      return <span className="text-text-muted">Todos los agentes</span>
+    }
+    return (
+      <SelectCapsuleGroup>
+        {value.map((id) => (
+          <SelectCapsule key={String(id)} code={String(id)} label={getAgentProfileLabel(String(id))} />
+        ))}
+      </SelectCapsuleGroup>
+    )
+  }
+
+  if (empty) {
+    return <span className="text-text-muted">—</span>
+  }
+
+  if (type === 'select' || type === 'creatable-select') {
+    const raw = String(value)
+    const name = field?.options?.find((opt) => opt.value === raw)?.label ?? raw
+    return (
+      <SelectCapsuleGroup>
+        <SelectCapsule code={raw} label={name} />
+      </SelectCapsuleGroup>
+    )
+  }
+
+  if (type === 'fk-select' && field?.fkResource) {
+    return (
+      <SelectCapsuleGroup>
+        <FkSelectCapsule
+          id={String(value)}
+          fkResource={field.fkResource}
+          fkLabelField={field.fkLabelField}
+          fkApi={field.fkApi}
+        />
+      </SelectCapsuleGroup>
+    )
+  }
+
+  if (type === 'fk-multi-select' && field?.fkResource) {
+    const ids = Array.isArray(value) ? value.map(String) : []
+    return (
+      <SelectCapsuleGroup>
+        {ids.map((itemId) => (
+          <FkSelectCapsule
+            key={itemId}
+            id={itemId}
+            fkResource={field.fkResource!}
+            fkLabelField={field.fkLabelField}
+            fkApi={field.fkApi}
+          />
+        ))}
+      </SelectCapsuleGroup>
+    )
+  }
+
+  return <span className="text-text-muted">—</span>
 }
 
 /** Read-only rendering of a single field's value, matching its `FieldType` -
  * no truncation (unlike the table's `formatCellValue`), since this is the
  * one place meant to show the complete content. */
 const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfig }> = ({ value, type, field }) => {
-  if (type === 'multi-select') {
-    if (!Array.isArray(value) || value.length === 0) {
-      return <span className="text-text-muted">Todos los agentes</span>
-    }
-    return (
-      <ul className="list-disc list-inside space-y-0.5">
-        {value.map((id) => (
-          <li key={String(id)}>{getAgentProfileLabel(String(id))}</li>
-        ))}
-      </ul>
-    )
+  if (
+    type === 'select' ||
+    type === 'creatable-select' ||
+    type === 'fk-select' ||
+    type === 'multi-select' ||
+    type === 'fk-multi-select'
+  ) {
+    return <SelectFieldCapsules value={value} type={type} field={field} />
   }
 
   if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
     return <span className="text-text-muted">—</span>
-  }
-
-  if (type === 'fk-select' && field?.fkResource) {
-    return (
-      <FkFieldValue
-        id={String(value)}
-        fkResource={field.fkResource}
-        fkLabelField={field.fkLabelField}
-        fkApi={field.fkApi}
-      />
-    )
   }
 
   switch (type) {
@@ -371,7 +464,7 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfi
         </pre>
       )
     case 'boolean':
-      return <>{value ? 'Sí' : 'No'}</>
+      return <StatusIndicator active={Boolean(value)} />
     case 'date':
       return <>{typeof value === 'string' ? formatDate(value) : String(value)}</>
     case 'datetime':
@@ -394,7 +487,7 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfi
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema], rehypeHighlight]}
-            components={{ pre: CodeBlockPre }}
+            components={{ pre: CodeBlockPre, table: MarkdownTable }}
           >
             {String(value)}
           </ReactMarkdown>
@@ -472,7 +565,10 @@ const RecordView: React.FC<{
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {fields.map((field) => (
             <div key={field.name} className={field.fullWidth ? 'md:col-span-2' : ''}>
-              <dt className="text-xs text-text-secondary mb-1">{field.label}</dt>
+              <dt className="text-xs text-text-secondary mb-1">
+                {field.label}
+                <SelectFieldHint field={field} />
+              </dt>
               <dd className="text-sm text-text">
                 <FieldValue value={item[field.name]} type={field.type} field={field} />
               </dd>
@@ -548,6 +644,13 @@ const ProjectCard: React.FC<{
       <div className="flex flex-wrap gap-2">
         {restCols.map((col) => {
           const val = item[col.key]
+          const field = fieldForColumn(config, col.key)
+          if (isSelectField(field)) {
+            if (val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0)) {
+              return null
+            }
+            return <SelectFieldCapsules key={col.key} value={val} type={field.type} field={field} />
+          }
           if (val === null || val === undefined || val === '') return null
           if (col.format === 'boolean') return val ? (
             <Badge key={col.key} color="cyan">{col.label}</Badge>
@@ -656,11 +759,16 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 }) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const resourceFormId = useId()
+  // Opening Edición/Crear replaces the tab-row buttons in-place (pencil → X).
+  // The same pointer click can then land on Cancelar and bounce back to Vista.
+  const formOpenGuardAt = useRef(0)
   const usesPdfTemplatesApi = apiMode === 'pdf-templates'
   const usesPdfTemplateStylesApi = apiMode === 'pdf-template-styles'
   const usesExternalPdfApi = usesPdfTemplatesApi || usesPdfTemplateStylesApi
   const isSingleton = config.mode === 'singleton'
   const isNested = !!parentFilter
+  const sectionViews = useSectionViewTabs(isSingleton ? SINGLETON_VIEW_TABS : LIST_VIEW_TABS)
   const urlEnabled = Boolean(listPath) && !isNested && !isSingleton
   const recordSegment = urlEnabled && listPath
     ? recordSegmentFromPath(location.pathname, listPath)
@@ -682,6 +790,19 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   const [sortBy, setSortBy] = useState<string | undefined>(undefined)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [filters, setFilters] = useState<ListFilters>({})
+  const filtersActive = hasActiveFilters(filters)
+  const availableCols = useMemo(() => availableTableColumns(config), [config])
+  const defaultColKeys = useMemo(() => defaultTableColumns(config).map((col) => col.key), [config])
+  const pinnedCols = useMemo(() => pinnedColumnKeys(config), [config])
+  const {
+    columns: displayColumns,
+    selectedKeys: visibleColumnKeys,
+    toggleColumn,
+    moveColumn,
+    pinnedKeys: pinnedColumnIds,
+    options: columnOptions,
+  } = useVisibleTableColumns(config.key, availableCols, defaultColKeys, pinnedCols)
   const toggleSort = (key: string) => {
     setSkip(0)
     setSortBy((current) => {
@@ -697,7 +818,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   // Any change to search/sort invalidates the current page offset.
   useEffect(() => {
     setSkip(0)
-  }, [search, sortBy, sortDir])
+  }, [search, sortBy, sortDir, filters])
 
   const listParams = {
     skip: isNested || isSingleton ? 0 : skip,
@@ -705,6 +826,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     sortBy: supportsListControls ? sortBy : undefined,
     sortDir: supportsListControls ? sortDir : undefined,
     search: supportsListControls ? search || undefined : undefined,
+    filters: supportsListControls && filtersActive ? filters : undefined,
   }
 
   const careerListQuery = useCareerList<CareerEntity>(config.key, listParams, !usesExternalPdfApi)
@@ -725,9 +847,14 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
       ? pdfMutations
       : careerMutations
 
-  const careerCountQuery = useCareerCount(config.key, !isSingleton && !isNested && !usesExternalPdfApi)
-  const pdfCountQuery = usePdfTemplateCount(!isSingleton && !isNested && usesPdfTemplatesApi)
-  const pdfStyleCountQuery = usePdfTemplateStyleCount(!isSingleton && !isNested && usesPdfTemplateStylesApi)
+  const countParams = {
+    search: listParams.search,
+    filters: listParams.filters,
+  }
+  const countEnabled = !isSingleton && !isNested
+  const careerCountQuery = useCareerCount(config.key, countParams, countEnabled && !usesExternalPdfApi)
+  const pdfCountQuery = usePdfTemplateCount(countParams, countEnabled && usesPdfTemplatesApi)
+  const pdfStyleCountQuery = usePdfTemplateStyleCount(countParams, countEnabled && usesPdfTemplateStylesApi)
   const { data: totalCount } = usesPdfTemplateStylesApi
     ? pdfStyleCountQuery
     : usesPdfTemplatesApi
@@ -743,10 +870,9 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   }, [data, isNested, parentFilter])
 
   // Table / view / edit / create all render in place of each other, inside
-  // the same card - no popup. The card has no max-height anywhere in this
-  // component, so it always grows to fit whichever of these is active and
-  // the page (see Layout.tsx's `<main>`) scrolls if it doesn't fit the
-  // viewport, instead of a cramped inner scrollbox.
+  // the same card - no popup. `.card.has-view-tabs` fills the main pane
+  // (see Layout.tsx) so the title + tabs stay pinned and only `.card-body`
+  // scrolls.
   const [viewState, setViewState] = useState<ViewState>('list')
   const [activeItem, setActiveItem] = useState<CareerEntity | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
@@ -914,13 +1040,28 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     goToRecordUrl(item)
   }
 
+  const guardFormOpenFromClick = () => {
+    formOpenGuardAt.current = performance.now()
+  }
+
+  const isGhostFormOpenClick = (event: { isTrusted: boolean }) =>
+    event.isTrusted && performance.now() - formOpenGuardAt.current < 400
+
+  const submitResourceForm = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isGhostFormOpenClick(event)) return
+    const form = document.getElementById(resourceFormId)
+    if (form instanceof HTMLFormElement) form.requestSubmit()
+  }
+
   const openCreate = () => {
+    guardFormOpenFromClick()
     setActiveItem(null)
     setFormError(null)
     setViewState('create')
   }
 
   const openEdit = (item: CareerEntity) => {
+    guardFormOpenFromClick()
     setActiveItem(item)
     setFormError(null)
     closePdfPreview()
@@ -1023,6 +1164,50 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     }
   }
 
+  const activeViewKey = isSingleton
+    ? (sectionViews[0]?.key ?? 'main')
+    : viewState === 'list'
+      ? 'list'
+      : viewState === 'view'
+        ? 'view'
+        : 'edit'
+
+  const selectSectionView = (key: string) => {
+    if (key === 'list' && viewState !== 'list') backToList()
+  }
+
+  const isSaving = createMutation.isPending || updateMutation.isPending
+  const renderFormTabActions = (submitLabel: string, onCancel?: () => void) => (
+    <>
+      {onCancel ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            if (isGhostFormOpenClick(event)) return
+            onCancel()
+          }}
+          className="btn-icon btn-icon-sm btn-icon-muted"
+          aria-label="Cancelar"
+          title="Cancelar"
+          disabled={isSaving}
+        >
+          <X size={13} />
+        </button>
+      ) : null}
+      <button
+        type="button"
+        form={resourceFormId}
+        onClick={submitResourceForm}
+        className="btn-icon btn-icon-sm"
+        aria-label={submitLabel}
+        title={submitLabel}
+        disabled={isSaving}
+      >
+        <Check size={13} />
+      </button>
+    </>
+  )
+
   // ---------------------------------------------------------------------
   // Singleton mode (e.g. `identity`): at most one record, no table to come
   // back to. Defaults to a read-only view (same RecordView as everything
@@ -1049,35 +1234,52 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     }
 
     return (
-      <div className="card">
+      <div className="card has-view-tabs">
         {!hideTitle && (
-          <div className="card-header flex items-center justify-between gap-3">
-            <h2 className="font-semibold text-text">{title || config.label}</h2>
-            {!showForm && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormError(null)
-                    setIsEditingSingleton(true)
-                  }}
-                  className="btn-icon"
-                  aria-label="Editar"
-                  title="Editar"
-                >
-                  <Pencil size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteSingleton}
-                  className="btn-icon btn-icon-danger"
-                  aria-label="Eliminar"
-                  title="Eliminar"
-                >
-                  <Trash2 size={16} />
-                </button>
+          <div className="card-header">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-semibold text-text">{title || config.label}</h2>
+            </div>
+            <div className="view-tabs-row">
+              <SectionViewTabs
+                views={sectionViews}
+                activeKey={activeViewKey}
+                interactiveKeys={[]}
+              />
+              <div className="view-tabs-actions">
+                {showForm ? (
+                  renderFormTabActions(
+                    existing ? 'Actualizar' : 'Crear',
+                    existing ? () => setIsEditingSingleton(false) : undefined
+                  )
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        guardFormOpenFromClick()
+                        setFormError(null)
+                        setIsEditingSingleton(true)
+                      }}
+                      className="btn-icon btn-icon-sm"
+                      aria-label="Editar"
+                      title="Editar"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteSingleton}
+                      className="btn-icon btn-icon-sm btn-icon-danger"
+                      aria-label="Eliminar"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
         <div className="card-body">
@@ -1092,6 +1294,8 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
             <ResourceForm
               config={config}
               initialValues={existing}
+              formId={resourceFormId}
+              hideActions
               onSubmit={(payload) => {
                 setFormError(null)
                 if (existing) {
@@ -1106,8 +1310,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                   createMutation.mutate(payload, { onError: (err) => setFormError(getErrorMessage(err)) })
                 }
               }}
-              onCancel={existing ? () => setIsEditingSingleton(false) : undefined}
-              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              isSubmitting={isSaving}
               submitLabel={existing ? 'Actualizar' : 'Crear'}
             />
           ) : (
@@ -1124,92 +1327,112 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   // Header - changes with viewState instead of always showing the table's
   // title + "Nuevo" button.
   // ---------------------------------------------------------------------
-  const headerTitle =
-    viewState === 'list'
-      ? title || config.label
-      : viewState === 'create'
-        ? `${config.genderFeminine ? 'Nueva' : 'Nuevo'} ${config.labelSingular}`
-        : viewState === 'edit'
-          ? `Editar ${config.labelSingular}`
-          : String(activeItem?.[config.columns[0]?.key ?? ''] ?? config.labelSingular)
-
+  const sectionTitle = title || config.label
+  const headingRecord = viewState === 'create' ? null : activeItem
+  const headingName = headingRecord ? recordNameLabel(headingRecord, config) : ''
+  const showRecordHeading = viewState !== 'list' && Boolean(headingRecord)
+  const headingText =
+    viewState === 'create'
+      ? `${sectionTitle} · nuevo`
+      : showRecordHeading && headingRecord
+        ? [sectionTitle, headingRecord.id, headingName].filter((part) => part !== '' && part != null).join(' · ')
+        : sectionTitle
   const headerActions =
     viewState === 'list' ? (
-      <button type="button" onClick={openCreate} className="btn-icon" aria-label="Nuevo" title="Nuevo">
-        <Plus size={16} />
+      <button type="button" onClick={openCreate} className="btn-icon btn-icon-sm" aria-label="Nuevo" title="Nuevo">
+        <Plus size={13} />
       </button>
-    ) : (
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={backToList} className="btn-icon" aria-label="Volver" title="Volver">
-          <ArrowLeft size={16} />
-        </button>
-        {viewState === 'view' && activeItem && (
+    ) : viewState === 'view' && activeItem ? (
+      <>
+        {isPdfExportable && (
           <>
-            {isPdfExportable && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleTogglePdfPreview}
-                  disabled={pdfPreviewLoading}
-                  className="btn-icon"
-                  aria-label={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
-                  title={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
-                >
-                  {pdfPreviewVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleGeneratePdf(activeItem)}
-                  disabled={pdfDownloading}
-                  className="btn-icon"
-                  aria-label="Generar PDF"
-                  title="Generar PDF"
-                >
-                  <FileDown size={16} />
-                </button>
-              </>
-            )}
             <button
               type="button"
-              onClick={() => openEdit(activeItem)}
-              className="btn-icon"
-              aria-label="Editar"
-              title="Editar"
+              onClick={handleTogglePdfPreview}
+              disabled={pdfPreviewLoading}
+              className="btn-icon btn-icon-sm"
+              aria-label={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
+              title={pdfPreviewVisible ? 'Ocultar vista previa de impresión' : 'Mostrar vista previa de impresión'}
             >
-              <Pencil size={16} />
+              {pdfPreviewVisible ? <EyeOff size={13} /> : <Eye size={13} />}
             </button>
             <button
               type="button"
-              onClick={() => handleDelete(activeItem)}
-              className="btn-icon btn-icon-danger"
-              aria-label="Eliminar"
-              title="Eliminar"
+              onClick={() => handleGeneratePdf(activeItem)}
+              disabled={pdfDownloading}
+              className="btn-icon btn-icon-sm"
+              aria-label="Generar PDF"
+              title="Generar PDF"
             >
-              <Trash2 size={16} />
+              <FileDown size={13} />
             </button>
           </>
         )}
-      </div>
-    )
+        <button
+          type="button"
+          onClick={() => openEdit(activeItem)}
+          className="btn-icon btn-icon-sm"
+          aria-label="Editar"
+          title="Editar"
+        >
+          <Pencil size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleDelete(activeItem)}
+          className="btn-icon btn-icon-sm btn-icon-danger"
+          aria-label="Eliminar"
+          title="Eliminar"
+        >
+          <Trash2 size={13} />
+        </button>
+      </>
+    ) : viewState === 'edit' || viewState === 'create' ? (
+      renderFormTabActions(viewState === 'create' ? 'Crear' : 'Actualizar', cancelForm)
+    ) : null
 
   return (
-    <div className={hideTitle ? '' : 'card'}>
+    <div className={hideTitle ? '' : 'card has-view-tabs'}>
       {!hideTitle && (
-        <div className="card-header flex items-center justify-between gap-3">
-          <h2 className="font-semibold text-text flex items-center gap-2">
-            {headerTitle}
-            {viewState === 'list' && totalCount !== undefined && (
-              <span className="badge badge-slate mono">{totalCount}</span>
-            )}
+        <div className="card-header">
+          <h2 className="font-semibold text-text flex items-center gap-2 min-w-0">
+              {showRecordHeading && headingRecord ? (
+                <>
+                  <span className="truncate">{sectionTitle}</span>
+                  <span className="text-text-muted font-normal">·</span>
+                  <span className="mono text-primary font-normal flex-shrink-0">{String(headingRecord.id)}</span>
+                  {headingName ? (
+                    <>
+                      <span className="text-text-muted font-normal">·</span>
+                      <span className="truncate">{headingName}</span>
+                    </>
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <span className="truncate">{headingText}</span>
+                  {viewState === 'list' && totalCount !== undefined && (
+                    <span className="badge badge-slate mono">{totalCount}</span>
+                  )}
+                </>
+              )}
           </h2>
-          {headerActions}
+          <div className="view-tabs-row">
+            <SectionViewTabs
+              views={sectionViews}
+              activeKey={activeViewKey}
+              interactiveKeys={['list']}
+              onSelect={selectSectionView}
+            />
+            {headerActions ? <div className="view-tabs-actions">{headerActions}</div> : null}
+          </div>
         </div>
       )}
 
       {hideTitle && (
         <div className="flex items-center justify-between gap-3 mb-3">
-          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">{headerTitle}</h3>
-          {headerActions}
+          <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">{headingText}</h3>
+          {headerActions ? <div className="view-tabs-actions">{headerActions}</div> : null}
         </div>
       )}
 
@@ -1273,9 +1496,10 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
               config={config}
               initialValues={viewState === 'edit' ? activeItem || undefined : undefined}
               presetValues={presetValues}
+              formId={resourceFormId}
+              hideActions
               onSubmit={handleSubmit}
-              onCancel={cancelForm}
-              isSubmitting={createMutation.isPending || updateMutation.isPending}
+              isSubmitting={isSaving}
               submitLabel={viewState === 'create' ? 'Crear' : 'Actualizar'}
             />
           </>
@@ -1283,28 +1507,30 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
         {viewState === 'list' && (
           <>
-            {supportsListControls && (
+            {(supportsListControls || !isCards) && (
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-                  <input
-                    type="text"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder={`Buscar en ${config.label.toLowerCase()}...`}
-                    className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
-                  />
-                  {searchInput && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchInput('')}
-                      aria-label="Limpiar búsqueda"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
+                {supportsListControls && (
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+                    <input
+                      type="text"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      placeholder={`Buscar en ${config.label.toLowerCase()}...`}
+                      className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
+                    />
+                    {searchInput && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchInput('')}
+                        aria-label="Limpiar búsqueda"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {isCards && config.columns.length > 0 && (
                   <div className="flex items-center gap-1">
@@ -1329,6 +1555,45 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                     )}
                   </div>
                 )}
+                {filtersActive && (
+                  <button type="button" className="btn-secondary btn-small" onClick={() => setFilters({})}>
+                    Limpiar filtros
+                  </button>
+                )}
+                {!isCards && (
+                  <div className="ml-auto flex-shrink-0">
+                    <TableColumnSettings
+                      options={columnOptions}
+                      value={visibleColumnKeys}
+                      pinnedKeys={pinnedColumnIds}
+                      onToggle={toggleColumn}
+                      onMove={moveColumn}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {supportsListControls && isCards && config.columns.some((col) => isFilterableField(fieldForColumn(config, col.key))) && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+                {config.columns.map((col) => {
+                  const field = fieldForColumn(config, col.key)
+                  if (!isFilterableField(field)) return null
+                  return (
+                    <span
+                      key={col.key}
+                      className="inline-flex items-center gap-0.5 text-sm font-medium text-text-secondary"
+                    >
+                      {col.label}
+                      <ColumnFilterButton
+                        resourceKey={config.key}
+                        field={field}
+                        value={filters}
+                        onChange={setFilters}
+                      />
+                    </span>
+                  )
+                })}
               </div>
             )}
 
@@ -1345,7 +1610,9 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
             {!isLoading && !isError && items.length === 0 && (
               <p className="text-text-secondary text-sm text-center py-6">
-                {search ? 'Sin resultados para esa búsqueda.' : `No hay ${config.label.toLowerCase()} todavía.`}
+                {search || filtersActive
+                  ? 'Sin resultados para esa búsqueda o filtros.'
+                  : `No hay ${config.label.toLowerCase()} todavía.`}
               </p>
             )}
 
@@ -1369,32 +1636,54 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-border text-left text-text-secondary">
-                      {config.columns.map((col) =>
-                        supportsListControls ? (
-                          <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => toggleSort(col.key)}
-                              className="flex items-center gap-1 hover:text-text"
-                            >
-                              {col.label}
-                              {sortBy === col.key ? (
-                                sortDir === 'asc' ? (
-                                  <ArrowUp size={12} />
+                      {displayColumns.map((col) => {
+                        const field = fieldForColumn(config, col.key)
+                        const filterBtn =
+                          supportsListControls && isFilterableField(field) ? (
+                            <ColumnFilterButton
+                              resourceKey={config.key}
+                              field={field}
+                              value={filters}
+                              onChange={setFilters}
+                            />
+                          ) : null
+                        return supportsListControls ? (
+                          <th
+                            key={col.key}
+                            className={`px-6 py-2 font-medium whitespace-nowrap${col.key === 'id' ? ' table-col-id' : ''}`}
+                          >
+                            <span className="inline-flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => toggleSort(col.key)}
+                                className={`flex items-center gap-1 ${col.key === 'id' ? 'hover:opacity-80' : 'hover:text-text'}`}
+                              >
+                                {col.label}
+                                {sortBy === col.key ? (
+                                  sortDir === 'asc' ? (
+                                    <ArrowUp size={12} />
+                                  ) : (
+                                    <ArrowDown size={12} />
+                                  )
                                 ) : (
-                                  <ArrowDown size={12} />
-                                )
-                              ) : (
-                                <ArrowUpDown size={12} className="opacity-30" />
-                              )}
-                            </button>
+                                  <ArrowUpDown size={12} className="opacity-30" />
+                                )}
+                              </button>
+                              {filterBtn}
+                            </span>
                           </th>
                         ) : (
-                          <th key={col.key} className="px-6 py-2 font-medium whitespace-nowrap">
-                            {col.label}
+                          <th
+                            key={col.key}
+                            className={`px-6 py-2 font-medium whitespace-nowrap${col.key === 'id' ? ' table-col-id' : ''}`}
+                          >
+                            <span className="inline-flex items-center gap-0.5">
+                              {col.label}
+                              {filterBtn}
+                            </span>
                           </th>
                         )
-                      )}
+                      })}
                       <th className="px-6 py-2 font-medium text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -1405,8 +1694,31 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                         onClick={() => openView(item)}
                         className={`border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer ${rowClassName ? rowClassName(item) : ''}`}
                       >
-                        {config.columns.map((col) => {
+                        {displayColumns.map((col) => {
                           const value = item[col.key]
+                          if (col.key === 'id') {
+                            return (
+                              <td key="id" className="px-6 py-2 table-col-id" title={String(value ?? '')}>
+                                {value != null && value !== '' ? String(value) : '—'}
+                              </td>
+                            )
+                          }
+                          const field = fieldForColumn(config, col.key)
+                          const fieldType = field?.type
+                          if (isSelectField(field)) {
+                            return (
+                              <td key={col.key} className="px-6 py-2">
+                                <SelectFieldCapsules value={value} type={field.type} field={field} />
+                              </td>
+                            )
+                          }
+                          if (col.format === 'boolean' || fieldType === 'boolean') {
+                            return (
+                              <td key={col.key} className="px-6 py-2 whitespace-nowrap">
+                                <StatusIndicator active={Boolean(value)} />
+                              </td>
+                            )
+                          }
                           if (col.format === 'badge' && value !== null && value !== undefined && value !== '') {
                             return (
                               <td key={col.key} className="px-6 py-2 whitespace-nowrap">

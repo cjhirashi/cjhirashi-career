@@ -104,9 +104,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
         )}
 
-        {/* Main Content (`main-content`) */}
-        <main className="flex-1 overflow-auto min-w-0">
-          <div className="p-4 sm:p-6 max-w-7xl mx-auto">{children}</div>
+        {/* Main Content (`main-content`). Overflow lives on the inner
+            wrapper so `.card.has-view-tabs` can fill the pane and keep its
+            header visible while only the card body scrolls. */}
+        <main className="flex-1 min-h-0 min-w-0 overflow-hidden flex flex-col">
+          <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full flex-1 min-h-0 flex flex-col overflow-auto">
+            {children}
+          </div>
         </main>
 
         {/* Backdrop for the right panel's overlay modes (mobile full-screen,

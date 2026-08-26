@@ -1,7 +1,8 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, Plus } from 'lucide-react'
 import { clsx } from 'clsx'
 import { SelectOption } from '@/config/careerResources'
+import { SelectCapsule, SelectOptionIdentity } from '@/components/SelectCapsule'
 
 export interface ThemedSelectProps {
   id?: string
@@ -16,6 +17,15 @@ export interface ThemedSelectProps {
   'aria-label'?: string
   /** When false, the empty placeholder is not a selectable row (status pickers). */
   allowEmpty?: boolean
+  /**
+   * Allow typing a value that is not yet in `options`. Used for categorical
+   * columns whose vocabulary grows as Carlos saves records.
+   */
+  creatable?: boolean
+}
+
+interface SelectRow extends SelectOption {
+  isCreate?: boolean
 }
 
 /**
@@ -35,6 +45,7 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
   className,
   'aria-label': ariaLabel,
   allowEmpty = true,
+  creatable = false,
 }) => {
   const autoId = useId()
   const listboxId = `${id ?? autoId}-listbox`
@@ -44,19 +55,35 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
   const searchRef = useRef<HTMLInputElement>(null)
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([])
 
-  const selected = options.find((opt) => opt.value === value)
-  const label = selected?.label ?? placeholder
-  const showSearch = options.length >= 8
+  const listedOptions = useMemo<SelectOption[]>(() => {
+    if (value && !options.some((opt) => opt.value === value)) {
+      return [{ value, label: value }, ...options]
+    }
+    return options
+  }, [options, value])
 
-  const rows = useMemo<SelectOption[]>(() => {
+  const selected = listedOptions.find((opt) => opt.value === value)
+  const showSearch = creatable || listedOptions.length >= 8
+
+  const rows = useMemo<SelectRow[]>(() => {
     const q = query.trim().toLowerCase()
     const filtered = q
-      ? options.filter(
+      ? listedOptions.filter(
           (opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q)
         )
-      : options
-    return allowEmpty ? [{ value: '', label: placeholder }, ...filtered] : filtered
-  }, [options, query, placeholder, allowEmpty])
+      : listedOptions
+    const next: SelectRow[] = allowEmpty ? [{ value: '', label: placeholder }, ...filtered] : [...filtered]
+    if (creatable) {
+      const typed = query.trim()
+      const exists = listedOptions.some(
+        (opt) => opt.value.toLowerCase() === typed.toLowerCase() || opt.label.toLowerCase() === typed.toLowerCase()
+      )
+      if (typed && !exists) {
+        next.push({ value: typed, label: `Añadir «${typed}»`, isCreate: true })
+      }
+    }
+    return next
+  }, [listedOptions, query, placeholder, allowEmpty, creatable])
 
   const close = () => {
     setOpen(false)
@@ -70,7 +97,7 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
 
   useEffect(() => {
     if (!open) return
-    const selectedIndex = rows.findIndex((opt) => opt.value === value)
+    const selectedIndex = rows.findIndex((opt) => opt.value === value && !opt.isCreate)
     setHighlighted(selectedIndex >= 0 ? selectedIndex : 0)
     const timer = window.setTimeout(() => {
       if (showSearch) searchRef.current?.focus()
@@ -102,6 +129,19 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
     }
   }
 
+  const commitTypedOrHighlighted = () => {
+    const typed = query.trim()
+    if (creatable && typed) {
+      const match = listedOptions.find(
+        (opt) => opt.value.toLowerCase() === typed.toLowerCase() || opt.label.toLowerCase() === typed.toLowerCase()
+      )
+      pick(match ? match.value : typed)
+      return
+    }
+    const option = rows[highlighted]
+    if (option) pick(option.value)
+  }
+
   const handleListKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault()
@@ -120,8 +160,7 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
     }
     if (e.key === 'Enter') {
       e.preventDefault()
-      const option = rows[highlighted]
-      if (option) pick(option.value)
+      commitTypedOrHighlighted()
     }
   }
 
@@ -139,7 +178,7 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
         onChange={(e) => onChange(e.target.value)}
       >
         {allowEmpty && <option value="">{placeholder}</option>}
-        {options.map((opt) => (
+        {listedOptions.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
@@ -162,7 +201,13 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
           !selected && 'text-text-muted'
         )}
       >
-        <span className="min-w-0 truncate">{label}</span>
+        {selected ? (
+          <span className="min-w-0 flex-1">
+            <SelectCapsule code={selected.value} label={selected.label} />
+          </span>
+        ) : (
+          <span className="min-w-0 truncate">{placeholder}</span>
+        )}
         <ChevronDown
           size={16}
           className={clsx('flex-shrink-0 text-text-secondary transition-transform', open && 'rotate-180')}
@@ -190,9 +235,9 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
                     setQuery(e.target.value)
                     setHighlighted(0)
                   }}
-                  placeholder="Filtrar…"
+                  placeholder={creatable ? 'Escribe para filtrar o añadir…' : 'Filtrar…'}
                   className="input-field py-1.5 text-sm"
-                  aria-label="Filtrar opciones"
+                  aria-label={creatable ? 'Filtrar o añadir opción' : 'Filtrar opciones'}
                 />
               </div>
             )}
@@ -201,12 +246,16 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
               <p className="px-3 py-2 text-sm text-text-muted">Sin coincidencias</p>
             )}
 
+            {rows.length === 0 && query.trim() === '' && creatable && (
+              <p className="px-3 py-2 text-sm text-text-muted">Sin opciones aún. Escribe para añadir una.</p>
+            )}
+
             {rows.map((opt, index) => {
-              const isSelected = opt.value === value
-              const isPlaceholder = opt.value === ''
+              const isSelected = !opt.isCreate && opt.value === value
+              const isPlaceholder = opt.value === '' && !opt.isCreate
               return (
                 <button
-                  key={opt.value || '__empty__'}
+                  key={opt.isCreate ? '__create__' : opt.value || '__empty__'}
                   type="button"
                   role="option"
                   aria-selected={isSelected}
@@ -218,9 +267,18 @@ export const ThemedSelect: React.FC<ThemedSelectProps> = ({
                   onMouseEnter={() => setHighlighted(index)}
                   onClick={() => pick(opt.value)}
                 >
-                  <span className={clsx('min-w-0 truncate', isPlaceholder && 'text-text-muted')}>
-                    {opt.label}
-                  </span>
+                  {opt.isCreate ? (
+                    <span className="min-w-0 flex items-center gap-2 text-primary">
+                      <Plus size={14} className="flex-shrink-0" aria-hidden="true" />
+                      <span className="min-w-0 truncate">{opt.label}</span>
+                    </span>
+                  ) : (
+                    <SelectOptionIdentity
+                      code={isPlaceholder ? undefined : opt.value}
+                      label={opt.label}
+                      muted={isPlaceholder}
+                    />
+                  )}
                   {isSelected && !isPlaceholder && (
                     <Check size={14} className="text-primary flex-shrink-0" aria-hidden="true" />
                   )}

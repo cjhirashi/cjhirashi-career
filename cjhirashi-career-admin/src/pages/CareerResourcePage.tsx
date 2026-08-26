@@ -31,11 +31,8 @@ export const CareerResourcePage: React.FC = () => {
   }
 
   return (
-    <div>
-      {config.description && (
-        <p className="text-slate-600 dark:text-slate-400 mb-4">{config.description}</p>
-      )}
-      <CareerResourceView config={config} listPath={`/career/${config.key}`} />
+    <div className="flex-1 min-h-0 flex flex-col">
+      <CareerResourceView key={config.key} config={config} listPath={`/career/${config.key}`} />
     </div>
   )
 }

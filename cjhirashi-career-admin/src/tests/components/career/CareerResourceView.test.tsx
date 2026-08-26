@@ -53,6 +53,39 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
     expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'false')
+    expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'false')
+    expect(screen.getByRole('tab', { name: 'Vista' }).tagName).not.toBe('BUTTON')
+    expect(screen.getByRole('tab', { name: 'Edición' }).tagName).not.toBe('BUTTON')
+    expect(screen.getByRole('tab', { name: 'Lista' }).tagName).toBe('BUTTON')
+  })
+
+  it('activates Vista when a row is opened and returns to list from the Lista tab', async () => {
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'true'))
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Competencias')
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('1')
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Liderazgo Técnico')
+    fireEvent.click(screen.getByRole('tab', { name: 'Lista' }))
+    await waitFor(() => expect(screen.getByRole('table')).toBeInTheDocument())
+    expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Competencias')
+  })
+
+  it('switches to Edición from the edit button, not from the Edición tab', async () => {
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'true'))
+    fireEvent.click(screen.getByRole('tab', { name: 'Edición' }))
+    expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true'))
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Competencias · 1 · Liderazgo Técnico')
   })
 
   it('shows the total record count next to the title, independent of the page size', async () => {
@@ -195,12 +228,13 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(screen.getByText(/renderizando diagrama/i)).toBeInTheDocument()
   })
 
-  it('goes back to the table when "Volver" is clicked from the view', async () => {
+  it('goes back to the table when the Lista tab is clicked from the view', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
 
     fireEvent.click(screen.getByText('Liderazgo Técnico'))
-    fireEvent.click(screen.getByRole('button', { name: /volver/i }))
+    expect(screen.queryByRole('button', { name: /volver/i })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Lista' }))
 
     expect(screen.getByRole('table')).toBeInTheDocument()
   })
@@ -215,6 +249,18 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(screen.getByDisplayValue('Liderazgo Técnico')).toBeInTheDocument()
   })
 
+  it('stays in Edición after clicking Editar from Vista', async () => {
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    fireEvent.click(screen.getByRole('button', { name: /editar/i }))
+
+    expect(screen.getByRole('form')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument()
+  })
+
   it('opens the edit form from within the view, pre-filled with the record', async () => {
     render(<CareerResourceView config={config} />)
     await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
@@ -223,6 +269,25 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     fireEvent.click(screen.getByRole('button', { name: /editar/i }))
 
     expect(screen.getByDisplayValue('Liderazgo Técnico')).toBeInTheDocument()
+  })
+
+  it('places Cancelar and Actualizar as icon buttons on the tab row, not in the form footer', async () => {
+    render(<CareerResourceView config={config} />)
+    await waitFor(() => expect(screen.getByText('Liderazgo Técnico')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByText('Liderazgo Técnico'))
+    fireEvent.click(screen.getByRole('button', { name: /editar/i }))
+
+    const cancel = screen.getByRole('button', { name: 'Cancelar' })
+    const save = screen.getByRole('button', { name: 'Actualizar' })
+    expect(cancel).toBeInTheDocument()
+    expect(save).toBeInTheDocument()
+    expect(save).toHaveAttribute('type', 'button')
+    expect(save).toHaveAttribute('form')
+    const form = screen.getByRole('form')
+    expect(form.contains(cancel)).toBe(false)
+    expect(form.contains(save)).toBe(false)
+    expect(within(form).queryByRole('button', { name: 'Cancelar' })).not.toBeInTheDocument()
   })
 
   it('cancelling out of edit (opened from view) returns to the view, not the table', async () => {
@@ -259,7 +324,7 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     fireEvent.change(within(form).getByLabelText(/^nombre/i), { target: { value: 'Pensamiento Sistémico' } })
     fireEvent.click(within(form).getByRole('button', { name: /^tipo/i }))
     fireEvent.click(within(form).getByRole('option', { name: /^técnica/i }))
-    fireEvent.click(within(form).getByRole('button', { name: /crear/i }))
+    fireEvent.click(screen.getByRole('button', { name: /crear/i }))
 
     await waitFor(() => expect(screen.getAllByText('Pensamiento Sistémico').length).toBeGreaterThan(0))
     expect(screen.queryByRole('form')).not.toBeInTheDocument()

@@ -4,6 +4,7 @@ Career domain (v2) - Identity.
 """
 from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
 
@@ -28,13 +29,22 @@ class WorkHistory(Base):
     people_managed = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     narrative = Column(Text, nullable=True)
-    achievements = Column(Text, nullable=True)
     key_metrics = Column(JSONB, nullable=True)
     learnings = Column(Text, nullable=True)
     contract_type = Column(String(50), nullable=True)
     industry_sector = Column(String(100), nullable=True)
 
     notes = Column(Text, nullable=True)
+
+    linked_achievements = relationship(
+        "Achievement",
+        back_populates="work_history_record",
+        lazy="selectin",
+    )
+
+    @property
+    def achievement_ids(self) -> list:
+        return [item.id for item in self.linked_achievements]
 
 
     # --- Auditoría temporal ---

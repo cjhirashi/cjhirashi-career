@@ -12,7 +12,7 @@ import { TaskListView } from '@/components/tasks/TaskListView'
 import { TaskKanbanView } from '@/components/tasks/TaskKanbanView'
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView'
 import { TaskGanttView } from '@/components/tasks/TaskGanttView'
-import { canRunAgentTask } from '@/components/tasks/taskUtils'
+import { canRunAgentTask, groupSubtasks, isRootTask, isTaskBlocked } from '@/components/tasks/taskUtils'
 
 const BOARD_VIEW_TABS: SectionViewTab[] = [
   { key: 'list', label: 'Lista' },
@@ -57,6 +57,32 @@ export const TasksPage: React.FC = () => {
   }, [catalog])
 
   const list = tasks ?? []
+  const roots = useMemo(() => list.filter(isRootTask), [list])
+  const childrenByParent = useMemo(() => groupSubtasks(list), [list])
+  const subtaskCount = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const [parentId, children] of childrenByParent) {
+      counts[parentId] = children.length
+    }
+    return counts
+  }, [childrenByParent])
+  const datedTasks = useMemo(
+    () =>
+      list.map((task) =>
+        task.parent_id ? { ...task, title: `↳ ${task.title}` } : task
+      ),
+    [list]
+  )
+  const deepLinkId = searchParams.get('task')
+
+  useEffect(() => {
+    if (!deepLinkId || list.length === 0) return
+    const found = list.find((task) => task.id === deepLinkId)
+    if (found) {
+      setActiveTask(found)
+      setRecordState('view')
+    }
+  }, [deepLinkId, list])
 
   useEffect(() => {
     if (!activeTask) return
@@ -145,6 +171,9 @@ export const TasksPage: React.FC = () => {
   }
 
   const handleRun = (task: BedrockTask) => {
+    const siblings = childrenByParent.get(task.parent_id ?? '') ?? []
+    if (isTaskBlocked(task, siblings)) return
+    if ((childrenByParent.get(task.id) ?? []).length > 0) return
     runMutation.mutate(task.id)
   }
 
@@ -177,7 +206,9 @@ export const TasksPage: React.FC = () => {
     </button>
   ) : recordState === 'view' && activeTask ? (
     <>
-      {canRunAgentTask(activeTask) && (
+      {canRunAgentTask(activeTask) &&
+        !isTaskBlocked(activeTask, childrenByParent.get(activeTask.parent_id ?? '') ?? []) &&
+        (childrenByParent.get(activeTask.id) ?? []).length === 0 && (
         <button
           type="button"
           onClick={() => handleRun(activeTask)}
@@ -254,7 +285,7 @@ export const TasksPage: React.FC = () => {
             ) : (
               <>
                 <span className="truncate">Tareas</span>
-                {!isLoading && <span className="badge badge-slate mono">{list.length}</span>}
+                {!isLoading && <span className="badge badge-slate mono">{roots.length}</span>}
               </>
             )}
           </h2>
@@ -275,7 +306,7 @@ export const TasksPage: React.FC = () => {
             <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
           )}
 
-          {isBoard && !isLoading && !isError && list.length === 0 && (
+          {isBoard && !isLoading && !isError && list.length === 0 && boardView !== 'list' && (
             <div className="py-8 text-center">
               <ClipboardList className="mx-auto text-text-muted mb-2" size={28} aria-hidden="true" />
               <p className="text-text-secondary text-sm">
@@ -284,19 +315,21 @@ export const TasksPage: React.FC = () => {
             </div>
           )}
 
-          {isBoard && !isLoading && list.length > 0 && boardView === 'list' && (
+          {isBoard && !isLoading && !isError && boardView === 'list' && (
             <TaskListView
-              tasks={list}
+              tasks={roots}
               agentLabels={agentLabels}
+              subtaskCount={subtaskCount}
               onOpen={openView}
+              onEdit={openEdit}
               onDelete={handleDelete}
               onRun={handleRun}
               runningId={runMutation.isPending ? runMutation.variables : undefined}
             />
           )}
-          {isBoard && !isLoading && list.length > 0 && boardView === 'kanban' && (
+          {isBoard && !isLoading && roots.length > 0 && boardView === 'kanban' && (
             <TaskKanbanView
-              tasks={list}
+              tasks={roots}
               agentLabels={agentLabels}
               onOpen={openView}
               onStatus={handleStatus}
@@ -304,18 +337,25 @@ export const TasksPage: React.FC = () => {
             />
           )}
           {isBoard && !isLoading && list.length > 0 && boardView === 'calendar' && (
-            <TaskCalendarView tasks={list} onOpen={openView} />
+            <TaskCalendarView tasks={datedTasks} onOpen={openView} />
           )}
           {isBoard && !isLoading && list.length > 0 && boardView === 'gantt' && (
-            <TaskGanttView tasks={list} agentLabels={agentLabels} onOpen={openView} />
+            <TaskGanttView tasks={datedTasks} agentLabels={agentLabels} onOpen={openView} />
           )}
 
           {recordState === 'view' && activeTask && (
-            <TaskRecordView task={activeTask} agentLabels={agentLabels} />
+            <TaskRecordView
+              task={activeTask}
+              subtasks={childrenByParent.get(activeTask.id) ?? []}
+              agentLabels={agentLabels}
+              onStatus={handleStatus}
+              onOpenSubtask={openView}
+            />
           )}
           {(recordState === 'edit' || recordState === 'create') && (
             <TaskForm
               task={recordState === 'create' ? null : activeTask}
+              subtasks={activeTask ? childrenByParent.get(activeTask.id) ?? [] : []}
               agents={catalog ?? []}
               onSave={handleSave}
               isSaving={isSaving}

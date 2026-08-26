@@ -8,7 +8,48 @@
 // component (see src/components/career/CareerResourceView.tsx).
 // ============================================================================
 
-import { Compass, Search, Globe, Handshake, Tag, type LucideIcon } from 'lucide-react'
+import {
+  Activity,
+  Award,
+  BookOpen,
+  Bookmark,
+  Briefcase,
+  Building2,
+  Calendar,
+  Circle,
+  ClipboardCheck,
+  Compass,
+  FileText,
+  Folder,
+  GitBranch,
+  Github,
+  Globe,
+  GraduationCap,
+  Handshake,
+  Home,
+  Layers,
+  Lightbulb,
+  Linkedin,
+  Mail,
+  Map,
+  MessageSquare,
+  MessagesSquare,
+  Newspaper,
+  PieChart,
+  Quote,
+  Scale,
+  Search,
+  Send,
+  Sparkles,
+  Star,
+  Tag,
+  Target,
+  Trophy,
+  User,
+  UserCircle,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
 import { allAgentSelectOptions } from '@/config/agentProfiles'
 
 export type FieldType =
@@ -20,11 +61,13 @@ export type FieldType =
   | 'datetime'
   | 'boolean'
   | 'select'
+  | 'creatable-select' // distinct values of this column; typing a new one grows the list
   | 'multi-select'
   | 'string-array' // newline-separated list -> string[]
   | 'number-array' // comma-separated list -> number[]
   | 'json' // raw JSON textarea -> parsed with JSON.parse
   | 'fk-select' // FK selector: fetches options from another career resource
+  | 'fk-multi-select' // several FKs: themed dropdown multi-select from another career resource
 
 export interface SelectOption {
   value: string
@@ -42,16 +85,17 @@ export interface FieldConfig {
   /** Render this field spanning both columns of the two-column form grid. */
   fullWidth?: boolean
   /**
-   * For type='fk-select': the career resource key to fetch options from.
-   * E.g. 'target-roles', 'competencies', 'vacancies'.
+   * For type='fk-select' or 'fk-multi-select': the career resource key to fetch
+   * options from. E.g. 'target-roles', 'competencies', 'vacancies'.
    */
   fkResource?: string
   /**
-   * For type='fk-select': the field(s) on the referenced record to use as
-   * display label. First non-empty value wins. Defaults to ['name','title'].
+   * For type='fk-select' or 'fk-multi-select': the field(s) on the referenced
+   * record to use as display label. First non-empty value wins.
+   * Defaults to ['name','title'].
    */
   fkLabelField?: string | string[]
-  /** For type='fk-select': API source when not under /career/{key}. */
+  /** For type='fk-select' or 'fk-multi-select': API source when not under /career/{key}. */
   fkApi?: 'career' | 'pdf-template-styles'
 }
 
@@ -267,8 +311,8 @@ export const competenciesConfig: ResourceConfig = {
         { value: 'business', label: 'Negocio' },
       ],
     },
-    { name: 'category', label: 'Categoría', type: 'text' },
-    { name: 'level', label: 'Nivel', type: 'text' },
+    { name: 'category', label: 'Categoría', type: 'creatable-select' },
+    { name: 'level', label: 'Nivel', type: 'creatable-select' },
     { name: 'years_of_experience', label: 'Años de experiencia', type: 'number' },
     { name: 'practice_start_date', label: 'Fecha de inicio de práctica', type: 'date' },
     { name: 'proficiency_score', label: 'Score de dominio (0-100)', type: 'number' },
@@ -288,10 +332,13 @@ export const competenciesConfig: ResourceConfig = {
     },
     {
       name: 'aligned_differentiator_ids',
-      label: 'Diferenciadores alineados (IDs separados por coma)',
-      type: 'string-array',
+      label: 'Diferenciadores alineados',
+      type: 'fk-multi-select',
+      fkResource: 'differentiators',
+      fkLabelField: 'pillar_name',
       fullWidth: true,
-      helpText: 'Ingresa los IDs de diferenciadores (ej. dif-1, dif-2), uno por línea.',
+      placeholder: '— Selecciona diferenciadores —',
+      helpText: 'Selecciona los diferenciadores que esta competencia respalda.',
     },
     { name: 'depth_description', label: 'Descripción de profundidad', type: 'textarea', fullWidth: true },
     { name: 'market_gaps', label: 'Brechas de mercado', type: 'textarea', fullWidth: true },
@@ -314,7 +361,7 @@ export const certificationsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },
-    { name: 'institution', label: 'Institución', type: 'text' },
+    { name: 'institution', label: 'Institución', type: 'creatable-select' },
     { name: 'year', label: 'Año', type: 'number' },
     {
       name: 'status',
@@ -362,7 +409,7 @@ export const targetRolesConfig: ResourceConfig = {
     { name: 'years_experience_required', label: 'Años de experiencia requeridos', type: 'number' },
     { name: 'market_active_vacancies', label: 'Vacantes activas en mercado', type: 'number' },
     { name: 'market_validated_at', label: 'Fecha de validación de mercado', type: 'date' },
-    { name: 'current_accessibility', label: 'Accesibilidad actual', type: 'text' },
+    { name: 'current_accessibility', label: 'Accesibilidad actual', type: 'creatable-select' },
     { name: 'is_active', label: 'Activo', type: 'boolean' },
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
     {
@@ -395,17 +442,21 @@ export const workHistoryConfig: ResourceConfig = {
     { name: 'role_title', label: 'Puesto', type: 'text', required: true },
     { name: 'start_date', label: 'Fecha de inicio', type: 'date' },
     { name: 'end_date', label: 'Fecha de fin', type: 'date' },
-    { name: 'people_managed', label: 'Personas a cargo', type: 'text' },
-    { name: 'contract_type', label: 'Tipo de contrato', type: 'text' },
-    { name: 'industry_sector', label: 'Sector de industria', type: 'text' },
+    { name: 'people_managed', label: 'Personas a cargo', type: 'creatable-select' },
+    { name: 'contract_type', label: 'Tipo de contrato', type: 'creatable-select' },
+    { name: 'industry_sector', label: 'Sector de industria', type: 'creatable-select' },
     { name: 'description', label: 'Descripción', type: 'textarea', fullWidth: true },
     { name: 'narrative', label: 'Narrativa', type: 'textarea', fullWidth: true },
     { name: 'learnings', label: 'Aprendizajes', type: 'textarea', fullWidth: true },
     {
-      name: 'achievements',
+      name: 'achievement_ids',
       label: 'Logros',
-      type: 'textarea',
+      type: 'fk-multi-select',
+      fkResource: 'achievements',
+      fkLabelField: 'title',
       fullWidth: true,
+      placeholder: '— Selecciona logros —',
+      helpText: 'Selecciona uno o más logros de esta experiencia. El vínculo se guarda en cada logro (work_history_id).',
     },
     { name: 'key_metrics', label: 'Métricas clave (JSON)', type: 'json', fullWidth: true },
   ],
@@ -450,10 +501,13 @@ export const achievementsConfig: ResourceConfig = {
     },
     {
       name: 'demonstrated_competency_ids',
-      label: 'Competencias demostradas (IDs)',
-      type: 'string-array',
+      label: 'Competencias demostradas',
+      type: 'fk-multi-select',
+      fkResource: 'competencies',
+      fkLabelField: 'name',
       fullWidth: true,
-      helpText: 'Ingresa los IDs de competencias (ej. cmp-1), uno por línea.',
+      placeholder: '— Selecciona competencias —',
+      helpText: 'Selecciona las competencias que este logro demuestra.',
     },
     { name: 'context', label: 'Contexto (JSON)', type: 'json', fullWidth: true },
     { name: 'impact_metrics', label: 'Métricas de impacto (JSON)', type: 'json', fullWidth: true },
@@ -477,7 +531,7 @@ export const starStoriesConfig: ResourceConfig = {
     { name: 'title', label: 'Título', type: 'text', required: true },
     { name: 'duration_seconds', label: 'Duración en segundos (60-90)', type: 'number' },
     { name: 'achievement_id', label: 'Logro relacionado', type: 'fk-select', fkResource: 'achievements', fkLabelField: 'title' },
-    { name: 'cross_pattern', label: 'Patrón transversal', type: 'text' },
+    { name: 'cross_pattern', label: 'Patrón transversal', type: 'creatable-select' },
     { name: 'times_practiced', label: 'Veces practicada', type: 'number' },
     { name: 'active_in_interviews', label: 'Activa en entrevistas', type: 'boolean' },
     { name: 'narrative', label: 'Narrativa', type: 'textarea', fullWidth: true },
@@ -603,8 +657,8 @@ export const projectsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
-    { name: 'category', label: 'Categoría', type: 'text' },
-    { name: 'industry', label: 'Industria', type: 'text' },
+    { name: 'category', label: 'Categoría', type: 'creatable-select' },
+    { name: 'industry', label: 'Industria', type: 'creatable-select' },
     { name: 'year', label: 'Año', type: 'number' },
     {
       name: 'status',
@@ -703,7 +757,7 @@ export const marketSegmentsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'channel_name', label: 'Nombre del canal', type: 'text' },
-    { name: 'channel_type', label: 'Tipo de canal', type: 'text' },
+    { name: 'channel_type', label: 'Tipo de canal', type: 'creatable-select' },
     {
       name: 'market_type',
       label: 'Tipo de mercado',
@@ -737,7 +791,7 @@ export const roleNarrativesConfig: ResourceConfig = {
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
     { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
-    { name: 'usage_context', label: 'Contexto de uso', type: 'text' },
+    { name: 'usage_context', label: 'Contexto de uso', type: 'creatable-select' },
     { name: 'is_active', label: 'Activa', type: 'boolean' },
     { name: 'full_narrative', label: 'Narrativa completa', type: 'textarea', fullWidth: true },
     { name: 'key_points', label: 'Puntos clave', type: 'textarea', fullWidth: true },
@@ -853,13 +907,13 @@ export const targetCompaniesConfig: ResourceConfig = {
     { name: 'company_name', label: 'Nombre de la empresa', type: 'text', required: true },
     { name: 'tier', label: 'Tier', type: 'number' },
     { name: 'best_fit_role_id', label: 'Rol mejor ajuste', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name' },
-    { name: 'company_size', label: 'Tamaño de empresa', type: 'text' },
-    { name: 'salary_estimate', label: 'Estimado salarial', type: 'text' },
-    { name: 'work_modality', label: 'Modalidad de trabajo', type: 'text' },
-    { name: 'target_market', label: 'Mercado objetivo', type: 'text' },
+    { name: 'company_size', label: 'Tamaño de empresa', type: 'creatable-select' },
+    { name: 'salary_estimate', label: 'Estimado salarial', type: 'creatable-select' },
+    { name: 'work_modality', label: 'Modalidad de trabajo', type: 'creatable-select' },
+    { name: 'target_market', label: 'Mercado objetivo', type: 'creatable-select' },
     { name: 'weak_tie_contact_id', label: 'Contacto (weak tie)', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name' },
-    { name: 'priority', label: 'Prioridad', type: 'text' },
-    { name: 'status', label: 'Estado', type: 'text' },
+    { name: 'priority', label: 'Prioridad', type: 'creatable-select' },
+    { name: 'status', label: 'Estado', type: 'creatable-select' },
     { name: 'notes', label: 'Notas', type: 'textarea', fullWidth: true },
     {
       name: 'career_board_provider',
@@ -899,11 +953,11 @@ export const vacanciesConfig: ResourceConfig = {
     { name: 'exact_role', label: 'Rol exacto', type: 'text', required: true },
     { name: 'order_number', label: 'Número de orden', type: 'number' },
     { name: 'vacancy_url', label: 'URL de la vacante', type: 'text', fullWidth: true },
-    { name: 'source', label: 'Fuente', type: 'text' },
+    { name: 'source', label: 'Fuente', type: 'creatable-select' },
     { name: 'found_date', label: 'Fecha en que se encontró', type: 'date' },
     { name: 'fit_percentage', label: 'Porcentaje de fit (0-100)', type: 'number' },
-    { name: 'track_category', label: 'Categoría de track', type: 'text' },
-    { name: 'recommended_cv_version', label: 'Versión de CV recomendada', type: 'text' },
+    { name: 'track_category', label: 'Categoría de track', type: 'creatable-select' },
+    { name: 'recommended_cv_version', label: 'Versión de CV recomendada', type: 'creatable-select' },
     {
       name: 'evaluation',
       label: 'Evaluación',
@@ -947,10 +1001,13 @@ export const cvVersionsConfig: ResourceConfig = {
     },
     {
       name: 'target_vacancy_ids',
-      label: 'Vacantes objetivo (IDs)',
-      type: 'string-array',
+      label: 'Vacantes objetivo',
+      type: 'fk-multi-select',
+      fkResource: 'vacancies',
+      fkLabelField: 'position_title',
       fullWidth: true,
-      helpText: 'Ingresa los IDs de vacantes (ej. vac-1), uno por línea.',
+      placeholder: '— Selecciona vacantes —',
+      helpText: 'Selecciona las vacantes a las que apunta esta versión de CV.',
     },
     {
       name: 'content',
@@ -1159,8 +1216,8 @@ export const applicationInteractionsConfig: ResourceConfig = {
   fields: [
     { name: 'application_id', label: 'Aplicación', type: 'fk-select', fkResource: 'applications', fkLabelField: 'company', required: true },
     { name: 'interaction_at', label: 'Fecha/hora', type: 'datetime' },
-    { name: 'channel', label: 'Canal', type: 'text' },
-    { name: 'status', label: 'Estado', type: 'text' },
+    { name: 'channel', label: 'Canal', type: 'creatable-select' },
+    { name: 'status', label: 'Estado', type: 'creatable-select' },
     { name: 'content_sent', label: 'Contenido enviado', type: 'textarea', fullWidth: true },
     { name: 'response_received', label: 'Respuesta recibida', type: 'textarea', fullWidth: true },
   ],
@@ -1181,7 +1238,7 @@ export const interviewsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'application_id', label: 'Aplicación', type: 'fk-select', fkResource: 'applications', fkLabelField: 'company', required: true },
-    { name: 'interview_type', label: 'Tipo de entrevista', type: 'text' },
+    { name: 'interview_type', label: 'Tipo de entrevista', type: 'creatable-select' },
     { name: 'scheduled_at', label: 'Fecha/hora programada', type: 'datetime' },
     { name: 'narrative_used_id', label: 'Narrativa usada', type: 'fk-select', fkResource: 'role-narratives', fkLabelField: 'title' },
     {
@@ -1245,8 +1302,8 @@ export const contactInteractionsConfig: ResourceConfig = {
     { name: 'contact_id', label: 'Contacto', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name', required: true },
     { name: 'related_vacancy_id', label: 'Vacante relacionada', type: 'fk-select', fkResource: 'vacancies', fkLabelField: 'position_title' },
     { name: 'interaction_at', label: 'Fecha/hora', type: 'datetime' },
-    { name: 'channel', label: 'Canal', type: 'text' },
-    { name: 'status', label: 'Estado', type: 'text' },
+    { name: 'channel', label: 'Canal', type: 'creatable-select' },
+    { name: 'status', label: 'Estado', type: 'creatable-select' },
     { name: 'generated_opportunity', label: 'Generó oportunidad', type: 'boolean' },
     { name: 'content_sent', label: 'Contenido enviado', type: 'textarea', fullWidth: true },
     { name: 'response_received', label: 'Respuesta recibida', type: 'textarea', fullWidth: true },
@@ -1278,7 +1335,7 @@ export const networkingActivitiesConfig: ResourceConfig = {
         { value: 'talk_about_you_10', label: 'Hablar de ti (10%)' },
       ],
     },
-    { name: 'frequency_description', label: 'Frecuencia', type: 'text' },
+    { name: 'frequency_description', label: 'Frecuencia', type: 'creatable-select' },
     { name: 'times_completed', label: 'Veces realizada', type: 'number' },
     { name: 'is_active', label: 'Activa', type: 'boolean' },
     { name: 'concrete_action', label: 'Acción concreta', type: 'textarea', fullWidth: true },
@@ -1306,8 +1363,8 @@ export const publicationsConfig: ResourceConfig = {
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
     { name: 'slug', label: 'Slug', type: 'text' },
-    { name: 'platform', label: 'Plataforma', type: 'text', placeholder: 'LinkedIn, Medium, Blog propio...' },
-    { name: 'content_type', label: 'Tipo de contenido', type: 'text' },
+    { name: 'platform', label: 'Plataforma', type: 'creatable-select', placeholder: 'LinkedIn, Medium, Blog propio...' },
+    { name: 'content_type', label: 'Tipo de contenido', type: 'creatable-select' },
     { name: 'reading_minutes', label: 'Minutos de lectura', type: 'number' },
     {
       name: 'status',
@@ -1484,7 +1541,7 @@ export const tagsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'tag_name', label: 'Nombre del tag', type: 'text', required: true },
-    { name: 'entity_type', label: 'Tipo de entidad', type: 'text' },
+    { name: 'entity_type', label: 'Tipo de entidad', type: 'creatable-select' },
     { name: 'color_hex', label: 'Color (hex)', type: 'text', placeholder: '#22bfd4' },
     { name: 'is_active', label: 'Activo', type: 'boolean' },
   ],
@@ -1509,15 +1566,16 @@ export const operationalMethodologiesConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true, fullWidth: true },
-    { name: 'section', label: 'Sección', type: 'text' },
-    { name: 'subsection', label: 'Subsección', type: 'text' },
+    { name: 'section', label: 'Sección', type: 'creatable-select' },
+    { name: 'subsection', label: 'Subsección', type: 'creatable-select' },
     {
       name: 'agent_profile_ids',
       label: 'Agentes destinatarios',
       type: 'multi-select',
       fullWidth: true,
       options: allAgentSelectOptions(),
-      helpText: 'Sin selección = metodología compartida (todos los agentes).',
+      helpText:
+        'Los agentes consultan automáticamente las metodologías que les asignes aquí. Sin selección = compartida (todos los agentes).',
     },
     { name: 'description', label: 'Descripción breve', type: 'textarea', fullWidth: true },
     {
@@ -1621,6 +1679,54 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
   },
 ]
 
+/** Icon for a career resource in the sidebar. Fallback is a generic circle. */
+export const CAREER_RESOURCE_ICONS: Record<string, LucideIcon> = {
+  'personal-profile': User,
+  differentiators: Sparkles,
+  identity: Quote,
+  'identity-reflections': Lightbulb,
+  competencies: Award,
+  certifications: GraduationCap,
+  'target-roles': Target,
+  'work-history': Briefcase,
+  achievements: Trophy,
+  'star-stories': Star,
+  'career-reviews': ClipboardCheck,
+  'role-gap-analysis': GitBranch,
+  projects: Folder,
+  'fit-scoring-factors': Scale,
+  'market-segments': PieChart,
+  'role-narratives': BookOpen,
+  'search-plans': Map,
+  'networking-contacts': Users,
+  'target-companies': Building2,
+  vacancies: Bookmark,
+  'cv-versions': FileText,
+  'cover-letter-versions': Mail,
+  applications: Send,
+  'application-interactions': MessagesSquare,
+  interviews: Calendar,
+  'contact-interactions': MessageSquare,
+  'networking-activities': Activity,
+  'linkedin-profile': Linkedin,
+  'github-profile': Github,
+  'portal-home': Home,
+  'portal-about': UserCircle,
+  'portal-contact': Mail,
+  publications: Newspaper,
+  tags: Tag,
+  'operational-methodologies': Layers,
+}
+
+export function resourceNavIcon(resourceKey: string): LucideIcon {
+  return CAREER_RESOURCE_ICONS[resourceKey] ?? Circle
+}
+
+/** Table sections (list CRUD). Singletons are a single ficha, not a table. */
+export function isTableResource(config: ResourceConfig | undefined): boolean {
+  return Boolean(config && config.mode !== 'singleton')
+}
+
 export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   'personal-profile': personalProfileConfig,
   differentiators: differentiatorsConfig,
@@ -1657,4 +1763,34 @@ export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   publications: publicationsConfig,
   tags: tagsConfig,
   'operational-methodologies': operationalMethodologiesConfig,
+}
+
+/** Spanish table name for a career (or PDF-style) resource key. */
+export function resourceTableLabel(resourceKey: string | undefined): string | undefined {
+  if (!resourceKey) return undefined
+  if (resourceKey === pdfTemplateStylesConfig.key) return pdfTemplateStylesConfig.label
+  return CAREER_RESOURCES[resourceKey]?.label
+}
+
+export interface SelectFieldMeta {
+  /** `tabla Logros` when FK-backed, `lista` when options are hardcoded. */
+  source: string
+  /** `opción` or `opción múltiple`. */
+  cardinality: string
+}
+
+/** Caption for select / multi-select field titles in forms and record viewers. */
+export function selectFieldMeta(field: FieldConfig): SelectFieldMeta | null {
+  const isMulti = field.type === 'multi-select' || field.type === 'fk-multi-select'
+  const isFk = field.type === 'fk-select' || field.type === 'fk-multi-select'
+  if (field.type === 'creatable-select') {
+    return { source: 'lista acumulada', cardinality: 'opción' }
+  }
+  if (field.type !== 'select' && !isMulti && !isFk) return null
+  const cardinality = isMulti ? 'opción múltiple' : 'opción'
+  if (isFk) {
+    const table = resourceTableLabel(field.fkResource)
+    return { source: table ? `tabla ${table}` : 'tabla', cardinality }
+  }
+  return { source: 'lista', cardinality }
 }

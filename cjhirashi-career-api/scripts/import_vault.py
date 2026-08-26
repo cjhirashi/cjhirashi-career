@@ -926,7 +926,7 @@ async def import_work_history(session, vault: Path, user_id: int, report: Import
             row = WorkHistory(
                 user_id=user_id, company=r["company"], role_title=r["role_title"],
                 start_date=r["start_date"], end_date=r["end_date"], people_managed=r["people_managed"],
-                description=r["description"], narrative=r["narrative"], achievements=r["achievements"],
+                description=r["description"], narrative=r["narrative"],
                 key_metrics=None, learnings=None, contract_type=r["contract_type"],
                 industry_sector=r["industry_sector"],
             )

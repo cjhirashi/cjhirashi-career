@@ -95,14 +95,19 @@ class PublicHomeResponse(BaseModel):
 # About
 # ============================================================================
 
+class PublicWorkAchievement(BaseModel):
+    id: str
+    title: str
+    executive_storytelling: Optional[str] = None
+
+
 class PublicWorkHistoryEntry(BaseModel):
     company: str
     role_title: str
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     description: Optional[str] = None
-    narrative: Optional[str] = None
-    achievements: Optional[str] = None
+    achievements: List[PublicWorkAchievement] = []
     key_metrics: Optional[Any] = None
 
 
@@ -115,6 +120,7 @@ class PublicCertification(BaseModel):
     name: str
     institution: Optional[str] = None
     year: Optional[int] = None
+    description: Optional[str] = None
 
 
 class PublicAboutResponse(BaseModel):

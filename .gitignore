@@ -53,6 +53,11 @@ Thumbs.db
 .env.*.local
 !.env.example
 
+# Contrato Caddy: copia de trabajo local. La definición que consume
+# cjhirashi-srv vive en:
+# /mnt/disco2/cjhirashi-data/proyectos/cjhirashi-srv/servicios-externos/cjhirashi-career.md
+servicios-externos/
+
 # Outputs
 /mnt/disco2/cjhirashi-data/mcp-outputs/
 mcp-outputs/

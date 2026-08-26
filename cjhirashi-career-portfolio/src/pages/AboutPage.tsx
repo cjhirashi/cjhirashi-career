@@ -95,13 +95,24 @@ export const AboutPage = () => {
                     </p>
                     <h3 className="text-lg font-bold text-text">{item.role_title}</h3>
                     <p className="text-text-secondary font-medium">{item.company}</p>
-                    {(item.narrative || item.description) && (
-                      <Markdown className="text-sm mt-2">{item.narrative || item.description!}</Markdown>
+                    {item.description && (
+                      <Markdown className="text-sm mt-2">{item.description}</Markdown>
                     )}
-                    {item.achievements && (
+                    {item.achievements.length > 0 && (
                       <div className="mt-2">
                         <p className="text-sm font-semibold text-text">Caso de éxito:</p>
-                        <Markdown className="text-sm">{item.achievements}</Markdown>
+                        <ul className="mt-1 space-y-2">
+                          {item.achievements.map((achievement) => (
+                            <li key={achievement.id}>
+                              <p className="text-sm font-medium text-text">{achievement.title}</p>
+                              {achievement.executive_storytelling && (
+                                <Markdown className="text-sm mt-1 [&_p:last-child]:mb-0">
+                                  {achievement.executive_storytelling}
+                                </Markdown>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     {item.key_metrics != null && (
@@ -150,6 +161,9 @@ export const AboutPage = () => {
                   <p className="text-text-secondary text-sm">
                     {[cert.institution, cert.year].filter(Boolean).join(' · ')}
                   </p>
+                  {cert.description && (
+                    <Markdown className="text-sm mt-2 [&_p:last-child]:mb-0">{cert.description}</Markdown>
+                  )}
                 </div>
               ))}
             </div>

@@ -68,14 +68,19 @@ export interface HomeContent {
 }
 
 // About
+export interface WorkHistoryAchievement {
+  id: string
+  title: string
+  executive_storytelling: string | null
+}
+
 export interface WorkHistoryEntry {
   company: string
   role_title: string
   start_date: string | null
   end_date: string | null
   description: string | null
-  narrative: string | null
-  achievements: string | null
+  achievements: WorkHistoryAchievement[]
   key_metrics: Record<string, unknown> | unknown[] | null
 }
 
@@ -88,6 +93,7 @@ export interface CertificationEntry {
   name: string
   institution: string | null
   year: number | null
+  description: string | null
 }
 
 export interface AboutContent {

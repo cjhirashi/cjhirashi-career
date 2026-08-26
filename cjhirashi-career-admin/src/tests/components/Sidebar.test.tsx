@@ -1,7 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '../utils'
+import { render, screen, fireEvent, waitFor } from '../utils'
 import { Sidebar } from '@/components/Sidebar'
 import { BrowserRouter } from 'react-router-dom'
+import { careerApi } from '@/api/career'
+import { filesApi } from '@/api/files'
+import { agentTasksApi } from '@/api/agentTasks'
+
+vi.mock('@/api/career', () => ({
+  careerApi: { count: vi.fn() },
+}))
+vi.mock('@/api/files', () => ({
+  filesApi: { count: vi.fn() },
+}))
+vi.mock('@/api/agentTasks', () => ({
+  agentTasksApi: { count: vi.fn(), list: vi.fn() },
+}))
+
+const mockedCareerApi = vi.mocked(careerApi)
+const mockedFilesApi = vi.mocked(filesApi)
+const mockedAgentTasksApi = vi.mocked(agentTasksApi)
 
 // Mock useLocation to control current path
 vi.mock('react-router-dom', async () => {
@@ -25,6 +42,9 @@ describe('Sidebar', () => {
 
   beforeEach(() => {
     mockOnToggle.mockClear()
+    mockedCareerApi.count.mockResolvedValue(4)
+    mockedFilesApi.count.mockResolvedValue(12)
+    mockedAgentTasksApi.count.mockResolvedValue(3)
   })
 
   describe('rendering', () => {
@@ -39,6 +59,7 @@ describe('Sidebar', () => {
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
       expect(screen.getByText('Métricas')).toBeInTheDocument()
       expect(screen.getByText('Archivos')).toBeInTheDocument()
+      expect(screen.getByText('Tareas')).toBeInTheDocument()
     })
 
     it('should not render legacy (pre-career-domain) menu items anymore', () => {
@@ -85,11 +106,16 @@ describe('Sidebar', () => {
   })
 
   describe('static menu items and links', () => {
-    it('should render the static top-level links', () => {
+    it('should render the static top-level links', async () => {
       renderSidebar(true, mockOnToggle)
       expect(screen.getByRole('link', { name: /Dashboard/i })).toHaveAttribute('href', '/dashboard')
       expect(screen.getByRole('link', { name: /Métricas/i })).toHaveAttribute('href', '/metrics')
-      expect(screen.getByRole('link', { name: /Archivos/i })).toHaveAttribute('href', '/files')
+      const filesLink = screen.getByRole('link', { name: /Archivos/i })
+      expect(filesLink).toHaveAttribute('href', '/files')
+      await waitFor(() => expect(filesLink).toHaveAccessibleName('Archivos, 12 registros'))
+      const tasksLink = screen.getByRole('link', { name: /Tareas/i })
+      expect(tasksLink).toHaveAttribute('href', '/tasks')
+      await waitFor(() => expect(tasksLink).toHaveAccessibleName('Tareas, 3 registros'))
     })
 
     it('should render a Lucide (svg) icon for each static link', () => {
@@ -177,12 +203,26 @@ describe('Sidebar', () => {
       renderSidebar(true, mockOnToggle)
       fireEvent.click(screen.getByText('Operativa de Búsqueda'))
 
-      const vacanciesLink = screen.getByRole('link', { name: 'Vacantes' })
+      const vacanciesLink = screen.getByRole('link', { name: /Vacantes/ })
       expect(vacanciesLink).toHaveAttribute('href', '/career/vacancies')
+      expect(vacanciesLink.querySelector('svg')).toBeInTheDocument()
       expect(screen.getByRole('link', { name: 'Descubrir vacantes' })).toHaveAttribute(
         'href',
         '/job-discovery'
       )
+    })
+
+    it('shows a record-count badge after the name of table subsections, not singletons', async () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('Identidad Profesional'))
+
+      const historyLink = await screen.findByRole('link', { name: /Historial Laboral/ })
+      await waitFor(() => expect(historyLink).toHaveAccessibleName('Historial Laboral, 4 registros'))
+      expect(historyLink.querySelector('svg')).toBeInTheDocument()
+
+      const profileLink = screen.getByRole('link', { name: 'Datos personales' })
+      expect(profileLink.querySelector('svg')).toBeInTheDocument()
+      expect(profileLink).not.toHaveAccessibleName(/registros/)
     })
 
     it('should include LinkedIn inside the "Presencia Digital" domain, not as a top-level item', () => {

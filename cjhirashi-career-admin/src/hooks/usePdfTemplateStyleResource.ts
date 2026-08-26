@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ListParams } from '@/api/career'
 import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
 import { CareerEntity } from '@/types/career'
+import { recordMatchesFilters } from '@/utils/listFilters'
 
 export const pdfTemplateStyleQueryKey = (extra?: unknown) =>
   extra === undefined ? (['pdf-template-styles'] as const) : (['pdf-template-styles', extra] as const)
@@ -19,21 +20,22 @@ const compareValues = (a: unknown, b: unknown, dir: 'asc' | 'desc'): number => {
 }
 
 export function usePdfTemplateStyleList(params: ListParams = {}, enabled = true) {
-  const { skip = 0, limit = 20, sortBy, sortDir = 'asc', search } = params
+  const { skip = 0, limit = 20, sortBy, sortDir = 'asc', search, filters } = params
   return useQuery({
-    queryKey: pdfTemplateStyleQueryKey({ skip, limit, sortBy, sortDir, search }),
+    queryKey: pdfTemplateStyleQueryKey({ skip, limit, sortBy, sortDir, search, filters }),
     queryFn: async (): Promise<CareerEntity[]> => {
       const all = await pdfTemplateStylesApi.list({ skip: 0, limit: PDF_STYLE_FETCH_LIMIT })
-      let filtered = all
+      let filtered = all as unknown as Record<string, unknown>[]
       if (search) {
         const q = search.toLowerCase()
         filtered = filtered.filter(
           (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.slug.toLowerCase().includes(q) ||
-            (item.description ?? '').toLowerCase().includes(q)
+            String(item.title ?? '').toLowerCase().includes(q) ||
+            String(item.slug ?? '').toLowerCase().includes(q) ||
+            String(item.description ?? '').toLowerCase().includes(q)
         )
       }
+      filtered = filtered.filter((item) => recordMatchesFilters(item, filters))
       if (sortBy) {
         filtered = [...filtered].sort((a, b) => compareValues(a[sortBy], b[sortBy], sortDir))
       }
@@ -43,12 +45,23 @@ export function usePdfTemplateStyleList(params: ListParams = {}, enabled = true)
   })
 }
 
-export function usePdfTemplateStyleCount(enabled = true) {
+export function usePdfTemplateStyleCount(params: Pick<ListParams, 'search' | 'filters'> = {}, enabled = true) {
+  const { search, filters } = params
   return useQuery({
-    queryKey: pdfTemplateStyleQueryKey({ count: true }),
+    queryKey: pdfTemplateStyleQueryKey({ count: true, search, filters }),
     queryFn: async () => {
       const all = await pdfTemplateStylesApi.list({ skip: 0, limit: PDF_STYLE_FETCH_LIMIT })
-      return all.length
+      let filtered = all as unknown as Record<string, unknown>[]
+      if (search) {
+        const q = search.toLowerCase()
+        filtered = filtered.filter(
+          (item) =>
+            String(item.title ?? '').toLowerCase().includes(q) ||
+            String(item.slug ?? '').toLowerCase().includes(q) ||
+            String(item.description ?? '').toLowerCase().includes(q)
+        )
+      }
+      return filtered.filter((item) => recordMatchesFilters(item, filters)).length
     },
     enabled,
   })

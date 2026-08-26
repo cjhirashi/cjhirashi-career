@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Sparkles, User } from 'lucide-react'
+import { MarkdownTable } from '@/components/MarkdownTable'
 import { BedrockChatMessage } from '@/types/bedrock'
 import { sanitizeAssistantReply } from '@/utils/chatReply'
 
@@ -20,15 +21,15 @@ const Bubble: React.FC<{ message: BedrockChatMessage }> = ({ message }) => {
         )}
       </div>
       <div
-        className={`rounded-2xl px-3 py-2 text-sm max-w-[85%] ${
+        className={`rounded-2xl px-3 py-2 text-sm max-w-[85%] min-w-0 ${
           isUser ? 'bg-primary text-white' : 'bg-glass text-text'
         }`}
       >
         {isUser ? (
           <p className="whitespace-pre-wrap break-words">{message.content}</p>
         ) : (
-          <div className="markdown-body markdown-body-compact">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <div className="markdown-body markdown-body-compact min-w-0">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: MarkdownTable }}>
               {sanitizeAssistantReply(message.content)}
             </ReactMarkdown>
           </div>
@@ -92,7 +93,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isSending, s
   }
 
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col gap-3 py-2">
+    <div className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto flex flex-col gap-3 py-2">
       {messages.map((message) => (
         <Bubble key={message.id} message={message} />
       ))}

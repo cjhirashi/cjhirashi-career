@@ -23,6 +23,7 @@ from config import settings
 
 from models.identity import Identity
 from models.work_history import WorkHistory
+from models.achievement import Achievement
 from models.competencies import Competency
 from models.certification import Certification
 from models.project import Project
@@ -35,7 +36,7 @@ from models.portal_contact import PortalContact
 
 from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
-    PublicAboutResponse, PublicWorkHistoryEntry, PublicSkillGroup, PublicCertification,
+    PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
     PublicBlogPost, PublicHeroCta, PublicStat,
 )
@@ -142,9 +143,11 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     # silently from another table - empty field means empty on the site.
     home = (await db.execute(select(PortalHome).where(PortalHome.user_id == USER_ID))).scalar_one_or_none()
 
+    # is_anchor is not unique in the DB; take the first match so a second
+    # flagged project cannot 500 the whole Home page.
     anchor = (
         await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_anchor.is_(True)))
-    ).scalar_one_or_none()
+    ).scalars().first()
 
     # The Home is a highlight reel, not the full catalog - cap both sections
     # at 3 cards each (matches the reference cjhirashi.com layout) even if
@@ -210,6 +213,18 @@ async def get_about(db: AsyncSession = Depends(get_db)):
             select(WorkHistory).where(WorkHistory.user_id == USER_ID).order_by(WorkHistory.start_date.desc())
         )
     ).scalars().all()
+    portal_achievements = (
+        await db.execute(
+            select(Achievement).where(
+                Achievement.user_id == USER_ID,
+                Achievement.visible_on_portal.is_(True),
+                Achievement.work_history_id.is_not(None),
+            )
+        )
+    ).scalars().all()
+    achievements_by_work: dict[str, list] = {}
+    for achievement in portal_achievements:
+        achievements_by_work.setdefault(achievement.work_history_id, []).append(achievement)
     competencies = (await db.execute(select(Competency).where(Competency.user_id == USER_ID))).scalars().all()
     certifications = (
         await db.execute(select(Certification).where(Certification.user_id == USER_ID))
@@ -232,14 +247,22 @@ async def get_about(db: AsyncSession = Depends(get_db)):
         work_history=[
             PublicWorkHistoryEntry(
                 company=w.company, role_title=w.role_title, start_date=w.start_date, end_date=w.end_date,
-                description=w.description, narrative=w.narrative, achievements=w.achievements,
-                key_metrics=w.key_metrics,
+                description=w.description, key_metrics=w.key_metrics,
+                achievements=[
+                    PublicWorkAchievement(
+                        id=a.id, title=a.title, executive_storytelling=a.executive_storytelling,
+                    )
+                    for a in achievements_by_work.get(w.id, [])
+                ],
             )
             for w in history
         ],
         skill_groups=[PublicSkillGroup(category=category, skills=skills) for category, skills in grouped.items()],
         certifications=[
-            PublicCertification(name=c.name, institution=c.institution, year=c.year) for c in certifications
+            PublicCertification(
+                name=c.name, institution=c.institution, year=c.year, description=c.description,
+            )
+            for c in certifications
         ],
     )
 

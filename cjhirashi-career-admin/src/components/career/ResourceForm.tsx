@@ -2,7 +2,12 @@ import React, { useMemo, useState } from 'react'
 import { FieldConfig, ResourceConfig } from '@/config/careerResources'
 import { fromFormValue, FieldParseError, toFormValue } from './careerFieldUtils'
 import { FkSelectField } from './FkSelectField'
+import { FkMultiSelectField } from './FkMultiSelectField'
+import { CreatableSelectField } from './CreatableSelectField'
+import { SelectFieldHint } from './SelectFieldHint'
 import { ThemedSelect } from '@/components/ThemedSelect'
+import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
+import { BooleanField } from './BooleanField'
 
 interface ResourceFormProps {
   config: ResourceConfig
@@ -18,6 +23,9 @@ interface ResourceFormProps {
   isSubmitting?: boolean
   submitLabel?: string
   layout?: 'grid' | 'stacked'
+  /** When set, Cancel/Submit live outside this form (e.g. section tab row). */
+  formId?: string
+  hideActions?: boolean
 }
 
 type FormState = Record<string, string | boolean>
@@ -39,6 +47,8 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
   isSubmitting = false,
   submitLabel = 'Guardar',
   layout = 'grid',
+  formId,
+  hideActions = false,
 }) => {
   const visibleFields = useMemo(
     () => config.fields.filter((f) => !presetValues || !(f.name in presetValues)),
@@ -83,20 +93,16 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
     switch (field.type) {
       case 'boolean':
         return (
-          <label
-            key={field.name}
-            className="flex items-center gap-2 mt-6"
-            htmlFor={commonProps.id}
-          >
-            <input
-              {...commonProps}
-              type="checkbox"
+          <div key={field.name} className="form-group">
+            <BooleanField
+              id={commonProps.id}
+              name={commonProps.name}
+              label={field.label}
               checked={Boolean(value)}
-              onChange={(e) => handleChange(field.name, e.target.checked)}
-              className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
+              onChange={(checked) => handleChange(field.name, checked)}
+              helpText={field.helpText}
             />
-            <span className="text-sm text-text">{field.label}</span>
-          </label>
+          </div>
         )
       case 'fk-select':
         return (
@@ -104,8 +110,31 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
             <label htmlFor={commonProps.id} className="form-label">
               {field.label}
               {field.required && <span className="text-red-500"> *</span>}
+              <SelectFieldHint field={field} />
             </label>
             <FkSelectField
+              id={commonProps.id}
+              name={commonProps.name}
+              fkResource={field.fkResource ?? ''}
+              fkLabelField={field.fkLabelField}
+              fkApi={field.fkApi}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(v) => handleChange(field.name, v)}
+              required={field.required}
+              placeholder={field.placeholder}
+            />
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
+        )
+      case 'fk-multi-select':
+        return (
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+              <SelectFieldHint field={field} />
+            </label>
+            <FkMultiSelectField
               id={commonProps.id}
               name={commonProps.name}
               fkResource={field.fkResource ?? ''}
@@ -125,6 +154,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
             <label htmlFor={commonProps.id} className="form-label">
               {field.label}
               {field.required && <span className="text-red-500"> *</span>}
+              <SelectFieldHint field={field} />
             </label>
             <ThemedSelect
               {...commonProps}
@@ -132,7 +162,36 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
               onChange={(v) => handleChange(field.name, v)}
               required={field.required}
               options={field.options ?? []}
+              placeholder={field.placeholder}
+              allowEmpty={!field.required}
             />
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
+        )
+      case 'creatable-select':
+        return (
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
+              {field.label}
+              {field.required && <span className="text-red-500"> *</span>}
+              <SelectFieldHint field={field} />
+            </label>
+            <CreatableSelectField
+              id={commonProps.id}
+              name={commonProps.name}
+              resource={config.key}
+              field={field.name}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(v) => handleChange(field.name, v)}
+              required={field.required}
+              placeholder={field.placeholder}
+            />
+            {field.helpText && (
+              <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>
+            )}
+            <p className="text-text-muted text-xs mt-1">
+              Escribe una opción nueva para integrarla a la lista de registros siguientes.
+            </p>
           </div>
         )
       case 'textarea':
@@ -175,38 +234,28 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
           </div>
         )
       case 'multi-select': {
-        const selected = new Set(
-          (typeof value === 'string' ? value : '')
-            .split('\n')
-            .map((s) => s.trim())
-            .filter(Boolean)
-        )
-        const toggle = (optionValue: string, checked: boolean) => {
-          if (checked) selected.add(optionValue)
-          else selected.delete(optionValue)
-          handleChange(field.name, Array.from(selected).join('\n'))
-        }
+        const selected = (typeof value === 'string' ? value : '')
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean)
         return (
-          <fieldset key={field.name} className="form-group">
-            <legend className="form-label">
+          <div key={field.name} className="form-group">
+            <label htmlFor={commonProps.id} className="form-label">
               {field.label}
               {field.required && <span className="text-red-500"> *</span>}
-            </legend>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-64 overflow-y-auto rounded-lg border border-border p-3">
-              {(field.options || []).map((opt) => (
-                <label key={opt.value} className="flex items-center gap-2 text-sm text-text">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(opt.value)}
-                    onChange={(e) => toggle(opt.value, e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-cyan-600 focus:ring-cyan-500"
-                  />
-                  <span>{opt.label}</span>
-                </label>
-              ))}
-            </div>
+              <SelectFieldHint field={field} />
+            </label>
+            <ThemedMultiSelect
+              id={commonProps.id}
+              name={commonProps.name}
+              value={selected}
+              onChange={(ids) => handleChange(field.name, ids.join('\n'))}
+              options={field.options ?? []}
+              required={field.required}
+              placeholder={field.placeholder ?? '— Selecciona —'}
+            />
             {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
-          </fieldset>
+          </div>
         )
       }
       case 'json':
@@ -304,7 +353,12 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" aria-label={`Formulario de ${config.labelSingular}`}>
+    <form
+      id={formId}
+      onSubmit={handleSubmit}
+      className="space-y-4"
+      aria-label={`Formulario de ${config.labelSingular}`}
+    >
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
           <p className="text-red-800 dark:text-red-300 text-sm font-medium">{error}</p>
@@ -319,16 +373,18 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
         ))}
       </div>
 
-      <div className="flex justify-end gap-3 pt-2">
-        {onCancel && (
-          <button type="button" onClick={onCancel} className="btn-secondary" disabled={isSubmitting}>
-            Cancelar
+      {!hideActions && (
+        <div className="flex justify-end gap-3 pt-2">
+          {onCancel && (
+            <button type="button" onClick={onCancel} className="btn-secondary" disabled={isSubmitting}>
+              Cancelar
+            </button>
+          )}
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando...' : submitLabel}
           </button>
-        )}
-        <button type="submit" className="btn-primary" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando...' : submitLabel}
-        </button>
-      </div>
+        </div>
+      )}
     </form>
   )
 }

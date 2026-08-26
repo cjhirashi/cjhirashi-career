@@ -19,12 +19,15 @@ import {
  * `/career/{resource}`, always scoped server-side to the authenticated
  * user (never pass `user_id` in the payload).
  */
+export type ListFilters = Record<string, string | string[] | boolean>
+
 export interface ListParams {
   skip?: number
   limit?: number
   sortBy?: string
   sortDir?: 'asc' | 'desc'
   search?: string
+  filters?: ListFilters
 }
 
 const basePath = (resource: string) => `/career/${resource}`
@@ -49,7 +52,7 @@ const filenameFromContentDisposition = (headerValue: unknown): string | null => 
 
 export const careerApi = {
   list: async <T = CareerEntity>(resource: string, params: ListParams = {}): Promise<T[]> => {
-    const { skip = 0, limit = 20, sortBy, sortDir, search } = params
+    const { skip = 0, limit = 20, sortBy, sortDir, search, filters } = params
     const response = await axiosInstance.get<T[]>(basePath(resource), {
       params: {
         skip,
@@ -57,13 +60,20 @@ export const careerApi = {
         sort_by: sortBy || undefined,
         sort_dir: sortDir || undefined,
         search: search || undefined,
+        filters: filters && Object.keys(filters).length > 0 ? JSON.stringify(filters) : undefined,
       },
     })
     return response.data
   },
 
-  count: async (resource: string): Promise<number> => {
-    const response = await axiosInstance.get<{ count: number }>(`${basePath(resource)}/count`)
+  count: async (resource: string, params: Pick<ListParams, 'search' | 'filters'> = {}): Promise<number> => {
+    const { search, filters } = params
+    const response = await axiosInstance.get<{ count: number }>(`${basePath(resource)}/count`, {
+      params: {
+        search: search || undefined,
+        filters: filters && Object.keys(filters).length > 0 ? JSON.stringify(filters) : undefined,
+      },
+    })
     return response.data.count
   },
 
@@ -88,6 +98,14 @@ export const careerApi = {
 
   remove: async (resource: string, id: string): Promise<void> => {
     await axiosInstance.delete(`${basePath(resource)}/${id}`)
+  },
+
+  /** Unique values already stored in a text column (creatable selects). */
+  distinct: async (resource: string, field: string): Promise<string[]> => {
+    const response = await axiosInstance.get<{ field: string; values: string[] }>(
+      `${basePath(resource)}/distinct/${encodeURIComponent(field)}`
+    )
+    return response.data.values
   },
 
   weeklyMetrics: async (limit = 12): Promise<WeeklySearchMetrics[]> => {

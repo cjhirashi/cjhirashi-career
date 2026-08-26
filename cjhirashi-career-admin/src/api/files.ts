@@ -23,6 +23,11 @@ export const filesApi = {
     return response.data
   },
 
+  count: async (): Promise<number> => {
+    const response = await axiosInstance.get<{ count: number }>('/files/count')
+    return response.data.count
+  },
+
   categories: async (): Promise<string[]> => {
     const response = await axiosInstance.get<string[]>('/files/categories')
     return response.data

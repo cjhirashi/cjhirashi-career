@@ -11,7 +11,8 @@ query string.
 # ============================================================================
 # Imports
 # ============================================================================
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional, Type, Callable, Any
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -46,6 +47,7 @@ def build_crud_router(
     response_schema: Type[BaseModel],
     entity_name: str,
     vectorize: bool = True,
+    after_write: Optional[Callable[[Any], None]] = None,
 ) -> APIRouter:
     """Create an APIRouter with standard CRUD endpoints for `model`.
 
@@ -63,6 +65,27 @@ def build_crud_router(
     class CountResponse(BaseModel):
         count: int
 
+    class DistinctValuesResponse(BaseModel):
+        field: str
+        values: List[str]
+
+    def _parse_filters(raw: Optional[str]) -> Optional[dict]:
+        if not raw or not raw.strip():
+            return None
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="filters must be a JSON object",
+            ) from exc
+        if not isinstance(parsed, dict):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="filters must be a JSON object",
+            )
+        return parsed
+
     # ============================================================================
     # Endpoints CRUD estándar (list / count / get / create / update / delete)
     # ============================================================================
@@ -74,22 +97,53 @@ def build_crud_router(
         sort_by: Optional[str] = Query(None, description="Column name to sort by"),
         sort_dir: str = Query("asc", pattern="^(asc|desc)$"),
         search: Optional[str] = Query(None, description="Case-insensitive search across text columns"),
+        filters: Optional[str] = Query(None, description="JSON object of column filters"),
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
         return await repository.list_for_user(
-            db, current_user.id, skip=skip, limit=limit, sort_by=sort_by, sort_dir=sort_dir, search=search
+            db,
+            current_user.id,
+            skip=skip,
+            limit=limit,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
+            search=search,
+            filters=_parse_filters(filters),
         )
 
     # Declared before "/{item_id}" - a path-param route would otherwise catch
     # "/count" as if item_id="count".
     @router.get("/count", response_model=CountResponse, summary=f"Count {entity_name}")
     async def count_items(
+        search: Optional[str] = Query(None, description="Same search as the list endpoint"),
+        filters: Optional[str] = Query(None, description="Same JSON filters as the list endpoint"),
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
-        count = await repository.count_for_user(db, current_user.id)
+        count = await repository.count_for_user(
+            db, current_user.id, search=search, filters=_parse_filters(filters)
+        )
         return CountResponse(count=count)
+
+    # Declared before "/{item_id}" so "distinct" is not parsed as an id.
+    @router.get(
+        "/distinct/{field}",
+        response_model=DistinctValuesResponse,
+        summary=f"Distinct {entity_name} values for a text column",
+    )
+    async def distinct_values(
+        field: str,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
+    ):
+        if not repository.is_distinct_field(field):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{field!r} is not a text column on {entity_name}",
+            )
+        values = await repository.distinct_values_for_user(db, current_user.id, field)
+        return DistinctValuesResponse(field=field, values=values)
 
     @router.get(
         "/{item_id}", response_model=response_schema, summary=f"Get a single {entity_name}"
@@ -117,7 +171,12 @@ def build_crud_router(
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
-        obj = await repository.create_for_user(db, current_user.id, payload.model_dump())
+        try:
+            obj = await repository.create_for_user(db, current_user.id, payload.model_dump())
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        if after_write:
+            after_write(obj)
         return obj
 
     @router.put(
@@ -130,11 +189,16 @@ def build_crud_router(
         db: AsyncSession = Depends(get_db),
     ):
         data = payload.model_dump(exclude_unset=True)
-        obj = await repository.update_for_user(db, current_user.id, item_id, data)
+        try:
+            obj = await repository.update_for_user(db, current_user.id, item_id, data)
+        except ValueError as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
         if obj is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"{entity_name} not found"
             )
+        if after_write:
+            after_write(obj)
         return obj
 
     @router.delete(
@@ -147,10 +211,14 @@ def build_crud_router(
         current_user: User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db),
     ):
+        obj = await repository.get_for_user(db, current_user.id, item_id)
+        parent_id = getattr(obj, "parent_id", None) if obj is not None else None
         deleted = await repository.delete_for_user(db, current_user.id, item_id)
         if not deleted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"{entity_name} not found"
             )
+        if after_write:
+            after_write(type("Deleted", (), {"id": item_id, "parent_id": parent_id})())
 
     return router
