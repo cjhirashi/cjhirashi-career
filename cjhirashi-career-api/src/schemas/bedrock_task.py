@@ -1,8 +1,9 @@
 """
-Pydantic schemas — tablero de tareas (usuario o agente). Ver models/bedrock_task.py y ADR-015.
+Pydantic schemas — tablero de tareas (usuario o agente, padre o subtarea).
+Ver models/bedrock_task.py y ADR-015 / ADR-016.
 """
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -26,6 +27,10 @@ class BedrockTaskBase(BaseModel):
     scheduled_at: Optional[datetime] = None
     due_at: Optional[datetime] = None
     priority: str = Field(default="medium", max_length=20)
+    parent_id: Optional[str] = Field(default=None, max_length=20)
+    sort_order: int = Field(default=0)
+    is_blocking: bool = True
+    execute_on_turn: bool = False
 
     @field_validator("status")
     @classmethod
@@ -66,13 +71,21 @@ class BedrockTaskBase(BaseModel):
             raise ValueError("agent_profile_id es obligatorio cuando assignee_type=agent")
         if self.assignee_type == "user":
             self.agent_profile_id = None
+            self.execute_on_turn = False
         if self.scheduled_at and self.due_at and self.due_at < self.scheduled_at:
             raise ValueError("due_at no puede ser anterior a scheduled_at")
         return self
 
 
+class SubtaskInput(BedrockTaskBase):
+    """Hija enviada anidada en create/update del padre. `parent_id` lo pone el servidor."""
+
+    id: Optional[str] = Field(default=None, max_length=20)
+    parent_id: Optional[str] = Field(default=None, max_length=20)
+
+
 class BedrockTaskCreate(BedrockTaskBase):
-    pass
+    subtasks: Optional[List[SubtaskInput]] = None
 
 
 class BedrockTaskUpdate(BaseModel):
@@ -85,6 +98,11 @@ class BedrockTaskUpdate(BaseModel):
     scheduled_at: Optional[datetime] = None
     due_at: Optional[datetime] = None
     priority: Optional[str] = Field(None, max_length=20)
+    parent_id: Optional[str] = Field(None, max_length=20)
+    sort_order: Optional[int] = None
+    is_blocking: Optional[bool] = None
+    execute_on_turn: Optional[bool] = None
+    subtasks: Optional[List[SubtaskInput]] = None
 
     @field_validator("status")
     @classmethod
@@ -131,6 +149,8 @@ class BedrockTaskUpdate(BaseModel):
             raise ValueError("agent_profile_id es obligatorio cuando assignee_type=agent")
         if self.assignee_type == "user":
             self.agent_profile_id = None
+            if self.execute_on_turn is True:
+                self.execute_on_turn = False
         if self.scheduled_at and self.due_at and self.due_at < self.scheduled_at:
             raise ValueError("due_at no puede ser anterior a scheduled_at")
         return self
@@ -142,6 +162,7 @@ class BedrockTaskResponse(BedrockTaskBase):
     execution_result: Optional[str] = None
     executed_at: Optional[datetime] = None
     error_message: Optional[str] = None
+    turn_notified_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
