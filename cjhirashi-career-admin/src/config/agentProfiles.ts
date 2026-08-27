@@ -88,6 +88,7 @@ const ROUTE_TO_PROFILE: Record<string, string> = {
   '/settings/agents': AGENT_SETTINGS,
   '/settings/sections': AGENT_SETTINGS,
   '/settings/agent-prompts': AGENT_SETTINGS,
+  '/settings/error-reports': AGENT_SETTINGS,
 }
 
 function profileIdForRoute(route: string): string | undefined {

@@ -23,6 +23,7 @@ import {
   Settings,
   LayoutGrid,
   SlidersHorizontal,
+  AlertTriangle,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -74,10 +75,16 @@ const AGENT_LINKS: {
 ]
 
 const SETTINGS_DOMAIN_KEY = 'settings'
-const SETTINGS_LINKS: { label: string; path: string; icon: LucideIcon; countKey?: 'catalog' | 'sections' }[] = [
+const SETTINGS_LINKS: {
+  label: string
+  path: string
+  icon: LucideIcon
+  countKey?: 'catalog' | 'sections' | 'errorsPending'
+}[] = [
   { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
   { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
   { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
+  { label: 'Reportes de Falla', path: '/settings/error-reports', icon: AlertTriangle, countKey: 'errorsPending' },
 ]
 
 const RecordCount: React.FC<{ count?: number }> = ({ count }) => {

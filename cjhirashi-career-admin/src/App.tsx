@@ -21,6 +21,7 @@ import { LinkedInPage } from '@/pages/LinkedInPage'
 import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
 import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
 import { AgentPromptsSettingsPage } from '@/pages/AgentPromptsSettingsPage'
+import { ErrorReportsPage } from '@/pages/ErrorReportsPage'
 import { AgentCatalogPage } from '@/pages/AgentCatalogPage'
 import { AdminSectionsPage, AdminSectionDetailPage } from '@/pages/AdminSectionsPage'
 import { AgentToolsPage } from '@/pages/AgentToolsPage'
@@ -265,6 +266,16 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <AgentPromptsSettingsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/error-reports/:reportId?"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <ErrorReportsPage />
                 </Layout>
               </PrivateRoute>
             }

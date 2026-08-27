@@ -48,6 +48,10 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
     title: 'Secciones del Admin',
     body: 'Registro de pantallas: tipo tabla/funcional/métricas/bucket, agente con dominio, vistas e instrucciones de este sidebar.',
   },
+  '/settings/error-reports': {
+    title: 'Reportes de Falla',
+    body: 'Bitácora de errores capturados automáticamente en todo el sistema (API, agentes, schedulers, SPA). Un reporte "pendiente" aún no se revisa; ábrelo para ver el traceback y el contexto. Márcalo como "resuelto" (con una nota) sólo cuando el problema ya se corrigió en el código; "reabrir" lo devuelve a pendiente. Errores repetidos con la misma huella no crean filas nuevas: suman ocurrencias.',
+  },
   '/files': {
     title: 'Archivos',
     body: 'Sube cualquier archivo (imágenes, documentos) y obtén un link público para referenciarlo donde quieras, por ejemplo dentro de un campo Markdown con ![descripción](link). "Copiar link" copia la URL pública; "Eliminar" borra el archivo del bucket de forma permanente.',

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import { useAuthStore } from '@/stores/authStore'
+import { reportClientError } from '@/utils/reportClientError'
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
@@ -93,6 +94,22 @@ class ApiClient {
             useAuthStore.setState({ accessToken: null, user: null })
             window.location.href = '/login'
           }
+        }
+
+        // Registro central de fallas (ADR-018): errores de servidor y de red.
+        const url = `${originalRequest?.baseURL ?? ''}${originalRequest?.url ?? ''}`
+        const statusCode = error.response?.status
+        if (!isAuthEndpoint && (statusCode === undefined || statusCode >= 500)) {
+          reportClientError({
+            message:
+              (error.response?.data as { detail?: string })?.detail ||
+              error.message ||
+              'Error de red',
+            source: `admin:api ${originalRequest?.method?.toUpperCase() ?? 'GET'} ${originalRequest?.url ?? '?'}`,
+            error_type: statusCode ? `HTTP${statusCode}` : 'NetworkError',
+            severity: statusCode && statusCode >= 500 ? 'error' : 'warning',
+            context: { url, status_code: statusCode },
+          })
         }
 
         return Promise.reject(error)

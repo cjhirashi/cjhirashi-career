@@ -1,4 +1,5 @@
 import React from 'react'
+import { reportClientError } from '@/utils/reportClientError'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -22,6 +23,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     console.error('ErrorBoundary caught a render error:', error, info.componentStack)
+    reportClientError({
+      message: error?.message || 'Render error',
+      source: `admin:ErrorBoundary ${window.location.pathname}`,
+      error_type: error?.name,
+      stack_trace: `${error?.stack ?? ''}\n\nComponent stack:${info.componentStack ?? ''}`,
+      severity: 'critical',
+    })
   }
 
   render(): React.ReactNode {
