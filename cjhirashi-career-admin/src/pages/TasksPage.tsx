@@ -22,8 +22,8 @@ const BOARD_VIEW_TABS: SectionViewTab[] = [
   { key: 'gantt', label: 'Gantt' },
 ]
 
-const TASK_VIEW_TABS: SectionViewTab[] = [
-  ...BOARD_VIEW_TABS,
+const RECORD_VIEW_TABS: SectionViewTab[] = [
+  { key: 'list', label: 'Lista' },
   { key: 'view', label: 'Vista' },
   { key: 'edit', label: 'Edición' },
 ]
@@ -195,10 +195,8 @@ export const TasksPage: React.FC = () => {
   const isBoard = recordState === 'board'
   const isSaving = createMutation.isPending || updateMutation.isPending
   const activeViewKey = isBoard ? boardView : recordState === 'view' ? 'view' : 'edit'
-  const interactiveKeys =
-    isBoard || recordState === 'create'
-      ? BOARD_VIEW_KEYS
-      : [...BOARD_VIEW_KEYS, 'view', 'edit']
+  const visibleTabs = isBoard ? BOARD_VIEW_TABS : RECORD_VIEW_TABS
+  const interactiveKeys = isBoard ? BOARD_VIEW_KEYS : ['list']
 
   const headingTask = recordState === 'create' ? null : activeTask
   const showRecordHeading = !isBoard && Boolean(headingTask)
@@ -300,7 +298,7 @@ export const TasksPage: React.FC = () => {
           </h2>
           <div className="view-tabs-row">
             <SectionViewTabs
-              views={TASK_VIEW_TABS}
+              views={visibleTabs}
               activeKey={activeViewKey}
               interactiveKeys={interactiveKeys}
               onSelect={selectSectionView}
