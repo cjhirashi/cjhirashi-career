@@ -51,6 +51,14 @@ Un **único punto de verdad para el chrome**: el módulo `src/components/section
 encajan en `TableSectionTemplate` (cuerpo a medida: subida de archivos, tableros de tareas)
 componen los primitivos directamente — nunca vuelven a escribir el markup del chrome.
 
+**Principio general (ambos SPA):** tanto el **Admin Panel** como el **Portafolio** se
+construyen **siempre a partir de componentes compartidos**, no de markup ad-hoc por pantalla.
+El kit `components/section/` es la materialización de ese principio para las vistas de tabla
+del Admin. El Portafolio (read-only: About / Projects / Blog / Contact, tarjetas y grids, no
+tablas) tendrá su propio conjunto de primitivos compartidos (`components/…`) cuando aparezca
+repetición de estructura; el criterio es el mismo: un cambio de estructura se hace en un solo
+punto y todas las vistas lo adoptan.
+
 ### Roadmap por `section_type`
 
 Sólo existe hoy la plantilla `table`. `functional` / `metrics` / `bucket` usan `SectionShell`
@@ -67,18 +75,24 @@ pantallas de ese tipo que lo justifiquen.
   claro, que ahora vale para todas).
 - Pantallas nuevas más cortas y difíciles de "desalinear".
 
-### Costos / estado de la migración
+### Estado de la migración
 
-- Migradas a la plantilla/primitivos: **Reportes de Falla** (a `TableSectionTemplate`),
-  **Secciones del Admin** (a `TableSectionTemplate`), **Catálogo de Agentes**, **Archivos**
-  y **Tareas** (a los primitivos, conservando su lógica y sus cuerpos a medida).
-- **Pendiente: `CareerResourceView`** (los ~30 recursos de carrera). Es el archivo más
-  grande (1600+ líneas) y con más modos (singleton, anidado, export PDF, capsulas de
-  select, json-list). Su migración se hace como cambio propio y **verificado a mano** sobre
-  recursos representativos (`competencies`, `vacancies`, un singleton como `identity`, y un
-  export de `cv-versions`) — delegada a `admin-panel-specialist`.
+Las **6** vistas de tabla del Admin están migradas:
+
+| Pantalla | Cómo |
+|---|---|
+| Reportes de Falla | `TableSectionTemplate` + `DetailSectionTemplate` (referencia) |
+| Secciones del Admin | `TableSectionTemplate` + `DetailSectionTemplate` |
+| Catálogo de Agentes | primitivos (componente único lista/detalle) |
+| Archivos (`bucket`) | `SectionShell` + `SectionToolbar` + `SectionTableFooter` (tabla `FileRow` propia) |
+| Tareas | `SectionShell` (tableros kanban/calendario/gantt propios) |
+| `CareerResourceView` (~30 recursos) | `SectionShell` + `SectionToolbar` + `SectionTable` + `SectionTableFooter`; ramas `view`/`edit`/`create`/singleton/PDF/nested intactas |
+
 - `TableColumnSettings` conserva sus `storageKey` por recurso → no se pierden las
   preferencias de columnas de los usuarios.
+- `CareerResourceView` requiere QA manual sobre recursos representativos (`competencies`,
+  `vacancies`, un singleton como `identity`, un recurso anidado, y un export de
+  `cv-versions`) por su número de modos.
 
 ### Alternativas rechazadas
 
@@ -104,4 +118,4 @@ pantallas de ese tipo que lo justifiquen.
 
 **Creado por**: Arquitecto de Soluciones
 **Fecha de creación**: 2026-08-27
-**Estado de vigencia**: Vigente (migración de `CareerResourceView` pendiente)
+**Estado de vigencia**: Vigente (las 6 vistas de tabla del Admin migradas; `CareerResourceView` pendiente de QA manual)
