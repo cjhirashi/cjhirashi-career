@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import { reportClientError } from '@/utils/reportClientError'
 
 const getApiUrl = (): string => {
   // In development, use proxy to /api which is rewritten to http://api:8001/api/v1
@@ -26,6 +27,17 @@ class ApiClient {
       response => response,
       error => {
         console.error('API Error:', error.response?.data || error.message)
+        const status = error.response?.status
+        if (status === undefined || status >= 500) {
+          reportClientError({
+            message:
+              error.response?.data?.detail || error.message || 'Error de red',
+            source: `portfolio:api ${error.config?.method?.toUpperCase() ?? 'GET'} ${error.config?.url ?? '?'}`,
+            error_type: status ? `HTTP${status}` : 'NetworkError',
+            severity: status && status >= 500 ? 'error' : 'warning',
+            context: { status_code: status },
+          })
+        }
         return Promise.reject(error)
       }
     )
