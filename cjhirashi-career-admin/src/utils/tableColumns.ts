@@ -122,3 +122,16 @@ export const readStoredColumnKeys = (storageKey: string, fallback: string[], all
 }
 
 export const columnStorageKey = (resourceKey: string) => `cjhirashi.career.table-columns.${resourceKey}`
+
+/**
+ * Locale-aware, numeric-friendly comparison of two cell values for client-side
+ * table sorting. Shared by every section table (see `components/section/`).
+ */
+export const compareCells = (a: unknown, b: unknown, dir: 'asc' | 'desc'): number => {
+  const av = a == null ? '' : String(a).toLowerCase()
+  const bv = b == null ? '' : String(b).toLowerCase()
+  const cmp = av.localeCompare(bv, 'es', { numeric: true, sensitivity: 'base' })
+  return dir === 'asc' ? cmp : -cmp
+}
+
+export type SortState = { key: string; dir: 'asc' | 'desc' }
