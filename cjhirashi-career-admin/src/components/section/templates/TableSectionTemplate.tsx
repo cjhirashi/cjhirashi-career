@@ -42,6 +42,7 @@ interface TableSectionTemplateProps<Row> {
     sort?: SortState
     onToggleSort?: (key: string) => void
     onRowClick?: (row: Row) => void
+    rowClassName?: (row: Row) => string
     renderCell?: (row: Row, colKey: string) => React.ReactNode | undefined
     headerExtra?: (colKey: string) => React.ReactNode
     rowActions?: (row: Row) => React.ReactNode
@@ -107,6 +108,7 @@ export function TableSectionTemplate<Row>({
         sort={table.sort}
         onToggleSort={table.onToggleSort}
         onRowClick={table.onRowClick}
+        rowClassName={table.rowClassName}
         renderCell={table.renderCell}
         headerExtra={table.headerExtra}
         rowActions={table.rowActions}

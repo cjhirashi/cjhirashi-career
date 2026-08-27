@@ -18,14 +18,14 @@ import { filesApi } from '@/api/files'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
-import { SectionViewTabs, useSectionViewTabs } from '@/components/SectionViewTabs'
+import { useSectionViewTabs } from '@/components/SectionViewTabs'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedSwitch } from '@/components/ThemedSwitch'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { Modal } from '@/components/Modal'
-import { TableColumnSettings } from '@/components/career/TableColumnSettings'
 import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
 import { ColumnConfig } from '@/config/careerResources'
+import { SectionShell, SectionToolbar, SectionTableFooter } from '@/components/section'
 
 const FILE_TABLE_COLUMNS: ColumnConfig[] = [
   { key: 'id', label: 'ID' },
@@ -276,13 +276,21 @@ export const FilesPage: React.FC = () => {
 
   return (
     <>
-    <div className="flex-1 min-h-0 flex flex-col">
-    <div className="card has-view-tabs">
-      <div className="card-header">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-semibold text-text">Archivos</h2>
-
-          <div className="flex flex-wrap items-center gap-2">
+    <SectionShell
+      title="Archivos"
+      tabs={sectionViews}
+      activeTab={sectionViews[0]?.key ?? 'main'}
+      variant="list"
+    >
+        <SectionToolbar
+          columnSettings={{
+            options: fileColumnOptions,
+            value: visibleFileKeys,
+            pinnedKeys: filePinnedKeys,
+            onToggle: toggleFileColumn,
+            onMove: moveFileColumn,
+          }}
+        >
           <label className="sr-only" htmlFor="category-filter">
             Filtrar por carpeta
           </label>
@@ -295,7 +303,6 @@ export const FilesPage: React.FC = () => {
             placeholder="Todas las carpetas"
             options={(categories ?? []).map((c) => ({ value: c, label: c }))}
           />
-
           <input
             type="text"
             list="upload-categories"
@@ -310,16 +317,10 @@ export const FilesPage: React.FC = () => {
               <option key={c} value={c} />
             ))}
           </datalist>
-
           <span className="inline-flex items-center gap-2">
-            <ThemedSwitch
-              checked={uploadIsPublic}
-              onChange={setUploadIsPublic}
-              aria-label="Público"
-            />
+            <ThemedSwitch checked={uploadIsPublic} onChange={setUploadIsPublic} aria-label="Público" />
             <span className="text-sm font-medium text-text">Público</span>
           </span>
-
           <input
             ref={fileInputRef}
             type="file"
@@ -335,23 +336,10 @@ export const FilesPage: React.FC = () => {
           >
             <Upload size={14} /> {uploadMutation.isPending ? 'Subiendo...' : 'Subir archivo'}
           </button>
-        </div>
-        </div>
-        <SectionViewTabs views={sectionViews} activeKey={sectionViews[0]?.key ?? 'main'} />
-      </div>
+        </SectionToolbar>
 
-      <div className="card-body table-list-body">
-        <div className="table-toolbar flex items-center justify-end mb-4">
-          <TableColumnSettings
-            options={fileColumnOptions}
-            value={visibleFileKeys}
-            pinnedKeys={filePinnedKeys}
-            onToggle={toggleFileColumn}
-            onMove={moveFileColumn}
-          />
-        </div>
         {uploadError && (
-          <p className="table-toolbar text-red-600 dark:text-red-400 text-sm mb-4">{uploadError}</p>
+          <p className="text-red-600 dark:text-red-400 text-sm mb-4">{uploadError}</p>
         )}
         {isLoading && (
           <div className="table-scroll table-scroll-inset">
@@ -411,15 +399,9 @@ export const FilesPage: React.FC = () => {
           </div>
         )}
         {!isLoading && !isError && (
-          <div className="table-footer">
-            <span className="text-xs text-text-secondary">
-              Mostrando {(data?.length ?? 0) === 0 ? 0 : 1}–{data?.length ?? 0}
-            </span>
-          </div>
+          <SectionTableFooter variant="count" shown={data?.length ?? 0} />
         )}
-      </div>
-    </div>
-    </div>
+    </SectionShell>
 
     {/* Rendered outside the `.card` above on purpose: that card can pick up
         `transform` from its own `:hover` styling (see `.card:hover` in

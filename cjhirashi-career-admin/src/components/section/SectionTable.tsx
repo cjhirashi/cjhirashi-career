@@ -21,6 +21,8 @@ interface SectionTableProps<Row> {
   sort?: SortState
   onToggleSort?: (key: string) => void
   onRowClick?: (row: Row) => void
+  /** Extra class(es) per row (e.g. status tint). */
+  rowClassName?: (row: Row) => string
   /** Per-column cell override. Return `undefined` to fall back to `formatCellValue`. */
   renderCell?: (row: Row, colKey: string) => React.ReactNode | undefined
   /** Extra node in a column header, right of the sort toggle (e.g. a filter button). */
@@ -45,6 +47,7 @@ export function SectionTable<Row>({
   sort,
   onToggleSort,
   onRowClick,
+  rowClassName,
   renderCell,
   headerExtra,
   rowActions,
@@ -160,7 +163,7 @@ export function SectionTable<Row>({
           {rows.map((row) => {
             const cls = `border-b border-border last:border-0${
               onRowClick ? ' hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer' : ''
-            }`
+            }${rowClassName ? ` ${rowClassName(row)}` : ''}`
             return (
               <tr
                 key={getRowKey(row)}

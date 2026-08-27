@@ -4,7 +4,8 @@ import { Check, ClipboardList, Pencil, Play, Plus, Trash2, X } from 'lucide-reac
 import { useAgentCatalog, useAgentTaskMutations, useAgentTasks } from '@/hooks/useBedrockChat'
 import { useAuthStore } from '@/stores/authStore'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { SectionViewTabs, SectionViewTab } from '@/components/SectionViewTabs'
+import { SectionViewTab } from '@/components/SectionViewTabs'
+import { SectionShell } from '@/components/section'
 import { getErrorMessage } from '@/utils/errors'
 import { BedrockTask, BedrockTaskPayload, TaskStatus } from '@/types/bedrock'
 import { TaskForm, TASK_FORM_ID } from '@/components/tasks/TaskForm'
@@ -275,39 +276,21 @@ export const TasksPage: React.FC = () => {
   ) : null
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="card has-view-tabs">
-        <div className="card-header">
-          <h2 className="font-semibold text-text flex items-center gap-2 min-w-0">
-            {showRecordHeading && headingTask ? (
-              <>
-                <span className="truncate">Tareas</span>
-                <span className="text-text-muted font-normal">·</span>
-                <span className="mono text-primary font-normal flex-shrink-0">{headingTask.id}</span>
-                <span className="text-text-muted font-normal">·</span>
-                <span className="truncate">{headingTask.title}</span>
-              </>
-            ) : recordState === 'create' ? (
-              <span className="truncate">Tareas · nuevo</span>
-            ) : (
-              <>
-                <span className="truncate">Tareas</span>
-                {!isLoading && <span className="badge badge-slate mono">{roots.length}</span>}
-              </>
-            )}
-          </h2>
-          <div className="view-tabs-row">
-            <SectionViewTabs
-              views={visibleTabs}
-              activeKey={activeViewKey}
-              interactiveKeys={interactiveKeys}
-              onSelect={selectSectionView}
-            />
-            {headerActions ? <div className="view-tabs-actions">{headerActions}</div> : null}
-          </div>
-        </div>
-
-        <div className={`card-body${isBoard && boardView === 'list' ? ' table-list-body' : ''}`}>
+    <SectionShell
+      title={recordState === 'create' ? 'Tareas · nuevo' : 'Tareas'}
+      count={isBoard && !isLoading ? roots.length : undefined}
+      breadcrumb={
+        showRecordHeading && headingTask
+          ? { section: 'Tareas', id: headingTask.id, name: headingTask.title }
+          : undefined
+      }
+      tabs={visibleTabs}
+      activeTab={activeViewKey}
+      interactiveTabs={interactiveKeys}
+      onTabSelect={selectSectionView}
+      actions={headerActions}
+      variant={isBoard && boardView === 'list' ? 'list' : 'record'}
+    >
           {isBoard && isLoading && <LoadingSpinner fullScreen={false} message="Cargando tareas..." />}
           {isBoard && isError && (
             <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
@@ -371,9 +354,7 @@ export const TasksPage: React.FC = () => {
               onCancel={cancelForm}
             />
           )}
-        </div>
-      </div>
-    </div>
+    </SectionShell>
   )
 }
 
