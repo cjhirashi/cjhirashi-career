@@ -1,5 +1,6 @@
 import json
 from fastmcp import FastMCP
+from error_reporting import report_error
 from tools.cv_generator import generar_cv
 from tools.cover_generator import generar_cover_letter
 
@@ -21,6 +22,7 @@ def crear_cv_pdf(
     ruta_resultado = generar_cv(datos, nombre_archivo)
     return f"Éxito: PDF generado correctamente en '{ruta_resultado}'"
   except Exception as e:
+    report_error(str(e), "crear_cv_pdf", exc=e)
     return f"Error generando PDF: {str(e)}"
 
 
@@ -38,6 +40,7 @@ def crear_cover_letter_pdf(
     ruta_resultado = generar_cover_letter(datos, nombre_archivo)
     return f"Éxito: PDF generado correctamente en '{ruta_resultado}'"
   except Exception as e:
+    report_error(str(e), "crear_cover_letter_pdf", exc=e)
     return f"Error generando PDF: {str(e)}"
 
 
