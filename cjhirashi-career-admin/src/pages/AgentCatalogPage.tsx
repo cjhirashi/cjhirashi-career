@@ -1,30 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  Pencil,
-  RotateCcw,
-  Save,
-  Search,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { Pencil, RotateCcw, Save, Trash2 } from 'lucide-react'
 import { agentCatalogConfig, catalogAgentMatches, catalogItemToRow } from '@/config/agentCatalogResource'
 import { FieldConfig } from '@/config/careerResources'
 import { CareerEntity } from '@/types/career'
 import { ListFilters } from '@/api/career'
-import { SectionViewTabs, useSectionViewTabs } from '@/components/SectionViewTabs'
-import { TableColumnSettings } from '@/components/career/TableColumnSettings'
+import { useSectionViewTabs } from '@/components/SectionViewTabs'
 import { ColumnFilterButton, isFilterableField } from '@/components/career/ResourceListFilters'
-import { formatCellValue } from '@/components/career/careerFieldUtils'
 import { StatusIndicator } from '@/components/StatusIndicator'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
+import { SectionShell, SectionToolbar, SectionTable, SectionTableFooter } from '@/components/section'
 import {
   useAgentCatalog,
   useAgentCatalogItem,
@@ -281,44 +268,59 @@ export const AgentCatalogPage: React.FC = () => {
       </button>
     ) : null
 
-  return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="card has-view-tabs">
-        <div className="card-header">
-          <h2 className="font-semibold text-text flex items-center gap-2 min-w-0">
-            {showRecordHeading && headingRecord ? (
-              <>
-                <span className="truncate">{headingText}</span>
-                <span className="text-text-muted font-normal">·</span>
-                <span className="mono text-primary font-normal flex-shrink-0">{String(headingRecord.id)}</span>
-                {headingName ? (
-                  <>
-                    <span className="text-text-muted font-normal">·</span>
-                    <span className="truncate">{headingName}</span>
-                  </>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <span className="truncate">{headingText}</span>
-                {viewState === 'list' && (
-                  <span className="badge badge-slate mono">{totalCount}</span>
-                )}
-              </>
-            )}
-          </h2>
-          <div className="view-tabs-row">
-            <SectionViewTabs
-              views={sectionViews}
-              activeKey={activeViewKey}
-              interactiveKeys={['list']}
-              onSelect={selectSectionView}
-            />
-            {headerActions ? <div className="view-tabs-actions">{headerActions}</div> : null}
-          </div>
-        </div>
+  const listColumn = (key: string) => displayColumns.find((col) => col.key === key)
 
-        <div className={`card-body${viewState === 'list' ? ' table-list-body' : ''}`}>
+  const renderCell = (item: CareerEntity, key: string): React.ReactNode | undefined => {
+    const value = item[key]
+    if (key === 'label') {
+      return (
+        <PersonChip
+          src={typeof item.photo_url === 'string' ? item.photo_url : null}
+          name={String(item.label ?? '')}
+        />
+      )
+    }
+    const col = listColumn(key)
+    const field = fieldForColumn(key)
+    if (col?.format === 'boolean' || field?.type === 'boolean') {
+      return <StatusIndicator active={Boolean(value)} />
+    }
+    if (col?.format === 'badge' && value !== null && value !== undefined && value !== '') {
+      const label = field?.options?.find((opt) => opt.value === String(value))?.label ?? String(value)
+      return <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>{label}</Badge>
+    }
+    return undefined
+  }
+
+  const headerExtra = (key: string): React.ReactNode => {
+    const field = fieldForColumn(key)
+    return isFilterableField(field) ? (
+      <ColumnFilterButton
+        resourceKey={agentCatalogConfig.key}
+        field={field}
+        value={filters}
+        onChange={setFilters}
+      />
+    ) : null
+  }
+
+  return (
+    <SectionShell
+      title={headingText}
+      count={viewState === 'list' ? totalCount : undefined}
+      breadcrumb={
+        showRecordHeading && headingRecord
+          ? { section: headingText, id: headingRecord.id, name: headingName }
+          : undefined
+      }
+      tabs={sectionViews}
+      activeTab={activeViewKey}
+      interactiveTabs={['list']}
+      onTabSelect={selectSectionView}
+      actions={headerActions}
+      variant={viewState === 'list' ? 'list' : 'record'}
+    >
+      <>
           {viewState === 'view' && (
             <AgentCatalogRecordView
               profileId={profileId}
@@ -337,207 +339,73 @@ export const AgentCatalogPage: React.FC = () => {
 
           {viewState === 'list' && (
             <>
-              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
-                <div className="relative flex-1 min-w-[200px]">
-                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-                  <input
-                    type="text"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder={`Buscar en ${agentCatalogConfig.label.toLowerCase()}...`}
-                    className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
-                  />
-                  {searchInput && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchInput('')}
-                      aria-label="Limpiar búsqueda"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-                {filtersActive && (
-                  <button type="button" className="btn-secondary btn-small" onClick={() => setFilters({})}>
-                    Limpiar filtros
+              <SectionToolbar
+                search={{
+                  value: searchInput,
+                  onChange: setSearchInput,
+                  placeholder: `Buscar en ${agentCatalogConfig.label.toLowerCase()}...`,
+                }}
+                filtersActive={filtersActive}
+                onClearFilters={() => setFilters({})}
+                columnSettings={{
+                  options: columnOptions,
+                  value: visibleColumnKeys,
+                  pinnedKeys: pinnedColumnIds,
+                  onToggle: toggleColumn,
+                  onMove: moveColumn,
+                }}
+              />
+
+              <SectionTable<CareerEntity>
+                columns={displayColumns}
+                rows={pageRows}
+                getRowKey={(item) => String(item.id)}
+                sort={sortBy ? { key: sortBy, dir: sortDir } : undefined}
+                onToggleSort={toggleSort}
+                onRowClick={openView}
+                renderCell={renderCell}
+                headerExtra={headerExtra}
+                rowActions={(item) => (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEdit(item)
+                    }}
+                    aria-label="Editar"
+                    className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
+                  >
+                    <Pencil size={15} />
                   </button>
                 )}
-                <div className="ml-auto flex-shrink-0">
-                  <TableColumnSettings
-                    options={columnOptions}
-                    value={visibleColumnKeys}
-                    pinnedKeys={pinnedColumnIds}
-                    onToggle={toggleColumn}
-                    onMove={moveColumn}
-                  />
-                </div>
-              </div>
-
-              {isLoading && (
-                <div className="table-scroll table-scroll-inset">
-                  <LoadingSpinner fullScreen={false} message="Cargando..." />
-                </div>
-              )}
-
-              {isError && (
-                <div className="table-scroll table-scroll-inset text-center py-6">
-                  <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
-                  <button type="button" onClick={() => refetch()} className="btn-secondary btn-small mt-3">
-                    Reintentar
-                  </button>
-                </div>
-              )}
-
-              {!isLoading && !isError && pageRows.length === 0 && (
-                <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
-                  {search || filtersActive
+                state={{
+                  isLoading,
+                  isError,
+                  errorMessage: isError ? getErrorMessage(error) : undefined,
+                  onRetry: refetch,
+                }}
+                emptyMessage={
+                  search || filtersActive
                     ? 'Sin resultados para esa búsqueda o filtros.'
-                    : `No hay ${agentCatalogConfig.label.toLowerCase()} todavía.`}
-                </p>
-              )}
-
-              {!isLoading && !isError && pageRows.length > 0 && (
-                <div className="table-scroll">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border text-left text-text-secondary">
-                        {displayColumns.map((col) => {
-                          const field = fieldForColumn(col.key)
-                          const filterBtn = isFilterableField(field) ? (
-                            <ColumnFilterButton
-                              resourceKey={agentCatalogConfig.key}
-                              field={field}
-                              value={filters}
-                              onChange={setFilters}
-                            />
-                          ) : null
-                          return (
-                            <th
-                              key={col.key}
-                              className={`px-6 py-2 font-medium whitespace-nowrap${col.key === 'id' ? ' table-col-id' : ''}`}
-                            >
-                              <span className="inline-flex items-center gap-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleSort(col.key)}
-                                  className={`flex items-center gap-1 ${col.key === 'id' ? 'hover:opacity-80' : 'hover:text-text'}`}
-                                >
-                                  {col.label}
-                                  {sortBy === col.key ? (
-                                    sortDir === 'asc' ? (
-                                      <ArrowUp size={12} />
-                                    ) : (
-                                      <ArrowDown size={12} />
-                                    )
-                                  ) : (
-                                    <ArrowUpDown size={12} className="opacity-30" />
-                                  )}
-                                </button>
-                                {filterBtn}
-                              </span>
-                            </th>
-                          )
-                        })}
-                        <th className="px-6 py-2 font-medium text-right">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pageRows.map((item) => (
-                        <tr
-                          key={item.id}
-                          onClick={() => openView(item)}
-                          className="border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
-                        >
-                          {displayColumns.map((col) => {
-                            const value = item[col.key]
-                            if (col.key === 'id') {
-                              return (
-                                <td key="id" className="px-6 py-2 table-col-id" title={String(value ?? '')}>
-                                  {value != null && value !== '' ? String(value) : '—'}
-                                </td>
-                              )
-                            }
-                            const field = fieldForColumn(col.key)
-                            if (col.key === 'label') {
-                              return (
-                                <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
-                                  <PersonChip src={typeof item.photo_url === 'string' ? item.photo_url : null} name={String(item.label ?? '')} />
-                                </td>
-                              )
-                            }
-                            if (col.format === 'boolean' || field?.type === 'boolean') {
-                              return (
-                                <td key={col.key} className="px-6 py-2 whitespace-nowrap">
-                                  <StatusIndicator active={Boolean(value)} />
-                                </td>
-                              )
-                            }
-                            if (col.format === 'badge' && value !== null && value !== undefined && value !== '') {
-                              const label =
-                                field?.options?.find((opt) => opt.value === String(value))?.label ?? String(value)
-                              return (
-                                <td key={col.key} className="px-6 py-2 whitespace-nowrap">
-                                  <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>{label}</Badge>
-                                </td>
-                              )
-                            }
-                            return (
-                              <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
-                                {formatCellValue(value, col.format)}
-                              </td>
-                            )
-                          })}
-                          <td className="px-6 py-2 text-right whitespace-nowrap">
-                            <div className="flex justify-end items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  openEdit(item)
-                                }}
-                                aria-label="Editar"
-                                className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
-                              >
-                                <Pencil size={15} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    : `No hay ${agentCatalogConfig.label.toLowerCase()} todavía.`
+                }
+              />
 
               {!isLoading && !isError && (
-                <div className="table-footer">
-                  <button
-                    type="button"
-                    onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
-                    disabled={skip === 0}
-                    className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
-                  >
-                    <ChevronLeft size={14} /> Anterior
-                  </button>
-                  <span className="text-xs text-text-secondary">
-                    Mostrando {pageRows.length === 0 ? 0 : skip + 1}–{skip + pageRows.length}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setSkip((s) => s + PAGE_SIZE)}
-                    disabled={skip + pageRows.length >= totalCount}
-                    className="btn-secondary btn-small flex items-center gap-1 disabled:opacity-40"
-                  >
-                    Siguiente <ChevronRight size={14} />
-                  </button>
-                </div>
+                <SectionTableFooter
+                  variant="pager"
+                  page={Math.floor(skip / PAGE_SIZE) + 1}
+                  hasMore={skip + pageRows.length < totalCount}
+                  onPageChange={(p) => setSkip((p - 1) * PAGE_SIZE)}
+                  shown={pageRows.length}
+                  pageSize={PAGE_SIZE}
+                  total={totalCount}
+                />
               )}
             </>
           )}
-        </div>
-      </div>
-    </div>
+      </>
+    </SectionShell>
   )
 }
 
