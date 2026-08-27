@@ -32,8 +32,16 @@ export function useCareerCount(resource: string, params: Pick<ListParams, 'searc
 export function useCareerMutations<T = CareerEntity>(resource: string) {
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
+  const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: careerQueryKey(resource), exact: false })
+    // Saving a project can find-or-create `competencies` rows (see
+    // CareerRepository._resolve_competency_ids) - refresh the fk-multi-select
+    // options cache so a newly typed technology shows up as a normal option
+    // right away instead of waiting out useFkOptions's staleTime.
+    if (resource === 'projects') {
+      queryClient.invalidateQueries({ queryKey: ['fk-options', 'career', 'competencies'] })
+    }
+  }
 
   const createMutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) => careerApi.create<T>(resource, payload),

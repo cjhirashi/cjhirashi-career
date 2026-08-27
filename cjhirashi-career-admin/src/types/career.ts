@@ -111,8 +111,8 @@ export interface WorkHistory {
   people_managed?: string | null
   description?: string | null
   narrative?: string | null
-  achievements?: string | null
-  key_metrics?: Record<string, unknown> | null
+  achievement_ids?: string[] | null
+  key_metrics?: Record<string, unknown> | unknown[] | string | null
   learnings?: string | null
   contract_type?: string | null
   industry_sector?: string | null
@@ -202,7 +202,7 @@ export interface Project {
   problem?: string | null
   solution?: string | null
   architecture?: string | null
-  tech_stack?: string | null
+  competency_ids?: string[] | null
   metric1_label?: string | null
   metric1_value?: string | null
   metric2_label?: string | null

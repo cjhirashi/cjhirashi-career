@@ -1,12 +1,17 @@
 import { FieldConfig, FieldType } from '@/config/careerResources'
 import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { formatDate, formatDateTime, truncate } from '@/utils/formatters'
+import { jsonListConfigOf, parseEditorRows, summarizeJsonList, toApiValue, toEditorRows } from './jsonListUtils'
 
 /**
  * Converts a raw API value into the string/boolean an <input>/<textarea>/
  * <select> needs for its `value`/`checked` prop.
  */
-export const toFormValue = (type: FieldType, value: unknown): string | boolean => {
+export const toFormValue = (
+  type: FieldType,
+  value: unknown,
+  field?: FieldConfig
+): string | boolean => {
   if (value === null || value === undefined) {
     return type === 'boolean' ? false : ''
   }
@@ -29,7 +34,7 @@ export const toFormValue = (type: FieldType, value: unknown): string | boolean =
       return Array.isArray(value) ? value.join(', ') : ''
     case 'json':
       try {
-        return JSON.stringify(value, null, 2)
+        return JSON.stringify(toEditorRows(value, jsonListConfigOf(field?.jsonList)))
       } catch {
         return ''
       }
@@ -92,9 +97,10 @@ export const fromFormValue = (field: FieldConfig, raw: string | boolean): unknow
     case 'json': {
       if (str.trim() === '') return null
       try {
-        return JSON.parse(str)
+        const config = jsonListConfigOf(field.jsonList)
+        return toApiValue(parseEditorRows(str, config), config)
       } catch {
-        throw new FieldParseError(label, `"${label}" no es JSON válido`)
+        throw new FieldParseError(label, `"${label}" no se pudo guardar. Revisa los registros.`)
       }
     }
     case 'fk-select':
@@ -126,8 +132,9 @@ export const formatCellValue = (value: unknown, format?: string): string => {
       if (!Array.isArray(value) || value.length === 0) return 'Todos'
       return value.map((id) => getAgentProfileLabel(String(id))).join(', ')
     default:
-      if (Array.isArray(value)) return value.join(', ')
-      if (typeof value === 'object') return JSON.stringify(value)
+      if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+        return summarizeJsonList(value, jsonListConfigOf())
+      }
       return String(value)
   }
 }

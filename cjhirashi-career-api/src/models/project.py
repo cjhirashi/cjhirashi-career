@@ -31,7 +31,10 @@ class Project(Base):
     problem = Column(Text, nullable=True)
     solution = Column(Text, nullable=True)
     architecture = Column(Text, nullable=True)
-    tech_stack = Column(Text, nullable=True)
+    # Lista de ids de `competencies` (mismo patrón que
+    # Achievement.demonstrated_competency_ids) - "encontrar o crear" se
+    # resuelve en CareerRepository._resolve_competency_ids, no aquí.
+    competency_ids = Column(JSONB, nullable=True)
     # Up to 4 metrics (name + value) - fixed slots instead of a JSON blob so
     # the admin form is 2 plain fields per metric, not hand-written JSON.
     # None are required; an unused slot is just left blank.

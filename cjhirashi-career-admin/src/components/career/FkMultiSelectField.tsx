@@ -12,6 +12,8 @@ interface FkMultiSelectFieldProps {
   onChange: (value: string) => void
   required?: boolean
   placeholder?: string
+  /** Lets Carlos type a value not yet in `fkResource`'s options (see FieldConfig.creatable). */
+  creatable?: boolean
 }
 
 const splitValues = (value: string): string[] =>
@@ -35,6 +37,7 @@ export const FkMultiSelectField: React.FC<FkMultiSelectFieldProps> = ({
   onChange,
   required,
   placeholder,
+  creatable = false,
 }) => {
   const { options, isLoading, isError } = useFkOptions(fkResource, fkLabelField, fkApi)
 
@@ -60,6 +63,7 @@ export const FkMultiSelectField: React.FC<FkMultiSelectFieldProps> = ({
       options={options}
       required={required}
       placeholder={placeholder ?? '— Selecciona registros —'}
+      creatable={creatable}
     />
   )
 }

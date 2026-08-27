@@ -52,11 +52,12 @@ import { StatusIndicator } from '@/components/StatusIndicator'
 import { useFkLabel } from '@/hooks/useFkOptions'
 import { GitHubReposPanel } from './GitHubReposPanel'
 import { formatCellValue } from './careerFieldUtils'
+import { JsonListView } from './JsonListView'
+import { jsonListConfigOf, summarizeJsonList } from './jsonListUtils'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 import { availableTableColumns, defaultTableColumns, nameColumnKey, pinnedColumnKeys } from '@/utils/tableColumns'
 import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
 import { TableColumnSettings } from './TableColumnSettings'
-import { ThemedSelect } from '@/components/ThemedSelect'
 import { SelectCapsule, SelectCapsuleGroup } from '@/components/SelectCapsule'
 import { MarkdownTable } from '@/components/MarkdownTable'
 
@@ -470,11 +471,7 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfi
     case 'datetime':
       return <>{typeof value === 'string' ? formatDateTime(value) : String(value)}</>
     case 'json':
-      return (
-        <pre className="text-xs bg-glass rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
-          {JSON.stringify(value, null, 2)}
-        </pre>
-      )
+      return <JsonListView value={value} jsonList={field?.jsonList} />
     case 'textarea':
       // Long free-text fields (bio, narratives, etc.) are authored as
       // Markdown in the form's plain textarea - rendered here instead of
@@ -495,20 +492,10 @@ const FieldValue: React.FC<{ value: unknown; type: FieldType; field?: FieldConfi
       )
     default:
       if (Array.isArray(value)) {
-        return (
-          <ul className="list-disc list-inside space-y-0.5">
-            {value.map((v, idx) => (
-              <li key={idx}>{String(v)}</li>
-            ))}
-          </ul>
-        )
+        return <JsonListView value={value} jsonList={{ kind: 'text', itemNoun: 'elemento' }} />
       }
       if (typeof value === 'object') {
-        return (
-          <pre className="text-xs bg-glass rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words">
-            {JSON.stringify(value, null, 2)}
-          </pre>
-        )
+        return <JsonListView value={value} jsonList={{ kind: 'kv', itemNoun: 'dato' }} />
       }
       return <span className="whitespace-pre-wrap break-words">{String(value)}</span>
   }
@@ -580,124 +567,6 @@ const RecordView: React.FC<{
       {showMeta && <RecordMetadata item={item} />}
 
       {resourceKey === 'github-profile' && <GitHubReposPanel />}
-    </div>
-  )
-}
-
-const ProjectCard: React.FC<{
-  item: CareerEntity
-  config: ResourceConfig
-  onView: () => void
-  onEdit: () => void
-  onDelete: () => void
-}> = ({ item, config, onView, onEdit, onDelete }) => {
-  const [headingCol, ...restCols] = config.columns
-  const summary =
-    typeof item.card_summary === 'string'
-      ? item.card_summary
-      : typeof item.detailed_summary === 'string'
-        ? item.detailed_summary
-        : null
-  const techStack = Array.isArray(item.tech_stack) ? (item.tech_stack as unknown[]) : null
-
-  return (
-    <div
-      className="card p-5 flex flex-col gap-3 cursor-pointer"
-      onClick={onView}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onView()
-        }
-      }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-semibold text-text text-lg">{String(item[headingCol.key] ?? '—')}</h3>
-        <div className="flex gap-1 flex-shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-            aria-label="Editar"
-            className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
-          >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-            aria-label="Eliminar"
-            className="p-1.5 rounded text-text-secondary hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {restCols.map((col) => {
-          const val = item[col.key]
-          const field = fieldForColumn(config, col.key)
-          if (isSelectField(field)) {
-            if (val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0)) {
-              return null
-            }
-            return <SelectFieldCapsules key={col.key} value={val} type={field.type} field={field} />
-          }
-          if (val === null || val === undefined || val === '') return null
-          if (col.format === 'boolean') return val ? (
-            <Badge key={col.key} color="cyan">{col.label}</Badge>
-          ) : null
-          if (col.format === 'badge')
-            return (
-              <Badge key={col.key} color={col.badgeColor ? col.badgeColor(val) : 'slate'}>
-                {String(val)}
-              </Badge>
-            )
-          return (
-            <Badge key={col.key} color="slate">
-              {col.label}: {formatCellValue(val, col.format)}
-            </Badge>
-          )
-        })}
-      </div>
-
-      {summary && <p className="text-text-secondary text-sm line-clamp-3">{summary}</p>}
-
-      {techStack && techStack.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {techStack.slice(0, 8).map((t, idx) => (
-            <span
-              key={idx}
-              className="text-xs px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300"
-            >
-              {String(t)}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {(typeof item.github_url === 'string' || typeof item.demo_url === 'string') && (
-        <div className="flex gap-3 text-xs pt-1">
-          {typeof item.github_url === 'string' && item.github_url && (
-            <a href={item.github_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline" onClick={(e) => e.stopPropagation()}>
-              GitHub
-            </a>
-          )}
-          {typeof item.demo_url === 'string' && item.demo_url && (
-            <a href={item.demo_url} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:underline" onClick={(e) => e.stopPropagation()}>
-              Demo
-            </a>
-          )}
-        </div>
-      )}
     </div>
   )
 }
@@ -1321,8 +1190,6 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     )
   }
 
-  const isCards = config.variant === 'cards'
-
   // ---------------------------------------------------------------------
   // Header - changes with viewState instead of always showing the table's
   // title + "Nuevo" button.
@@ -1507,95 +1374,45 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
         {viewState === 'list' && (
           <>
-            {(supportsListControls || !isCards) && (
-              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
-                {supportsListControls && (
-                  <div className="relative flex-1 min-w-[200px]">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-                    <input
-                      type="text"
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder={`Buscar en ${config.label.toLowerCase()}...`}
-                      className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
-                    />
-                    {searchInput && (
-                      <button
-                        type="button"
-                        onClick={() => setSearchInput('')}
-                        aria-label="Limpiar búsqueda"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {isCards && config.columns.length > 0 && (
-                  <div className="flex items-center gap-1">
-                    <ThemedSelect
-                      value={sortBy ?? ''}
-                      onChange={(v) => toggleSort(v)}
-                      className="w-auto min-w-[11rem]"
-                      aria-label="Ordenar por"
-                      placeholder="Orden por defecto"
-                      options={config.columns.map((col) => ({ value: col.key, label: col.label }))}
-                    />
-                    {sortBy && (
-                      <button
-                        type="button"
-                        onClick={() => setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))}
-                        className="btn-secondary btn-small"
-                        aria-label={sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
-                        title={sortDir === 'asc' ? 'Ascendente' : 'Descendente'}
-                      >
-                        {sortDir === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {filtersActive && (
-                  <button type="button" className="btn-secondary btn-small" onClick={() => setFilters({})}>
-                    Limpiar filtros
-                  </button>
-                )}
-                {!isCards && (
-                  <div className="ml-auto flex-shrink-0">
-                    <TableColumnSettings
-                      options={columnOptions}
-                      value={visibleColumnKeys}
-                      pinnedKeys={pinnedColumnIds}
-                      onToggle={toggleColumn}
-                      onMove={moveColumn}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {supportsListControls && isCards && config.columns.some((col) => isFilterableField(fieldForColumn(config, col.key))) && (
-              <div className="table-toolbar flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
-                {config.columns.map((col) => {
-                  const field = fieldForColumn(config, col.key)
-                  if (!isFilterableField(field)) return null
-                  return (
-                    <span
-                      key={col.key}
-                      className="inline-flex items-center gap-0.5 text-sm font-medium text-text-secondary"
+            <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
+              {supportsListControls && (
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder={`Buscar en ${config.label.toLowerCase()}...`}
+                    className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchInput('')}
+                      aria-label="Limpiar búsqueda"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
                     >
-                      {col.label}
-                      <ColumnFilterButton
-                        resourceKey={config.key}
-                        field={field}
-                        value={filters}
-                        onChange={setFilters}
-                      />
-                    </span>
-                  )
-                })}
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {filtersActive && (
+                <button type="button" className="btn-secondary btn-small" onClick={() => setFilters({})}>
+                  Limpiar filtros
+                </button>
+              )}
+              <div className="ml-auto flex-shrink-0">
+                <TableColumnSettings
+                  options={columnOptions}
+                  value={visibleColumnKeys}
+                  pinnedKeys={pinnedColumnIds}
+                  onToggle={toggleColumn}
+                  onMove={moveColumn}
+                />
               </div>
-            )}
+            </div>
 
             {isLoading && (
               <div className="table-scroll table-scroll-inset">
@@ -1620,24 +1437,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
               </p>
             )}
 
-            {!isLoading && !isError && items.length > 0 && isCards && (
-              <div className="table-scroll table-scroll-inset">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {items.map((item) => (
-                  <ProjectCard
-                    key={item.id}
-                    item={item}
-                    config={config}
-                    onView={() => openView(item)}
-                    onEdit={() => openEdit(item)}
-                    onDelete={() => handleDelete(item)}
-                  />
-                ))}
-              </div>
-              </div>
-            )}
-
-            {!isLoading && !isError && items.length > 0 && !isCards && (
+            {!isLoading && !isError && items.length > 0 && (
               <div className="table-scroll">
                 <table className="min-w-full text-sm">
                   <thead>
@@ -1710,7 +1510,12 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                             )
                           }
                           const field = fieldForColumn(config, col.key)
+                          // Captured before the isSelectField() guard below -
+                          // referencing `field` itself after that guard's
+                          // early return narrows it to `never` (TS quirk
+                          // with type predicates over `T | undefined`).
                           const fieldType = field?.type
+                          const fieldJsonList = field?.jsonList
                           if (isSelectField(field)) {
                             return (
                               <td key={col.key} className="px-6 py-2">
@@ -1731,6 +1536,13 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
                                 <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>
                                   {String(value)}
                                 </Badge>
+                              </td>
+                            )
+                          }
+                          if (fieldType === 'json') {
+                            return (
+                              <td key={col.key} className="px-6 py-2 whitespace-nowrap text-text">
+                                {summarizeJsonList(value, jsonListConfigOf(fieldJsonList))}
                               </td>
                             )
                           }

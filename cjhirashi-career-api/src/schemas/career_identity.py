@@ -5,7 +5,7 @@ Covers: personal_profile, differentiators, identity, identity_reflections, compe
 certifications, target_roles, work_history, achievements, star_stories,
 career_reviews, role_gap_analysis, projects.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any, Literal, Union
 from datetime import date, datetime
 
@@ -335,7 +335,8 @@ class WorkHistoryBase(BaseModel):
     description: Optional[str] = None
     narrative: Optional[str] = None
     achievement_ids: List[str] = Field(default_factory=list)
-    key_metrics: Optional[Dict[str, Any]] = None
+    # JSONB: object, array, or legacy scalar string from the admin editor.
+    key_metrics: Optional[Any] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = Field(None, max_length=50)
     industry_sector: Optional[str] = Field(None, max_length=100)
@@ -356,7 +357,7 @@ class WorkHistoryUpdate(BaseModel):
     description: Optional[str] = None
     narrative: Optional[str] = None
     achievement_ids: Optional[List[str]] = None
-    key_metrics: Optional[Dict[str, Any]] = None
+    key_metrics: Optional[Any] = None
     learnings: Optional[str] = None
     contract_type: Optional[str] = None
     industry_sector: Optional[str] = None
@@ -587,7 +588,7 @@ class ProjectBase(BaseModel):
     problem: Optional[str] = None
     solution: Optional[str] = None
     architecture: Optional[str] = None
-    tech_stack: Optional[str] = None
+    competency_ids: Optional[List[str]] = None
     metric1_label: Optional[str] = Field(None, max_length=100)
     metric1_value: Optional[str] = Field(None, max_length=500)
     metric2_label: Optional[str] = Field(None, max_length=100)
@@ -609,6 +610,15 @@ class ProjectBase(BaseModel):
     image_url: Optional[str] = Field(None, max_length=1024)
     notes: Optional[str] = None
 
+    @field_validator("results", mode="before")
+    @classmethod
+    def _coerce_legacy_results(cls, value: Any) -> Any:
+        """Pre-migration rows stored `results` as free text; wrap it as a
+        single-item list so the JSON-list schema can still read it."""
+        if isinstance(value, str):
+            return [value] if value.strip() else None
+        return value
+
 
 class ProjectCreate(ProjectBase):
     pass
@@ -625,7 +635,7 @@ class ProjectUpdate(BaseModel):
     problem: Optional[str] = None
     solution: Optional[str] = None
     architecture: Optional[str] = None
-    tech_stack: Optional[str] = None
+    competency_ids: Optional[List[str]] = None
     metric1_label: Optional[str] = None
     metric1_value: Optional[str] = None
     metric2_label: Optional[str] = None

@@ -8,6 +8,7 @@ import { SelectFieldHint } from './SelectFieldHint'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
 import { BooleanField } from './BooleanField'
+import { JsonListField } from './JsonListField'
 
 interface ResourceFormProps {
   config: ResourceConfig
@@ -33,7 +34,7 @@ type FormState = Record<string, string | boolean>
 const buildInitialState = (fields: FieldConfig[], initialValues?: Record<string, unknown>): FormState => {
   const state: FormState = {}
   fields.forEach((field) => {
-    state[field.name] = toFormValue(field.type, initialValues?.[field.name])
+    state[field.name] = toFormValue(field.type, initialValues?.[field.name], field)
   })
   return state
 }
@@ -144,6 +145,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
               onChange={(v) => handleChange(field.name, v)}
               required={field.required}
               placeholder={field.placeholder}
+              creatable={field.creatable}
             />
             {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
           </div>
@@ -259,6 +261,23 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
         )
       }
       case 'json':
+        return (
+          <div key={field.name} className="form-group">
+            <div className="json-list-label-row">
+              <label className="form-label mb-0" id={`${commonProps.id}-label`}>
+                {field.label}
+                {field.required && <span className="text-red-500"> *</span>}
+              </label>
+            </div>
+            <JsonListField
+              id={commonProps.id}
+              value={typeof value === 'string' ? value : ''}
+              onChange={(next) => handleChange(field.name, next)}
+              jsonList={field.jsonList}
+            />
+            {field.helpText && <p className="text-text-secondary text-xs mt-1">{field.helpText}</p>}
+          </div>
+        )
       case 'string-array':
       case 'number-array':
         return (

@@ -65,7 +65,7 @@ export type FieldType =
   | 'multi-select'
   | 'string-array' // newline-separated list -> string[]
   | 'number-array' // comma-separated list -> number[]
-  | 'json' // raw JSON textarea -> parsed with JSON.parse
+  | 'json' // list of records (kv / text / objects) stored as JSONB
   | 'fk-select' // FK selector: fetches options from another career resource
   | 'fk-multi-select' // several FKs: themed dropdown multi-select from another career resource
 
@@ -74,6 +74,35 @@ export interface SelectOption {
   label: string
   /** When set (including null), the select shows a photo/initials instead of the id rail. */
   imageUrl?: string | null
+}
+
+/** One input inside a json-list record (kind: 'records'). */
+export interface JsonListItemField {
+  name: string
+  label: string
+  type?: 'text' | 'textarea' | 'date' | 'url'
+  placeholder?: string
+  /** Span the full row in the record grid. */
+  wide?: boolean
+}
+
+/**
+ * How a JSONB field is edited and shown: never as raw JSON.
+ * - `kv`: list of name + value (metrics, context).
+ * - `text`: list of single-line items (sources, results).
+ * - `records`: list of objects with `itemFields`.
+ */
+export interface JsonListConfig {
+  kind: 'kv' | 'text' | 'records'
+  /** Singular noun for counts and empty copy: "métrica", "experiencia". */
+  itemNoun: string
+  addLabel?: string
+  keyLabel?: string
+  valueLabel?: string
+  keyPlaceholder?: string
+  valuePlaceholder?: string
+  textPlaceholder?: string
+  itemFields?: JsonListItemField[]
 }
 
 export interface FieldConfig {
@@ -99,6 +128,14 @@ export interface FieldConfig {
   fkLabelField?: string | string[]
   /** For type='fk-select' or 'fk-multi-select': API source when not under /career/{key}. */
   fkApi?: 'career' | 'pdf-template-styles'
+  /**
+   * For type='fk-multi-select': lets Carlos type a value not yet in
+   * `fkResource`'s options - it is sent as-is and the backend creates the
+   * referenced record (see projects.competency_ids / CareerRepository).
+   */
+  creatable?: boolean
+  /** For type='json': list editor instead of a JSON textarea. */
+  jsonList?: JsonListConfig
 }
 
 export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number' | 'agents'
@@ -124,8 +161,6 @@ export interface ResourceConfig {
   mode?: 'list' | 'singleton'
   columns: ColumnConfig[]
   fields: FieldConfig[]
-  /** UI hint only - CareerResourceView still uses the same fetch/mutate logic. */
-  variant?: 'table' | 'cards'
   /** Marks this resource as PDF-exportable: the named field (its Markdown
    * "content") is hidden from the plain INFORMACIÓN field list in the
    * record viewer and replaced there by an embedded, auto-loaded preview of
@@ -327,10 +362,19 @@ export const competenciesConfig: ResourceConfig = {
     },
     {
       name: 'context_libraries',
-      label: 'Librerías / contexto técnico (JSON)',
+      label: 'Librerías / contexto técnico',
       type: 'json',
       fullWidth: true,
-      helpText: 'Estructura libre (ej. lista de librerías con años de uso) - se edita como JSON crudo.',
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'librería',
+        addLabel: 'Añadir librería',
+        itemFields: [
+          { name: 'name', label: 'Nombre', placeholder: 'Ej. React' },
+          { name: 'years', label: 'Años de uso', placeholder: 'Ej. 3' },
+        ],
+      },
+      helpText: 'Herramientas o librerías de esta competencia, cada una con su tiempo de uso.',
     },
     {
       name: 'aligned_differentiator_ids',
@@ -420,7 +464,18 @@ export const targetRolesConfig: ResourceConfig = {
       type: 'textarea',
       fullWidth: true,
     },
-    { name: 'market_sources', label: 'Fuentes de mercado (JSON)', type: 'json', fullWidth: true },
+    {
+      name: 'market_sources',
+      label: 'Fuentes de mercado',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'text',
+        itemNoun: 'fuente',
+        addLabel: 'Añadir fuente',
+        textPlaceholder: 'Ej. LinkedIn, Indeed…',
+      },
+    },
   ],
 }
 
@@ -460,7 +515,21 @@ export const workHistoryConfig: ResourceConfig = {
       placeholder: '— Selecciona logros —',
       helpText: 'Selecciona uno o más logros de esta experiencia. El vínculo se guarda en cada logro (work_history_id).',
     },
-    { name: 'key_metrics', label: 'Métricas clave (JSON)', type: 'json', fullWidth: true },
+    {
+      name: 'key_metrics',
+      label: 'Métricas clave',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'kv',
+        itemNoun: 'métrica',
+        addLabel: 'Añadir métrica',
+        keyLabel: 'Nombre',
+        valueLabel: 'Valor',
+        keyPlaceholder: 'Ej. Equipo gestionado',
+        valuePlaceholder: 'Ej. 13 técnicos y administrativos',
+      },
+    },
   ],
 }
 
@@ -511,8 +580,36 @@ export const achievementsConfig: ResourceConfig = {
       placeholder: '— Selecciona competencias —',
       helpText: 'Selecciona las competencias que este logro demuestra.',
     },
-    { name: 'context', label: 'Contexto (JSON)', type: 'json', fullWidth: true },
-    { name: 'impact_metrics', label: 'Métricas de impacto (JSON)', type: 'json', fullWidth: true },
+    {
+      name: 'context',
+      label: 'Contexto',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'kv',
+        itemNoun: 'dato',
+        addLabel: 'Añadir dato',
+        keyLabel: 'Aspecto',
+        valueLabel: 'Detalle',
+        keyPlaceholder: 'Ej. Cliente, sector, entorno…',
+        valuePlaceholder: 'Describe ese aspecto',
+      },
+    },
+    {
+      name: 'impact_metrics',
+      label: 'Métricas de impacto',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'kv',
+        itemNoun: 'métrica',
+        addLabel: 'Añadir métrica',
+        keyLabel: 'Nombre',
+        valueLabel: 'Valor',
+        keyPlaceholder: 'Ej. Tiempo de resolución',
+        valuePlaceholder: 'Ej. 15 minutos vs. 1 año',
+      },
+    },
   ],
 }
 
@@ -646,7 +743,6 @@ export const projectsConfig: ResourceConfig = {
   label: 'Proyectos',
   labelSingular: 'Proyecto',
   genderFeminine: false,
-  variant: 'cards',
   description:
     'Tu portafolio de evidencia técnica verificable - 3-5 proyectos bien documentados superan a 10 mediocres. "Ancla" marca el ÚNICO caso de estudio completo del Home (solo uno a la vez); "Destacado" controla el grid de proyectos destacados.',
   columns: [
@@ -688,7 +784,18 @@ export const projectsConfig: ResourceConfig = {
     { name: 'solution', label: 'Solución', type: 'textarea', fullWidth: true },
     { name: 'architecture', label: 'Arquitectura', type: 'textarea', fullWidth: true },
     { name: 'repo_structure', label: 'Estructura del repositorio', type: 'textarea', fullWidth: true },
-    { name: 'tech_stack', label: 'Stack tecnológico', type: 'textarea', fullWidth: true },
+    {
+      name: 'competency_ids',
+      label: 'Stack tecnológico',
+      type: 'fk-multi-select',
+      fkResource: 'competencies',
+      fkLabelField: 'name',
+      creatable: true,
+      fullWidth: true,
+      placeholder: '— Selecciona o escribe una tecnología —',
+      helpText:
+        'Selecciona competencias existentes o escribe una nueva tecnología para crearla automáticamente en Competencias.',
+    },
     {
       name: 'approach_steps',
       label: 'Pasos del enfoque',
@@ -714,8 +821,34 @@ export const projectsConfig: ResourceConfig = {
     { name: 'metric3_value', label: 'Métrica 3 - Valor', type: 'text' },
     { name: 'metric4_label', label: 'Métrica 4 - Nombre', type: 'text' },
     { name: 'metric4_value', label: 'Métrica 4 - Valor', type: 'text' },
-    { name: 'results', label: 'Resultados (JSON)', type: 'json', fullWidth: true },
-    { name: 'releases', label: 'Releases (JSON)', type: 'json', fullWidth: true },
+    {
+      name: 'results',
+      label: 'Resultados',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'text',
+        itemNoun: 'resultado',
+        addLabel: 'Añadir resultado',
+        textPlaceholder: 'Un resultado medible o hallazgo',
+      },
+    },
+    {
+      name: 'releases',
+      label: 'Releases',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'versión',
+        addLabel: 'Añadir versión',
+        itemFields: [
+          { name: 'version', label: 'Versión', placeholder: 'v0.1' },
+          { name: 'nombre', label: 'Nombre', placeholder: 'Hub Mínimo' },
+          { name: 'alcance', label: 'Alcance', type: 'textarea', wide: true, placeholder: 'Qué incluye esta versión' },
+        ],
+      },
+    },
   ],
 }
 
@@ -840,7 +973,21 @@ export const searchPlansConfig: ResourceConfig = {
       type: 'textarea',
       fullWidth: true,
     },
-    { name: 'weekly_targets', label: 'Objetivos semanales (JSON)', type: 'json', fullWidth: true },
+    {
+      name: 'weekly_targets',
+      label: 'Objetivos semanales',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'kv',
+        itemNoun: 'objetivo',
+        addLabel: 'Añadir objetivo',
+        keyLabel: 'Semana',
+        valueLabel: 'Objetivo',
+        keyPlaceholder: 'Ej. Semana 1',
+        valuePlaceholder: 'Ej. 10 aplicaciones enviadas',
+      },
+    },
   ],
 }
 
@@ -1412,18 +1559,40 @@ export const linkedinProfileConfig: ResourceConfig = {
     { name: 'about', label: 'About', type: 'textarea', fullWidth: true },
     {
       name: 'experience',
-      label: 'Experiencia (JSON)',
+      label: 'Experiencia',
       type: 'json',
       fullWidth: true,
-      helpText:
-        'Lista de objetos: [{"company","title","location","start_date","end_date","description"}, ...]',
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'experiencia',
+        addLabel: 'Añadir experiencia',
+        itemFields: [
+          { name: 'title', label: 'Puesto', placeholder: 'Ej. Gerente de Automatización' },
+          { name: 'company', label: 'Empresa', placeholder: 'Ej. CYVSA' },
+          { name: 'location', label: 'Ubicación', placeholder: 'Ej. Ciudad de México' },
+          { name: 'start_date', label: 'Inicio', type: 'date' },
+          { name: 'end_date', label: 'Fin', type: 'date' },
+          { name: 'description', label: 'Descripción', type: 'textarea', wide: true },
+        ],
+      },
     },
     {
       name: 'education',
-      label: 'Educación (JSON)',
+      label: 'Educación',
       type: 'json',
       fullWidth: true,
-      helpText: 'Lista de objetos: [{"institution","degree","field_of_study","start_date","end_date"}, ...]',
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'estudio',
+        addLabel: 'Añadir estudio',
+        itemFields: [
+          { name: 'degree', label: 'Título', placeholder: 'Ej. Ingeniería Industrial' },
+          { name: 'institution', label: 'Institución', placeholder: 'Ej. UNAM' },
+          { name: 'field_of_study', label: 'Área de estudio', placeholder: 'Ej. Automatización' },
+          { name: 'start_date', label: 'Inicio', type: 'date' },
+          { name: 'end_date', label: 'Fin', type: 'date' },
+        ],
+      },
     },
     { name: 'featured_skills', label: 'Skills destacadas', type: 'textarea', fullWidth: true },
     { name: 'featured_certifications', label: 'Certificaciones destacadas', type: 'textarea', fullWidth: true },
@@ -1517,10 +1686,19 @@ export const portalContactConfig: ResourceConfig = {
     { name: 'preferred_contact_method', label: 'Método de contacto preferido', type: 'text' },
     {
       name: 'footer_links',
-      label: 'Links del footer (JSON)',
+      label: 'Links del footer',
       type: 'json',
       fullWidth: true,
-      helpText: 'Lista de objetos: [{"label","url"}, ...] - cualquier link adicional del footer.',
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'link',
+        addLabel: 'Añadir link',
+        itemFields: [
+          { name: 'label', label: 'Texto', placeholder: 'Ej. Currículum' },
+          { name: 'url', label: 'URL', type: 'url', placeholder: 'https://…', wide: true },
+        ],
+      },
+      helpText: 'Cualquier link adicional del footer (LinkedIn/GitHub ya se leen de sus propios perfiles).',
     },
   ],
 }

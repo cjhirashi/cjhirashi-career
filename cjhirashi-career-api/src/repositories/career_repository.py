@@ -254,6 +254,10 @@ class CareerRepository(Generic[ModelType]):
         virtual = self._pop_virtual_fields(data)
         if self.resource_key == "agent-tasks":
             await self._validate_task_parent(db, user_id, data.get("parent_id"))
+        if self.resource_key == "projects" and "competency_ids" in data:
+            data["competency_ids"] = await self._resolve_competency_ids(
+                db, user_id, data.get("competency_ids")
+            )
         obj = self.model(user_id=user_id, **data)
         db.add(obj)
         await db.flush()
@@ -275,6 +279,10 @@ class CareerRepository(Generic[ModelType]):
         virtual = self._pop_virtual_fields(data)
         if self.resource_key == "agent-tasks" and "parent_id" in data:
             await self._validate_task_parent(db, user_id, data.get("parent_id"), item_id)
+        if self.resource_key == "projects" and "competency_ids" in data:
+            data["competency_ids"] = await self._resolve_competency_ids(
+                db, user_id, data.get("competency_ids")
+            )
         for key, value in data.items():
             setattr(obj, key, value)
         await db.flush()
@@ -317,6 +325,49 @@ class CareerRepository(Generic[ModelType]):
             raise ValueError("parent_id no existe o no es tuyo")
         if parent.parent_id:
             raise ValueError("las subtareas no pueden tener subtareas")
+
+    async def _resolve_competency_ids(
+        self, db: AsyncSession, user_id: str, raw_ids: Optional[list]
+    ) -> list[str]:
+        """Turn `projects.competency_ids` input into real `competencies` ids.
+
+        Each entry is either an existing competency id, an existing
+        competency name (case-insensitive - avoids "FastAPI"/"fastapi"
+        duplicates), or a brand-new technology name typed in the admin's
+        creatable multi-select, which gets created here as
+        `type="technical"`. Keeps input order, drops duplicates/blanks.
+        """
+        if not raw_ids:
+            return []
+        from models.competencies import Competency
+
+        result = await db.execute(
+            select(Competency.id, Competency.name).where(Competency.user_id == user_id)
+        )
+        by_id = {}
+        by_name = {}
+        for comp_id, name in result.all():
+            by_id[comp_id] = comp_id
+            by_name[name.lower()] = comp_id
+
+        resolved: list[str] = []
+        seen: set[str] = set()
+        for raw in raw_ids:
+            text = str(raw).strip()
+            if not text:
+                continue
+            comp_id = by_id.get(text) or by_name.get(text.lower())
+            if comp_id is None:
+                new_comp = Competency(user_id=user_id, name=text, type="technical")
+                db.add(new_comp)
+                await db.flush()
+                comp_id = new_comp.id
+                by_id[comp_id] = comp_id
+                by_name[text.lower()] = comp_id
+            if comp_id not in seen:
+                seen.add(comp_id)
+                resolved.append(comp_id)
+        return resolved
 
     async def _apply_virtual_fields(
         self, db: AsyncSession, user_id: str, obj: ModelType, virtual: dict
