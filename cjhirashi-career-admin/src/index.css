@@ -838,6 +838,29 @@
     background-color: var(--bg-card);
   }
 
+  /* Folder-tab shape in the light theme: --border-glass is white (invisible
+     against the page), so the tabs above read as flat text with no outline.
+     Give the edges an explicit slate stroke and recess the inactive tabs so
+     the active one reads as raised and connected to the card body. The dark
+     theme already gets the folder look from the base rules above. */
+  :root:not([data-theme='dark']) .view-tab {
+    border-color: rgba(15, 23, 42, 0.12);
+    background-color: rgba(15, 23, 42, 0.04);
+  }
+
+  :root:not([data-theme='dark']) .view-tab:hover:not(.is-active):not(.is-indicator) {
+    background-color: rgba(15, 23, 42, 0.015);
+  }
+
+  :root:not([data-theme='dark']) .view-tab.is-active {
+    border-color: rgba(15, 23, 42, 0.12);
+    background-color: #ffffff;
+  }
+
+  :root:not([data-theme='dark']) .view-tab.is-active::after {
+    background-color: #ffffff;
+  }
+
   .card-body {
     @apply px-6 py-4;
   }
