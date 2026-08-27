@@ -539,12 +539,13 @@ export const achievementsConfig: ResourceConfig = {
   labelSingular: 'Logro',
   genderFeminine: false,
   description:
-    'Logros cuantificables extraídos de tu Historial Laboral, con métricas de impacto verificables - un logro sin cifra es indistinguible de una responsabilidad narrada. Controla en qué audiencias es visible cada uno (CV, entrevista, portal público).',
+    'Logros cuantificables extraídos de tu Historial Laboral, con métricas de impacto verificables - un logro sin cifra es indistinguible de una responsabilidad narrada. Controla en qué audiencias es visible cada uno (CV, entrevista, portal público). "En Home" marca el ÚNICO logro que se muestra como caso destacado en la Home del portal (solo uno a la vez).',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'evidence_type', label: 'Tipo de evidencia', format: 'badge' },
     { key: 'visible_on_cv', label: 'En CV', format: 'boolean' },
     { key: 'visible_in_interview', label: 'En entrevista', format: 'boolean' },
+    { key: 'home', label: 'En Home (logro destacado)', format: 'boolean' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
@@ -561,6 +562,12 @@ export const achievementsConfig: ResourceConfig = {
     { name: 'visible_on_cv', label: 'Visible en CV', type: 'boolean' },
     { name: 'visible_in_interview', label: 'Visible en entrevista', type: 'boolean' },
     { name: 'visible_on_portal', label: 'Visible en portal público', type: 'boolean' },
+    {
+      name: 'home',
+      label: 'Mostrar en Home (logro destacado)',
+      type: 'boolean',
+      helpText: 'Solo debe haber uno marcado a la vez - es el logro que se muestra como caso destacado en la Home del portal.',
+    },
     { name: 'challenge', label: 'Desafío', type: 'textarea', fullWidth: true },
     { name: 'solution', label: 'Solución', type: 'textarea', fullWidth: true },
     { name: 'executive_storytelling', label: 'Narrativa ejecutiva', type: 'textarea', fullWidth: true },
@@ -744,14 +751,13 @@ export const projectsConfig: ResourceConfig = {
   labelSingular: 'Proyecto',
   genderFeminine: false,
   description:
-    'Tu portafolio de evidencia técnica verificable - 3-5 proyectos bien documentados superan a 10 mediocres. "Ancla" marca el ÚNICO caso de estudio completo del Home (solo uno a la vez); "Destacado" controla el grid de proyectos destacados.',
+    'Tu portafolio de evidencia técnica verificable - 3-5 proyectos bien documentados superan a 10 mediocres. "Destacado" controla el grid de proyectos destacados en la Home.',
   columns: [
     { key: 'title', label: 'Título' },
     { key: 'category', label: 'Categoría' },
     { key: 'year', label: 'Año', format: 'number' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
     { key: 'is_featured', label: 'Destacado', format: 'boolean' },
-    { key: 'is_anchor', label: 'Ancla (caso destacado en Home)', format: 'boolean' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
@@ -769,12 +775,6 @@ export const projectsConfig: ResourceConfig = {
       ],
     },
     { name: 'is_featured', label: 'Destacado (grid de proyectos)', type: 'boolean' },
-    {
-      name: 'is_anchor',
-      label: 'Ancla (caso de estudio en Home)',
-      type: 'boolean',
-      helpText: 'Solo debe haber uno marcado como ancla a la vez - es el proyecto que se muestra completo en la Home.',
-    },
     { name: 'image_url', label: 'URL de la imagen', type: 'text', fullWidth: true },
     { name: 'github_url', label: 'URL de GitHub', type: 'text' },
     { name: 'demo_url', label: 'URL de demo', type: 'text' },

@@ -37,7 +37,6 @@ class PublicProjectDetail(PublicProjectCard):
     results: Optional[Any] = None
     status: Optional[str] = None
     is_featured: bool = False
-    is_anchor: bool = False
 
 
 class PublicPublicationCard(BaseModel):
@@ -72,6 +71,16 @@ class PublicHeroCta(BaseModel):
     url: str
 
 
+class PublicAchievementDetail(BaseModel):
+    id: str
+    title: str
+    challenge: Optional[str] = None
+    solution: Optional[str] = None
+    executive_storytelling: Optional[str] = None
+    impact_metrics: Optional[Any] = None
+    documentation_urls: Optional[str] = None
+
+
 class PublicHomeResponse(BaseModel):
     hero_photo_url: Optional[str] = None
     hero_title: Optional[str] = None
@@ -79,9 +88,9 @@ class PublicHomeResponse(BaseModel):
     hero_intro: Optional[str] = None
     hero_ctas: List[PublicHeroCta] = []
     stats: List[PublicStat] = []
-    # The single is_anchor project, rendered as a full case-study block -
-    # None if no project is currently marked as the anchor.
-    anchor_project: Optional[PublicProjectDetail] = None
+    # The single achievements.home=True row, rendered as a highlighted
+    # case block - None if no achievement is currently marked for Home.
+    home_achievement: Optional[PublicAchievementDetail] = None
     featured_projects: List[PublicProjectCard] = []
     featured_publications: List[PublicPublicationCard] = []
     # Distinct categories among competencies marked featured_on_home - the

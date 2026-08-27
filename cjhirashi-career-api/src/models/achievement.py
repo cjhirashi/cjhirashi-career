@@ -38,6 +38,7 @@ class Achievement(Base):
     visible_on_cv = Column(Boolean, default=True, nullable=True)
     visible_in_interview = Column(Boolean, default=True, nullable=True)
     visible_on_portal = Column(Boolean, default=False, nullable=True)
+    home = Column(Boolean, default=False, nullable=True, index=True)
 
     notes = Column(Text, nullable=True)
 

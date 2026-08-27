@@ -2,8 +2,8 @@
 PortalHome Model - copy for the public portal's Home page hero + stats
 section. Deliberately lean: featured projects/publications are NOT
 duplicated here - the portal reads `projects.is_featured` and
-`publications.featured_on_home` directly, and the flagship case-study
-block reads the single `projects.is_anchor` row. One row per user.
+`publications.featured_on_home` directly, and the flagship achievement
+block reads the single `achievements.home` row. One row per user.
 Career domain (v2) - Presencia Digital.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey

@@ -1,4 +1,4 @@
-import { AboutContent, BlogPost, ContactContent, HomeContent, Project } from '@/types'
+import { AboutContent, BlogPost, ContactContent, HomeAchievement, HomeContent, Project } from '@/types'
 
 export const mockProjects: Project[] = [
   {
@@ -21,7 +21,6 @@ export const mockProjects: Project[] = [
     results: { uptime: '99.9%' },
     status: 'active',
     is_featured: true,
-    is_anchor: true,
   },
   {
     id: '2',
@@ -43,7 +42,6 @@ export const mockProjects: Project[] = [
     results: null,
     status: 'active',
     is_featured: true,
-    is_anchor: false,
   },
   {
     id: '3',
@@ -65,11 +63,20 @@ export const mockProjects: Project[] = [
     results: null,
     status: 'in_development',
     is_featured: false,
-    is_anchor: false,
   },
 ]
 
 export const mockFeaturedProjects = mockProjects.filter(p => p.is_featured)
+
+export const mockHomeAchievement: HomeAchievement = {
+  id: 'ach-1',
+  title: 'Sistema de Gestión de Carrera con IA (cjhirashi-career)',
+  challenge: 'Transición de carrera requería un sistema que gestionara todos los procesos.',
+  solution: 'Arquitectura full-stack V3 con 3 canales independientes convergentes en PostgreSQL.',
+  executive_storytelling: 'Diseñé e implementé un sistema completo de gestión de carrera asistido por IA.',
+  impact_metrics: { 'Módulos dockerizados': '7' },
+  documentation_urls: null,
+}
 
 export const mockBlogPosts: BlogPost[] = [
   {
@@ -131,7 +138,7 @@ export const mockHome: HomeContent = {
     { label: 'Equipos Liderados', value: '5' },
     { label: 'Uptime Sostenido', value: '99.9%' },
   ],
-  anchor_project: mockProjects[0],
+  home_achievement: mockHomeAchievement,
   featured_projects: mockProjects.filter(p => p.is_featured),
   featured_publications: mockBlogPosts.slice(0, 1),
   skill_categories: ['Data Science & IA', 'Cloud'],

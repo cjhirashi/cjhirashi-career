@@ -137,6 +137,7 @@ export interface Achievement {
   visible_on_cv: boolean
   visible_in_interview: boolean
   visible_on_portal: boolean
+  home: boolean
   created_at: ISODateTime
 }
 
@@ -220,7 +221,6 @@ export interface Project {
   releases?: unknown[] | null
   status: ProjectStatus
   is_featured: boolean
-  is_anchor: boolean
   image_url?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime

@@ -396,6 +396,7 @@ class AchievementBase(BaseModel):
     visible_on_cv: bool = True
     visible_in_interview: bool = True
     visible_on_portal: bool = False
+    home: bool = False
     notes: Optional[str] = None
 
 
@@ -418,6 +419,7 @@ class AchievementUpdate(BaseModel):
     visible_on_cv: Optional[bool] = None
     visible_in_interview: Optional[bool] = None
     visible_on_portal: Optional[bool] = None
+    home: Optional[bool] = None
     notes: Optional[str] = None
 
 
@@ -606,7 +608,6 @@ class ProjectBase(BaseModel):
     releases: Optional[List[Any]] = None
     status: ProjectStatusLiteral = "active"
     is_featured: bool = False
-    is_anchor: bool = False
     image_url: Optional[str] = Field(None, max_length=1024)
     notes: Optional[str] = None
 
@@ -653,7 +654,6 @@ class ProjectUpdate(BaseModel):
     releases: Optional[List[Any]] = None
     status: Optional[ProjectStatusLiteral] = None
     is_featured: Optional[bool] = None
-    is_anchor: Optional[bool] = None
     image_url: Optional[str] = None
     notes: Optional[str] = None
 

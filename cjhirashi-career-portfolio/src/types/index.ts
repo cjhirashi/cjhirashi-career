@@ -24,7 +24,6 @@ export interface Project {
   results: Record<string, unknown> | unknown[] | null
   status: string | null
   is_featured: boolean
-  is_anchor: boolean
 }
 
 // Blog
@@ -54,6 +53,16 @@ export interface HeroCta {
   url: string
 }
 
+export interface HomeAchievement {
+  id: string
+  title: string
+  challenge: string | null
+  solution: string | null
+  executive_storytelling: string | null
+  impact_metrics: Record<string, unknown> | unknown[] | null
+  documentation_urls: string | null
+}
+
 export interface HomeContent {
   hero_photo_url: string | null
   hero_title: string | null
@@ -61,7 +70,7 @@ export interface HomeContent {
   hero_intro: string | null
   hero_ctas: HeroCta[]
   stats: HomeStat[]
-  anchor_project: Project | null
+  home_achievement: HomeAchievement | null
   featured_projects: Project[]
   featured_publications: BlogPost[]
   skill_categories: string[]

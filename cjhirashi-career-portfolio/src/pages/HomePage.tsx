@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Anchor, BookOpen, Clock, Layers, Network, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Award, BookOpen, Clock, Layers, ShieldCheck, TrendingUp } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
@@ -21,8 +21,8 @@ export const HomePage = () => {
   if (isLoading) return <LoadingSpinner />
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
 
-  const anchor = home?.anchor_project
-  const hasAnchorMetrics = parseMetrics(anchor?.metrics).length > 0
+  const achievement = home?.home_achievement
+  const hasAchievementMetrics = parseMetrics(achievement?.impact_metrics).length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
@@ -94,62 +94,45 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Flagship case study - narrative card + image, side by side. Short
-          KPI-style metrics live as a footer row inside the narrative card
-          instead of their own grid cell, so there's no empty column when
-          the project only has one or two of them. */}
-      {anchor && (
+      {/* Flagship achievement - the single achievements.home=True row,
+          rendered as a highlighted narrative card. Short KPI-style metrics
+          live as a footer row inside the card. */}
+      {achievement && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div
-            className={`mx-auto max-w-6xl grid grid-cols-1 gap-6 ${anchor.image_url ? 'lg:grid-cols-[1.1fr_0.9fr]' : ''}`}
-          >
-            <div className="card p-8">
-              <div className="flex items-center gap-2 mb-2">
-                <Anchor size={14} className="text-primary flex-shrink-0" />
-                <span className="text-xs font-bold text-primary uppercase tracking-wide">Caso ancla</span>
-                {anchor.year && <span className="text-xs text-text-muted ml-auto flex-shrink-0">{anchor.year}</span>}
-              </div>
-              <h2 className="text-2xl font-bold text-text mb-6">{anchor.title}</h2>
+          <div className="mx-auto max-w-3xl card p-8">
+            <div className="flex items-center gap-2 mb-2">
+              <Award size={14} className="text-primary flex-shrink-0" />
+              <span className="text-xs font-bold text-primary uppercase tracking-wide">Logro destacado</span>
+            </div>
+            <h2 className="text-2xl font-bold text-text mb-6">{achievement.title}</h2>
 
-              <div className="space-y-5">
-                {anchor.problem && (
-                  <div>
-                    <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                      <Clock size={12} /> Problema
-                    </p>
-                    <Markdown className="text-sm">{anchor.problem}</Markdown>
-                  </div>
-                )}
+            <div className="space-y-5">
+              {achievement.executive_storytelling && (
+                <Markdown className="text-sm text-text-secondary">{achievement.executive_storytelling}</Markdown>
+              )}
 
-                {anchor.architecture && (
-                  <div>
-                    <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                      <Network size={12} /> Arquitectura
-                    </p>
-                    <Markdown className="text-sm">{anchor.architecture}</Markdown>
-                  </div>
-                )}
+              {achievement.challenge && (
+                <div>
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                    <Clock size={12} /> Desafío
+                  </p>
+                  <Markdown className="text-sm">{achievement.challenge}</Markdown>
+                </div>
+              )}
 
-                {anchor.solution && (
-                  <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
-                    <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                      <TrendingUp size={12} /> Resultado
-                    </p>
-                    <Markdown className="text-sm">{anchor.solution}</Markdown>
-                  </div>
-                )}
-              </div>
-
-              {hasAnchorMetrics && (
-                <div className="mt-6 pt-6 border-t border-border">
-                  <MetricChips metrics={anchor.metrics} />
+              {achievement.solution && (
+                <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
+                  <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
+                    <TrendingUp size={12} /> Resultado
+                  </p>
+                  <Markdown className="text-sm">{achievement.solution}</Markdown>
                 </div>
               )}
             </div>
 
-            {anchor.image_url && (
-              <div className="card overflow-hidden min-h-[16rem]">
-                <img src={anchor.image_url} alt={anchor.title} className="w-full h-full object-cover" />
+            {hasAchievementMetrics && (
+              <div className="mt-6 pt-6 border-t border-border">
+                <MetricChips metrics={achievement.impact_metrics} />
               </div>
             )}
           </div>

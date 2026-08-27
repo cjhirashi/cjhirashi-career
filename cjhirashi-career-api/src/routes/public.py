@@ -38,7 +38,7 @@ from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
-    PublicBlogPost, PublicHeroCta, PublicStat,
+    PublicBlogPost, PublicHeroCta, PublicStat, PublicAchievementDetail,
 )
 
 # ============================================================================
@@ -74,6 +74,14 @@ def _parse_lines(text: Optional[str]) -> List[str]:
     return lines
 
 
+async def _competency_names_by_id(db: AsyncSession) -> dict:
+    """Id -> name for every competency of the (single) portal owner, loaded
+    once per request so `_project_card`/`_project_detail` can resolve
+    `Project.competency_ids` without a query per project."""
+    result = await db.execute(select(Competency.id, Competency.name).where(Competency.user_id == USER_ID))
+    return dict(result.all())
+
+
 def _project_metrics(p: Project) -> List[PublicStat]:
     # A metric's name is optional (some are standalone achievement lines with
     # no natural label) - only the value decides whether a slot is shown.
@@ -84,20 +92,33 @@ def _project_metrics(p: Project) -> List[PublicStat]:
     return [PublicStat(label=label or "", value=value) for label, value in slots if value]
 
 
-def _project_card(p: Project) -> PublicProjectCard:
+def _project_tech_stack(p: Project, competency_names: dict) -> List[str]:
+    return [competency_names[cid] for cid in (p.competency_ids or []) if cid in competency_names]
+
+
+def _project_card(p: Project, competency_names: dict) -> PublicProjectCard:
     return PublicProjectCard(
         id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
-        card_summary=p.card_summary, tech_stack=_parse_lines(p.tech_stack), metrics=_project_metrics(p),
+        card_summary=p.card_summary, tech_stack=_project_tech_stack(p, competency_names),
+        metrics=_project_metrics(p),
         image_url=p.image_url, github_url=p.github_url, demo_url=p.demo_url,
     )
 
 
-def _project_detail(p: Project) -> PublicProjectDetail:
+def _project_detail(p: Project, competency_names: dict) -> PublicProjectDetail:
     return PublicProjectDetail(
-        **_project_card(p).model_dump(),
+        **_project_card(p, competency_names).model_dump(),
         detailed_summary=p.detailed_summary, problem=p.problem, solution=p.solution,
         architecture=p.architecture, approach_steps=p.approach_steps, results=p.results,
-        status=p.status, is_featured=bool(p.is_featured), is_anchor=bool(p.is_anchor),
+        status=p.status, is_featured=bool(p.is_featured),
+    )
+
+
+def _achievement_detail(a: Achievement) -> PublicAchievementDetail:
+    return PublicAchievementDetail(
+        id=a.id, title=a.title, challenge=a.challenge, solution=a.solution,
+        executive_storytelling=a.executive_storytelling, impact_metrics=a.impact_metrics,
+        documentation_urls=a.documentation_urls,
     )
 
 
@@ -143,10 +164,10 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     # silently from another table - empty field means empty on the site.
     home = (await db.execute(select(PortalHome).where(PortalHome.user_id == USER_ID))).scalar_one_or_none()
 
-    # is_anchor is not unique in the DB; take the first match so a second
-    # flagged project cannot 500 the whole Home page.
-    anchor = (
-        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.is_anchor.is_(True)))
+    # home is not unique in the DB; take the first match so a second
+    # flagged achievement cannot 500 the whole Home page.
+    home_achievement = (
+        await db.execute(select(Achievement).where(Achievement.user_id == USER_ID, Achievement.home.is_(True)))
     ).scalars().first()
 
     # The Home is a highlight reel, not the full catalog - cap both sections
@@ -186,6 +207,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     # Distinct categories, first-seen order - a category can have several
     # featured competencies, it should still only produce one badge.
     skill_categories = list(dict.fromkeys(c.category for c in featured_competencies if c.category))
+    competency_names = await _competency_names_by_id(db)
 
     return PublicHomeResponse(
         hero_photo_url=home.hero_photo_url if home else None,
@@ -194,8 +216,8 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         hero_intro=home.hero_intro if home else None,
         hero_ctas=_hero_ctas(home),
         stats=_stats(home),
-        anchor_project=_project_detail(anchor) if anchor else None,
-        featured_projects=[_project_card(p) for p in projects],
+        home_achievement=_achievement_detail(home_achievement) if home_achievement else None,
+        featured_projects=[_project_card(p, competency_names) for p in projects],
         featured_publications=[_publication_card(pub) for pub in publications],
         skill_categories=skill_categories,
     )
@@ -304,7 +326,8 @@ async def list_projects(db: AsyncSession = Depends(get_db)):
             select(Project).where(Project.user_id == USER_ID).order_by(Project.year.desc().nullslast())
         )
     ).scalars().all()
-    return [_project_detail(p) for p in projects]
+    competency_names = await _competency_names_by_id(db)
+    return [_project_detail(p, competency_names) for p in projects]
 
 
 @router.get("/projects/{project_id}", response_model=PublicProjectDetail)
@@ -314,7 +337,8 @@ async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
     ).scalar_one_or_none()
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return _project_detail(project)
+    competency_names = await _competency_names_by_id(db)
+    return _project_detail(project, competency_names)
 
 
 # ============================================================================

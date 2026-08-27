@@ -45,14 +45,13 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('renders the anchor project as a flagship case study with problem/architecture/result', async () => {
+  it('renders the home achievement as a flagship case with challenge/result', async () => {
     await renderReady()
 
-    expect(screen.getAllByText(mockHome.anchor_project!.title, { exact: false }).length).toBeGreaterThan(0)
-    expect(screen.getByText('Problema')).toBeInTheDocument()
-    expect(screen.getAllByText('Arquitectura').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(mockHome.home_achievement!.title, { exact: false }).length).toBeGreaterThan(0)
+    expect(screen.getByText('Desafío')).toBeInTheDocument()
     expect(screen.getByText('Resultado')).toBeInTheDocument()
-    expect(screen.getByText(mockHome.anchor_project!.problem!)).toBeInTheDocument()
+    expect(screen.getByText(mockHome.home_achievement!.challenge!)).toBeInTheDocument()
   })
 
   it('renders hero CTA buttons from hero_ctas, first as primary and rest as secondary', async () => {
@@ -147,10 +146,10 @@ describe('HomePage - Entry Point', () => {
     expect(container.querySelector('h1')).not.toBeInTheDocument()
   })
 
-  it('omits the anchor case study and featured sections when there is none', async () => {
+  it('omits the home achievement case and featured sections when there is none', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({
       ...mockHome,
-      anchor_project: null,
+      home_achievement: null,
       featured_projects: [],
       featured_publications: [],
     })
