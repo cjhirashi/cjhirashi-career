@@ -15,6 +15,7 @@ from botocore.exceptions import ClientError
 from config import settings
 from services.bedrock.errors import BedrockError, format_bedrock_client_error
 from services.bedrock.reply_text import sanitize_assistant_reply
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -188,9 +189,21 @@ async def converse(
                 return parse_converse_response(response)
             except Exception as fallback_err:
                 logger.exception("Converse fallback failed model=%s", model_id)
+                report_error(
+                    str(fallback_err), "bedrock:converse", error_type=type(fallback_err).__name__,
+                    exc=fallback_err, context={"model_id": model_id, "stage": "fallback"}, severity="error",
+                )
                 raise BedrockError(format_bedrock_client_error(fallback_err, model_id=model_id)) from fallback_err
         logger.exception("Converse failed model=%s", model_id)
+        report_error(
+            str(e), "bedrock:converse", error_type=type(e).__name__,
+            exc=e, context={"model_id": model_id}, severity="error",
+        )
         raise BedrockError(format_bedrock_client_error(e, model_id=model_id)) from e
     except Exception as e:
         logger.exception("Converse failed model=%s", model_id)
+        report_error(
+            str(e), "bedrock:converse", error_type=type(e).__name__,
+            exc=e, context={"model_id": model_id}, severity="error",
+        )
         raise BedrockError(format_bedrock_client_error(e, model_id=model_id)) from e

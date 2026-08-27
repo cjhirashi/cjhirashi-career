@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import AsyncSessionLocal
 from models.bedrock_task import TASK_TERMINAL_STATUSES, BedrockTask
 from models.user_notification import UserNotification
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -317,6 +318,14 @@ async def execute_claimed_task(task_id: str) -> None:
             enqueue_advance(task.id, task.parent_id)
         except (BedrockError, Exception) as exc:
             logger.exception("Scheduled task %s failed: %s", task_id, exc)
+            report_error(
+                str(exc),
+                f"scheduler:task_scheduler:{task_id}",
+                error_type=type(exc).__name__,
+                exc=exc,
+                context={"task_id": task_id, "agent_profile_id": task.agent_profile_id},
+                severity="error",
+            )
             try:
                 await db.rollback()
             except Exception:
@@ -347,6 +356,13 @@ async def scheduler_loop() -> None:
     while True:
         try:
             await run_due_tasks()
-        except Exception:
+        except Exception as exc:
             logger.exception("Task scheduler tick failed")
+            report_error(
+                str(exc) or "Task scheduler tick failed",
+                "scheduler:task_scheduler:tick",
+                error_type=type(exc).__name__,
+                exc=exc,
+                severity="critical",
+            )
         await asyncio.sleep(POLL_INTERVAL_SECONDS)

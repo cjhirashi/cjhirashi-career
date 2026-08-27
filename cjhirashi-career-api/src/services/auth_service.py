@@ -122,6 +122,14 @@ class AuthService:
             return encoded_jwt, expires_in
         except Exception as e:
             logger.error(f"Token creation failed ({token_type}): {e}")
+            from services.error_reporting import report_error
+
+            report_error(
+                str(e) or f"Token creation failed ({token_type})",
+                "service:auth_service.create_token",
+                error_type=type(e).__name__, exc=e,
+                context={"token_type": token_type}, severity="critical",
+            )
             raise ValueError(f"Failed to create {token_type} token")
 
     @staticmethod

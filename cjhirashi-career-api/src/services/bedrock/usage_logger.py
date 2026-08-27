@@ -10,6 +10,7 @@ from config import settings
 from database import AsyncSessionLocal
 from models.bedrock_usage_log import BedrockUsageLog
 from models.bedrock_usage_round_log import BedrockUsageRoundLog
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,12 @@ async def record_turn_usage(
                 )
             )
             await db.commit()
-    except Exception:
+    except Exception as exc:
         logger.exception("Failed to record turn usage")
+        report_error(
+            str(exc) or "Failed to record turn usage", "bedrock:usage_logger.turn",
+            error_type=type(exc).__name__, exc=exc, severity="warning",
+        )
 
 
 # ============================================================================
@@ -95,5 +100,9 @@ async def record_round_log(
                 )
             )
             await db.commit()
-    except Exception:
+    except Exception as exc:
         logger.exception("Failed to record round log")
+        report_error(
+            str(exc) or "Failed to record round log", "bedrock:usage_logger.round",
+            error_type=type(exc).__name__, exc=exc, severity="warning",
+        )

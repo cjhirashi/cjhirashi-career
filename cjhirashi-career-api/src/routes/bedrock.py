@@ -57,6 +57,7 @@ from services import bedrock_service
 from services.bedrock import profile_prompts
 from services.bedrock.agent_profiles import get_profile
 from services.bedrock_service import BedrockError
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -95,9 +96,20 @@ async def _sse_chat_events(db: AsyncSession, user_id: str, payload: BedrockChatR
                 await queue.put(("event", event))
         except BedrockError as e:
             logger.error("Bedrock chat failed: %s", e)
+            report_error(
+                str(e), "route:bedrock.chat_stream", error_type="BedrockError", exc=e,
+                context={"session_id": payload.session_id, "agent_profile_id": payload.agent_profile_id},
+                severity="error",
+            )
             await queue.put(("error", str(e)))
         except Exception as e:
             logger.exception("Unexpected error in Bedrock chat stream")
+            report_error(
+                str(e) or "Unexpected error in Bedrock chat stream",
+                "route:bedrock.chat_stream", error_type=type(e).__name__, exc=e,
+                context={"session_id": payload.session_id, "agent_profile_id": payload.agent_profile_id},
+                severity="critical",
+            )
             await queue.put(("error", f"Error interno del agente: {e}"))
         finally:
             await queue.put(("done", None))

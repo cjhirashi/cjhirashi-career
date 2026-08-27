@@ -88,6 +88,14 @@ def _raise_for_status(response: httpx.Response, not_found: str) -> None:
         raise GitHubError("GitHub rechazó la petición (permisos o rate limit)")
     if response.status_code != 200:
         logger.error("GitHub %s %s", response.status_code, response.text[:300])
+        from services.error_reporting import report_error
+
+        report_error(
+            f"GitHub respondió {response.status_code}: {response.text[:300]}",
+            "service:github_service.api", error_type="GitHubError",
+            context={"status_code": response.status_code, "url": str(response.url)},
+            severity="warning",
+        )
         raise GitHubError(f"GitHub respondió con un error ({response.status_code})")
 
 
@@ -107,6 +115,14 @@ async def list_public_repos(username: str) -> list[dict[str, Any]]:
         raise GitHubError(f"No existe el usuario de GitHub '{username}'")
     if response.status_code != 200:
         logger.error(f"GitHub repos fetch failed: {response.status_code} {response.text}")
+        from services.error_reporting import report_error
+
+        report_error(
+            f"GitHub repos fetch failed ({response.status_code}): {response.text[:300]}",
+            "service:github_service.list_public_repos", error_type="GitHubError",
+            context={"status_code": response.status_code, "username": username},
+            severity="warning",
+        )
         raise GitHubError(f"GitHub respondió con un error ({response.status_code})")
 
     repos = response.json()

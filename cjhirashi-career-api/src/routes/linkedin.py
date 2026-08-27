@@ -100,6 +100,13 @@ async def callback(
         userinfo = await linkedin_service.fetch_userinfo(access_token)
     except LinkedInError as e:
         logger.error(f"LinkedIn callback failed: {e}")
+        from services.error_reporting import report_error
+
+        report_error(
+            str(e) or "LinkedIn callback failed",
+            "route:linkedin.oauth_callback",
+            error_type="LinkedInError", exc=e, severity="error",
+        )
         return RedirectResponse(f"{frontend_url}?linkedin_error=1")
 
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)

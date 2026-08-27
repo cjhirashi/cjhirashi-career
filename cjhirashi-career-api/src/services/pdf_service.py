@@ -9,6 +9,7 @@ import logging
 from concurrent.futures import ProcessPoolExecutor
 
 from services.pdf.worker import render_html_template_pdf, render_markdown_document_pdf
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,13 @@ async def _run_in_pool(fn, *args) -> bytes:
             loop.run_in_executor(_get_pool(), fn, *args),
             timeout=_TIMEOUT_SECONDS,
         )
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as e:
         logger.error("PDF generation timed out after %ss", _TIMEOUT_SECONDS)
+        report_error(
+            f"PDF generation timed out after {_TIMEOUT_SECONDS}s",
+            "service:pdf_service._run_in_pool", error_type="TimeoutError", exc=e,
+            severity="error",
+        )
         _reset_pool()
         raise
     except ValueError:
@@ -68,6 +74,11 @@ async def generate_markdown_document(title: str, content: str) -> bytes:
         raise PDFGeneratorError(str(e)) from e
     except Exception as e:
         logger.error("Markdown PDF generation failed: %s", e)
+        report_error(
+            str(e) or "Markdown PDF generation failed",
+            "service:pdf_service.generate_markdown_document",
+            error_type=type(e).__name__, exc=e, severity="error",
+        )
         raise PDFGeneratorError("No se pudo generar el PDF") from e
 
 
@@ -82,4 +93,9 @@ async def generate_html_template_pdf(
         raise PDFGeneratorError(str(e)) from e
     except Exception as e:
         logger.error("HTML template PDF generation failed: %s", e)
+        report_error(
+            str(e) or "HTML template PDF generation failed",
+            "service:pdf_service.generate_html_template_pdf",
+            error_type=type(e).__name__, exc=e, severity="error",
+        )
         raise PDFGeneratorError("No se pudo generar el PDF") from e

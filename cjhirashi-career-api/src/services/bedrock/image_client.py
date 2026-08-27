@@ -11,6 +11,7 @@ import boto3
 
 from config import settings
 from services.bedrock.errors import BedrockError
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -62,4 +63,8 @@ async def generate_image_bytes(prompt: str, width: int = 1200, height: int = 627
         return base64.b64decode(b64)
     except Exception as e:
         logger.exception("Image generation failed")
+        report_error(
+            str(e) or "Image generation failed", "bedrock:image_client",
+            error_type=type(e).__name__, exc=e, severity="error",
+        )
         raise BedrockError(f"Image generation failed: {e}") from e

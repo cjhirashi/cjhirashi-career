@@ -21,6 +21,7 @@ from models.linkedin_connection import LinkedInConnection
 from models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from services import linkedin_service
 from services.linkedin_service import LinkedInError
+from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,15 @@ async def _publish_due_posts() -> None:
                 logger.info(f"Published scheduled LinkedIn post {post.id}")
             except (LinkedInError, httpx.HTTPError) as e:
                 logger.error(f"Scheduled LinkedIn post {post.id} failed: {e}")
+                # httpx.HTTPError no lo cubre linkedin_service (que solo emite
+                # LinkedInError); se registra aquí. Los LinkedInError ya quedan
+                # registrados en el punto de origen (linkedin_service).
+                if isinstance(e, httpx.HTTPError):
+                    report_error(
+                        str(e), "scheduler:linkedin_scheduler:publish",
+                        error_type=type(e).__name__, exc=e,
+                        context={"post_id": post.id}, severity="error",
+                    )
                 post.status = LinkedInPostStatus.FAILED
                 post.error_message = str(e)
 
@@ -89,6 +99,13 @@ async def scheduler_loop() -> None:
     while True:
         try:
             await _publish_due_posts()
-        except Exception:
+        except Exception as exc:
             logger.exception("LinkedIn scheduler tick failed")
+            report_error(
+                str(exc) or "LinkedIn scheduler tick failed",
+                "scheduler:linkedin_scheduler:tick",
+                error_type=type(exc).__name__,
+                exc=exc,
+                severity="critical",
+            )
         await asyncio.sleep(POLL_INTERVAL_SECONDS)

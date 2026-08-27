@@ -45,6 +45,19 @@ class LinkedInError(Exception):
     """Raised when LinkedIn's API rejects a request (bad/expired token, etc.)."""
 
 
+def _report_linkedin_failure(op: str, status_code: int, detail: str) -> None:
+    """Deja un registro en `error_reports` (ADR-018) para un fallo de la API de LinkedIn."""
+    from services.error_reporting import report_error
+
+    report_error(
+        f"LinkedIn {op} respondió {status_code}: {detail[:500]}",
+        f"service:linkedin_service.{op}",
+        error_type="LinkedInError",
+        context={"status_code": status_code},
+        severity="warning",
+    )
+
+
 # ============================================================================
 # OAuth
 # ============================================================================
@@ -99,6 +112,7 @@ async def exchange_code_for_token(code: str) -> dict:
         )
     if response.status_code != 200:
         logger.error(f"LinkedIn token exchange failed: {response.status_code} {response.text}")
+        _report_linkedin_failure("token_exchange", response.status_code, response.text)
         raise LinkedInError(f"LinkedIn rejected the authorization code ({response.status_code})")
     return response.json()
 
@@ -116,6 +130,7 @@ async def fetch_userinfo(access_token: str) -> dict:
         )
     if response.status_code != 200:
         logger.error(f"LinkedIn userinfo failed: {response.status_code} {response.text}")
+        _report_linkedin_failure("fetch_userinfo", response.status_code, response.text)
         raise LinkedInError(f"Could not fetch the LinkedIn profile ({response.status_code})")
     return response.json()
 
@@ -141,6 +156,7 @@ async def upload_image(access_token: str, member_sub: str, image_bytes: bytes) -
         )
         if init_response.status_code != 200:
             logger.error(f"LinkedIn image init failed: {init_response.status_code} {init_response.text}")
+            _report_linkedin_failure("upload_image", init_response.status_code, init_response.text)
             raise LinkedInError(f"LinkedIn rejected the image upload ({init_response.status_code})")
 
         value = init_response.json()["value"]
@@ -154,6 +170,7 @@ async def upload_image(access_token: str, member_sub: str, image_bytes: bytes) -
         )
         if upload_response.status_code not in (200, 201):
             logger.error(f"LinkedIn image binary upload failed: {upload_response.status_code}")
+            _report_linkedin_failure("upload_image_bytes", upload_response.status_code, "")
             raise LinkedInError(f"LinkedIn rejected the image bytes ({upload_response.status_code})")
 
     return image_urn
@@ -188,6 +205,7 @@ async def create_post(
 
     if response.status_code != 201:
         logger.error(f"LinkedIn post creation failed: {response.status_code} {response.text}")
+        _report_linkedin_failure("create_post", response.status_code, response.text)
         raise LinkedInError(f"LinkedIn rejected the post ({response.status_code}): {response.text}")
 
     return response.headers.get("x-restli-id") or response.headers.get("x-linkedin-id")

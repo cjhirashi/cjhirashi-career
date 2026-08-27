@@ -572,6 +572,16 @@ async def chat_stream(
                     affected.append(inv_key)
             except Exception as e:
                 # 10.3.5. Si ocurre un error al ejecutar la herramienta
+                from services.error_reporting import report_error
+
+                report_error(
+                    str(e) or f"Fallo al ejecutar la tool {name}",
+                    f"bedrock:tool.{name}",
+                    error_type=type(e).__name__,
+                    exc=e,
+                    context={"session_id": req.session_id, "agent_profile_id": profile.id},
+                    severity="error",
+                )
                 tool_result = {"error": str(e)}
                 status = "error"
 

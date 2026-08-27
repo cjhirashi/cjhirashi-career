@@ -472,12 +472,21 @@ class CareerRepository(Generic[ModelType]):
                 vector=vector,
                 extra_payload=extra_payload,
             )
-        except Exception:
+        except Exception as exc:
             logger.warning(
                 "Bedrock knowledge-base indexing failed for %s#%s - continuing without it",
                 self.resource_key,
                 getattr(obj, "id", "?"),
                 exc_info=True,
+            )
+            from services.error_reporting import report_error
+
+            report_error(
+                str(exc) or "Fallo al indexar en la base de conocimiento",
+                "repository:career_repository.index_for_search",
+                error_type=type(exc).__name__, exc=exc,
+                context={"resource_key": self.resource_key, "record_id": getattr(obj, "id", None)},
+                severity="warning",
             )
 
     async def _remove_from_search(self, item_id: str) -> None:
@@ -488,10 +497,19 @@ class CareerRepository(Generic[ModelType]):
             from services import qdrant_service
 
             await qdrant_service.delete_point(resource_key=self.resource_key, record_id=item_id)
-        except Exception:
+        except Exception as _cleanup_exc:
             logger.warning(
                 "Bedrock knowledge-base cleanup failed for %s#%s - continuing without it",
                 self.resource_key,
                 item_id,
                 exc_info=True,
+            )
+            from services.error_reporting import report_error
+
+            report_error(
+                str(_cleanup_exc) or "Fallo al limpiar la base de conocimiento",
+                "repository:career_repository.remove_from_search",
+                error_type=type(_cleanup_exc).__name__, exc=_cleanup_exc,
+                context={"resource_key": self.resource_key, "record_id": item_id},
+                severity="warning",
             )
