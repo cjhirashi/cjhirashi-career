@@ -433,7 +433,10 @@ _PROFILES: dict[str, AgentProfile] = {
             "redacción de CV → agent_cv_writing; cover letter → agent_cover_letter_writing; "
             "consulta web → agent_web_search."
         ),
-        default_model_id="mistral.mistral-large-2402-v1:0",
+        # Haiku 4.5: maneja los registros más grandes del sistema (projects,
+        # star-stories, work-history), es más barato que Mistral Large y soporta
+        # prompt caching (ADR-019 / ADR-012).
+        default_model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         level=2,
     ),
     AGENT_SEARCH_OPERATIONS: AgentProfile(
