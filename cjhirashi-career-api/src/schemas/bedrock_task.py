@@ -32,6 +32,13 @@ class BedrockTaskBase(BaseModel):
     is_blocking: bool = True
     execute_on_turn: bool = False
 
+
+# Shared write-side validation (Create/Update/subtasks). Deliberately NOT on
+# BedrockTaskBase: BedrockTaskResponse also extends it, and a row whose
+# status/priority/agent_profile_id no longer matches current allowed values
+# (e.g. a renamed or removed agent profile) must still be readable, or every
+# GET on this resource 500s until someone edits that one record.
+class _TaskWriteValidation:
     @field_validator("status")
     @classmethod
     def validate_status(cls, value: str) -> str:
@@ -77,14 +84,14 @@ class BedrockTaskBase(BaseModel):
         return self
 
 
-class SubtaskInput(BedrockTaskBase):
+class SubtaskInput(_TaskWriteValidation, BedrockTaskBase):
     """Hija enviada anidada en create/update del padre. `parent_id` lo pone el servidor."""
 
     id: Optional[str] = Field(default=None, max_length=20)
     parent_id: Optional[str] = Field(default=None, max_length=20)
 
 
-class BedrockTaskCreate(BedrockTaskBase):
+class BedrockTaskCreate(_TaskWriteValidation, BedrockTaskBase):
     subtasks: Optional[List[SubtaskInput]] = None
 
 

@@ -30,6 +30,7 @@ export const AGENT_CV_WRITING = 'agent_cv_writing'
 export const AGENT_COVER_LETTER_WRITING = 'agent_cover_letter_writing'
 export const AGENT_WEB_SEARCH = 'agent_web_search'
 export const AGENT_GITHUB = 'agent_github'
+export const AGENT_SETTINGS = 'agent_settings'
 
 /** User-facing Bedrock agents (L1 + L2). L3 workers are not listed here. */
 export const AGENT_PROFILES: AgentProfileOption[] = [
@@ -41,6 +42,7 @@ export const AGENT_PROFILES: AgentProfileOption[] = [
   { id: AGENT_SUPPORT, label: 'Soporte', level: 2 },
   { id: AGENT_METHODOLOGIES, label: 'Metodologías', level: 2 },
   { id: AGENT_PDF_DESIGN, label: 'Diseño PDF', level: 2 },
+  { id: AGENT_SETTINGS, label: 'Configuración', level: 2 },
 ]
 
 /** Catálogo completo (L1/L2/L3) — formularios y labels de delegación. */
@@ -83,6 +85,9 @@ const ROUTE_TO_PROFILE: Record<string, string> = {
   '/agent/chat': AGENT_ORCHESTRATOR,
   '/agent/pdf-templates': AGENT_PDF_DESIGN,
   '/agent/pdf-template-styles': AGENT_PDF_DESIGN,
+  '/settings/agents': AGENT_SETTINGS,
+  '/settings/sections': AGENT_SETTINGS,
+  '/settings/agent-prompts': AGENT_SETTINGS,
 }
 
 function profileIdForRoute(route: string): string | undefined {

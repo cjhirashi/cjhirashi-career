@@ -150,7 +150,10 @@ export type BedrockTaskPayload = Partial<{
 
 export interface BedrockInstructions {
   system_prompt: string
-  is_default: boolean
+  system_prompt_is_default: boolean
+  global_rules: string
+  global_rules_is_default: boolean
+  notes?: string
 }
 
 export interface BedrockAgentProfilePrompt {

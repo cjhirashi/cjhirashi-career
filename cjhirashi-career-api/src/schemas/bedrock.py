@@ -109,7 +109,9 @@ class BedrockBudgetStatusResponse(BaseModel):
 
 class BedrockInstructionsResponse(BaseModel):
     system_prompt: str
-    is_default: bool
+    system_prompt_is_default: bool
+    global_rules: str
+    global_rules_is_default: bool
     notes: Optional[str] = None
 
 
@@ -117,6 +119,12 @@ class BedrockInstructionsUpdateRequest(BaseModel):
     """`system_prompt=None` (or omitted) resets to the built-in default."""
 
     system_prompt: Optional[str] = None
+
+
+class BedrockGlobalRulesUpdateRequest(BaseModel):
+    """`global_rules=None` (or omitted) resets to the built-in default."""
+
+    global_rules: Optional[str] = None
 
 
 # ============================================================================

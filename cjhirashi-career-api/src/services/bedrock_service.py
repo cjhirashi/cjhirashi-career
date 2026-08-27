@@ -600,6 +600,49 @@ async def set_system_prompt(db, text: Optional[str]) -> str:
     return await get_system_prompt(db)
 
 
+def default_global_rules() -> str:
+    """The built-in global rules (grounding + methodology assignment) that
+    apply to every agent regardless of level/profile."""
+    from services.bedrock.prompt import default_global_rules as _default_global_rules
+
+    return _default_global_rules()
+
+
+async def get_global_rules(db) -> str:
+    """The active global rules - Carlos's override if he's set one (see
+    /bedrock/global-rules), otherwise the built-in default. Read fresh on
+    every turn (see compose_system_prompt) rather than cached, so an edit
+    takes effect on the very next message."""
+    from sqlalchemy import select
+
+    from models.bedrock_settings import BedrockSettings
+
+    result = await db.execute(select(BedrockSettings).limit(1))
+    row = result.scalar_one_or_none()
+    if row and row.global_rules:
+        return row.global_rules
+    return default_global_rules()
+
+
+async def set_global_rules(db, text: Optional[str]) -> str:
+    """Set (or, with `text=None`, clear) the override. Returns the resulting
+    active global rules. Single-row table (`BedrockSettings` is a
+    single-operator setting, not per-user) - creates the row on first use."""
+    from sqlalchemy import select
+
+    from models.bedrock_settings import BedrockSettings
+
+    result = await db.execute(select(BedrockSettings).limit(1))
+    row = result.scalar_one_or_none()
+    if row is None:
+        row = BedrockSettings(global_rules=text)
+        db.add(row)
+    else:
+        row.global_rules = text
+    await db.commit()
+    return await get_global_rules(db)
+
+
 # ---------------------------------------------------------------------------
 # Conversaciones — historial en PostgreSQL (history_manager + endpoints /bedrock/conversations).
 # ---------------------------------------------------------------------------

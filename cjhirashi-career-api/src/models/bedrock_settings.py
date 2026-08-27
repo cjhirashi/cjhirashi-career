@@ -20,6 +20,11 @@ class BedrockSettings(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     # --- Campos de negocio ---
     system_prompt = Column(Text, nullable=True)
+    # `global_rules = NULL` means "use the built-in default" (see
+    # `services/bedrock/prompt.py::default_global_rules`) - same override
+    # pattern as `system_prompt`, but for the rules that apply to every
+    # agent regardless of level/profile (grounding + methodology assignment).
+    global_rules = Column(Text, nullable=True)
     # Harness local — modelo activo y límites (ADR-008)
     active_model_id = Column(String(150), nullable=True)
     orchestrator_model_id = Column(String(150), nullable=True)

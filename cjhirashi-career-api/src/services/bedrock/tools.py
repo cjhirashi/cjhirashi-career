@@ -85,9 +85,64 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables. Preview de diseño, no a partir de un registro de carrera.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
     {"name": "list_pdf_capable_resources", "description": "Tablas que pueden emitir PDF (cv-versions, cover-letter-versions) y cómo mapear campos al template.", "schema": {"type": "object", "properties": {}}},
     {"name": "render_record_pdf", "description": "Genera el PDF de un registro con función PDF. resource_key + record_id; template_id opcional (si falta, plantilla default del document_type).", "schema": {"type": "object", "properties": {"resource_key": {"type": "string", "description": "cv-versions o cover-letter-versions"}, "record_id": _RECORD_ID_PARAM, "template_id": {"type": "string", "description": "Opcional, ej. pdt-1"}, "title": {"type": "string"}}, "required": ["resource_key", "record_id"]}},
-    {"name": "generate_image", "description": "Genera imagen IA y sube a MinIO.", "schema": {"type": "object", "properties": {"prompt": {"type": "string"}, "purpose": {"type": "string"}, "width": {"type": "integer"}, "height": {"type": "integer"}}, "required": ["prompt"]}},
-    {"name": "attach_image_to_record", "description": "Pone image_url en publications o projects.", "schema": {"type": "object", "properties": {"resource_key": {"type": "string"}, "record_id": _RECORD_ID_PARAM, "image_url": {"type": "string"}}, "required": ["resource_key", "record_id", "image_url"]}},
-    {"name": "list_generated_images", "description": "Lista imágenes ai-generated.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
+    {
+        "name": "generate_image",
+        "description": (
+            "Pide el prompt al solicitante y genera una imagen IA (Titan) para agentes/proyectos/publicaciones. "
+            "Ajusta y sube a MinIO en la carpeta de purpose ya en la medida exacta (500x500 agentes, "
+            "1920x1080 proyectos/publicaciones), PNG comprimido para web. name opcional (si falta, se deriva del prompt)."
+        ),
+        "schema": {
+            "type": "object",
+            "properties": {
+                "prompt": {"type": "string"},
+                "purpose": {"type": "string", "enum": ["agentes", "proyectos", "publicaciones"]},
+                "name": {"type": "string", "description": "Nombre legible para el archivo (opcional)"},
+            },
+            "required": ["prompt", "purpose"],
+        },
+    },
+    {
+        "name": "store_uploaded_image",
+        "description": (
+            "Cuando el solicitante YA tiene una imagen (adjunta en el chat, file_id) y solo quiere optimizarla "
+            "y guardarla — sin generar nada nuevo. Ajusta a la medida exacta del purpose y sube a MinIO igual "
+            "que generate_image, devolviendo el link."
+        ),
+        "schema": {
+            "type": "object",
+            "properties": {
+                "source_file_id": {"type": "string", "description": "file_id del adjunto ya subido"},
+                "purpose": {"type": "string", "enum": ["agentes", "proyectos", "publicaciones"]},
+                "name": {"type": "string", "description": "Nombre legible para el archivo (opcional)"},
+            },
+            "required": ["source_file_id", "purpose"],
+        },
+    },
+    {
+        "name": "attach_image_to_record",
+        "description": "Pone image_url en publications, projects, o la foto de un agente del catálogo (resource_key=agent-profile, record_id=id del perfil).",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "resource_key": {"type": "string", "enum": ["publications", "projects", "agent-profile"]},
+                "record_id": _RECORD_ID_PARAM,
+                "image_url": {"type": "string"},
+            },
+            "required": ["resource_key", "record_id", "image_url"],
+        },
+    },
+    {
+        "name": "list_generated_images",
+        "description": "Lista imágenes generadas/guardadas por el agente Visual (agentes/proyectos/publicaciones). purpose opcional filtra una sola sección.",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "purpose": {"type": "string", "enum": ["agentes", "proyectos", "publicaciones"]},
+                "limit": {"type": "integer"},
+            },
+        },
+    },
     {"name": "delegate_to_specialist", "description": "Delega a un especialista de nivel inferior (L1→L2|L3, L2→L3). Nunca hacia arriba.", "schema": {"type": "object", "properties": {"agent_profile_id": {"type": "string"}, "task": {"type": "string"}, "context": {"type": "string"}}, "required": ["agent_profile_id", "task"]}},
     {"name": "list_job_providers", "description": "Portales de vacantes habilitados (indeed, linkedin, getonboard, remotive, remoteok, company_boards).", "schema": {"type": "object", "properties": {}}},
     {
@@ -146,6 +201,47 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {"name": "list_github_contents", "description": "Lista archivos/carpetas de un repo. path vacío = raíz.", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}, "path": {"type": "string"}, "ref": {"type": "string"}}, "required": ["repo"]}},
     {"name": "get_github_file", "description": "Lee el contenido de un archivo de un repo (texto, truncado).", "schema": {"type": "object", "properties": {"owner": {"type": "string"}, "repo": {"type": "string"}, "path": {"type": "string"}, "ref": {"type": "string"}}, "required": ["repo", "path"]}},
     {"name": "search_github_code", "description": "Busca código en repos del usuario. Requiere GITHUB_TOKEN.", "schema": {"type": "object", "properties": {"query": {"type": "string"}, "owner": {"type": "string"}, "repo": {"type": "string"}}, "required": ["query"]}},
+    {
+        "name": "agent_catalog_settings",
+        "description": "Catálogo de agentes: prompt suffix, destinos de delegación y metodologías asignadas por perfil. action=list|get|update_prompt|update_delegation|update_methodologies. profile_id requerido salvo list.",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["list", "get", "update_prompt", "update_delegation", "update_methodologies"]},
+                "profile_id": {"type": "string", "description": "Nombre de sistema (agent_professional_identity) o record id (agent-2)"},
+                "system_prompt_suffix": {"type": "string", "description": "update_prompt: null/omitido restaura el default del código"},
+                "target_ids": {"type": "array", "items": {"type": "string"}, "description": "update_delegation: destinos permitidos; [] = no delega a nadie; omitido restaura el default por nivel"},
+                "methodology_ids": {"type": "array", "items": {"type": "string"}, "description": "update_methodologies: IDs opm-N que este agente debe consultar"},
+            },
+            "required": ["action"],
+        },
+    },
+    {
+        "name": "admin_section_settings",
+        "description": "Secciones del Admin: qué agente domina cada pantalla y su descripción. action=list|get|update. section_id requerido salvo list.",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["list", "get", "update"]},
+                "section_id": {"type": "string"},
+                "agent_profile_id": {"type": "string", "description": "Agente con dominio de la sección; string vacío restaura el default del código"},
+                "description": {"type": "string", "description": "String vacío restaura el default del código"},
+            },
+            "required": ["action"],
+        },
+    },
+    {
+        "name": "bedrock_global_settings",
+        "description": "Prompts globales que aplican a TODOS los agentes (system prompt base + reglas de grounding/metodologías). action=get|update_system_prompt|update_global_rules.",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["get", "update_system_prompt", "update_global_rules"]},
+                "text": {"type": "string", "description": "null/omitido restaura el default del código"},
+            },
+            "required": ["action"],
+        },
+    },
 ]
 
 _WRITE_TOOLS = {
@@ -158,8 +254,12 @@ _WRITE_TOOLS = {
     "generate_pdf",
     "render_record_pdf",
     "generate_image",
+    "store_uploaded_image",
     "attach_image_to_record",
     "save_job_listings",
+    "agent_catalog_settings",
+    "admin_section_settings",
+    "bedrock_global_settings",
 }
 
 _PDF_TEMPLATE_ALIASES = {
@@ -549,6 +649,128 @@ async def _run_render_record_pdf(db, user_id: str, tool_input: Dict[str, Any]) -
     return result
 
 
+async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """Catálogo de agentes (L2 agent_settings): prompt, delegación, metodologías."""
+    from services.bedrock import profile_catalog, profile_delegation, profile_prompts
+    from services.bedrock.agent_profiles import get_profile
+    from services.methodology_scope import set_agent_methodologies
+
+    action = tool_input.get("action")
+
+    if action == "list":
+        return {"items": await profile_catalog.list_catalog(db, user_id)}
+
+    profile_id = tool_input.get("profile_id")
+    if not profile_id:
+        return {"error": "profile_id is required for this action"}
+    try:
+        get_profile(profile_id)
+    except KeyError:
+        return {"error": f"unknown agent profile: {profile_id}"}
+
+    if action == "get":
+        return {"item": await profile_catalog.get_catalog_item(db, user_id, profile_id)}
+
+    if action == "update_prompt":
+        item = await profile_prompts.set_profile_prompt_suffix(
+            db, profile_id, tool_input.get("system_prompt_suffix")
+        )
+        return {"item": item}
+
+    if action == "update_delegation":
+        target_ids = tool_input.get("target_ids")
+        item = await profile_delegation.set_delegation_targets(db, profile_id, target_ids)
+        return {"item": item}
+
+    if action == "update_methodologies":
+        methodology_ids = tool_input.get("methodology_ids") or []
+        items = await set_agent_methodologies(db, user_id, profile_id, methodology_ids)
+        return {"items": items}
+
+    return {"error": f"unknown action: {action}"}
+
+
+async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """Secciones del Admin (L2 agent_settings): agente dueño y descripción."""
+    from services import section_catalog
+    from services.admin_sections import get_section_spec
+    from services.bedrock.agent_profiles import get_profile
+
+    action = tool_input.get("action")
+
+    if action == "list":
+        return {"items": await section_catalog.list_sections(db)}
+
+    section_id = tool_input.get("section_id")
+    if not section_id:
+        return {"error": "section_id is required for this action"}
+    try:
+        get_section_spec(section_id)
+    except KeyError:
+        return {"error": f"unknown admin section: {section_id}"}
+
+    if action == "get":
+        return {"item": await section_catalog.get_section(db, section_id)}
+
+    if action == "update":
+        agent_id = tool_input.get("agent_profile_id")
+        clear_agent = False
+        if agent_id is not None:
+            if agent_id == "":
+                clear_agent = True
+                agent_id = None
+            else:
+                try:
+                    get_profile(agent_id)
+                except KeyError:
+                    return {"error": f"unknown agent profile: {agent_id}"}
+        description = tool_input.get("description")
+        try:
+            item = await section_catalog.update_section(
+                db,
+                section_id,
+                agent_profile_id=agent_id,
+                clear_agent=clear_agent,
+                description=description,
+                clear_description=description == "",
+            )
+        except KeyError as exc:
+            return {"error": str(exc)}
+        return {"item": item}
+
+    return {"error": f"unknown action: {action}"}
+
+
+async def _run_bedrock_global_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """Prompts globales (L2 agent_settings): aplican a TODOS los agentes."""
+    action = tool_input.get("action")
+
+    async def _snapshot() -> Dict[str, Any]:
+        prompt = await bedrock_service.get_system_prompt(db)
+        rules = await bedrock_service.get_global_rules(db)
+        return {
+            "system_prompt": prompt,
+            "system_prompt_is_default": prompt == bedrock_service.default_system_prompt(),
+            "global_rules": rules,
+            "global_rules_is_default": rules == bedrock_service.default_global_rules(),
+        }
+
+    if action == "get":
+        return await _snapshot()
+
+    if action == "update_system_prompt":
+        text = tool_input.get("text")
+        await bedrock_service.set_system_prompt(db, text.strip() if text else None)
+        return await _snapshot()
+
+    if action == "update_global_rules":
+        text = tool_input.get("text")
+        await bedrock_service.set_global_rules(db, text.strip() if text else None)
+        return await _snapshot()
+
+    return {"error": f"unknown action: {action}"}
+
+
 async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Tools nuevos del harness local (no en monolito legacy)."""
     if name == "get_linkedin_status":
@@ -650,23 +872,94 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     if name == "render_record_pdf":
         return await _run_render_record_pdf(db, user_id, tool_input)
 
+    if name == "agent_catalog_settings":
+        return await _run_agent_catalog_settings(db, user_id, tool_input)
+
+    if name == "admin_section_settings":
+        return await _run_admin_section_settings(db, tool_input)
+
+    if name == "bedrock_global_settings":
+        return await _run_bedrock_global_settings(db, tool_input)
+
     if name == "generate_image":
+        from models.file_upload import FileType, FileUpload
+        from services.bedrock import image_pipeline
         from services.bedrock.image_client import generate_image_bytes
 
-        w = tool_input.get("width", 1200)
-        h = tool_input.get("height", 627)
-        data = await generate_image_bytes(tool_input["prompt"], width=w, height=h)
+        spec = image_pipeline.resolve_purpose(tool_input["purpose"])
+        gen_w, gen_h = image_pipeline.titan_generation_dims(spec)
+        raw = await generate_image_bytes(tool_input["prompt"], width=gen_w, height=gen_h)
+        finalized = image_pipeline.finalize_png(raw, spec)
+        name_hint = image_pipeline.slug_name(tool_input.get("name"), tool_input["prompt"])
         stored = storage_service.upload_file(
-            data=io.BytesIO(data), original_filename="ai-generated.png", size=len(data),
-            content_type="image/png", category="ai-generated", is_public=True,
+            data=io.BytesIO(finalized), original_filename=f"{name_hint}.png", size=len(finalized),
+            content_type="image/png", category=spec.category, is_public=True, name_hint=name_hint,
         )
         url = storage_service.get_public_url(stored)
-        return {"image_url": url, "filename": stored}
+        row = FileUpload(
+            user_id=user_id, original_filename=f"{name_hint}.png", stored_filename=stored, file_path=stored,
+            file_type=FileType.IMAGE, mime_type="image/png", file_size=len(finalized),
+            description=tool_input["prompt"][:500], category=spec.category, is_public=True,
+            download_url=url,
+        )
+        db.add(row)
+        await db.flush()
+        await db.refresh(row)
+        await db.commit()
+        return {"image_url": url, "filename": stored, "purpose": spec.category}
+
+    if name == "store_uploaded_image":
+        from models.file_upload import FileType, FileUpload
+        from services.bedrock import image_pipeline
+
+        spec = image_pipeline.resolve_purpose(tool_input["purpose"])
+        result = await db.execute(
+            select(FileUpload).where(
+                FileUpload.id == tool_input["source_file_id"],
+                FileUpload.user_id == user_id,
+                FileUpload.is_active.is_(True),
+            )
+        )
+        source = result.scalar_one_or_none()
+        if source is None:
+            return {"error": f"Adjunto no encontrado: {tool_input['source_file_id']}"}
+        if not (source.mime_type or "").startswith("image/"):
+            return {"error": "El archivo de origen no es una imagen"}
+
+        response = storage_service.get_object_stream(source.stored_filename)
+        try:
+            raw = response.read()
+        finally:
+            response.close()
+            response.release_conn()
+
+        finalized = image_pipeline.finalize_png(raw, spec)
+        name_hint = image_pipeline.slug_name(tool_input.get("name"), source.original_filename)
+        stored = storage_service.upload_file(
+            data=io.BytesIO(finalized), original_filename=f"{name_hint}.png", size=len(finalized),
+            content_type="image/png", category=spec.category, is_public=True, name_hint=name_hint,
+        )
+        url = storage_service.get_public_url(stored)
+        row = FileUpload(
+            user_id=user_id, original_filename=f"{name_hint}.png", stored_filename=stored, file_path=stored,
+            file_type=FileType.IMAGE, mime_type="image/png", file_size=len(finalized),
+            description=f"Optimizada desde {source.original_filename}", category=spec.category, is_public=True,
+            download_url=url,
+        )
+        db.add(row)
+        await db.flush()
+        await db.refresh(row)
+        await db.commit()
+        return {"image_url": url, "filename": stored, "purpose": spec.category}
 
     if name == "attach_image_to_record":
         rk = tool_input["resource_key"]
+        if rk == "agent-profile":
+            from services.bedrock import profile_photos
+
+            return await profile_photos.set_photo(db, tool_input["record_id"], tool_input["image_url"])
         if rk not in ("publications", "projects"):
-            return {"error": "resource_key must be publications or projects"}
+            return {"error": "resource_key must be publications, projects, or agent-profile"}
         return await bedrock_service._execute_tool(
             db, user_id, "update_career_record",
             {
@@ -679,14 +972,19 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "list_generated_images":
         from models.file_upload import FileUpload
+        from services.bedrock.image_pipeline import IMAGE_PURPOSES
 
+        purpose = tool_input.get("purpose")
+        categories = [IMAGE_PURPOSES[purpose].category] if purpose in IMAGE_PURPOSES else [
+            spec.category for spec in IMAGE_PURPOSES.values()
+        ]
         limit = min(tool_input.get("limit", 20), 50)
         result = await db.execute(
-            select(FileUpload).where(FileUpload.user_id == user_id, FileUpload.category == "ai-generated")
+            select(FileUpload).where(FileUpload.user_id == user_id, FileUpload.category.in_(categories))
             .order_by(desc(FileUpload.created_at)).limit(limit)
         )
         files = result.scalars().all()
-        return {"items": [{"filename": f.stored_filename, "url": f.download_url, "description": f.description} for f in files]}
+        return {"items": [{"filename": f.stored_filename, "url": f.download_url, "description": f.description, "purpose": f.category} for f in files]}
 
     if name == "delegate_to_specialist":
         return {"error": "delegate_to_specialist must be handled by agent_loop"}
@@ -881,4 +1179,15 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
         return "vacancies"
     if name in ("generate_pdf", "render_record_pdf"):
         return tool_input.get("resource_key") or "files"
+    if name == "agent_catalog_settings":
+        action = tool_input.get("action")
+        if action in ("update_prompt", "update_delegation", "update_methodologies"):
+            return "agent-profiles"
+    if name == "admin_section_settings" and tool_input.get("action") == "update":
+        return "admin-sections"
+    if name == "bedrock_global_settings" and tool_input.get("action") in (
+        "update_system_prompt",
+        "update_global_rules",
+    ):
+        return "bedrock-settings"
     return None

@@ -216,6 +216,16 @@ export const bedrockApi = {
     return response.data
   },
 
+  /** `globalRules: null` resets to the built-in default. */
+  updateGlobalRules: async (globalRules: string | null): Promise<BedrockInstructions> => {
+    const response = await axiosInstance.put<BedrockInstructions>(
+      '/bedrock/global-rules',
+      { global_rules: globalRules },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
   listAgentProfilePrompts: async (): Promise<BedrockAgentProfilePrompt[]> => {
     const response = await axiosInstance.get<BedrockAgentProfilePrompt[]>('/bedrock/agent-profiles', {
       timeout: CONTROL_PLANE_TIMEOUT_MS,

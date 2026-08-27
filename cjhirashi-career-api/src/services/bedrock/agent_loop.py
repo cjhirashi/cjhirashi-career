@@ -473,12 +473,17 @@ async def chat_stream(
                 continue
             # 9.1. Loggear uso total de la vuelta
             await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
+            # Bedrock Converse rechaza bloques de texto vacíos: si el modelo terminó sin
+            # texto (p.ej. una respuesta que fue enteramente <thinking>), usamos un
+            # placeholder para que el historial persistido siga siendo válido en el
+            # siguiente turno.
+            final_reply = result["text"] or "(sin texto)"
             # 9.2. Registrar mensajes en historial si corresponde
             if record_history and conversation:
-                await history_manager.append_message(db, conversation, "user", req.message)
-                await history_manager.append_message(db, conversation, "assistant", result["text"])
+                await history_manager.append_message(db, conversation, "user", req.message or "(sin texto)")
+                await history_manager.append_message(db, conversation, "assistant", final_reply)
             # 9.3. Emitir evento "done" con respuesta final y los recursos afectados
-            yield {"type": "done", "reply": result["text"], "affected_resources": affected}
+            yield {"type": "done", "reply": final_reply, "affected_resources": affected}
             return
 
         # 10. Si el modelo requiere ejecución de herramientas

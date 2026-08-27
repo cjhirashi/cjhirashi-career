@@ -74,12 +74,21 @@ def slugify_category(category: str) -> str:
     return slug
 
 
-def _build_key(original_filename: str, category: Optional[str], is_public: bool) -> str:
+def _build_key(
+    original_filename: str, category: Optional[str], is_public: bool, name_hint: Optional[str] = None
+) -> str:
     """`public/<categoria>/<uuid>.ext` or `private/<categoria>/<uuid>.ext` - the
     leading segment is what the bucket policy above keys off of, so an object's
-    visibility is a real property of *where it lives*, not just a DB flag."""
+    visibility is a real property of *where it lives*, not just a DB flag.
+    `name_hint` (already a slug) prefixes the unique name instead of a bare
+    uuid, for objects that want a human-readable filename (e.g. agent
+    Visual-generated images) - still uuid-suffixed to avoid collisions."""
     extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
-    unique_name = f"{uuid.uuid4().hex}.{extension}" if extension else uuid.uuid4().hex
+    if name_hint:
+        stem = f"{name_hint}-{uuid.uuid4().hex[:8]}"
+    else:
+        stem = uuid.uuid4().hex
+    unique_name = f"{stem}.{extension}" if extension else stem
     slug = slugify_category(category) if category else ""
     visibility = "public" if is_public else "private"
     parts = [visibility] + ([slug] if slug else []) + [unique_name]
@@ -93,10 +102,11 @@ def upload_file(
     content_type: str,
     category: Optional[str] = None,
     is_public: bool = True,
+    name_hint: Optional[str] = None,
 ) -> str:
     """Upload a file, returning the unique object key it was stored under
     (never the original filename, to avoid collisions/overwrites)."""
-    stored_filename = _build_key(original_filename, category, is_public)
+    stored_filename = _build_key(original_filename, category, is_public, name_hint)
     get_client().put_object(
         settings.MINIO_BUCKET,
         stored_filename,

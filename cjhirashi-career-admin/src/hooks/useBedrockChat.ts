@@ -218,6 +218,16 @@ export function useBedrockInstructionsUpdate() {
   })
 }
 
+export function useBedrockGlobalRulesUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: bedrockApi.updateGlobalRules,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['bedrock', 'instructions'], data)
+    },
+  })
+}
+
 export function useBedrockAgentProfilePrompts() {
   return useQuery({
     queryKey: ['bedrock', 'agent-profiles'],

@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { AxiosError } from 'axios'
-import { MapPin, Sparkles, UserCircle } from 'lucide-react'
-import { useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
+import { MapPin, Sparkles } from 'lucide-react'
+import { useAgentCatalog, useBedrockChat, useBedrockModel } from '@/hooks/useBedrockChat'
 import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { CHAT_PROFILE_LABELS, resolveChatProfileKey } from '@/config/chatSectionProfiles'
 import { BedrockChatSurface, BedrockPageContext } from '@/types/bedrock'
+import { PersonChip } from '@/components/PersonAvatar'
 import { MessageList } from './MessageList'
 import { ChatComposer } from './ChatComposer'
 import { ConversationHistory } from './ConversationHistory'
@@ -29,18 +30,21 @@ interface ContextChipsProps {
   chatSurface: BedrockChatSurface
   pageContext?: BedrockPageContext | null
   agentLabel: string
+  agentPhotoUrl?: string | null
 }
 
-/** Section location + specialist of this screen (model lives in the composer). */
-const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, agentLabel }) => {
+/**
+ * Two-line context header: agent (photo + name) on top, then where we are
+ * (section) and the domain (model routing profile) below.
+ */
+const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, agentLabel, agentPhotoUrl }) => {
   if (chatSurface === 'general') {
     return (
-      <div className="flex flex-wrap gap-1.5 flex-shrink-0">
-        <span className="badge badge-cyan text-[10px]">Chat general</span>
-        <span className="inline-flex items-center gap-1 badge badge-slate text-[10px]">
-          <UserCircle size={10} aria-hidden="true" />
-          Orquestador
-        </span>
+      <div className="flex flex-col gap-1.5 flex-shrink-0" aria-label="Contexto del chat">
+        <PersonChip src={agentPhotoUrl} name={agentLabel} size={22} />
+        <div className="flex flex-wrap gap-1.5">
+          <span className="badge badge-cyan text-[10px]">Chat general</span>
+        </div>
       </div>
     )
   }
@@ -50,20 +54,19 @@ const ContextChips: React.FC<ContextChipsProps> = ({ chatSurface, pageContext, a
   const profileKey = resolveChatProfileKey(pageContext)
 
   return (
-    <div className="flex flex-wrap gap-1.5 flex-shrink-0" aria-label="Contexto del chat">
-      {pageContext.page_title && (
-        <span className="inline-flex items-center gap-1 badge badge-slate text-[10px]">
-          <MapPin size={10} aria-hidden="true" />
-          {pageContext.page_title}
-        </span>
-      )}
-      <span className="inline-flex items-center gap-1 badge badge-cyan text-[10px]" title="Agente de esta sección">
-        <UserCircle size={10} aria-hidden="true" />
-        {agentLabel}
-      </span>
-      {profileKey && CHAT_PROFILE_LABELS[profileKey] && (
-        <span className="badge badge-slate text-[10px]">{CHAT_PROFILE_LABELS[profileKey]}</span>
-      )}
+    <div className="flex flex-col gap-1.5 flex-shrink-0" aria-label="Contexto del chat">
+      <PersonChip src={agentPhotoUrl} name={agentLabel} size={22} />
+      <div className="flex flex-wrap gap-1.5">
+        {pageContext.page_title && (
+          <span className="inline-flex items-center gap-1 badge badge-slate text-[10px]">
+            <MapPin size={10} aria-hidden="true" />
+            {pageContext.page_title}
+          </span>
+        )}
+        {profileKey && CHAT_PROFILE_LABELS[profileKey] && (
+          <span className="badge badge-cyan text-[10px]">{CHAT_PROFILE_LABELS[profileKey]}</span>
+        )}
+      </div>
     </div>
   )
 }
@@ -104,10 +107,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const { isError, error: modelError } = useBedrockModel()
   const isNotConfigured = isError && (modelError as AxiosError)?.response?.status === 503
 
+  const { data: catalog } = useAgentCatalog()
+  const agentPhotoUrl = useMemo(
+    () => catalog?.find((agent) => agent.profile_id === effectiveAgentProfileId)?.photo_url ?? null,
+    [catalog, effectiveAgentProfileId]
+  )
+
   if (isNotConfigured) return <NotConfigured />
 
   return (
     <div className="flex-1 flex flex-col gap-3 min-h-0 min-w-0">
+      <ContextChips
+        chatSurface={chatSurface}
+        pageContext={pageContext}
+        agentLabel={getAgentProfileLabel(effectiveAgentProfileId)}
+        agentPhotoUrl={agentPhotoUrl}
+      />
+
       {showHistoryControls && (
         <div className="flex items-center justify-end gap-2 flex-shrink-0">
           <ConversationHistory
@@ -121,12 +137,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           />
         </div>
       )}
-
-      <ContextChips
-        chatSurface={chatSurface}
-        pageContext={pageContext}
-        agentLabel={getAgentProfileLabel(effectiveAgentProfileId)}
-      />
 
       <MessageList messages={messages} isSending={isSending} statusMessage={statusMessage} />
 

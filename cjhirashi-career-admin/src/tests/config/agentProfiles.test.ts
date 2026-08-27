@@ -16,6 +16,7 @@ import {
   AGENT_VISUAL_DESIGN,
   AGENT_WEB_SEARCH,
   AGENT_GITHUB,
+  AGENT_SETTINGS,
   allAgentSelectOptions,
   getAgentProfileLabel,
   resolveAgentProfileId,
@@ -95,6 +96,33 @@ describe('resolveAgentProfileId', () => {
         pageContext: { route: '/agent/pdf-template-styles/pds-cyan' },
       })
     ).toBe(AGENT_PDF_DESIGN)
+  })
+
+  it('maps the Settings pages to agent_settings', () => {
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/settings/agents' },
+      })
+    ).toBe(AGENT_SETTINGS)
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/settings/agents/agent-2' },
+      })
+    ).toBe(AGENT_SETTINGS)
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/settings/sections' },
+      })
+    ).toBe(AGENT_SETTINGS)
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/settings/agent-prompts' },
+      })
+    ).toBe(AGENT_SETTINGS)
   })
 
   it('falls back to orchestrator when the page is not mapped', () => {

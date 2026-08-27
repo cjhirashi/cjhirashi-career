@@ -1,9 +1,13 @@
 import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, ChevronDown, Filter, type LucideIcon } from 'lucide-react'
+import { Check, ChevronDown, Filter, Plus, type LucideIcon } from 'lucide-react'
 import { clsx } from 'clsx'
 import { SelectOption } from '@/config/careerResources'
 import { SelectCapsule, SelectOptionIdentity } from '@/components/SelectCapsule'
+
+interface MultiSelectRow extends SelectOption {
+  isCreate?: boolean
+}
 
 export interface ThemedMultiSelectProps {
   id?: string
@@ -25,6 +29,13 @@ export interface ThemedMultiSelectProps {
   showCount?: boolean
   triggerClassName?: string
   iconSize?: number
+  /**
+   * Allow typing a value that is not yet in `options` - same idea as
+   * `ThemedSelect`'s `creatable`, but adding to the selection instead of
+   * replacing a single value. Used by projects.competency_ids so a new
+   * technology name gets created as a real record on save.
+   */
+  creatable?: boolean
 }
 
 const parseValues = (value: string[]): string[] =>
@@ -55,6 +66,7 @@ export const ThemedMultiSelect: React.FC<ThemedMultiSelectProps> = ({
   showCount = true,
   triggerClassName,
   iconSize = 13,
+  creatable = false,
 }) => {
   const autoId = useId()
   const listboxId = `${id ?? autoId}-listbox`
@@ -69,16 +81,37 @@ export const ThemedMultiSelect: React.FC<ThemedMultiSelectProps> = ({
   const triggerRef = useRef<HTMLElement | null>(null)
   const isIcon = variant === 'icon'
 
-  const selectedOptions = options.filter((opt) => selectedSet.has(opt.value))
-  const showSearch = options.length >= 8
+  // In creatable mode a selected id may be a freshly typed name with no
+  // matching record yet (see FieldConfig.creatable) - synthesize a
+  // pseudo-option so its capsule doesn't just disappear before save.
+  const selectedOptions = useMemo(() => {
+    const known = options.filter((opt) => selectedSet.has(opt.value))
+    if (!creatable) return known
+    const knownIds = new Set(known.map((opt) => opt.value))
+    const pending = selectedIds
+      .filter((id) => !knownIds.has(id))
+      .map((id) => ({ value: id, label: id }))
+    return [...known, ...pending]
+  }, [options, selectedSet, selectedIds, creatable])
+  const showSearch = creatable || options.length >= 8
 
-  const rows = useMemo<SelectOption[]>(() => {
+  const rows = useMemo<MultiSelectRow[]>(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return options
-    return options.filter(
-      (opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q)
+    const filtered = q
+      ? options.filter(
+          (opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q)
+        )
+      : options
+    if (!creatable) return filtered
+    const typed = query.trim()
+    const exists = options.some(
+      (opt) => opt.value.toLowerCase() === typed.toLowerCase() || opt.label.toLowerCase() === typed.toLowerCase()
     )
-  }, [options, query])
+    if (typed && !exists) {
+      return [...filtered, { value: typed, label: `Añadir «${typed}»`, isCreate: true }]
+    }
+    return filtered
+  }, [options, query, creatable])
 
   const close = () => {
     setOpen(false)
@@ -206,9 +239,9 @@ export const ThemedMultiSelect: React.FC<ThemedMultiSelectProps> = ({
               setQuery(e.target.value)
               setHighlighted(0)
             }}
-            placeholder="Filtrar…"
+            placeholder={creatable ? 'Escribe para filtrar o añadir…' : 'Filtrar…'}
             className="input-field py-1.5 text-sm"
-            aria-label="Filtrar opciones"
+            aria-label={creatable ? 'Filtrar o añadir opción' : 'Filtrar opciones'}
           />
         </div>
       )}
@@ -218,14 +251,16 @@ export const ThemedMultiSelect: React.FC<ThemedMultiSelectProps> = ({
       )}
 
       {rows.length === 0 && query.trim() === '' && (
-        <p className="px-3 py-2 text-sm text-text-muted">No hay opciones</p>
+        <p className="px-3 py-2 text-sm text-text-muted">
+          {creatable ? 'Sin opciones aún. Escribe para añadir una.' : 'No hay opciones'}
+        </p>
       )}
 
       {rows.map((opt, index) => {
-        const isSelected = selectedSet.has(opt.value)
+        const isSelected = !opt.isCreate && selectedSet.has(opt.value)
         return (
           <button
-            key={opt.value}
+            key={opt.isCreate ? '__create__' : opt.value}
             type="button"
             role="option"
             aria-selected={isSelected}
@@ -239,9 +274,17 @@ export const ThemedMultiSelect: React.FC<ThemedMultiSelectProps> = ({
               e.preventDefault()
               e.stopPropagation()
               toggle(opt.value)
+              if (opt.isCreate) setQuery('')
             }}
           >
-            <SelectOptionIdentity code={opt.value} label={opt.label} />
+            {opt.isCreate ? (
+              <span className="min-w-0 flex items-center gap-2 text-primary">
+                <Plus size={14} className="flex-shrink-0" aria-hidden="true" />
+                <span className="min-w-0 truncate">{opt.label}</span>
+              </span>
+            ) : (
+              <SelectOptionIdentity code={opt.value} label={opt.label} />
+            )}
             {isSelected && <Check size={14} className="text-primary flex-shrink-0" aria-hidden="true" />}
           </button>
         )

@@ -47,14 +47,12 @@ class OperationalMethodologyBase(BaseModel):
     )
     notes: Optional[str] = None
 
+
+class OperationalMethodologyCreate(OperationalMethodologyBase):
     @field_validator("agent_profile_ids")
     @classmethod
     def validate_agent_profile_ids(cls, value: Optional[List[str]]) -> Optional[List[str]]:
         return _normalize_agent_profile_ids(value)
-
-
-class OperationalMethodologyCreate(OperationalMethodologyBase):
-    pass
 
 
 class OperationalMethodologyUpdate(BaseModel):
@@ -73,6 +71,9 @@ class OperationalMethodologyUpdate(BaseModel):
 
 
 class OperationalMethodologyResponse(OperationalMethodologyBase):
+    # No agent_profile_ids validation here (unlike Create/Update): a row whose
+    # ids no longer match the current agent catalog must still be readable,
+    # or every GET on this resource 500s until someone edits that one record.
     id: str
     user_id: str
     created_at: datetime

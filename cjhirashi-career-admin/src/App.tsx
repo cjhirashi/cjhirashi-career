@@ -7,6 +7,7 @@ import { PrivateRoute } from '@/components/PrivateRoute'
 import { Layout } from '@/components/Layout'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // Pages
 import { LoginPage } from '@/pages/LoginPage'
@@ -19,6 +20,7 @@ import { FilesPage } from '@/pages/FilesPage'
 import { LinkedInPage } from '@/pages/LinkedInPage'
 import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
 import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
+import { AgentPromptsSettingsPage } from '@/pages/AgentPromptsSettingsPage'
 import { AgentCatalogPage } from '@/pages/AgentCatalogPage'
 import { AdminSectionsPage, AdminSectionDetailPage } from '@/pages/AdminSectionsPage'
 import { AgentToolsPage } from '@/pages/AgentToolsPage'
@@ -48,11 +50,20 @@ const queryClient = new QueryClient({
   },
 })
 
+/** Lives inside <Router> (needs routing context) but outside <Routes>, so it
+ * tracks every navigation - including /login and the catch-all redirect -
+ * without duplicating a hook call into Layout and LoginPage separately. */
+const PageTitleManager: React.FC = () => {
+  usePageTitle()
+  return null
+}
+
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <Router>
+        <PageTitleManager />
         <Routes>
           {/* Login - No layout */}
           <Route path="/login" element={<LoginPage />} />
@@ -244,6 +255,16 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <AdminSectionDetailPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/agent-prompts"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AgentPromptsSettingsPage />
                 </Layout>
               </PrivateRoute>
             }

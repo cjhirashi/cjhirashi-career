@@ -34,7 +34,11 @@ const STATIC_INSTRUCTIONS: Record<string, PageInstructions> = {
   },
   '/agent/instructions': {
     title: 'Instrucciones',
-    body: 'Prompt global y suffix por especialista. Los cambios aplican en el siguiente mensaje.',
+    body: 'Suffix por especialista, sumado al prompt base global (Settings → Prompts Globales). Los cambios aplican en el siguiente mensaje.',
+  },
+  '/settings/agent-prompts': {
+    title: 'Prompts Globales',
+    body: 'System prompt base y reglas globales (grounding/no-alucinar + asignación de metodologías) que aplican a TODOS los agentes. Los cambios aplican en el siguiente mensaje.',
   },
   '/settings/agents': {
     title: 'Catálogo de Agentes',

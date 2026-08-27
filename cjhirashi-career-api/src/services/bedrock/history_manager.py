@@ -95,7 +95,11 @@ async def load_converse_messages(
     out: List[Dict[str, Any]] = []
     for m in rows:
         content = sanitize_assistant_reply(m.content) if m.role == "assistant" else m.content
-        out.append({"role": m.role, "content": [{"text": content}]})
+        # Bedrock Converse rechaza bloques de texto vacíos ("text content blocks
+        # must be non-empty"). Filas persistidas antes de este guard, o filas con
+        # contenido en blanco, se reemplazan por un placeholder para no romper el
+        # siguiente turno.
+        out.append({"role": m.role, "content": [{"text": content or "(sin texto)"}]})
     return out
 
 

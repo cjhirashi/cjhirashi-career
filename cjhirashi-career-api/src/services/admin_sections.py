@@ -20,6 +20,7 @@ from services.bedrock.agent_profiles import (
     AGENT_PDF_DESIGN,
     AGENT_PROFESSIONAL_IDENTITY,
     AGENT_SEARCH_OPERATIONS,
+    AGENT_SETTINGS,
     AGENT_SUPPORT,
     AGENT_TASK_MANAGER,
     AGENT_VACANCY_SEARCH,
@@ -458,7 +459,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Catálogo de Agentes",
         path="/settings/agents",
         section_type=SECTION_TABLE,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=AGENT_SETTINGS,
         description="Definición y overrides de cada perfil de agente.",
         views=_crud_views(
             "Agentes",
@@ -475,7 +476,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Secciones del Admin",
         path="/settings/sections",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=AGENT_SETTINGS,
         description="Catálogo de pantallas: tipo, agente de dominio e instrucciones.",
         views=_main_view(
             "Secciones del Admin",
@@ -485,6 +486,22 @@ _SECTIONS: List[AdminSectionSpec] = [
         ),
         group="Settings",
         sort_order=91,
+    ),
+    AdminSectionSpec(
+        id="settings-agent-prompts",
+        label="Prompts Globales",
+        path="/settings/agent-prompts",
+        section_type=SECTION_FUNCTIONAL,
+        default_agent_profile_id=AGENT_SETTINGS,
+        description="System prompt base y reglas globales que aplican a TODOS los agentes.",
+        views=_main_view(
+            "Prompts Globales",
+            "Instrucciones base compartidas por todo el harness.",
+            "System prompt global y reglas de grounding/asignación de metodologías. "
+            "Los cambios aplican desde el siguiente mensaje de cualquier agente.",
+        ),
+        group="Settings",
+        sort_order=92,
     ),
 ]
 

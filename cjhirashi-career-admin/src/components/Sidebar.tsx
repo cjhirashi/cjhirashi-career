@@ -22,6 +22,7 @@ import {
   MessageCircle,
   Settings,
   LayoutGrid,
+  SlidersHorizontal,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -76,6 +77,7 @@ const SETTINGS_DOMAIN_KEY = 'settings'
 const SETTINGS_LINKS: { label: string; path: string; icon: LucideIcon; countKey?: 'catalog' | 'sections' }[] = [
   { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
   { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
+  { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
 ]
 
 const RecordCount: React.FC<{ count?: number }> = ({ count }) => {

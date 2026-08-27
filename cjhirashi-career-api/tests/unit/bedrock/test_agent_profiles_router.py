@@ -15,6 +15,7 @@ from services.bedrock.agent_profiles import (
     AGENT_VISUAL_DESIGN,
     AGENT_WEB_SEARCH,
     AGENT_GITHUB,
+    AGENT_SETTINGS,
     can_delegate_to,
     delegation_error,
     get_profile,
@@ -189,6 +190,32 @@ def test_pdf_admin_routes_resolve_to_pdf_design():
         )
         assert profile.id == AGENT_PDF_DESIGN
         assert profile.level == 2
+
+
+def test_settings_routes_resolve_to_agent_settings():
+    for route in (
+        "/settings/agents",
+        "/settings/agents/agent-2",
+        "/settings/sections",
+        "/settings/sections/dashboard",
+        "/settings/agent-prompts",
+    ):
+        profile = resolve_agent_profile(
+            chat_surface="contextual",
+            agent_profile_id=None,
+            page_context={"route": route},
+        )
+        assert profile.id == AGENT_SETTINGS
+        assert profile.level == 2
+
+
+def test_agent_settings_owns_its_tools_only():
+    names = tools_for_profile(get_profile(AGENT_SETTINGS), all_tool_names())
+    assert "agent_catalog_settings" in names
+    assert "admin_section_settings" in names
+    assert "bedrock_global_settings" in names
+    assert "create_career_record" not in names
+    assert "delegate_to_specialist" in names
 
 
 def test_history_manager_filters_by_agent_profile():

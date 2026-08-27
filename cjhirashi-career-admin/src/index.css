@@ -1454,4 +1454,197 @@
     background-color: var(--primary-color);
     box-shadow: 0 0 0 3px var(--primary-glow);
   }
+
+  /* ------------------------------------------------------------------
+   * JSON-list field: editor + read-only view for JSONB career fields
+   * (metrics, sources, releases, links, ...) - never a raw JSON textarea.
+   * See JsonListField.tsx / JsonListView.tsx / jsonListUtils.ts.
+   * ------------------------------------------------------------------ */
+
+  .json-list-label-row {
+    @apply flex items-center justify-between mb-1;
+  }
+
+  .json-list-empty {
+    @apply text-sm text-text-muted italic px-4 py-3 mb-3 rounded-xl border border-dashed;
+    border-color: var(--border-glass);
+  }
+
+  .json-list-items {
+    @apply space-y-3 mb-3;
+  }
+
+  .json-list-item {
+    @apply rounded-xl border p-3;
+    background-color: var(--bg-glass);
+    border-color: var(--border-glass);
+    transition: border-color 0.15s ease;
+  }
+
+  .json-list-item:focus-within {
+    border-color: var(--border-glass-hover);
+  }
+
+  .json-list-item-head {
+    @apply flex items-center gap-2 mb-2.5;
+  }
+
+  .json-list-index {
+    @apply flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-md font-mono text-[10px] font-semibold;
+    color: var(--primary-color);
+    background-color: var(--primary-light);
+  }
+
+  .json-list-item-title {
+    @apply flex-1 min-w-0 text-xs font-semibold uppercase tracking-wide truncate;
+    color: var(--text-secondary);
+  }
+
+  .json-list-remove {
+    @apply flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+    color: var(--text-muted);
+  }
+
+  .json-list-remove:hover:not(:disabled) {
+    color: var(--error-text);
+    background-color: var(--error-bg);
+  }
+
+  .json-list-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-2.5;
+  }
+
+  .json-list-field {
+    @apply min-w-0;
+  }
+
+  .json-list-field-wide {
+    @apply sm:col-span-2;
+  }
+
+  .json-list-field-label {
+    @apply block text-[11px] font-medium mb-1;
+    color: var(--text-muted);
+  }
+
+  /* Denser than the form's default `.input-field` - a json-list row already
+     lives inside a bordered card, so its own inputs read best a touch
+     smaller and without the outer blur, keeping many rows scannable. */
+  .json-list-item .input-field {
+    @apply px-2.5 py-1.5 text-sm rounded-lg;
+    background-color: var(--bg-card);
+  }
+
+  .json-list-item textarea.input-field {
+    @apply font-sans;
+    resize: vertical;
+  }
+
+  .json-list-add {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    color: var(--primary-color);
+    border-color: var(--border-glass-hover);
+  }
+
+  .json-list-add:hover:not(:disabled) {
+    background-color: var(--primary-light);
+  }
+
+  /* Read-only rendering (JsonListView) - definition list / bullets / record
+     cards instead of a JSON dump. */
+
+  /* Top-level kv view (Contexto, Métricas de impacto, ...) - `toApiValue`
+     stores kv as a single flat object, i.e. one record with N attributes -
+     so the whole thing is ONE card, with its attributes laid out inside it
+     (not one card per attribute). Compare to `.json-list-view-records`
+     below, which IS a list of separate record objects and does get one
+     card per item. */
+  .json-list-view-kv {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3 rounded-xl border p-4;
+    background-color: var(--bg-glass);
+    border-color: var(--border-glass);
+  }
+
+  .json-list-view-kv-row {
+    @apply min-w-0;
+  }
+
+  /* Scoped to `.json-list-view-kv >` (direct child) so these don't leak into
+     the differently-styled dt/dd nested inside a `.json-list-view-record`
+     card further down (inline "Label: value", no dot marker). */
+  .json-list-view-kv > .json-list-view-kv-row dt {
+    @apply flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide mb-1;
+    color: var(--text-muted);
+  }
+
+  .json-list-view-kv > .json-list-view-kv-row dt::before {
+    content: '';
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+  }
+
+  .json-list-view-kv > .json-list-view-kv-row dd {
+    @apply text-sm leading-relaxed break-words;
+    color: var(--text-primary);
+  }
+
+  .json-list-view-text {
+    @apply list-none space-y-1.5 m-0 p-0;
+  }
+
+  .json-list-view-text li {
+    @apply relative pl-4 text-sm break-words;
+    color: var(--text-primary);
+  }
+
+  .json-list-view-text li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+  }
+
+  .json-list-view-records {
+    @apply list-none grid grid-cols-1 sm:grid-cols-2 gap-3 items-start m-0 p-0;
+  }
+
+  .json-list-view-record {
+    @apply rounded-xl border p-3 transition-colors duration-200;
+    background-color: var(--bg-glass);
+    border-color: var(--border-glass);
+  }
+
+  .json-list-view-record:hover {
+    border-color: var(--border-glass-hover);
+  }
+
+  .json-list-view-record-title {
+    @apply text-sm font-semibold mb-1.5;
+    color: var(--text-primary);
+  }
+
+  .json-list-view-record dl {
+    @apply space-y-1.5;
+  }
+
+  .json-list-view-record .json-list-view-kv-row dt {
+    @apply inline text-xs font-medium;
+    color: var(--text-secondary);
+  }
+
+  .json-list-view-record .json-list-view-kv-row dt::after {
+    content: ':';
+  }
+
+  .json-list-view-record .json-list-view-kv-row dd {
+    @apply inline ml-1 text-sm;
+    color: var(--text-primary);
+  }
 }

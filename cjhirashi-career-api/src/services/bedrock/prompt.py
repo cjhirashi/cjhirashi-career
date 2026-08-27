@@ -83,7 +83,7 @@ def methodology_assignment_block(
     assigned: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """Regla + catálogo vigente. El catálogo se recarga cada turno desde PG."""
-    lines = [_METHODOLOGY_ASSIGNMENT_RULE, f"Tu perfil es `{profile.id}`."]
+    lines = [f"Tu perfil es `{profile.id}`."]
     if profile.id == AGENT_METHODOLOGIES:
         lines.append(
             "Eres el guardián: ves y mantienes TODAS las metodologías. "
@@ -165,6 +165,18 @@ async def get_system_prompt_override(db: AsyncSession) -> Optional[str]:
     return row.system_prompt if row and row.system_prompt else None
 
 
+def default_global_rules() -> str:
+    """Reglas globales (todo agente, cualquier nivel/perfil) — GET/PUT
+    /bedrock/global-rules. Reemplazo total, no aditivo, igual que el prompt base."""
+    return "\n\n".join([GROUNDING_RULE, _METHODOLOGY_ASSIGNMENT_RULE])
+
+
+async def get_global_rules_override(db: AsyncSession) -> Optional[str]:
+    result = await db.execute(select(BedrockSettings).limit(1))
+    row = result.scalar_one_or_none()
+    return row.global_rules if row and row.global_rules else None
+
+
 # ============================================================================
 # Composición del system prompt
 # ============================================================================
@@ -177,6 +189,7 @@ async def compose_system_prompt(
     delegate_ids: Optional[List[str]] = None,
 ) -> str:
     base = await get_system_prompt_override(db) or default_system_prompt()
+    global_rules = await get_global_rules_override(db) or default_global_rules()
     suffix = await profile_prompts.get_effective_suffix(db, profile)
     assigned: List[Dict[str, Any]] = []
     if user_id:
@@ -193,7 +206,7 @@ async def compose_system_prompt(
     parts = [
         base,
         "Las reglas de nivel de este perfil tienen prioridad sobre el prompt global si hay conflicto.",
-        GROUNDING_RULE,
+        global_rules,
         methodology_assignment_block(profile, assigned),
         suffix,
     ]

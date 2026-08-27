@@ -39,6 +39,7 @@ from schemas.bedrock import (
     BedrockConversationResponse,
     BedrockCustomToolCreateRequest,
     BedrockCustomToolResponse,
+    BedrockGlobalRulesUpdateRequest,
     BedrockInstructionsResponse,
     BedrockInstructionsUpdateRequest,
     BedrockManualMemoryRequest,
@@ -272,17 +273,29 @@ async def get_budget_status(
 
 
 # ---------------------------------------------------------------------------
-# Instructions (system prompt)
+# Instructions (system prompt + global rules)
 # ---------------------------------------------------------------------------
 
-@router.get("/instructions", response_model=BedrockInstructionsResponse, summary="Get the agent's current system prompt")
+async def _instructions_response(db: AsyncSession) -> BedrockInstructionsResponse:
+    """Combined state of the system prompt and the global rules - both
+    /instructions and /global-rules return this same shape so the frontend
+    can refresh the whole editor from a single response."""
+    prompt = await bedrock_service.get_system_prompt(db)
+    rules = await bedrock_service.get_global_rules(db)
+    return BedrockInstructionsResponse(
+        system_prompt=prompt,
+        system_prompt_is_default=prompt == bedrock_service.default_system_prompt(),
+        global_rules=rules,
+        global_rules_is_default=rules == bedrock_service.default_global_rules(),
+    )
+
+
+@router.get("/instructions", response_model=BedrockInstructionsResponse, summary="Get the agent's current system prompt and global rules")
 async def get_instructions(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    prompt = await bedrock_service.get_system_prompt(db)
-    default = bedrock_service.default_system_prompt()
-    return BedrockInstructionsResponse(system_prompt=prompt, is_default=prompt == default)
+    return await _instructions_response(db)
 
 
 @router.put("/instructions", response_model=BedrockInstructionsResponse, summary="Set (or clear) the agent's system prompt override")
@@ -292,9 +305,19 @@ async def update_instructions(
     db: AsyncSession = Depends(get_db),
 ):
     text = payload.system_prompt.strip() if payload.system_prompt else None
-    prompt = await bedrock_service.set_system_prompt(db, text)
-    default = bedrock_service.default_system_prompt()
-    return BedrockInstructionsResponse(system_prompt=prompt, is_default=prompt == default)
+    await bedrock_service.set_system_prompt(db, text)
+    return await _instructions_response(db)
+
+
+@router.put("/global-rules", response_model=BedrockInstructionsResponse, summary="Set (or clear) the agent's global rules override")
+async def update_global_rules(
+    payload: BedrockGlobalRulesUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    text = payload.global_rules.strip() if payload.global_rules else None
+    await bedrock_service.set_global_rules(db, text)
+    return await _instructions_response(db)
 
 
 @router.get(

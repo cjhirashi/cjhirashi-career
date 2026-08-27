@@ -14,23 +14,23 @@ from services.bedrock.errors import BedrockError
 
 logger = logging.getLogger(__name__)
 
-_client = None
+_bedrock_client = None
 
 
 # ============================================================================
 # Cliente de generación de imágenes
 # ============================================================================
 
-def _client():
-    global _client
-    if _client is None:
-        _client = boto3.client(
+def _get_client():
+    global _bedrock_client
+    if _bedrock_client is None:
+        _bedrock_client = boto3.client(
             "bedrock-runtime",
             region_name=settings.BEDROCK_REGION,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         )
-    return _client
+    return _bedrock_client
 
 
 # ============================================================================
@@ -46,7 +46,7 @@ async def generate_image_bytes(prompt: str, width: int = 1200, height: int = 627
             "textToImageParams": {"text": prompt},
             "imageGenerationConfig": {"numberOfImages": 1, "width": width, "height": height, "quality": "standard"},
         })
-        return _client().invoke_model(
+        return _get_client().invoke_model(
             modelId=settings.BEDROCK_IMAGE_MODEL_ID,
             body=body,
             contentType="application/json",

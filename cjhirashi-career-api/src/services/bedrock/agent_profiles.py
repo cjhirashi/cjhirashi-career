@@ -59,6 +59,7 @@ AGENT_CV_WRITING = "agent_cv_writing"
 AGENT_COVER_LETTER_WRITING = "agent_cover_letter_writing"
 AGENT_WEB_SEARCH = "agent_web_search"
 AGENT_GITHUB = "agent_github"
+AGENT_SETTINGS = "agent_settings"
 
 # PK de catálogo (formato PREFIX-n, igual que el resto de tablas).
 # `agent_*` sigue siendo el nombre de sistema usado en código, FKs y Bedrock.
@@ -81,6 +82,7 @@ _AGENT_RECORD_IDS: dict[str, str] = {
     AGENT_COVER_LETTER_WRITING: "agent-16",
     AGENT_WEB_SEARCH: "agent-17",
     AGENT_GITHUB: "agent-18",
+    AGENT_SETTINGS: "agent-19",
 }
 _PROFILE_BY_RECORD_ID: dict[str, str] = {record_id: key for key, record_id in _AGENT_RECORD_IDS.items()}
 
@@ -128,6 +130,7 @@ _PDF_RENDER_TOOL_NAMES = {
 
 _VISUAL_TOOL_NAMES = {
     "generate_image",
+    "store_uploaded_image",
     "attach_image_to_record",
     "list_generated_images",
     "search_knowledge_base",
@@ -176,6 +179,13 @@ _GITHUB_TOOL_NAMES = {
     "list_github_contents",
     "get_github_file",
     "search_github_code",
+}
+
+_SETTINGS_TOOL_NAMES = {
+    "search_knowledge_base",
+    "agent_catalog_settings",
+    "admin_section_settings",
+    "bedrock_global_settings",
 }
 
 _DIGITAL_RESOURCES = [
@@ -270,6 +280,8 @@ _ORCHESTRATOR_SUFFIX = (
     "- Dominio de carrera → L2 dueño del área (agent_professional_identity, "
     "agent_search_operations, agent_digital_presence, agent_networking, agent_support, "
     "agent_methodologies, agent_pdf_design).\n"
+    "- Configuración del sistema (catálogo de agentes, secciones del Admin, prompts "
+    "globales) → agent_settings.\n"
     "- Tarea transversal → L3 (agent_pdf_render, agent_visual_design, agent_changelog, "
     "agent_task_manager, agent_linkedin_publishing, agent_vacancy_search, "
     "agent_cv_writing, agent_cover_letter_writing, agent_web_search, agent_github).\n"
@@ -281,6 +293,28 @@ _ORCHESTRATOR_SUFFIX = (
     "Publicar o programar en LinkedIn → agent_linkedin_publishing. "
     "Consulta web (buscar o leer una URL) → agent_web_search. "
     "Repos GitHub en vivo → agent_github. Nunca inventes vacantes."
+)
+
+_SETTINGS_SUFFIX = (
+    "Eres el especialista L2 de Configuración (Settings). Administras tres áreas del Admin, "
+    "cada una con su propia tool — no son tablas de carrera, no uses create/update_career_record:\n"
+    "1) **Catálogo de agentes** — prompt suffix, destinos de delegación y metodologías "
+    "asignadas por perfil. Tool `agent_catalog_settings` (action=list|get|update_prompt|"
+    "update_delegation|update_methodologies, profile_id).\n"
+    "2) **Secciones del Admin** — qué agente domina cada pantalla y su descripción. "
+    "Tool `admin_section_settings` (action=list|get|update, section_id, agent_profile_id, "
+    "description).\n"
+    "3) **Prompts globales** — system prompt base y reglas globales (grounding + asignación "
+    "de metodologías) que aplican a TODOS los agentes. Tool `bedrock_global_settings` "
+    "(action=get|update_system_prompt|update_global_rules).\n"
+    "No tocas fotos de agente: eso es agent_visual_design con resource_key=agent-profile. "
+    "No tocas operational-methodologies (contenido de las metodologías): eso es "
+    "agent_methodologies; tú solo asignas cuáles consulta cada agente. "
+    "Redactar en el chat NO guarda nada: llama la tool correspondiente con el campo a "
+    "cambiar. No afirmes que guardaste hasta que la tool devuelva el resultado. "
+    "Un override de prompt (de perfil o global) aplica desde el siguiente turno de ese "
+    "agente; string vacío o null en el campo de texto restaura el default del código. "
+    "Bitácora → agent_changelog."
 )
 
 _PDF_RENDER_SUFFIX = (
@@ -505,9 +539,14 @@ _PROFILES: dict[str, AgentProfile] = {
         methodology_sections=["Diseño Visual"],
         system_prompt_suffix=(
             "Especialista L3 de imágenes. No hablas con el usuario. "
-            "Generas imágenes para publicaciones, LinkedIn y proyectos. "
-            "Paleta cyan #0891B2, estilo profesional/tecnológico. "
-            "Devuelve URLs e IDs; no afirmes un adjunto hasta que la tool confirme."
+            "Tres secciones de bucket, cada una con su medida fija: agentes (foto de catálogo, 500x500), "
+            "proyectos (1920x1080), publicaciones (1920x1080). Todo PNG comprimido para web. "
+            "Si quien delega ya tiene una imagen (adjunta, file_id) y solo quiere guardarla/optimizarla, "
+            "usa store_uploaded_image (NO generes nada nuevo). Si no tiene imagen, pide o usa el prompt y "
+            "usa generate_image (Titan). Paleta cyan #0891B2, estilo profesional/tecnológico para lo que generes. "
+            "Nombra el archivo de forma legible (name). Al terminar, devuelve la image_url a quien delegó "
+            "para que la cargue en su registro (o usa attach_image_to_record si te dan resource_key/record_id, "
+            "incluyendo agent-profile para fotos del catálogo). No afirmes un adjunto hasta que la tool confirme."
         ),
         default_model_id="amazon.nova-lite-v1:0",
         allowed_tool_names=_VISUAL_TOOL_NAMES,
@@ -625,6 +664,17 @@ _PROFILES: dict[str, AgentProfile] = {
         write_enabled=False,
         level=3,
     ),
+    AGENT_SETTINGS: AgentProfile(
+        id=AGENT_SETTINGS,
+        label="Configuración",
+        domain_keys=["meta_settings"],
+        resource_keys=None,
+        methodology_sections=[],
+        system_prompt_suffix=_SETTINGS_SUFFIX,
+        default_model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        allowed_tool_names=_SETTINGS_TOOL_NAMES,
+        level=2,
+    ),
 }
 
 
@@ -640,6 +690,9 @@ _ROUTE_TO_PROFILE = {
     "/agent/chat": AGENT_ORCHESTRATOR,
     "/agent/pdf-templates": AGENT_PDF_DESIGN,
     "/agent/pdf-template-styles": AGENT_PDF_DESIGN,
+    "/settings/agents": AGENT_SETTINGS,
+    "/settings/sections": AGENT_SETTINGS,
+    "/settings/agent-prompts": AGENT_SETTINGS,
 }
 
 _RESOURCE_TO_DOMAIN = {

@@ -38,19 +38,17 @@ def test_assignment_block_lists_assigned_titles_not_hardcoded_section():
             },
         ],
     )
-    assert "solo las asignadas a ti" in block
+    # La regla "solo las asignadas a ti" ahora vive en default_global_rules()
+    # (ver test_global_rules.py), no en el bloque de catálogo en sí.
     assert "`agent_pdf_design`" in block
     assert "opm-99: Nueva convención de márgenes" in block
     assert "opm-1: Protocolo compartido" in block
     assert "(compartida)" in block
     assert "search_knowledge_base" in block
-    assert "Admin" in block
-    assert "no esperes que este prompt nombre cada metodología" in block
 
 
 def test_assignment_block_empty_catalog_still_instructs_to_consult_future_ones():
     block = methodology_assignment_block(get_profile(AGENT_PROFESSIONAL_IDENTITY), [])
-    assert "solo las asignadas a ti" in block
     assert "`agent_professional_identity`" in block
     assert "Cuando Carlos te asigne una desde el Admin" in block
 
@@ -67,11 +65,13 @@ def test_orchestrator_does_not_claim_search_tool():
     assert "asignadas a su propio perfil" in block
 
 
-def test_every_profile_gets_assignment_rule():
+def test_every_profile_gets_assignment_block_starting_with_its_id():
+    """The global "solo las asignadas a ti" rule itself is now shared across
+    all profiles via default_global_rules() (see test_global_rules.py); this
+    block only carries the per-profile catalog framing."""
     for profile in list_profiles():
         block = methodology_assignment_block(profile, None)
-        assert "solo las asignadas a ti" in block
-        assert f"`{profile.id}`" in block
+        assert block.startswith(f"Tu perfil es `{profile.id}`.")
 
 
 def test_profile_can_search_knowledge_matches_tools():
@@ -118,6 +118,9 @@ async def test_compose_injects_assigned_catalog(monkeypatch):
     async def fake_override(_db):
         return None
 
+    async def fake_global_rules_override(_db):
+        return None
+
     async def fake_suffix(_db, profile):
         return profile.system_prompt_suffix
 
@@ -136,6 +139,7 @@ async def test_compose_injects_assigned_catalog(monkeypatch):
         return [{"id": "1", "text": "Prefiere tono directo"}]
 
     monkeypatch.setattr(prompt, "get_system_prompt_override", fake_override)
+    monkeypatch.setattr(prompt, "get_global_rules_override", fake_global_rules_override)
     monkeypatch.setattr(prompt.profile_prompts, "get_effective_suffix", fake_suffix)
     monkeypatch.setattr(
         "services.methodology_scope.list_assigned_methodologies",
