@@ -242,6 +242,22 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
             "required": ["action"],
         },
     },
+    {
+        "name": "error_report_settings",
+        "description": "Reportes de falla del sistema (tabla error_reports, IDs err-N). action=list|get|resolve|reopen|summary. list acepta resolved(bool), severity(warning|error|critical), limit. get/resolve/reopen requieren report_id. resolve acepta resolution_notes. Marcar resuelto = el problema ya se corrigió en el sistema.",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "enum": ["list", "get", "resolve", "reopen", "summary"]},
+                "report_id": {"type": "string", "description": "ID prefijado, ej. err-3"},
+                "resolved": {"type": "boolean", "description": "list: filtra por estado (false = pendientes)"},
+                "severity": {"type": "string", "enum": ["warning", "error", "critical"]},
+                "limit": {"type": "integer"},
+                "resolution_notes": {"type": "string", "description": "resolve: qué se hizo para resolver"},
+            },
+            "required": ["action"],
+        },
+    },
 ]
 
 _WRITE_TOOLS = {
@@ -260,6 +276,7 @@ _WRITE_TOOLS = {
     "agent_catalog_settings",
     "admin_section_settings",
     "bedrock_global_settings",
+    "error_report_settings",
 }
 
 _PDF_TEMPLATE_ALIASES = {
@@ -771,6 +788,49 @@ async def _run_bedrock_global_settings(db, tool_input: Dict[str, Any]) -> Dict[s
     return {"error": f"unknown action: {action}"}
 
 
+async def _run_error_report_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """Reportes de falla del sistema (L2 agent_settings): consulta y resolución."""
+    from services import error_report_service
+
+    action = tool_input.get("action")
+
+    if action == "summary":
+        return await error_report_service.summary(db)
+
+    if action == "list":
+        limit = min(int(tool_input.get("limit") or 20), 100)
+        return await error_report_service.list_reports(
+            db,
+            resolved=tool_input.get("resolved"),
+            severity=tool_input.get("severity"),
+            page=1,
+            page_size=limit,
+        )
+
+    report_id = tool_input.get("report_id")
+    if not report_id:
+        return {"error": "report_id is required for this action"}
+
+    if action == "get":
+        item = await error_report_service.get_report(db, report_id)
+        return {"item": item} if item else {"error": f"unknown error report: {report_id}"}
+
+    if action == "resolve":
+        item = await error_report_service.resolve_report(
+            db,
+            report_id,
+            notes=tool_input.get("resolution_notes"),
+            actor="agent_settings",
+        )
+        return {"item": item} if item else {"error": f"unknown error report: {report_id}"}
+
+    if action == "reopen":
+        item = await error_report_service.reopen_report(db, report_id, actor="agent_settings")
+        return {"item": item} if item else {"error": f"unknown error report: {report_id}"}
+
+    return {"error": f"unknown action: {action}"}
+
+
 async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, Any], session_id: str) -> Dict[str, Any]:
     """Tools nuevos del harness local (no en monolito legacy)."""
     if name == "get_linkedin_status":
@@ -880,6 +940,9 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "bedrock_global_settings":
         return await _run_bedrock_global_settings(db, tool_input)
+
+    if name == "error_report_settings":
+        return await _run_error_report_settings(db, tool_input)
 
     if name == "generate_image":
         from models.file_upload import FileType, FileUpload
@@ -1190,4 +1253,6 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
         "update_global_rules",
     ):
         return "bedrock-settings"
+    if name == "error_report_settings" and tool_input.get("action") in ("resolve", "reopen"):
+        return "error-reports"
     return None

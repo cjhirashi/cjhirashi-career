@@ -503,6 +503,25 @@ _SECTIONS: List[AdminSectionSpec] = [
         group="Settings",
         sort_order=92,
     ),
+    AdminSectionSpec(
+        id="settings-error-reports",
+        label="Reportes de Falla",
+        path="/settings/error-reports",
+        section_type=SECTION_TABLE,
+        default_agent_profile_id=AGENT_SETTINGS,
+        description="Bitácora de errores del sistema (tabla error_reports): pendientes y resueltos.",
+        views=_main_view(
+            "Reportes de Falla",
+            "Errores capturados en cualquier parte del sistema (ADR-018).",
+            "Cada fila es una falla con su origen, severidad y número de repeticiones. "
+            "Filtra por estado (pendiente/resuelto) o severidad, abre el detalle para ver "
+            "el traceback y el contexto, y márcala como resuelta cuando el problema ya se "
+            "corrigió en el código. El chat de esta sección usa la tool error_report_settings.",
+        ),
+        related_tools=("error_report_settings",),
+        group="Settings",
+        sort_order=93,
+    ),
 ]
 
 _CAREER_ROWS: List[Tuple[str, str, str, str, int, str, bool]] = [

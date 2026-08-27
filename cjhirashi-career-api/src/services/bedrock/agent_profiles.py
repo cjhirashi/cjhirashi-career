@@ -186,6 +186,7 @@ _SETTINGS_TOOL_NAMES = {
     "agent_catalog_settings",
     "admin_section_settings",
     "bedrock_global_settings",
+    "error_report_settings",
 }
 
 _DIGITAL_RESOURCES = [
@@ -307,6 +308,9 @@ _SETTINGS_SUFFIX = (
     "3) **Prompts globales** — system prompt base y reglas globales (grounding + asignación "
     "de metodologías) que aplican a TODOS los agentes. Tool `bedrock_global_settings` "
     "(action=get|update_system_prompt|update_global_rules).\n"
+    "4) **Reportes de falla** — bitácora de errores del sistema (tabla error_reports). "
+    "Tool `error_report_settings` (action=list|get|resolve|reopen|summary, report_id). "
+    "Marca un reporte como resuelto SOLO cuando el problema ya se corrigió en el código.\n"
     "No tocas fotos de agente: eso es agent_visual_design con resource_key=agent-profile. "
     "No tocas operational-methodologies (contenido de las metodologías): eso es "
     "agent_methodologies; tú solo asignas cuáles consulta cada agente. "
@@ -693,6 +697,7 @@ _ROUTE_TO_PROFILE = {
     "/settings/agents": AGENT_SETTINGS,
     "/settings/sections": AGENT_SETTINGS,
     "/settings/agent-prompts": AGENT_SETTINGS,
+    "/settings/error-reports": AGENT_SETTINGS,
 }
 
 _RESOURCE_TO_DOMAIN = {
