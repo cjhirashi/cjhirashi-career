@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
-  AlertTriangle,
-  ArrowLeft,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   Check,
   RotateCcw,
   Search,
@@ -13,396 +14,592 @@ import {
   useErrorReport,
   useErrorReportDelete,
   useErrorReports,
+  useErrorReportSummary,
   useErrorReportUpdate,
 } from '@/hooks/useErrorReports'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { ThemedSelect } from '@/components/ThemedSelect'
+import { SectionViewTabs } from '@/components/SectionViewTabs'
+import { TableColumnSettings } from '@/components/career/TableColumnSettings'
+import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
+import { useVisibleTableColumns } from '@/hooks/useVisibleTableColumns'
+import { formatCellValue } from '@/components/career/careerFieldUtils'
 import { getErrorMessage } from '@/utils/errors'
+import { ColumnConfig, SelectOption } from '@/config/careerResources'
 import { ErrorReportItem, SEVERITY_LABEL } from '@/types/errorReports'
 
-const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pendientes' },
-  { value: 'resolved', label: 'Resueltos' },
-  { value: 'all', label: 'Todos' },
+const REPORT_TABS = [
+  { key: 'list', label: 'Lista' },
+  { key: 'view', label: 'Detalle' },
 ]
 
-const SEVERITY_OPTIONS = [
-  { value: '', label: 'Todas las severidades' },
+const REPORT_COLUMNS: ColumnConfig[] = [
+  { key: 'id', label: 'ID' },
+  { key: 'severity', label: 'Severidad' },
+  { key: 'source', label: 'Origen' },
+  { key: 'error_type', label: 'Tipo' },
+  { key: 'message', label: 'Mensaje', format: 'truncate' },
+  { key: 'occurrences', label: 'Reps', format: 'number' },
+  { key: 'last_seen_at', label: 'Última vez', format: 'datetime' },
+  { key: 'resolved', label: 'Estado' },
+]
+
+const REPORT_PINNED = ['id']
+const REPORT_DEFAULT_KEYS = REPORT_COLUMNS.map((col) => col.key)
+
+const SEVERITY_OPTIONS: SelectOption[] = [
   { value: 'critical', label: 'Crítico' },
   { value: 'error', label: 'Error' },
   { value: 'warning', label: 'Aviso' },
 ]
 
-const SEVERITY_CLASS: Record<string, string> = {
-  critical: 'bg-red-500/15 text-red-600 dark:text-red-400',
-  error: 'bg-orange-500/15 text-orange-600 dark:text-orange-400',
-  warning: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'resolved', label: 'Resuelto' },
+]
+
+const SEVERITY_BADGE: Record<string, string> = {
+  critical: 'badge badge-error',
+  error: 'badge badge-error',
+  warning: 'badge badge-warning',
 }
 
-function fmt(value: string | null): string {
-  if (!value) return '—'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
-  return d.toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })
+const compareCells = (a: unknown, b: unknown, dir: 'asc' | 'desc'): number => {
+  const av = a == null ? '' : String(a).toLowerCase()
+  const bv = b == null ? '' : String(b).toLowerCase()
+  const cmp = av.localeCompare(bv, 'es', { numeric: true })
+  return dir === 'asc' ? cmp : -cmp
 }
 
 const SeverityBadge: React.FC<{ severity: string }> = ({ severity }) => (
-  <span
-    className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium ${
-      SEVERITY_CLASS[severity] ?? 'bg-muted text-muted-foreground'
-    }`}
-  >
+  <span className={SEVERITY_BADGE[severity] ?? 'badge badge-slate'}>
     {SEVERITY_LABEL[severity] ?? severity}
   </span>
 )
 
-// ---------------------------------------------------------------------------
-// Detalle
-// ---------------------------------------------------------------------------
+const StatusBadge: React.FC<{ resolved: boolean }> = ({ resolved }) => (
+  <span className={resolved ? 'badge badge-success' : 'badge badge-warning'}>
+    {resolved ? 'Resuelto' : 'Pendiente'}
+  </span>
+)
 
-const ErrorReportDetailPanel: React.FC<{ reportId: string; onBack: () => void }> = ({
-  reportId,
-  onBack,
-}) => {
-  const { data, isLoading, isError, error } = useErrorReport(reportId)
-  const update = useErrorReportUpdate()
-  const remove = useErrorReportDelete()
+// ===========================================================================
+// Lista
+// ===========================================================================
+
+export const ErrorReportsPage: React.FC = () => {
   const navigate = useNavigate()
-  const [notes, setNotes] = useState('')
+  const { columns, selectedKeys, toggleColumn, moveColumn, options, pinnedKeys } =
+    useVisibleTableColumns('error-reports', REPORT_COLUMNS, REPORT_DEFAULT_KEYS, REPORT_PINNED)
 
-  if (isLoading) return <LoadingSpinner />
-  if (isError || !data) {
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const [severityFilter, setSeverityFilter] = useState<string[]>([])
+  const [statusFilter, setStatusFilter] = useState<string[]>(['pending'])
+  const [page, setPage] = useState(1)
+  const [sortBy, setSortBy] = useState<string | undefined>(undefined)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(searchInput.trim()), 300)
+    return () => window.clearTimeout(timer)
+  }, [searchInput])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, severityFilter, statusFilter])
+
+  const resolvedParam =
+    statusFilter.length === 1 ? statusFilter[0] === 'resolved' : undefined
+
+  const params = useMemo(
+    () => ({
+      resolved: resolvedParam,
+      severity: severityFilter.length === 1 ? severityFilter[0] : undefined,
+      q: search || undefined,
+      page,
+      page_size: 50,
+    }),
+    [resolvedParam, severityFilter, search, page],
+  )
+
+  const { data, isLoading, isError, error } = useErrorReports(params)
+  const { data: summary } = useErrorReportSummary()
+
+  const rows = useMemo(() => {
+    let next = data?.items ?? []
+    // Filtro multi-severidad en cliente cuando hay más de una seleccionada
+    // (el endpoint sólo acepta una).
+    if (severityFilter.length > 1) {
+      next = next.filter((row) => severityFilter.includes(String(row.severity)))
+    }
+    if (sortBy) {
+      next = [...next].sort((a, b) =>
+        compareCells(a[sortBy as keyof ErrorReportItem], b[sortBy as keyof ErrorReportItem], sortDir),
+      )
+    }
+    return next
+  }, [data, severityFilter, sortBy, sortDir])
+
+  const toggleSort = (key: string) => {
+    setSortBy((current) => {
+      if (current !== key) {
+        setSortDir('asc')
+        return key
+      }
+      setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))
+      return key
+    })
+  }
+
+  const total = data?.total ?? 0
+  const filtersActive = severityFilter.length > 0 || statusFilter.length > 0
+
+  const renderCell = (row: ErrorReportItem, key: string) => {
+    if (key === 'id') {
+      return (
+        <td key="id" className="px-6 py-2 table-col-id" title={row.id}>
+          {row.id}
+        </td>
+      )
+    }
+    if (key === 'severity') {
+      return (
+        <td key="severity" className="px-6 py-2">
+          <SeverityBadge severity={String(row.severity)} />
+        </td>
+      )
+    }
+    if (key === 'resolved') {
+      return (
+        <td key="resolved" className="px-6 py-2">
+          <StatusBadge resolved={row.resolved} />
+        </td>
+      )
+    }
+    if (key === 'source') {
+      return (
+        <td key="source" className="px-6 py-2 mono text-xs" title={row.source}>
+          {row.source}
+        </td>
+      )
+    }
     return (
-      <div className="text-sm text-red-500">
-        {getErrorMessage(error) || 'No se pudo cargar el reporte.'}
-      </div>
+      <td
+        key={key}
+        className={`px-6 py-2 text-text${
+          REPORT_COLUMNS.find((c) => c.key === key)?.format === 'truncate' ? '' : ' whitespace-nowrap'
+        }`}
+      >
+        {formatCellValue(
+          row[key as keyof ErrorReportItem],
+          REPORT_COLUMNS.find((c) => c.key === key)?.format,
+        )}
+      </td>
     )
   }
 
-  const resolve = async () => {
-    await update.mutateAsync({
-      reportId,
-      resolved: true,
-      resolutionNotes: notes.trim() || data.resolution_notes || null,
-    })
-  }
-  const reopen = async () => {
-    await update.mutateAsync({ reportId, resolved: false })
-  }
-  const del = async () => {
-    if (!window.confirm('¿Eliminar este reporte de forma permanente?')) return
-    await remove.mutateAsync(reportId)
-    navigate('/settings/error-reports')
-  }
-
   return (
-    <div className="space-y-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft size={14} /> Volver a la lista
-      </button>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <SeverityBadge severity={String(data.severity)} />
-        <span className="font-mono text-xs text-muted-foreground">{data.id}</span>
-        <span
-          className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-            data.resolved
-              ? 'bg-green-500/15 text-green-600 dark:text-green-400'
-              : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-          }`}
-        >
-          {data.resolved ? 'Resuelto' : 'Pendiente'}
-        </span>
-        {data.occurrences > 1 && (
-          <span className="text-xs text-muted-foreground">×{data.occurrences} ocurrencias</span>
-        )}
-      </div>
-
-      <div>
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Origen</div>
-        <div className="font-mono text-sm break-all">{data.source}</div>
-      </div>
-
-      <div>
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Mensaje</div>
-        <div className="text-sm whitespace-pre-wrap break-words">{data.message}</div>
-        {data.error_type && (
-          <div className="mt-1 text-xs text-muted-foreground">Tipo: {data.error_type}</div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Primera vez</div>
-          {fmt(data.first_seen_at)}
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Última vez</div>
-          {fmt(data.last_seen_at)}
-        </div>
-      </div>
-
-      {data.stack_trace && (
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Traceback</div>
-          <pre className="mt-1 max-h-80 overflow-auto rounded bg-muted p-3 text-xs leading-relaxed">
-            {data.stack_trace}
-          </pre>
-        </div>
-      )}
-
-      {data.context && Object.keys(data.context).length > 0 && (
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">Contexto</div>
-          <pre className="mt-1 max-h-60 overflow-auto rounded bg-muted p-3 text-xs">
-            {JSON.stringify(data.context, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      <div className="rounded border border-border p-3">
-        {data.resolved ? (
-          <div className="space-y-2">
-            <div className="text-sm">
-              Resuelto por <strong>{data.resolved_by ?? '—'}</strong> el {fmt(data.resolved_at)}
-            </div>
-            {data.resolution_notes && (
-              <div className="text-sm whitespace-pre-wrap text-muted-foreground">
-                {data.resolution_notes}
-              </div>
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="card has-view-tabs">
+        <div className="card-header">
+          <h2 className="font-semibold text-text flex items-center gap-2 min-w-0">
+            <span className="truncate">Reportes de Falla</span>
+            {summary && (
+              <span className="badge badge-slate mono" title="Pendientes / resueltos">
+                {summary.pending} · {summary.resolved}
+              </span>
             )}
-            <button
-              type="button"
-              onClick={reopen}
-              disabled={update.isPending}
-              className="inline-flex items-center gap-1 rounded border border-border px-3 py-1.5 text-sm hover:bg-muted"
-            >
-              <RotateCcw size={14} /> Reabrir
-            </button>
+          </h2>
+          <div className="view-tabs-row">
+            <SectionViewTabs views={REPORT_TABS} activeKey="list" interactiveKeys={[]} />
           </div>
-        ) : (
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Notas de resolución (qué se hizo para corregirlo)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="w-full rounded border border-border bg-background p-2 text-sm"
-              placeholder="Ej.: corregido validando el payload antes de guardar; commit abc123"
-            />
-            <button
-              type="button"
-              onClick={resolve}
-              disabled={update.isPending}
-              className="inline-flex items-center gap-1 rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-            >
-              <Check size={14} /> Marcar como resuelto
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
+        <div className="card-body table-list-body">
+          {isLoading && (
+            <div className="table-scroll table-scroll-inset">
+              <LoadingSpinner fullScreen={false} message="Cargando reportes..." />
+            </div>
+          )}
+          {isError && (
+            <p className="table-scroll table-scroll-inset text-red-600 dark:text-red-400 text-sm">
+              {getErrorMessage(error)}
+            </p>
+          )}
 
-      <button
-        type="button"
-        onClick={del}
-        disabled={remove.isPending}
-        className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-600"
-      >
-        <Trash2 size={13} /> Eliminar reporte
-      </button>
+          {!isLoading && !isError && (
+            <>
+              <div className="table-toolbar flex flex-wrap items-center gap-2 mb-4">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search
+                    size={14}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-secondary"
+                  />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="Buscar en el mensaje del error..."
+                    className="input-field pl-8 pr-8 py-1.5 text-sm w-full"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchInput('')}
+                      aria-label="Limpiar búsqueda"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                {filtersActive && (
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    onClick={() => {
+                      setSeverityFilter([])
+                      setStatusFilter([])
+                    }}
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+                <div className="ml-auto flex-shrink-0">
+                  <TableColumnSettings
+                    options={options}
+                    value={selectedKeys}
+                    pinnedKeys={pinnedKeys}
+                    onToggle={toggleColumn}
+                    onMove={moveColumn}
+                  />
+                </div>
+              </div>
+
+              {rows.length === 0 ? (
+                <p className="table-scroll table-scroll-inset text-text-secondary text-sm text-center py-6">
+                  {search || filtersActive
+                    ? 'Sin reportes para esa búsqueda o filtros.'
+                    : 'No hay reportes de falla registrados.'}
+                </p>
+              ) : (
+                <div className="table-scroll">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left text-text-secondary">
+                        {columns.map((col) => (
+                          <th
+                            key={col.key}
+                            className={`px-6 py-2 font-medium whitespace-nowrap${
+                              col.key === 'id' ? ' table-col-id' : ''
+                            }`}
+                          >
+                            <span className="inline-flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => toggleSort(col.key)}
+                                className={`flex items-center gap-1 ${
+                                  col.key === 'id' ? 'hover:opacity-80' : 'hover:text-text'
+                                }`}
+                              >
+                                {col.label}
+                                {sortBy === col.key ? (
+                                  sortDir === 'asc' ? (
+                                    <ArrowUp size={12} />
+                                  ) : (
+                                    <ArrowDown size={12} />
+                                  )
+                                ) : (
+                                  <ArrowUpDown size={12} className="opacity-30" />
+                                )}
+                              </button>
+                              {col.key === 'severity' && (
+                                <ThemedMultiSelect
+                                  variant="icon"
+                                  aria-label="Severidad"
+                                  value={severityFilter}
+                                  onChange={setSeverityFilter}
+                                  options={SEVERITY_OPTIONS}
+                                />
+                              )}
+                              {col.key === 'resolved' && (
+                                <ThemedMultiSelect
+                                  variant="icon"
+                                  aria-label="Estado"
+                                  value={statusFilter}
+                                  onChange={setStatusFilter}
+                                  options={STATUS_OPTIONS}
+                                />
+                              )}
+                            </span>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((row) => (
+                        <tr
+                          key={row.id}
+                          className="border-b border-border last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                          onClick={() => navigate(`/settings/error-reports/${row.id}`)}
+                        >
+                          {columns.map((col) => renderCell(row, col.key))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="table-footer flex items-center justify-between">
+                <span className="text-xs text-text-secondary">
+                  {total === 0 ? 0 : (page - 1) * 50 + 1}–{(page - 1) * 50 + rows.length} de {total}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-xs text-text-secondary">Página {page}</span>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-small"
+                    disabled={!data?.has_more}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Lista
-// ---------------------------------------------------------------------------
+// ===========================================================================
+// Detalle
+// ===========================================================================
 
-export const ErrorReportsPage: React.FC = () => {
-  const { reportId } = useParams<{ reportId: string }>()
+const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean }> = ({
+  label,
+  children,
+  wide,
+}) => (
+  <div className={wide ? 'md:col-span-2' : ''}>
+    <dt className="text-xs text-text-secondary mb-1">{label}</dt>
+    <dd className="text-sm text-text">{children}</dd>
+  </div>
+)
+
+export const ErrorReportDetailPage: React.FC = () => {
   const navigate = useNavigate()
+  const { reportId = '' } = useParams<{ reportId: string }>()
+  const { data, isLoading, isError, error } = useErrorReport(reportId)
+  const update = useErrorReportUpdate()
+  const remove = useErrorReportDelete()
+  const [resolving, setResolving] = useState(false)
+  const [notes, setNotes] = useState('')
 
-  const [status, setStatus] = useState('pending')
-  const [severity, setSeverity] = useState('')
-  const [q, setQ] = useState('')
-  const [page, setPage] = useState(1)
+  useEffect(() => {
+    setResolving(false)
+    setNotes('')
+  }, [reportId])
 
-  const params = useMemo(
-    () => ({
-      resolved: status === 'all' ? undefined : status === 'resolved',
-      severity: severity || undefined,
-      q: q.trim() || undefined,
-      page,
-      page_size: 50,
-    }),
-    [status, severity, q, page],
-  )
-
-  const { data, isLoading, isError, error } = useErrorReports(params)
-
-  if (reportId) {
-    return (
-      <div className="p-4 max-w-3xl">
-        <ErrorReportDetailPanel
-          reportId={reportId}
-          onBack={() => navigate('/settings/error-reports')}
-        />
-      </div>
-    )
+  if (isLoading) {
+    return <LoadingSpinner fullScreen={false} message="Cargando reporte..." />
+  }
+  if (isError) {
+    return <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>
+  }
+  if (!data) {
+    return <p className="text-text-secondary">Reporte no encontrado.</p>
   }
 
-  return (
-    <div className="p-4 space-y-4">
-      <header className="flex items-center gap-2">
-        <AlertTriangle size={20} className="text-amber-500" />
-        <h1 className="text-lg font-semibold">Reportes de Falla</h1>
-      </header>
-      <p className="text-sm text-muted-foreground max-w-2xl">
-        Errores capturados automáticamente en cualquier parte del sistema. Un reporte pendiente
-        aún no se ha revisado; márcalo como resuelto cuando el problema ya se corrigió en el
-        código.
-      </p>
+  const doResolve = () =>
+    update.mutate(
+      { reportId, resolved: true, resolutionNotes: notes.trim() || data.resolution_notes || null },
+      { onSuccess: () => setResolving(false) },
+    )
+  const doReopen = () => update.mutate({ reportId, resolved: false })
+  const doDelete = () => {
+    if (!window.confirm('¿Eliminar este reporte de forma permanente?')) return
+    remove.mutate(reportId, { onSuccess: () => navigate('/settings/error-reports') })
+  }
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="w-40">
-          <label className="block text-xs text-muted-foreground mb-1">Estado</label>
-          <ThemedSelect
-            value={status}
-            onChange={(v) => {
-              setStatus(v)
-              setPage(1)
-            }}
-            options={STATUS_OPTIONS}
-          />
-        </div>
-        <div className="w-52">
-          <label className="block text-xs text-muted-foreground mb-1">Severidad</label>
-          <ThemedSelect
-            value={severity}
-            onChange={(v) => {
-              setSeverity(v)
-              setPage(1)
-            }}
-            options={SEVERITY_OPTIONS}
-          />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <label className="block text-xs text-muted-foreground mb-1">Buscar en el mensaje</label>
-          <div className="relative">
-            <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={q}
-              onChange={(e) => {
-                setQ(e.target.value)
-                setPage(1)
+  const headerActions = data.resolved ? (
+    <button
+      type="button"
+      onClick={doReopen}
+      className="btn-icon btn-icon-sm"
+      aria-label="Reabrir"
+      title="Reabrir"
+      disabled={update.isPending}
+    >
+      <RotateCcw size={13} />
+    </button>
+  ) : resolving ? (
+    <>
+      <button
+        type="button"
+        onClick={() => setResolving(false)}
+        className="btn-icon btn-icon-sm btn-icon-muted"
+        aria-label="Cancelar"
+        title="Cancelar"
+        disabled={update.isPending}
+      >
+        <X size={13} />
+      </button>
+      <button
+        type="button"
+        onClick={doResolve}
+        className="btn-icon btn-icon-sm"
+        aria-label="Confirmar resolución"
+        title="Confirmar resolución"
+        disabled={update.isPending}
+      >
+        <Check size={13} />
+      </button>
+    </>
+  ) : (
+    <button
+      type="button"
+      onClick={() => setResolving(true)}
+      className="btn-icon btn-icon-sm"
+      aria-label="Marcar como resuelto"
+      title="Marcar como resuelto"
+    >
+      <Check size={13} />
+    </button>
+  )
+
+  return (
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="card has-view-tabs">
+        <div className="card-header">
+          <h2 className="font-semibold text-text flex items-center gap-2 min-w-0">
+            <span className="truncate">Reportes de Falla</span>
+            <span className="text-text-muted font-normal">·</span>
+            <span className="mono text-primary font-normal flex-shrink-0">{data.id}</span>
+            <span className="text-text-muted font-normal">·</span>
+            <span className="truncate mono text-xs">{data.source}</span>
+          </h2>
+          <div className="view-tabs-row">
+            <SectionViewTabs
+              views={REPORT_TABS}
+              activeKey="view"
+              interactiveKeys={['list']}
+              onSelect={(key) => {
+                if (key === 'list') navigate('/settings/error-reports')
               }}
-              className="w-full rounded border border-border bg-background py-1.5 pl-7 pr-7 text-sm"
-              placeholder="texto del error…"
             />
-            {q && (
-              <button
-                type="button"
-                onClick={() => setQ('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X size={14} />
-              </button>
+            <div className="view-tabs-actions">{headerActions}</div>
+          </div>
+        </div>
+        <div className="card-body">
+          {update.isError && (
+            <p className="text-red-600 dark:text-red-400 text-sm mb-4">
+              {getErrorMessage(update.error)}
+            </p>
+          )}
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                Información
+              </h3>
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Severidad">
+                  <SeverityBadge severity={String(data.severity)} />
+                </Field>
+                <Field label="Estado">
+                  <StatusBadge resolved={data.resolved} />
+                </Field>
+                <Field label="Origen" wide>
+                  <span className="mono text-xs break-all">{data.source}</span>
+                </Field>
+                <Field label="Tipo">{data.error_type || '—'}</Field>
+                <Field label="Ocurrencias">{data.occurrences}</Field>
+                <Field label="Primera vez">{formatCellValue(data.first_seen_at, 'datetime')}</Field>
+                <Field label="Última vez">{formatCellValue(data.last_seen_at, 'datetime')}</Field>
+                <Field label="Mensaje" wide>
+                  <p className="whitespace-pre-wrap break-words">{data.message}</p>
+                </Field>
+              </dl>
+            </div>
+
+            {data.stack_trace && (
+              <div>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                  Traceback
+                </h3>
+                <pre className="max-h-96 overflow-auto rounded-lg bg-slate-100 dark:bg-slate-800/60 p-3 text-xs leading-relaxed">
+                  {data.stack_trace}
+                </pre>
+              </div>
             )}
+
+            {data.context && Object.keys(data.context).length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                  Contexto
+                </h3>
+                <pre className="max-h-72 overflow-auto rounded-lg bg-slate-100 dark:bg-slate-800/60 p-3 text-xs">
+                  {JSON.stringify(data.context, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {data.resolved ? (
+              <div>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                  Resolución
+                </h3>
+                <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Resuelto por">{data.resolved_by || '—'}</Field>
+                  <Field label="Fecha">{formatCellValue(data.resolved_at, 'datetime')}</Field>
+                  <Field label="Notas" wide>
+                    <p className="whitespace-pre-wrap">{data.resolution_notes || '—'}</p>
+                  </Field>
+                </dl>
+              </div>
+            ) : resolving ? (
+              <div>
+                <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                  Marcar como resuelto
+                </h3>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  className="input-field text-sm"
+                  placeholder="Qué se hizo para corregirlo (commit, cambio, etc.)"
+                  aria-label="Notas de resolución"
+                />
+                <p className="text-xs text-text-muted mt-2">
+                  Confirma con el botón ✓ del encabezado. Marcar resuelto significa que el
+                  problema ya no puede volver a ocurrir por la misma causa.
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={doDelete}
+              disabled={remove.isPending}
+              className="flex items-center gap-2 text-xs text-red-500 hover:text-red-600 disabled:opacity-50"
+            >
+              <Trash2 size={13} aria-hidden="true" />
+              Eliminar reporte
+            </button>
           </div>
         </div>
       </div>
-
-      {isLoading ? (
-        <LoadingSpinner />
-      ) : isError ? (
-        <div className="text-sm text-red-500">
-          {getErrorMessage(error) || 'No se pudieron cargar los reportes.'}
-        </div>
-      ) : !data || data.items.length === 0 ? (
-        <div className="rounded border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          No hay reportes que coincidan con el filtro.
-        </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto rounded border border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2">Sev.</th>
-                  <th className="px-3 py-2">Origen</th>
-                  <th className="px-3 py-2">Mensaje</th>
-                  <th className="px-3 py-2 text-right">Rep.</th>
-                  <th className="px-3 py-2">Última vez</th>
-                  <th className="px-3 py-2">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((row: ErrorReportItem) => (
-                  <tr
-                    key={row.id}
-                    onClick={() => navigate(`/settings/error-reports/${row.id}`)}
-                    className="cursor-pointer border-t border-border hover:bg-muted/40"
-                  >
-                    <td className="px-3 py-2">
-                      <SeverityBadge severity={String(row.severity)} />
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs max-w-[220px] truncate" title={row.source}>
-                      {row.source}
-                    </td>
-                    <td className="px-3 py-2 max-w-[420px] truncate" title={row.message}>
-                      {row.message}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums">{row.occurrences}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
-                      {fmt(row.last_seen_at)}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                          row.resolved
-                            ? 'bg-green-500/15 text-green-600 dark:text-green-400'
-                            : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                        }`}
-                      >
-                        {row.resolved ? 'Resuelto' : 'Pendiente'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{data.total} reporte(s)</span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="rounded border border-border px-2 py-1 disabled:opacity-40"
-              >
-                Anterior
-              </button>
-              <span>Página {page}</span>
-              <button
-                type="button"
-                disabled={!data.has_more}
-                onClick={() => setPage((p) => p + 1)}
-                className="rounded border border-border px-2 py-1 disabled:opacity-40"
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
