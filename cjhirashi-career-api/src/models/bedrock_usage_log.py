@@ -23,6 +23,10 @@ class BedrockUsageLog(Base):
     model_id = Column(String(150), nullable=False, index=True)
     input_tokens = Column(Integer, nullable=False, default=0)
     output_tokens = Column(Integer, nullable=False, default=0)
+    # Prompt caching de Bedrock: lecturas de prefijo cacheado (0.10x) y
+    # escrituras al crear/extender el prefijo (1.25x).
+    cache_read_tokens = Column(Integer, nullable=False, default=0)
+    cache_write_tokens = Column(Integer, nullable=False, default=0)
     estimated_cost_usd = Column(Numeric(12, 6), nullable=False, default=0)
 
     # --- Auditoría temporal ---

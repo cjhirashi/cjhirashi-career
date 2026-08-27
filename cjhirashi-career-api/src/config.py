@@ -97,6 +97,9 @@ class Settings(BaseSettings):
     BEDROCK_IMAGE_MODEL_ID: str = "amazon.titan-image-generator-v2:0"
     BEDROCK_MAX_IMAGES_PER_DAY: int = 20
     BEDROCK_MAX_TOOL_RESULT_CHARS: int = 8000
+    # Prompt caching de Bedrock (cachePoint). Kill-switch global; solo aplica a
+    # modelos con "supports_prompt_cache": True en BEDROCK_AVAILABLE_MODELS.
+    BEDROCK_PROMPT_CACHE_ENABLED: bool = True
     BEDROCK_HISTORY_WINDOW: int = 20
     BEDROCK_MAX_ROUND_TRIPS: int = 6
     BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3
@@ -135,6 +138,7 @@ class Settings(BaseSettings):
             "invoke_via": "inference_profile",
             "price_input_per_million": 1.00,
             "price_output_per_million": 5.00,
+            "supports_prompt_cache": True,
         },
         "us.amazon.nova-pro-v1:0": {
             "label": "Amazon Nova Pro",
@@ -170,6 +174,7 @@ class Settings(BaseSettings):
             "invoke_via": "inference_profile",
             "price_input_per_million": 3.00,
             "price_output_per_million": 15.00,
+            "supports_prompt_cache": True,
         },
     }
 

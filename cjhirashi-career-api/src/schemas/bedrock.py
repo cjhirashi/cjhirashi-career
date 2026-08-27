@@ -71,6 +71,8 @@ class BedrockUsageByModel(BaseModel):
     model_id: str
     input_tokens: int
     output_tokens: int
+    cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
     estimated_cost_usd: float
     turns: int
 
@@ -79,6 +81,8 @@ class BedrockUsageByDay(BaseModel):
     day: date
     input_tokens: int
     output_tokens: int
+    cache_read_tokens: int = 0
+    cache_write_tokens: int = 0
     estimated_cost_usd: float
 
 
@@ -86,6 +90,10 @@ class BedrockUsageMetricsResponse(BaseModel):
     by_model: List[BedrockUsageByModel]
     by_day: List[BedrockUsageByDay]
     total_estimated_cost_usd: float
+    # Tokens servidos desde el prefijo cacheado y ahorro estimado frente a
+    # pagarlos a precio de entrada normal (prompt caching de Bedrock, ADR-019).
+    total_cache_read_tokens: int = 0
+    total_cache_savings_usd: float = 0.0
     daily_budget_usd: Optional[float] = None
     daily_spent_usd: Optional[float] = None
     daily_remaining_usd: Optional[float] = None

@@ -198,12 +198,15 @@ async def get_usage_metrics(
     db: AsyncSession = Depends(get_db),
 ):
     user_id = current_user.id
+    from services.bedrock import usage_logger
 
     by_model_stmt = (
         select(
             BedrockUsageLog.model_id,
             func.sum(BedrockUsageLog.input_tokens),
             func.sum(BedrockUsageLog.output_tokens),
+            func.sum(BedrockUsageLog.cache_read_tokens),
+            func.sum(BedrockUsageLog.cache_write_tokens),
             func.sum(BedrockUsageLog.estimated_cost_usd),
             func.count(),
         )
@@ -217,10 +220,12 @@ async def get_usage_metrics(
             model_id=model_id,
             input_tokens=int(input_tokens or 0),
             output_tokens=int(output_tokens or 0),
+            cache_read_tokens=int(cache_read or 0),
+            cache_write_tokens=int(cache_write or 0),
             estimated_cost_usd=float(cost or 0),
             turns=turns,
         )
-        for model_id, input_tokens, output_tokens, cost, turns in by_model_rows
+        for model_id, input_tokens, output_tokens, cache_read, cache_write, cost, turns in by_model_rows
     ]
 
     day_col = func.date(BedrockUsageLog.created_at)
@@ -229,6 +234,8 @@ async def get_usage_metrics(
             day_col,
             func.sum(BedrockUsageLog.input_tokens),
             func.sum(BedrockUsageLog.output_tokens),
+            func.sum(BedrockUsageLog.cache_read_tokens),
+            func.sum(BedrockUsageLog.cache_write_tokens),
             func.sum(BedrockUsageLog.estimated_cost_usd),
         )
         .where(
@@ -244,12 +251,18 @@ async def get_usage_metrics(
             day=day,
             input_tokens=int(input_tokens or 0),
             output_tokens=int(output_tokens or 0),
+            cache_read_tokens=int(cache_read or 0),
+            cache_write_tokens=int(cache_write or 0),
             estimated_cost_usd=float(cost or 0),
         )
-        for day, input_tokens, output_tokens, cost in by_day_rows
+        for day, input_tokens, output_tokens, cache_read, cache_write, cost in by_day_rows
     ]
 
     total_cost = sum(m.estimated_cost_usd for m in by_model)
+    total_cache_read_tokens = sum(m.cache_read_tokens for m in by_model)
+    total_cache_savings_usd = sum(
+        usage_logger.cache_read_savings_usd(m.model_id, m.cache_read_tokens) for m in by_model
+    )
 
     daily_budget = float(settings.BEDROCK_DAILY_BUDGET_USD)
     from services.bedrock.budget import get_daily_spend_usd, get_remaining_budget_usd
@@ -261,6 +274,8 @@ async def get_usage_metrics(
         by_model=by_model,
         by_day=by_day,
         total_estimated_cost_usd=total_cost,
+        total_cache_read_tokens=total_cache_read_tokens,
+        total_cache_savings_usd=total_cache_savings_usd,
         daily_budget_usd=daily_budget,
         daily_spent_usd=daily_spent,
         daily_remaining_usd=daily_remaining,

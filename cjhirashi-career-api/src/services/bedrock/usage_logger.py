@@ -19,12 +19,50 @@ logger = logging.getLogger(__name__)
 # Estimación de costo
 # ============================================================================
 
-def _estimate_cost(model_id: str, input_tokens: int, output_tokens: int) -> float:
+# Ratios estándar de prompt caching (Anthropic / Bedrock), relativos al precio
+# de entrada normal del modelo: la lectura de caché cuesta 0.10x y la escritura
+# 1.25x. OJO: 1.25x asume TTL de 5 min, que es lo que emite
+# converse_client._cache_point() ({"type": "default"}). Si algún día se usa
+# {"ttl": "1h"}, la escritura pasa a 2.0x y hay que parametrizar este ratio.
+_CACHE_READ_RATIO = 0.10
+_CACHE_WRITE_RATIO = 1.25
+
+
+def _estimate_cost(
+    model_id: str,
+    input_tokens: int,
+    output_tokens: int,
+    cache_read_tokens: int = 0,
+    cache_write_tokens: int = 0,
+) -> float:
     pricing = settings.BEDROCK_AVAILABLE_MODELS.get(model_id, {})
+    price_in = pricing.get("price_input_per_million", 0) / 1_000_000
+    price_out = pricing.get("price_output_per_million", 0) / 1_000_000
     return (
-        input_tokens * pricing.get("price_input_per_million", 0) / 1_000_000
-        + output_tokens * pricing.get("price_output_per_million", 0) / 1_000_000
+        input_tokens * price_in
+        + output_tokens * price_out
+        + cache_read_tokens * price_in * _CACHE_READ_RATIO
+        + cache_write_tokens * price_in * _CACHE_WRITE_RATIO
     )
+
+
+def _cache_tokens(usage: Optional[Dict[str, int]]) -> tuple[int, int]:
+    """(cache_read, cache_write) desde el dict de usage del cliente Converse."""
+    if not usage:
+        return 0, 0
+    return (
+        usage.get("cacheReadInputTokens", 0) or 0,
+        usage.get("cacheWriteInputTokens", 0) or 0,
+    )
+
+
+def cache_read_savings_usd(model_id: str, cache_read_tokens: int) -> float:
+    """Ahorro estimado por servir esos tokens desde caché (0.10x) en vez de a
+    precio de entrada normal (1.0x). Para el panel de costos."""
+    price_in = settings.BEDROCK_AVAILABLE_MODELS.get(model_id, {}).get(
+        "price_input_per_million", 0
+    ) / 1_000_000
+    return cache_read_tokens * price_in * (1 - _CACHE_READ_RATIO)
 
 
 # ============================================================================
@@ -39,6 +77,7 @@ async def record_turn_usage(
 ) -> None:
     """Una fila por turno completo (compatibilidad panel costos actual)."""
     try:
+        cache_read, cache_write = _cache_tokens(usage)
         async with AsyncSessionLocal() as db:
             db.add(
                 BedrockUsageLog(
@@ -47,8 +86,14 @@ async def record_turn_usage(
                     model_id=model_id,
                     input_tokens=usage.get("inputTokens", 0),
                     output_tokens=usage.get("outputTokens", 0),
+                    cache_read_tokens=cache_read,
+                    cache_write_tokens=cache_write,
                     estimated_cost_usd=_estimate_cost(
-                        model_id, usage.get("inputTokens", 0), usage.get("outputTokens", 0)
+                        model_id,
+                        usage.get("inputTokens", 0),
+                        usage.get("outputTokens", 0),
+                        cache_read,
+                        cache_write,
                     ),
                 )
             )
@@ -81,8 +126,9 @@ async def record_round_log(
     try:
         inp = usage.get("inputTokens", 0) if usage else 0
         out = usage.get("outputTokens", 0) if usage else 0
+        cache_read, cache_write = _cache_tokens(usage)
         cost = fixed_cost_usd if fixed_cost_usd is not None else (
-            _estimate_cost(model_id or "", inp, out) if model_id else 0.0
+            _estimate_cost(model_id or "", inp, out, cache_read, cache_write) if model_id else 0.0
         )
         async with AsyncSessionLocal() as db:
             db.add(
@@ -95,6 +141,8 @@ async def record_round_log(
                     agent_profile_id=agent_profile_id,
                     input_tokens=inp,
                     output_tokens=out,
+                    cache_read_tokens=cache_read,
+                    cache_write_tokens=cache_write,
                     estimated_cost_usd=cost,
                     notes=notes,
                 )

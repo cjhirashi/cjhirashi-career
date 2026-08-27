@@ -22,6 +22,20 @@ logger = logging.getLogger(__name__)
 _runtime_client = None
 
 
+def _cache_point() -> Dict[str, Any]:
+    """Bloque cachePoint fresco (nunca compartir la misma instancia entre payloads)."""
+    return {"cachePoint": {"type": "default"}}
+
+
+def _supports_prompt_cache(model_id: str) -> bool:
+    """True si el modelo admite cachePoint y el kill-switch global está activo."""
+    if not settings.BEDROCK_PROMPT_CACHE_ENABLED:
+        return False
+    return bool(
+        settings.BEDROCK_AVAILABLE_MODELS.get(model_id, {}).get("supports_prompt_cache", False)
+    )
+
+
 # ============================================================================
 # Cliente Bedrock Runtime
 # ============================================================================
@@ -73,6 +87,9 @@ def parse_converse_response(response: Dict[str, Any]) -> Dict[str, Any]:
         "usage": {
             "inputTokens": usage.get("inputTokens", 0),
             "outputTokens": usage.get("outputTokens", 0),
+            # Bedrock reporta los tokens de caché aparte; inputTokens ya viene sin ellos.
+            "cacheReadInputTokens": usage.get("cacheReadInputTokens", 0) or 0,
+            "cacheWriteInputTokens": usage.get("cacheWriteInputTokens", 0) or 0,
         },
         "tool_uses": tool_uses,
     }
@@ -86,7 +103,12 @@ def consume_converse_stream(stream) -> Dict[str, Any]:
     """Convierte el stream Converse en texto, tool_uses, stop_reason y usage."""
     text = ""
     stop_reason: Optional[str] = None
-    usage = {"inputTokens": 0, "outputTokens": 0}
+    usage = {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+    }
     tool_uses: Dict[int, Dict[str, Any]] = {}
 
     for event in stream:
@@ -112,6 +134,8 @@ def consume_converse_stream(stream) -> Dict[str, Any]:
             u = event["metadata"].get("usage", {})
             usage["inputTokens"] += u.get("inputTokens", 0)
             usage["outputTokens"] += u.get("outputTokens", 0)
+            usage["cacheReadInputTokens"] += u.get("cacheReadInputTokens", 0) or 0
+            usage["cacheWriteInputTokens"] += u.get("cacheWriteInputTokens", 0) or 0
 
     parsed = []
     for tu in tool_uses.values():
@@ -139,6 +163,47 @@ def consume_converse_stream(stream) -> Dict[str, Any]:
 # Invocación Converse
 # ============================================================================
 
+def _build_converse_kwargs(
+    *,
+    model_id: str,
+    messages: List[Dict[str, Any]],
+    system_prompt: str,
+    tools: List[Dict[str, Any]],
+    max_tokens: int,
+    force_tool_use: bool,
+) -> Dict[str, Any]:
+    """Arma el payload de Converse; inserta hasta 3 cachePoint si el modelo lo soporta.
+
+    Los cachePoint van al final de `system`, al final de `toolConfig.tools` y al
+    final del `content` del último mensaje (prefijo estable ronda a ronda). El
+    último se hace sobre una copia superficial para no mutar `messages`, que
+    agent_loop sigue extendiendo entre rondas."""
+    cache = _supports_prompt_cache(model_id)
+
+    system_blocks: List[Dict[str, Any]] = [{"text": system_prompt}]
+    if cache:
+        system_blocks.append(_cache_point())
+
+    api_messages = messages
+    if cache and messages:
+        last = dict(messages[-1])
+        last["content"] = list(last.get("content") or []) + [_cache_point()]
+        api_messages = messages[:-1] + [last]
+
+    kwargs: Dict[str, Any] = {
+        "modelId": model_id,
+        "messages": api_messages,
+        "system": system_blocks,
+        "inferenceConfig": {"maxTokens": max_tokens},
+    }
+    if tools:
+        tool_list = (list(tools) + [_cache_point()]) if cache else tools
+        kwargs["toolConfig"] = {"tools": tool_list}
+        if force_tool_use:
+            kwargs["toolConfig"]["toolChoice"] = {"any": {}}
+    return kwargs
+
+
 async def converse(
     *,
     model_id: str,
@@ -150,16 +215,14 @@ async def converse(
 ) -> Dict[str, Any]:
     """Una llamada Converse en thread pool (ConverseStream si está habilitado)."""
     client = _get_runtime_client()
-    kwargs: Dict[str, Any] = {
-        "modelId": model_id,
-        "messages": messages,
-        "system": [{"text": system_prompt}],
-        "inferenceConfig": {"maxTokens": max_tokens},
-    }
-    if tools:
-        kwargs["toolConfig"] = {"tools": tools}
-        if force_tool_use:
-            kwargs["toolConfig"]["toolChoice"] = {"any": {}}
+    kwargs = _build_converse_kwargs(
+        model_id=model_id,
+        messages=messages,
+        system_prompt=system_prompt,
+        tools=tools,
+        max_tokens=max_tokens,
+        force_tool_use=force_tool_use,
+    )
 
     use_stream = settings.BEDROCK_USE_CONVERSE_STREAM
 

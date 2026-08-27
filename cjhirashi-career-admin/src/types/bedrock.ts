@@ -18,6 +18,8 @@ export interface BedrockUsageByModel {
   model_id: string
   input_tokens: number
   output_tokens: number
+  cache_read_tokens: number
+  cache_write_tokens: number
   estimated_cost_usd: number
   turns: number
 }
@@ -26,6 +28,8 @@ export interface BedrockUsageByDay {
   day: string
   input_tokens: number
   output_tokens: number
+  cache_read_tokens: number
+  cache_write_tokens: number
   estimated_cost_usd: number
 }
 
@@ -33,6 +37,8 @@ export interface BedrockUsageMetrics {
   by_model: BedrockUsageByModel[]
   by_day: BedrockUsageByDay[]
   total_estimated_cost_usd: number
+  total_cache_read_tokens: number
+  total_cache_savings_usd: number
   daily_budget_usd?: number
   daily_spent_usd?: number
   daily_remaining_usd?: number

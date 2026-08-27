@@ -23,6 +23,10 @@ class BedrockUsageRoundLog(Base):
     agent_profile_id = Column(String(50), nullable=True)
     input_tokens = Column(Integer, nullable=False, default=0)
     output_tokens = Column(Integer, nullable=False, default=0)
+    # Prompt caching de Bedrock: tokens leídos de un prefijo ya cacheado (0.10x)
+    # y tokens escritos al crear/extender el prefijo cacheado (1.25x).
+    cache_read_tokens = Column(Integer, nullable=False, default=0)
+    cache_write_tokens = Column(Integer, nullable=False, default=0)
     estimated_cost_usd = Column(Numeric(12, 6), nullable=False, default=0)
     notes = Column(Text, nullable=True)
     # --- Auditoría temporal ---

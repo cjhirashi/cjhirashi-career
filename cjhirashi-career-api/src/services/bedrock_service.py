@@ -338,7 +338,12 @@ async def _execute_tool(
         item = await repo.get_for_user(db, user_id, record_id)
         if item is None:
             return {"error": "not_found"}
-        return {"item": _serialize(item)}
+        data = _serialize(item)
+        fields = tool_input.get("fields")
+        if fields:
+            keep = {str(f) for f in fields} | {"id"}
+            data = {k: v for k, v in data.items() if k in keep}
+        return {"item": data}
 
     if name == "describe_resource_schema":
         repo = _get_repository(tool_input["resource_key"])
@@ -544,6 +549,8 @@ def default_system_prompt() -> str:
         "list_career_record o get_career_record previo en esta misma conversación), llama primero a "
         "describe_resource_schema - los nombres de columna reales no siempre son los que se adivinarían "
         "(ej. 'tags' usa tag_name/entity_type, no name/category). Evita adivinar campos a ciegas. "
+        "Con registros grandes (p.ej. projects) llama get_career_record con 'fields' limitado a las "
+        "columnas que vas a leer o editar; no traigas el registro completo para tocar 1-2 campos. "
         "Para una petición de varios pasos (ej. 'actualiza toda mi sección de Identidad' o cualquier tarea "
         "que tome más de 2-3 llamadas a herramientas), usa el resource_key 'agent-tasks' (fields: title, "
         "description, status) para planear primero: crea una tarea por paso con status='pending', y ve "

@@ -32,7 +32,7 @@ export const BedrockCostPanel: React.FC = () => {
         </h2>
         <p className="text-text-secondary text-xs mt-1">
           Consumo de tokens de Agent Bedrock (últimos 30 días) - estimado a partir de las tarifas por millón de
-          tokens de cada modelo.
+          tokens de cada modelo, con el descuento por prompt caching ya aplicado.
         </p>
       </div>
       <div className="card-body space-y-4">
@@ -44,13 +44,24 @@ export const BedrockCostPanel: React.FC = () => {
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="stat-card">
                 <p className="text-text-secondary text-sm font-medium">Total (30 días)</p>
                 <p className="text-2xl font-bold mono mt-2" style={{ color: 'var(--primary-color)' }}>
                   {formatUSD(usage.total_estimated_cost_usd)}
                 </p>
               </div>
+              {usage.total_cache_savings_usd > 0 && (
+                <div className="stat-card">
+                  <p className="text-text-secondary text-sm font-medium">Ahorro por caché (30 días)</p>
+                  <p className="text-2xl font-bold mono mt-2" style={{ color: 'var(--success-text)' }}>
+                    {formatUSD(usage.total_cache_savings_usd)}
+                  </p>
+                  <p className="text-xs text-text-muted mt-1">
+                    {usage.total_cache_read_tokens.toLocaleString()} tokens desde caché
+                  </p>
+                </div>
+              )}
               {usage.daily_budget_usd != null && (
                 <>
                   <div className="stat-card">
@@ -97,6 +108,7 @@ export const BedrockCostPanel: React.FC = () => {
                     <th className="text-left font-medium pb-2">Modelo</th>
                     <th className="text-right font-medium pb-2">Turnos</th>
                     <th className="text-right font-medium pb-2">Tokens entrada</th>
+                    <th className="text-right font-medium pb-2">Tokens caché</th>
                     <th className="text-right font-medium pb-2">Tokens salida</th>
                     <th className="text-right font-medium pb-2">Costo</th>
                   </tr>
@@ -107,6 +119,9 @@ export const BedrockCostPanel: React.FC = () => {
                       <td className="py-2 text-text">{labelForModel(row.model_id)}</td>
                       <td className="py-2 text-right mono text-text-secondary">{row.turns}</td>
                       <td className="py-2 text-right mono text-text-secondary">{row.input_tokens.toLocaleString()}</td>
+                      <td className="py-2 text-right mono text-text-secondary">
+                        {(row.cache_read_tokens + row.cache_write_tokens).toLocaleString()}
+                      </td>
                       <td className="py-2 text-right mono text-text-secondary">{row.output_tokens.toLocaleString()}</td>
                       <td className="py-2 text-right mono text-text font-semibold">
                         {formatUSD(row.estimated_cost_usd)}

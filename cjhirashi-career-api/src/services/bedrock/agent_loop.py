@@ -62,6 +62,17 @@ _TOOL_STATUS = {
     "search_github_code": "Buscando código en GitHub...",
 }
 
+# Tools de solo lectura cuyo resultado no cambia dentro de un mismo turno: si el
+# modelo repite la llamada idéntica, se le responde con una nota corta en vez de
+# reejecutar y reincrustar el payload (control de tokens de entrada).
+_DEDUP_READ_TOOLS = frozenset({
+    "get_career_record",
+    "list_career_record",
+    "count_career_records",
+    "describe_resource_schema",
+    "search_knowledge_base",
+})
+
 
 # Si un L2 anuncia un write o el usuario pide guardar y el turno termina sin
 # tool de escritura, un recordatorio (una vez) obliga a persistir.
@@ -413,10 +424,18 @@ async def chat_stream(
 
     # 6. Inicializar variables para recursos afectados, control de uso de tokens, rondas y delegaciones
     affected: List[str] = []
-    total_usage = {"inputTokens": 0, "outputTokens": 0}
+    total_usage = {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "cacheReadInputTokens": 0,
+        "cacheWriteInputTokens": 0,
+    }
     max_rounds = max_round_trips_override or runtime.max_round_trips
     delegations_used = 0
     persist_nudge_sent = False
+    # Lecturas ya resueltas en este turno: (tool, input) -> resultado ya enviado
+    # arriba. Evita reincrustar el mismo registro grande ronda tras ronda.
+    seen_reads: set = set()
 
     # 7. Emitir un evento de status inicial ("Pensando...")
     yield {"type": "status", "message": "Pensando..."}
@@ -434,14 +453,19 @@ async def chat_stream(
                 force_tool_use=force_tool_this_round and bool(tool_specs),
             )
         except BedrockError as e:
-            # 8.2. Si hubo un error de Bedrock, emite evento de error y termina
+            # 8.2. Si hubo un error de Bedrock, registra lo ya gastado en rondas
+            # previas de este turno (incluida la escritura de caché) y termina.
+            if any(total_usage.values()):
+                await usage_logger.record_turn_usage(user_id, req.session_id, model_id, total_usage)
             yield {"type": "error", "message": str(e)}
             return
         force_tool_this_round = False
 
-        # 8.3. Acumular tokens consumidos (input/output) y loggear el uso de la ronda
+        # 8.3. Acumular tokens consumidos (input/output/caché) y loggear el uso de la ronda
         total_usage["inputTokens"] += result["usage"]["inputTokens"]
         total_usage["outputTokens"] += result["usage"]["outputTokens"]
+        total_usage["cacheReadInputTokens"] += result["usage"].get("cacheReadInputTokens", 0)
+        total_usage["cacheWriteInputTokens"] += result["usage"].get("cacheWriteInputTokens", 0)
         await usage_logger.record_round_log(
             user_id=user_id,
             session_id=req.session_id,
@@ -553,14 +577,31 @@ async def chat_stream(
                             }
                 else:
                     # 10.3.2. Ejecución de herramientas normales
+                    dedup_key = (
+                        f"{name}:{json.dumps(t['input'], sort_keys=True, ensure_ascii=False)}"
+                        if name in _DEDUP_READ_TOOLS
+                        else None
+                    )
                     if t.get("input_parse_error"):
                         tool_result = {"error": t["input_parse_error"]}
                         status = "error"
+                    elif dedup_key is not None and dedup_key in seen_reads:
+                        # Lectura idéntica ya devuelta en este turno: no reejecutar
+                        # ni reincrustar el payload (ahorro de tokens de entrada).
+                        tool_result = {
+                            "note": (
+                                "Idéntico a una llamada previa en este mismo turno. "
+                                "Reutiliza aquel resultado; no lo vuelvas a pedir."
+                            )
+                        }
+                        status = "success"
                     else:
                         tool_result = await tools.execute_tool(
                             db, user_id, name, t["input"], req.session_id, caller_profile_id=profile.id
                         )
                         status = "success"
+                        if dedup_key is not None:
+                            seen_reads.add(dedup_key)
                 # 10.3.3. Registrar recursos afectados por la delegación si es el caso
                 if name == "delegate_to_specialist" and isinstance(tool_result, dict):
                     for key in tool_result.get("affected_resources") or []:
@@ -570,6 +611,19 @@ async def chat_stream(
                 inv_key = tools.invalidation_key(name, t["input"], tool_result)
                 if inv_key and inv_key not in affected:
                     affected.append(inv_key)
+                # 10.3.4b. Un write (directo o vía delegación) invalida las lecturas
+                # deduplicadas de este turno: una relectura posterior debe ver el
+                # estado nuevo, no el snapshot previo a la escritura.
+                _wrote = (
+                    tools.is_write_tool(name)
+                    and not (isinstance(tool_result, dict) and tool_result.get("error"))
+                ) or (
+                    name == "delegate_to_specialist"
+                    and isinstance(tool_result, dict)
+                    and tool_result.get("affected_resources")
+                )
+                if _wrote:
+                    seen_reads.clear()
             except Exception as e:
                 # 10.3.5. Si ocurre un error al ejecutar la herramienta
                 from services.error_reporting import report_error
