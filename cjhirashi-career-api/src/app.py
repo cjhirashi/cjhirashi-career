@@ -10,7 +10,8 @@ Responsabilidades:
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError, HTTPException as FastAPIHTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 import asyncio
 import logging
@@ -28,7 +29,9 @@ from routes import files
 from routes import linkedin
 from routes import public
 from routes import notifications
+from routes import error_reports
 from services import storage_service, linkedin_scheduler, task_scheduler
+from services.error_reporting import areport_error
 
 # ============================================================================
 # Logging
@@ -115,10 +118,41 @@ app.add_middleware(
 # ============================================================================
 # Manejadores globales de excepciones
 # ============================================================================
+# Cada falla que llega a un handler global se registra en `error_reports`
+# (ADR-018). `REPORT_CLIENT_ERRORS` controla si los 4xx (validación, HTTP
+# 400-499) también dejan reporte — útil para ver validaciones fallidas, se
+# puede bajar a False si genera demasiado ruido.
+REPORT_CLIENT_ERRORS = True
+
+# Rutas cuyo fallo NO se registra (evita bucles y ruido del propio registro).
+_ERROR_REPORT_SKIP_PATHS = ("/system/error-report", "/health")
+
+
+def _should_skip_report(request: Request) -> bool:
+    path = request.url.path
+    return any(path.startswith(p) for p in _ERROR_REPORT_SKIP_PATHS)
+
+
+def _request_context(request: Request, status_code: int) -> dict:
+    return {
+        "request_path": request.url.path,
+        "request_method": request.method,
+        "status_code": status_code,
+    }
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Maneja errores de validación de Pydantic con respuesta personalizada."""
     logger.warning(f"Validation error: {exc.errors()}")
+    if REPORT_CLIENT_ERRORS and not _should_skip_report(request):
+        await areport_error(
+            f"Error de validación: {exc.errors()}",
+            f"api:validation {request.method} {request.url.path}",
+            error_type="RequestValidationError",
+            context=_request_context(request, 422),
+            severity="warning",
+        )
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
@@ -128,11 +162,49 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Registra las HTTPException relevantes y conserva la respuesta estándar."""
+    is_server_error = exc.status_code >= 500
+    # 401/404 son ruido de fondo (tokens expirados, escaneo de bots): se omiten
+    # salvo que se trate de un 5xx.
+    noisy_client_error = exc.status_code in (401, 404)
+    should_report = not _should_skip_report(request) and (
+        is_server_error
+        or (REPORT_CLIENT_ERRORS and exc.status_code >= 400 and not noisy_client_error)
+    )
+    if should_report:
+        if is_server_error:
+            logger.error(f"HTTP {exc.status_code} en {request.url.path}: {exc.detail}")
+        await areport_error(
+            f"HTTP {exc.status_code}: {exc.detail}",
+            f"api:{request.method} {request.url.path}",
+            error_type=f"HTTPException{exc.status_code}",
+            exc=exc,
+            context=_request_context(request, exc.status_code),
+            severity="critical" if is_server_error else "warning",
+        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=getattr(exc, "headers", None),
+    )
+
+
 # Manejador global de excepciones
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Maneja excepciones no capturadas."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    if not _should_skip_report(request):
+        await areport_error(
+            str(exc) or type(exc).__name__,
+            f"api:{request.method} {request.url.path}",
+            error_type=type(exc).__name__,
+            exc=exc,
+            context=_request_context(request, 500),
+            severity="critical",
+        )
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -189,6 +261,7 @@ app.include_router(pdf_template_styles.router)
 app.include_router(files.router)
 app.include_router(linkedin.router)
 app.include_router(public.router)
+app.include_router(error_reports.router)
 
 
 # ============================================================================

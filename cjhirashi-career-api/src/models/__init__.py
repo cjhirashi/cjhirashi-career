@@ -66,6 +66,7 @@ from models.bedrock_custom_tool import BedrockCustomTool
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
 from models.bedrock_task import BedrockTask
 from models.user_notification import UserNotification
+from models.error_report import ErrorReport
 from models.pdf_output_template import PdfOutputTemplate
 from models.pdf_template_style import PdfTemplateStyle
 
@@ -148,6 +149,7 @@ __all__ = [
     "BedrockConversationMessage",
     "BedrockTask",
     "UserNotification",
+    "ErrorReport",
     "PdfOutputTemplate",
     "PdfTemplateStyle",
     # LinkedIn integration

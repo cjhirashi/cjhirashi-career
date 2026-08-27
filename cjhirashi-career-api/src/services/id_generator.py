@@ -24,6 +24,7 @@ TABLE_PREFIXES: dict[str, str] = {
     "bedrock_custom_tools":       "bct",
     "bedrock_tasks":              "btk",
     "user_notifications":         "ntf",
+    "error_reports":              "err",
     "career_reviews":             "crv",
     "certifications":             "crt",
     "competencies":               "cmp",
