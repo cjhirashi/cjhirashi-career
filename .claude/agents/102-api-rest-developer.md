@@ -306,6 +306,32 @@ api/
 - [ ] Dockerfile built and tested ✓
 - [ ] Ready for merge to `develop` ✓
 
+## 🤖 Sistema de Agentes Bedrock — Delegación Obligatoria
+
+El módulo API aloja el **sistema de agentes Bedrock** del producto en
+`cjhirashi-career-api/src/services/bedrock/` (jerarquía L1/L2/L3 — ADR-012):
+`agent_loop.py`, `converse_client.py`, `tools.py`, `tool_results.py`,
+`usage_logger.py`, `agent_profiles.py`, más los modelos `bedrock_usage_log.py` y
+`bedrock_usage_round_log.py`.
+
+**Siempre que la tarea toque este sistema** —bucle agéntico, definición o cambio de
+tools, gestión de contexto/caché, perfiles de agente, streaming Converse, IAM/red de
+Bedrock, throttling, elección de modelo, o adopción de AgentCore / Knowledge Bases /
+Guardrails— **consulta o delega ANTES de implementar**:
+
+| Necesidad | Agente global | Qué pedirle |
+|-----------|---------------|-------------|
+| Runtime genérico: contratos de tools, gestión de contexto, subagentes, hooks, memoria, **eficiencia** (tokens/latencia/coste) | `harness-agentes` | Patrón recomendado + auditoría de eficiencia con números antes/después, citando docs oficiales |
+| Específico de AWS Bedrock/AgentCore: modelo e inference profile, parámetros Converse, `cachePoint`, KB/Guardrails/Flows, `botocore.Config`, IAM mínimo, VPC endpoints, diagnóstico de `ThrottlingException` | `aws-bedrock` | Configuración concreta verificada contra la doc de AWS + IDs/regiones comprobados |
+
+**Flujo:** `harness-agentes` define el *cómo* genérico → `aws-bedrock` aporta el *cómo*
+específico de Bedrock → yo implemento en `src/services/bedrock/` con SOLID + 80% cobertura
+→ Code Quality Guardian revisa. Los prompts de negocio y la evaluación de calidad de cada
+agente siguen siendo de `ingenieria-llm`.
+
+**No improvisar** sobre APIs, límites o flags de Bedrock/harness: si no está verificado
+contra doc oficial, se pregunta primero.
+
 ## 🔗 Dependencies
 
 **Upstream:**

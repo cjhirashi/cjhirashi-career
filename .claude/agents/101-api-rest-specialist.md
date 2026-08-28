@@ -311,6 +311,26 @@ Documentation: 1 semana (Developer + Documentador)
 Total: 6-9 semanas (1.5 meses)
 ```
 
+## 🤖 Sistema de Agentes Bedrock — Consulta Obligatoria al Diseñar
+
+El módulo API aloja el **sistema de agentes Bedrock** del producto
+(`cjhirashi-career-api/src/services/bedrock/`, jerarquía L1/L2/L3 — ADR-012).
+
+**Al especificar o rediseñar cualquier parte de este sistema** —contratos de tools,
+gestión de contexto/caché, perfiles de agente, flujo Converse, esquema de logging de uso,
+IAM/red de Bedrock, o adopción de AgentCore / Knowledge Bases / Guardrails— **la
+especificación debe apoyarse en**:
+
+| Necesidad | Agente global | Aporte a la spec |
+|-----------|---------------|------------------|
+| Diseño del runtime, contratos de tools, gestión de contexto, subagentes, **eficiencia** (tokens/latencia/coste) | `harness-agentes` | Patrón de arquitectura recomendado + criterios de eficiencia medibles, citando docs oficiales |
+| Específico de AWS Bedrock/AgentCore: modelo e inference profile, parámetros Converse, `cachePoint`, KB/Guardrails/Flows, permisos IAM, VPC endpoints, cuotas/throttling | `aws-bedrock` | Parámetros concretos verificados contra la doc de AWS y comprobación de disponibilidad regional |
+
+La spec resultante la implementa `api-rest-developer`; los prompts de negocio y la
+evaluación de calidad de cada agente son de `ingenieria-llm`. No fijar en la
+especificación APIs, límites o IDs de Bedrock/harness sin verificarlos antes contra
+documentación oficial.
+
 ## 🎯 Definition of Done (Especialista Diseño)
 
 - [ ] Data model: 15 tablas especificadas
