@@ -111,7 +111,8 @@ describe('AgentCatalogPage', () => {
     mockedApi.listConversations.mockResolvedValue([])
     mockedSections.list.mockResolvedValue([
       {
-        id: 'settings-agents',
+        id: 'sec-16',
+        system_name: 'settings-agents',
         label: 'Catálogo de Agentes',
         path: '/settings/agents',
         section_type: 'table',

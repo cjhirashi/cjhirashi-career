@@ -582,7 +582,9 @@ const AgentCatalogEditors: React.FC<{
     () =>
       allSections.map((row) => ({
         value: row.id,
-        label: `${row.label} (${ADMIN_SECTION_TYPE_LABEL[row.section_type] ?? row.section_type})`,
+        label: `${row.label} · ${row.system_name} (${
+          ADMIN_SECTION_TYPE_LABEL[row.section_type] ?? row.section_type
+        })`,
       })),
     [allSections]
   )

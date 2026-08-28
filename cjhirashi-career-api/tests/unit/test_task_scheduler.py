@@ -14,7 +14,7 @@ from services.bedrock.errors import BedrockError
 
 
 def test_tasks_section_is_top_level():
-    spec = next(s for s in list_section_specs() if s.id == "agent-tasks")
+    spec = next(s for s in list_section_specs() if s.system_name == "agent-tasks")
     assert spec.path == "/tasks"
     assert spec.resource_key == "agent-tasks"
     assert spec.group == "Principal"
@@ -22,7 +22,7 @@ def test_tasks_section_is_top_level():
     assert view_keys >= {"list", "calendar", "kanban", "gantt", "view", "edit"}
     matched = match_section("/tasks")
     assert matched is not None
-    assert matched[0].id == "agent-tasks"
+    assert matched[0].system_name == "agent-tasks"
 
 
 def test_create_user_task_clears_agent_profile():

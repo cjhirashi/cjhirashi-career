@@ -3,6 +3,20 @@
 Una sección es una pantalla (o grupo de vistas) que un agente puede dominar:
 tabla CRUD, área funcional (p. ej. API LinkedIn), métricas o bucket de archivos.
 Los overrides editables viven en PostgreSQL (`admin_section_overrides`).
+
+Identificadores (ADR-021):
+- ``id`` es el PK sintético ``sec-<n>`` (prefijo ``sec-``, análogo a ``err-N``).
+  Es la clave canónica en TODO: ``admin_section_overrides.section_id``, propiedad
+  de secciones por agente, tool Bedrock ``admin_section_settings`` y la URL del
+  Admin ``/settings/sections/:id``.
+- ``system_name`` es el slug legible (``dashboard``, ``career-projects``…), antes
+  llamado "Id". Sirve para migración/depuración y para mostrarlo en la UI.
+
+REGLA DE NUMERACIÓN (CONGELADA): cada ``sec-<n>`` se asigna explícitamente en
+código, una vez y para siempre. No se reutiliza ni se reordena. Sección nueva →
+siguiente entero libre (55, 56…). Sección eliminada → su número queda retirado
+(hueco permanente). El orden actual es: ``_SECTIONS`` (sec-1..sec-19) y luego
+``_CAREER_ROWS`` (sec-20..sec-54).
 """
 from __future__ import annotations
 
@@ -60,7 +74,8 @@ class AdminViewSpec:
 
 @dataclass(frozen=True)
 class AdminSectionSpec:
-    id: str
+    id: str  # PK sintético ``sec-<n>`` (ADR-021)
+    system_name: str  # slug legible: dashboard, career-projects, settings-error-reports…
     label: str
     path: str
     section_type: str
@@ -137,6 +152,7 @@ def _crud_views(
 
 
 def _career(
+    number: int,
     resource_key: str,
     label: str,
     agent_id: str,
@@ -146,7 +162,8 @@ def _career(
     singleton: bool = False,
 ) -> AdminSectionSpec:
     return AdminSectionSpec(
-        id=f"career-{resource_key}",
+        id=f"sec-{number}",
+        system_name=f"career-{resource_key}",
         label=label,
         path=f"/career/{resource_key}",
         section_type=SECTION_TABLE,
@@ -161,7 +178,8 @@ def _career(
 
 _SECTIONS: List[AdminSectionSpec] = [
     AdminSectionSpec(
-        id="dashboard",
+        id="sec-1",
+        system_name="dashboard",
         label="Dashboard",
         path="/dashboard",
         section_type=SECTION_METRICS,
@@ -177,7 +195,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=10,
     ),
     AdminSectionSpec(
-        id="metrics",
+        id="sec-2",
+        system_name="metrics",
         label="Métricas",
         path="/metrics",
         section_type=SECTION_METRICS,
@@ -193,7 +212,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=11,
     ),
     AdminSectionSpec(
-        id="search-metrics",
+        id="sec-3",
+        system_name="search-metrics",
         label="Métricas de Búsqueda",
         path="/search-metrics",
         section_type=SECTION_METRICS,
@@ -209,7 +229,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=12,
     ),
     AdminSectionSpec(
-        id="agent-metrics",
+        id="sec-4",
+        system_name="agent-metrics",
         label="Costo y Uso",
         path="/agent/metrics",
         section_type=SECTION_METRICS,
@@ -224,7 +245,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=13,
     ),
     AdminSectionSpec(
-        id="files",
+        id="sec-5",
+        system_name="files",
         label="Archivos",
         path="/files",
         section_type=SECTION_BUCKET,
@@ -240,7 +262,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=20,
     ),
     AdminSectionSpec(
-        id="linkedin-publish",
+        id="sec-6",
+        system_name="linkedin-publish",
         label="LinkedIn · Publicar",
         path="/linkedin",
         section_type=SECTION_FUNCTIONAL,
@@ -262,7 +285,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=30,
     ),
     AdminSectionSpec(
-        id="job-discovery",
+        id="sec-7",
+        system_name="job-discovery",
         label="Descubrir vacantes",
         path="/job-discovery",
         section_type=SECTION_FUNCTIONAL,
@@ -284,7 +308,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=31,
     ),
     AdminSectionSpec(
-        id="pdf-templates",
+        id="sec-8",
+        system_name="pdf-templates",
         label="Plantillas PDF",
         path="/agent/pdf-templates",
         section_type=SECTION_TABLE,
@@ -301,7 +326,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=40,
     ),
     AdminSectionSpec(
-        id="pdf-styles",
+        id="sec-9",
+        system_name="pdf-styles",
         label="Estilos PDF",
         path="/agent/pdf-template-styles",
         section_type=SECTION_TABLE,
@@ -318,7 +344,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=41,
     ),
     AdminSectionSpec(
-        id="agent-tasks",
+        id="sec-10",
+        system_name="agent-tasks",
         label="Tareas",
         path="/tasks",
         section_type=SECTION_TABLE,
@@ -379,7 +406,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=15,
     ),
     AdminSectionSpec(
-        id="agent-chat",
+        id="sec-11",
+        system_name="agent-chat",
         label="Chat General",
         path="/agent/chat",
         section_type=SECTION_FUNCTIONAL,
@@ -394,7 +422,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=51,
     ),
     AdminSectionSpec(
-        id="agent-memory",
+        id="sec-12",
+        system_name="agent-memory",
         label="Memoria",
         path="/agent/memory",
         section_type=SECTION_FUNCTIONAL,
@@ -409,7 +438,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=52,
     ),
     AdminSectionSpec(
-        id="agent-instructions",
+        id="sec-13",
+        system_name="agent-instructions",
         label="Instrucciones",
         path="/agent/instructions",
         section_type=SECTION_FUNCTIONAL,
@@ -424,7 +454,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=53,
     ),
     AdminSectionSpec(
-        id="agent-tools",
+        id="sec-14",
+        system_name="agent-tools",
         label="Herramientas",
         path="/agent/tools",
         section_type=SECTION_FUNCTIONAL,
@@ -439,7 +470,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=54,
     ),
     AdminSectionSpec(
-        id="agent-audit-log",
+        id="sec-15",
+        system_name="agent-audit-log",
         label="Bitácora",
         path="/agent/audit-log",
         section_type=SECTION_FUNCTIONAL,
@@ -455,7 +487,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=55,
     ),
     AdminSectionSpec(
-        id="settings-agents",
+        id="sec-16",
+        system_name="settings-agents",
         label="Catálogo de Agentes",
         path="/settings/agents",
         section_type=SECTION_TABLE,
@@ -472,7 +505,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=90,
     ),
     AdminSectionSpec(
-        id="settings-sections",
+        id="sec-17",
+        system_name="settings-sections",
         label="Secciones del Admin",
         path="/settings/sections",
         section_type=SECTION_FUNCTIONAL,
@@ -488,7 +522,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=91,
     ),
     AdminSectionSpec(
-        id="settings-agent-prompts",
+        id="sec-18",
+        system_name="settings-agent-prompts",
         label="Prompts Globales",
         path="/settings/agent-prompts",
         section_type=SECTION_FUNCTIONAL,
@@ -504,7 +539,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         sort_order=92,
     ),
     AdminSectionSpec(
-        id="settings-error-reports",
+        id="sec-19",
+        system_name="settings-error-reports",
         label="Reportes de Falla",
         path="/settings/error-reports",
         section_type=SECTION_TABLE,
@@ -524,48 +560,63 @@ _SECTIONS: List[AdminSectionSpec] = [
     ),
 ]
 
-_CAREER_ROWS: List[Tuple[str, str, str, str, int, str, bool]] = [
-    ("personal-profile", "Datos personales", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 100, "Ficha biográfica de referencia (nombre, contacto, idiomas).", True),
-    ("differentiators", "Diferenciadores", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 101, "Pilares que te distinguen, con evidencia.", False),
-    ("identity", "Identidad", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 102, "Tagline, bio y propuesta de valor comunicable.", True),
-    ("identity-reflections", "Reflexiones de identidad", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 103, "Notas IKIGAI y material bruto de narrativa.", False),
-    ("competencies", "Competencias", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 104, "Capacidades demostrables y su evidencia.", False),
-    ("certifications", "Certificaciones", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 105, "Credenciales formales y syllabus.", False),
-    ("target-roles", "Roles objetivo", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 106, "Roles a los que apuntas la búsqueda.", False),
-    ("work-history", "Historial laboral", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 107, "Experiencia profesional cronológica.", False),
-    ("achievements", "Logros", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 108, "Resultados concretos con métricas.", False),
-    ("star-stories", "Historias STAR", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 109, "Historias de entrevista en formato STAR.", False),
-    ("career-reviews", "Revisiones de carrera", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 110, "Retrospectivas periódicas de carrera.", False),
-    ("role-gap-analysis", "Análisis de brechas", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 111, "Gaps entre tu perfil y un rol objetivo.", False),
-    ("projects", "Proyectos", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 112, "Proyectos de portafolio y evidencia técnica.", False),
-    ("fit-scoring-factors", "Factores de fit", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 120, "Criterios ponderados para evaluar vacantes.", False),
-    ("market-segments", "Segmentos de mercado", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 121, "Bolsas de mercado donde buscas.", False),
-    ("role-narratives", "Narrativas de rol", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 122, "Cómo te presentas para un tipo de rol.", False),
-    ("search-plans", "Planes de búsqueda", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 123, "Plan activo: metas, cadencia, foco.", False),
-    ("networking-contacts", "Contactos", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 124, "Personas relevantes para la búsqueda.", False),
-    ("target-companies", "Empresas diana", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 125, "Empresas objetivo y su priorización.", False),
-    ("vacancies", "Vacantes", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 126, "Ofertas en seguimiento, con fit y estado.", False),
-    ("cv-versions", "Versiones de CV", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 127, "Versiones de CV ligadas a roles o vacantes.", False),
-    ("cover-letter-versions", "Cover letters", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 128, "Cartas de presentación versionadas.", False),
-    ("applications", "Aplicaciones", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 129, "Postulaciones enviadas y su estado.", False),
-    ("application-interactions", "Interacciones de aplicación", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 130, "Seguimiento de cada postulación.", False),
-    ("interviews", "Entrevistas", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 131, "Procesos de entrevista y notas.", False),
-    ("linkedin-profile", "Perfil de LinkedIn", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 140, "Traducción de identidad al formato LinkedIn.", True),
-    ("github-profile", "Perfil de GitHub", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 141, "Headline y README de perfil (no la API en vivo).", True),
-    ("portal-home", "Portal · Home", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 142, "Hero de la home del portafolio público.", True),
-    ("portal-about", "Portal · Sobre Mí", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 143, "Nombre y foto de la página Sobre Mí.", True),
-    ("portal-contact", "Portal · Contacto", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 144, "Datos de contacto y footer del portal.", True),
-    ("publications", "Publicaciones", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 145, "Artículos del blog del portafolio.", False),
-    ("contact-interactions", "Interacciones de contacto", AGENT_NETWORKING, "Networking", 150, "Seguimiento de conversaciones con contactos.", False),
-    ("networking-activities", "Actividades de networking", AGENT_NETWORKING, "Networking", 151, "Eventos y acciones de networking.", False),
-    ("tags", "Tags", AGENT_SUPPORT, "Soporte", 160, "Etiquetas transversales del gestor de carrera.", False),
-    ("operational-methodologies", "Metodologías Operativas", AGENT_METHODOLOGIES, "Soporte", 161, "Protocolos de trabajo que consultan los agentes.", False),
+# (sec-N, resource_key, label, agent_id, group, sort_order, description, singleton)
+# El primer entero es el PK CONGELADO — ver la nota de numeración del módulo.
+_CAREER_ROWS: List[Tuple[int, str, str, str, str, int, str, bool]] = [
+    (20, "personal-profile", "Datos personales", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 100, "Ficha biográfica de referencia (nombre, contacto, idiomas).", True),
+    (21, "differentiators", "Diferenciadores", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 101, "Pilares que te distinguen, con evidencia.", False),
+    (22, "identity", "Identidad", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 102, "Tagline, bio y propuesta de valor comunicable.", True),
+    (23, "identity-reflections", "Reflexiones de identidad", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 103, "Notas IKIGAI y material bruto de narrativa.", False),
+    (24, "competencies", "Competencias", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 104, "Capacidades demostrables y su evidencia.", False),
+    (25, "certifications", "Certificaciones", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 105, "Credenciales formales y syllabus.", False),
+    (26, "target-roles", "Roles objetivo", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 106, "Roles a los que apuntas la búsqueda.", False),
+    (27, "work-history", "Historial laboral", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 107, "Experiencia profesional cronológica.", False),
+    (28, "achievements", "Logros", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 108, "Resultados concretos con métricas.", False),
+    (29, "star-stories", "Historias STAR", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 109, "Historias de entrevista en formato STAR.", False),
+    (30, "career-reviews", "Revisiones de carrera", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 110, "Retrospectivas periódicas de carrera.", False),
+    (31, "role-gap-analysis", "Análisis de brechas", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 111, "Gaps entre tu perfil y un rol objetivo.", False),
+    (32, "projects", "Proyectos", AGENT_PROFESSIONAL_IDENTITY, "Identidad Profesional", 112, "Proyectos de portafolio y evidencia técnica.", False),
+    (33, "fit-scoring-factors", "Factores de fit", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 120, "Criterios ponderados para evaluar vacantes.", False),
+    (34, "market-segments", "Segmentos de mercado", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 121, "Bolsas de mercado donde buscas.", False),
+    (35, "role-narratives", "Narrativas de rol", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 122, "Cómo te presentas para un tipo de rol.", False),
+    (36, "search-plans", "Planes de búsqueda", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 123, "Plan activo: metas, cadencia, foco.", False),
+    (37, "networking-contacts", "Contactos", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 124, "Personas relevantes para la búsqueda.", False),
+    (38, "target-companies", "Empresas diana", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 125, "Empresas objetivo y su priorización.", False),
+    (39, "vacancies", "Vacantes", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 126, "Ofertas en seguimiento, con fit y estado.", False),
+    (40, "cv-versions", "Versiones de CV", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 127, "Versiones de CV ligadas a roles o vacantes.", False),
+    (41, "cover-letter-versions", "Cover letters", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 128, "Cartas de presentación versionadas.", False),
+    (42, "applications", "Aplicaciones", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 129, "Postulaciones enviadas y su estado.", False),
+    (43, "application-interactions", "Interacciones de aplicación", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 130, "Seguimiento de cada postulación.", False),
+    (44, "interviews", "Entrevistas", AGENT_SEARCH_OPERATIONS, "Operativa de Búsqueda", 131, "Procesos de entrevista y notas.", False),
+    (45, "linkedin-profile", "Perfil de LinkedIn", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 140, "Traducción de identidad al formato LinkedIn.", True),
+    (46, "github-profile", "Perfil de GitHub", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 141, "Headline y README de perfil (no la API en vivo).", True),
+    (47, "portal-home", "Portal · Home", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 142, "Hero de la home del portafolio público.", True),
+    (48, "portal-about", "Portal · Sobre Mí", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 143, "Nombre y foto de la página Sobre Mí.", True),
+    (49, "portal-contact", "Portal · Contacto", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 144, "Datos de contacto y footer del portal.", True),
+    (50, "publications", "Publicaciones", AGENT_DIGITAL_PRESENCE, "Presencia Digital", 145, "Artículos del blog del portafolio.", False),
+    (51, "contact-interactions", "Interacciones de contacto", AGENT_NETWORKING, "Networking", 150, "Seguimiento de conversaciones con contactos.", False),
+    (52, "networking-activities", "Actividades de networking", AGENT_NETWORKING, "Networking", 151, "Eventos y acciones de networking.", False),
+    (53, "tags", "Tags", AGENT_SUPPORT, "Soporte", 160, "Etiquetas transversales del gestor de carrera.", False),
+    (54, "operational-methodologies", "Metodologías Operativas", AGENT_METHODOLOGIES, "Soporte", 161, "Protocolos de trabajo que consultan los agentes.", False),
 ]
 
 _SECTIONS.extend(_career(*row) for row in _CAREER_ROWS)
 
 _BY_ID: Dict[str, AdminSectionSpec] = {s.id: s for s in _SECTIONS}
+_BY_SYSTEM_NAME: Dict[str, AdminSectionSpec] = {s.system_name: s for s in _SECTIONS}
 _BY_PATH: Dict[str, AdminSectionSpec] = {s.path: s for s in _SECTIONS}
+
+assert len(_BY_ID) == len(_SECTIONS), "PK sec-N duplicado en el registro de secciones"
+assert len(_BY_SYSTEM_NAME) == len(_SECTIONS), "system_name duplicado en el registro de secciones"
+
+# Entero más alto asignado hasta hoy. Al añadir una sección se sube este valor y
+# se le da el siguiente entero libre; los números retirados (secciones eliminadas)
+# NUNCA se reutilizan. El registro nunca debe contener un sec-N por encima de esto.
+_HIGH_WATER = 54
+
+_SECTION_NUMBERS = [int(s.id.split("-")[1]) for s in _SECTIONS]
+assert max(_SECTION_NUMBERS) <= _HIGH_WATER, "sec-N por encima de _HIGH_WATER: súbelo"
+assert len(_SECTION_NUMBERS) == len(set(_SECTION_NUMBERS)), "entero sec-N colisionado"
 
 
 def list_section_specs() -> List[AdminSectionSpec]:
@@ -573,12 +624,21 @@ def list_section_specs() -> List[AdminSectionSpec]:
 
 
 def get_section_spec(section_id: str) -> AdminSectionSpec:
+    """Busca por PK (``sec-N``)."""
     if section_id not in _BY_ID:
         raise KeyError(f"Unknown admin section: {section_id}")
     return _BY_ID[section_id]
 
 
+def get_section_by_system_name(system_name: str) -> AdminSectionSpec:
+    """Busca por slug legible (``dashboard``, ``career-projects``…). Migración/debug."""
+    if system_name not in _BY_SYSTEM_NAME:
+        raise KeyError(f"Unknown admin section (system_name): {system_name}")
+    return _BY_SYSTEM_NAME[system_name]
+
+
 def known_section_ids() -> set[str]:
+    """PKs ``sec-N`` de todas las secciones registradas."""
     return set(_BY_ID.keys())
 
 

@@ -10,7 +10,8 @@ vi.mock('@/api/adminSections')
 const mockedApi = vi.mocked(adminSectionsApi)
 
 const sample: AdminSection = {
-  id: 'linkedin-publish',
+  id: 'sec-6',
+  system_name: 'linkedin-publish',
   label: 'LinkedIn · Publicar',
   path: '/linkedin',
   section_type: 'functional',
@@ -59,6 +60,8 @@ describe('AdminSectionsPage', () => {
     await waitFor(() => expect(screen.getByText('LinkedIn · Publicar')).toBeInTheDocument())
     expect(screen.getByText('funcional')).toBeInTheDocument()
     expect(screen.getByText('Control de publicación LinkedIn')).toBeInTheDocument()
+    expect(screen.getByText('sec-6')).toBeInTheDocument()
+    expect(screen.getByText('linkedin-publish')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/buscar en secciones/i)).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
   })
@@ -69,11 +72,11 @@ describe('AdminSectionsPage', () => {
       description: 'Nueva descripción',
       description_is_default: false,
     })
-    renderAt('/settings/sections/linkedin-publish')
+    renderAt('/settings/sections/sec-6')
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Secciones del Admin')
     )
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('linkedin-publish')
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('sec-6')
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
     fireEvent.change(screen.getByLabelText('Descripción de la sección'), {
       target: { value: 'Nueva descripción' },
@@ -81,7 +84,7 @@ describe('AdminSectionsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Actualizar' }))
     await waitFor(() =>
       expect(mockedApi.update).toHaveBeenCalledWith(
-        'linkedin-publish',
+        'sec-6',
         expect.objectContaining({ description: 'Nueva descripción' })
       )
     )

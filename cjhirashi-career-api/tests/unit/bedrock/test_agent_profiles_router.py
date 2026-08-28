@@ -197,7 +197,7 @@ def test_settings_routes_resolve_to_agent_settings():
         "/settings/agents",
         "/settings/agents/agent-2",
         "/settings/sections",
-        "/settings/sections/dashboard",
+        "/settings/sections/sec-1",
         "/settings/agent-prompts",
     ):
         profile = resolve_agent_profile(

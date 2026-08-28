@@ -61,7 +61,8 @@ def _serialize(spec: AdminSectionSpec, row: Optional[AdminSectionOverride]) -> D
         except KeyError:
             agent_label = agent_id
     return {
-        "id": spec.id,
+        "id": spec.id,  # PK sec-N (ADR-021)
+        "system_name": spec.system_name,  # slug legible
         "label": spec.label,
         "path": spec.path,
         "section_type": spec.section_type,

@@ -20,7 +20,8 @@ class AdminSectionViewUpdate(BaseModel):
 
 
 class AdminSectionItem(BaseModel):
-    id: str
+    id: str  # PK sec-N (ADR-021)
+    system_name: str  # slug legible: dashboard, career-projects…
     label: str
     path: str
     section_type: str

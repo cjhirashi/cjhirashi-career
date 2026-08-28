@@ -9,7 +9,10 @@ from database import Base
 class AdminSectionOverride(Base):
     __tablename__ = "admin_section_overrides"
 
-    section_id = Column(String(80), primary_key=True)
+    # PK sintético de la sección: ``sec-N`` (ADR-021). Antes era el slug legible
+    # (``dashboard``, ``career-projects``…), que ahora vive en
+    # ``AdminSectionSpec.system_name``. La migración re-mapea las filas existentes.
+    section_id = Column(String(40), primary_key=True)
     agent_profile_id = Column(String(50), nullable=True)
     description = Column(Text, nullable=True)
     # { view_key: { description, sidebar_title, sidebar_body } }

@@ -18,6 +18,7 @@ export interface AdminSectionView {
 
 export interface AdminSection {
   id: string
+  system_name: string
   label: string
   path: string
   section_type: AdminSectionType | string

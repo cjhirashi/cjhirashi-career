@@ -33,6 +33,7 @@ const SECTION_TABS = [
 
 const SECTION_COLUMNS: ColumnConfig[] = [
   { key: 'id', label: 'ID' },
+  { key: 'system_name', label: 'Nombre de sistema' },
   { key: 'label', label: 'Sección' },
   { key: 'section_type', label: 'Tipo' },
   { key: 'agent_label', label: 'Agente' },
@@ -82,7 +83,16 @@ export const AdminSectionsPage: React.FC = () => {
       pinnedKeys: ['id', 'label'],
       rows: filteredData,
       searchAccessor: (row) =>
-        [row.id, row.label, row.path, row.group, row.agent_label, row.description, row.section_type]
+        [
+          row.id,
+          row.system_name,
+          row.label,
+          row.path,
+          row.group,
+          row.agent_label,
+          row.description,
+          row.section_type,
+        ]
           .filter(Boolean)
           .join(' '),
     })
@@ -181,6 +191,10 @@ const recordGroups = (data: AdminSection) => [
     title: 'Información',
     fields: [
       { label: 'ID', value: <span className="mono text-primary">{data.id}</span> },
+      {
+        label: 'Nombre de sistema',
+        value: <span className="mono text-primary">{data.system_name}</span>,
+      },
       {
         label: 'Tipo',
         value: (

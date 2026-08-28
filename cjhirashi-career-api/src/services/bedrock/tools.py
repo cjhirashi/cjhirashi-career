@@ -218,12 +218,17 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     },
     {
         "name": "admin_section_settings",
-        "description": "Secciones del Admin: qué agente domina cada pantalla y su descripción. action=list|get|update. section_id requerido salvo list.",
+        "description": (
+            "Secciones del Admin: qué agente domina cada pantalla y su descripción. "
+            "action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); mira action=list, "
+            "campo id. El campo system_name (dashboard, career-projects…) es solo el nombre legible. "
+            "section_id requerido salvo en list."
+        ),
         "schema": {
             "type": "object",
             "properties": {
                 "action": {"type": "string", "enum": ["list", "get", "update"]},
-                "section_id": {"type": "string"},
+                "section_id": {"type": "string", "description": "PK de la sección, p.ej. sec-1 (NO el system_name)"},
                 "agent_profile_id": {"type": "string", "description": "Agente con dominio de la sección; string vacío restaura el default del código"},
                 "description": {"type": "string", "description": "String vacío restaura el default del código"},
             },
@@ -720,11 +725,16 @@ async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[st
 
     section_id = tool_input.get("section_id")
     if not section_id:
-        return {"error": "section_id is required for this action"}
+        return {"error": "section_id (PK sec-N) is required for this action"}
     try:
         get_section_spec(section_id)
     except KeyError:
-        return {"error": f"unknown admin section: {section_id}"}
+        return {
+            "error": (
+                f"unknown admin section: {section_id!r}. section_id debe ser el PK sec-N "
+                "(usa action=list y toma el campo 'id'; 'system_name' es solo el nombre legible)"
+            )
+        }
 
     if action == "get":
         return {"item": await section_catalog.get_section(db, section_id)}

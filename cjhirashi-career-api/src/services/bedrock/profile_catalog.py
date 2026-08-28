@@ -110,7 +110,8 @@ def _with_methodologies(
 def _attach_sections(item: Dict[str, Any], owned: List[Dict[str, Any]]) -> None:
     item["sections"] = [
         {
-            "id": row["id"],
+            "id": row["id"],  # PK sec-N (ADR-021)
+            "system_name": row["system_name"],
             "label": row["label"],
             "section_type": row["section_type"],
             "path": row["path"],
