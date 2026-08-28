@@ -3,7 +3,7 @@ from config import settings
 from services.bedrock.converse_client import _build_converse_kwargs, _supports_prompt_cache
 
 CACHED_MODEL = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
-PLAIN_MODEL = "us.amazon.nova-pro-v1:0"
+PLAIN_MODEL = "amazon.nova-lite-v1:0"  # en catálogo, sin supports_prompt_cache
 
 _MESSAGES = [
     {"role": "user", "content": [{"text": "Hola"}]},

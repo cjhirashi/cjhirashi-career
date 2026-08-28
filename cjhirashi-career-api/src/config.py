@@ -110,14 +110,13 @@ class Settings(BaseSettings):
 
     # Catálogo de modelos disponibles en el selector del Admin Panel.
     # invoke_via: foundation = ID directo; inference_profile = prefijo us.*
+    #
+    # Solo modelos que el harness usa hoy. El prompt caching (ADR-019) solo aplica
+    # a los que llevan supports_prompt_cache=True (Claude 4.5). Nova Lite, DeepSeek
+    # y Mistral Large se mantienen porque agent_profiles/section_profiles los
+    # referencian; los modelos sin uso ni caché (Nova Micro/Pro/Premier, Llama 3.3)
+    # se retiraron del catálogo.
     BEDROCK_AVAILABLE_MODELS: Dict[str, Dict[str, Any]] = {
-        "amazon.nova-micro-v1:0": {
-            "label": "Nova Micro",
-            "tier": "economy",
-            "invoke_via": "foundation",
-            "price_input_per_million": 0.035,
-            "price_output_per_million": 0.14,
-        },
         "amazon.nova-lite-v1:0": {
             "label": "Nova Lite",
             "tier": "economy",
@@ -140,33 +139,12 @@ class Settings(BaseSettings):
             "price_output_per_million": 5.00,
             "supports_prompt_cache": True,
         },
-        "us.amazon.nova-pro-v1:0": {
-            "label": "Amazon Nova Pro",
-            "tier": "standard",
-            "invoke_via": "inference_profile",
-            "price_input_per_million": 0.80,
-            "price_output_per_million": 3.20,
-        },
-        "meta.llama3-3-70b-instruct-v1:0": {
-            "label": "Llama 3.3 70B",
-            "tier": "standard",
-            "invoke_via": "foundation",
-            "price_input_per_million": 0.72,
-            "price_output_per_million": 0.72,
-        },
         "mistral.mistral-large-2402-v1:0": {
             "label": "Mistral Large",
             "tier": "standard",
             "invoke_via": "foundation",
             "price_input_per_million": 2.00,
             "price_output_per_million": 6.00,
-        },
-        "us.amazon.nova-premier-v1:0": {
-            "label": "Nova Premier",
-            "tier": "premium",
-            "invoke_via": "inference_profile",
-            "price_input_per_million": 2.50,
-            "price_output_per_million": 10.00,
         },
         "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
             "label": "Claude Sonnet 4.5",

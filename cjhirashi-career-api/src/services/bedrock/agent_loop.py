@@ -209,7 +209,6 @@ def _effective_model(req: ChatTurnRequest, runtime, profile) -> str:
     # Modelos considerados demasiado "débiles" para chats generales.
     weak_models = {
         "amazon.nova-lite-v1:0",
-        "amazon.nova-micro-v1:0",
     }
 
     # Si la superficie es "general", se prefiere explícitamente el modelo por defecto del perfil,
