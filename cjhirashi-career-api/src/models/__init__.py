@@ -61,7 +61,11 @@ from models.bedrock_settings import BedrockSettings
 from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
 from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
 from models.bedrock_agent_delegation import BedrockAgentDelegation
-from models.admin_section_override import AdminSectionOverride
+from models.admin_section_group import AdminSectionGroup
+from models.admin_section_l1 import AdminSectionL1
+from models.admin_section_l2 import AdminSectionL2
+from models.admin_section_l3 import AdminSectionL3
+from models.admin_view import AdminView
 from models.bedrock_custom_tool import BedrockCustomTool
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
 from models.bedrock_task import BedrockTask
@@ -143,7 +147,11 @@ __all__ = [
     "BedrockAgentProfilePrompt",
     "BedrockAgentProfilePhoto",
     "BedrockAgentDelegation",
-    "AdminSectionOverride",
+    "AdminSectionGroup",
+    "AdminSectionL1",
+    "AdminSectionL2",
+    "AdminSectionL3",
+    "AdminView",
     "BedrockCustomTool",
     "BedrockConversation",
     "BedrockConversationMessage",

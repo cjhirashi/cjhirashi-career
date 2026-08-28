@@ -61,6 +61,12 @@ export interface BedrockPageContext {
   domain_key?: string
   /** Named chat profile key — resolved to a model id via chatSectionProfiles.ts */
   chat_profile?: string
+  /**
+   * Active view key within the current admin section (e.g. 'list', 'view',
+   * 'edit'), used by the backend's `match_active_view` (ADR-023) to resolve
+   * which view's `responsible_agent_profile_id` owns the contextual chat.
+   */
+  view_key?: string
 }
 
 /** Full payload for POST /bedrock/chat (mirror of schemas/bedrock.py). */
@@ -181,11 +187,20 @@ export interface BedrockAgentCatalogMethodology {
   assigned: boolean
 }
 
-export interface BedrockAgentCatalogSection {
+/**
+ * Admin view an L2 profile is responsible for (derived, read-only —
+ * ADR-023). Mirror of `profile_catalog.py::_attach_views`. Replaces the old
+ * `sections` ownership list (ADR-022 `set_agent_sections`, removed).
+ */
+export interface BedrockAgentCatalogView {
   id: string
+  key: string
   label: string
-  section_type: string
-  path: string
+  section_id: string
+  section_system_name: string
+  section_path: string | null
+  data_source: string
+  resource_key: string | null
 }
 
 export interface BedrockAgentDelegationTarget {
@@ -205,7 +220,7 @@ export interface BedrockAgentCatalogItem {
   write_enabled: boolean
   domain_keys: string[]
   resource_keys: string[] | null
-  sections: BedrockAgentCatalogSection[]
+  views: BedrockAgentCatalogView[]
   default_model_id: string | null
   tools: string[]
   has_own_memory: boolean

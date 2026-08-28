@@ -5,8 +5,9 @@ import { MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { ChatWindow } from '@/components/bedrock/ChatWindow'
 import { useChatPageContext } from '@/hooks/useChatPageContext'
-import { useAdminSections } from '@/hooks/useAdminSections'
-import { matchAdminSection } from '@/types/adminSections'
+import { useNavTree } from '@/hooks/useNavTree'
+import { useAdminView } from '@/hooks/useAdminViews'
+import { flattenNavTree, matchActiveView } from '@/types/adminSections'
 
 type RightPanelTab = 'chat' | 'instructions'
 
@@ -127,10 +128,16 @@ interface SidebarRightProps {
 export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState<RightPanelTab>('instructions')
   const location = useLocation()
-  const { data: sections } = useAdminSections()
-  const matched = matchAdminSection(location.pathname, sections ?? [])
+  const { data: navTree } = useNavTree()
+  const sections = flattenNavTree(navTree)
+  const matched = matchActiveView(location.pathname, sections)
+  const matchedViewId = matched?.view.has_instructions ? matched.view.id : undefined
+  const { data: matchedView } = useAdminView(matchedViewId)
   const instructions = matched
-    ? { title: matched.view.sidebar_title, body: matched.view.sidebar_body }
+    ? {
+        title: matched.view.label,
+        body: matchedView?.instructions || 'Todavía no hay instrucciones para esta vista.',
+      }
     : getPageInstructions(location.pathname)
   const pageContext = useChatPageContext()
 

@@ -217,20 +217,21 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
         },
     },
     {
-        "name": "admin_section_settings",
+        "name": "admin_view_settings",
         "description": (
-            "Secciones del Admin: qué agente domina cada pantalla y su descripción. "
-            "action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); mira action=list, "
-            "campo id. El campo system_name (dashboard, career-projects…) es solo el nombre legible. "
-            "section_id requerido salvo en list."
+            "Vistas del Admin: qué agente L2 lleva el chat contextual de cada vista y sus instrucciones. "
+            "Una 'vista' es una pestaña dentro de una sección (lista, kanban, ficha…). action=list|get|update. "
+            "view_id es el PK vw-N (p.ej. vw-12); tómalo del campo id de action=list. Solo perfiles de "
+            "nivel 2 pueden ser responsables. view_id requerido salvo en list."
         ),
         "schema": {
             "type": "object",
             "properties": {
                 "action": {"type": "string", "enum": ["list", "get", "update"]},
-                "section_id": {"type": "string", "description": "PK de la sección, p.ej. sec-1 (NO el system_name)"},
-                "agent_profile_id": {"type": "string", "description": "Agente con dominio de la sección; string vacío restaura el default del código"},
-                "description": {"type": "string", "description": "String vacío restaura el default del código"},
+                "view_id": {"type": "string", "description": "PK de la vista, p.ej. vw-12 (NO el key ni el system_name de la sección)"},
+                "section_id": {"type": "string", "description": "list: filtra a las vistas de una sección (s1-N | s2-N | s3-N)"},
+                "responsible_agent_profile_id": {"type": "string", "description": "update: system name de un perfil L2 (agent_search_operations) o su record id (agent-3). String vacío = quitar responsable."},
+                "instructions": {"type": "string", "description": "update: texto del panel de instrucciones. String vacío = quitar."},
             },
             "required": ["action"],
         },
@@ -279,7 +280,7 @@ _WRITE_TOOLS = {
     "attach_image_to_record",
     "save_job_listings",
     "agent_catalog_settings",
-    "admin_section_settings",
+    "admin_view_settings",
     "bedrock_global_settings",
     "error_report_settings",
 }
@@ -712,58 +713,73 @@ async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, An
     return {"error": f"unknown action: {action}"}
 
 
-async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Secciones del Admin (L2 agent_configuration): agente dueño y descripción."""
+_VIEW_INSTRUCTIONS_PREVIEW = 280
+
+
+def _view_for_tool(item: Dict[str, Any], *, full: bool) -> Dict[str, Any]:
+    out = dict(item)
+    text_value = out.get("instructions")
+    if not full and isinstance(text_value, str) and len(text_value) > _VIEW_INSTRUCTIONS_PREVIEW:
+        out["instructions"] = text_value[:_VIEW_INSTRUCTIONS_PREVIEW] + "…"
+    return out
+
+
+async def _run_admin_view_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+    """Vistas del Admin (L2 agent_configuration): responsable L2 del chat contextual e instrucciones."""
     from services import section_catalog
-    from services.admin_sections import get_section_spec
-    from services.bedrock.agent_profiles import get_profile
 
     action = tool_input.get("action")
 
     if action == "list":
-        return {"items": await section_catalog.list_sections(db)}
+        section_id = tool_input.get("section_id") or None
+        try:
+            items = await section_catalog.list_views(db, section_id=section_id)
+        except KeyError:
+            return {"error": f"unknown section: {section_id!r}. Usa s1-N | s2-N | s3-N."}
+        return {"items": [_view_for_tool(it, full=False) for it in items]}
 
-    section_id = tool_input.get("section_id")
-    if not section_id:
-        return {"error": "section_id (PK sec-N) is required for this action"}
-    try:
-        get_section_spec(section_id)
-    except KeyError:
-        return {
-            "error": (
-                f"unknown admin section: {section_id!r}. section_id debe ser el PK sec-N "
-                "(usa action=list y toma el campo 'id'; 'system_name' es solo el nombre legible)"
-            )
-        }
+    view_id = tool_input.get("view_id")
+    if not view_id:
+        return {"error": "view_id (PK vw-N) is required for this action"}
 
     if action == "get":
-        return {"item": await section_catalog.get_section(db, section_id)}
+        try:
+            item = await section_catalog.get_view(db, view_id)
+        except KeyError:
+            return {
+                "error": (
+                    f"unknown admin view: {view_id!r}. Usa action=list y toma el campo 'id'."
+                )
+            }
+        return {"item": _view_for_tool(item, full=True)}
 
     if action == "update":
-        agent_id = tool_input.get("agent_profile_id")
-        clear_agent = False
-        if agent_id is not None:
-            if agent_id == "":
-                clear_agent = True
-                agent_id = None
-            else:
-                try:
-                    get_profile(agent_id)
-                except KeyError:
-                    return {"error": f"unknown agent profile: {agent_id}"}
-        description = tool_input.get("description")
+        kwargs: Dict[str, Any] = {}
+        if "responsible_agent_profile_id" in tool_input:
+            kwargs["responsible"] = tool_input.get("responsible_agent_profile_id") or ""
+        if "instructions" in tool_input:
+            kwargs["instructions"] = tool_input.get("instructions") or ""
         try:
-            item = await section_catalog.update_section(
-                db,
-                section_id,
-                agent_profile_id=agent_id,
-                clear_agent=clear_agent,
-                description=description,
-                clear_description=description == "",
-            )
-        except KeyError as exc:
-            return {"error": str(exc)}
-        return {"item": item}
+            item = await section_catalog.update_view(db, view_id, **kwargs)
+        except section_catalog.EmptyViewUpdateError:
+            return {"error": "update requiere responsible_agent_profile_id y/o instructions"}
+        except KeyError:
+            return {
+                "error": (
+                    f"unknown admin view: {view_id!r}. Usa action=list y toma el campo 'id'."
+                )
+            }
+        except section_catalog.UnknownProfileError as exc:
+            return {"error": f"unknown agent profile: {exc.value!r}"}
+        except section_catalog.ProfileNotLevel2Error as exc:
+            return {
+                "error": (
+                    f"agent profile {exc.value!r} is L{exc.level}; el chat contextual de una "
+                    "vista solo lo puede llevar un especialista L2 (p.ej. "
+                    "agent_professional_identity, agent_search_operations)"
+                )
+            }
+        return {"item": _view_for_tool(item, full=True)}
 
     return {"error": f"unknown action: {action}"}
 
@@ -945,8 +961,8 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     if name == "agent_catalog_settings":
         return await _run_agent_catalog_settings(db, user_id, tool_input)
 
-    if name == "admin_section_settings":
-        return await _run_admin_section_settings(db, tool_input)
+    if name == "admin_view_settings":
+        return await _run_admin_view_settings(db, tool_input)
 
     if name == "bedrock_global_settings":
         return await _run_bedrock_global_settings(db, tool_input)
@@ -1256,8 +1272,8 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
         action = tool_input.get("action")
         if action in ("update_prompt", "update_delegation", "update_methodologies"):
             return "agent-profiles"
-    if name == "admin_section_settings" and tool_input.get("action") == "update":
-        return "admin-sections"
+    if name == "admin_view_settings" and tool_input.get("action") == "update":
+        return "admin-views"
     if name == "bedrock_global_settings" and tool_input.get("action") in (
         "update_system_prompt",
         "update_global_rules",

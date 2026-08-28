@@ -20,11 +20,9 @@ import {
   useAgentMemoryNoteMutations,
   useAgentMethodologiesUpdate,
   useAgentPhotoUpdate,
-  useAgentSectionsUpdate,
   useBedrockAgentProfilePromptUpdate,
   useBedrockConversations,
 } from '@/hooks/useBedrockChat'
-import { useAdminSections } from '@/hooks/useAdminSections'
 import { getErrorMessage } from '@/utils/errors'
 import { hasActiveFilters, recordMatchesFilters } from '@/utils/listFilters'
 import {
@@ -33,7 +31,7 @@ import {
   pinnedColumnKeys,
 } from '@/utils/tableColumns'
 import { recordSegmentFromPath } from '@/utils/recordUrl'
-import { ADMIN_SECTION_TYPE_LABEL } from '@/types/adminSections'
+import { ADMIN_DATA_SOURCE_LABEL } from '@/types/adminSections'
 import { BedrockAgentCatalogItem } from '@/types/bedrock'
 import { allAgentSelectOptions } from '@/config/agentProfiles'
 import { PersonChip } from '@/components/PersonAvatar'
@@ -473,10 +471,17 @@ const AgentCatalogRecordView: React.FC<{
       </div>
 
       <div>
-        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Secciones</h3>
+        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+          Vistas que gestiona
+        </h3>
         <ChipList
-          items={(agent.sections ?? []).map((row) => row.label)}
-          empty="Ninguna sección asignada."
+          items={(agent.views ?? []).map(
+            (row) =>
+              `${row.section_system_name} · ${row.label}${
+                row.data_source ? ` (${ADMIN_DATA_SOURCE_LABEL[row.data_source] ?? row.data_source})` : ''
+              }`
+          )}
+          empty="Ninguna vista asignada."
         />
       </div>
 
@@ -546,16 +551,13 @@ const AgentCatalogEditors: React.FC<{
   const data = fetched ?? fallback
   const { data: memory } = useAgentMemory(profileId)
   const { data: conversations = [] } = useBedrockConversations(undefined, profileId)
-  const { data: allSections = [] } = useAdminSections()
   const promptUpdate = useBedrockAgentProfilePromptUpdate()
   const methodologiesUpdate = useAgentMethodologiesUpdate()
   const delegationUpdate = useAgentDelegationUpdate()
-  const sectionsUpdate = useAgentSectionsUpdate()
   const photoUpdate = useAgentPhotoUpdate()
   const notes = useAgentMemoryNoteMutations(profileId)
   const [promptDraft, setPromptDraft] = useState('')
   const [selectedMethodologyIds, setSelectedMethodologyIds] = useState<string[]>([])
-  const [selectedSectionIds, setSelectedSectionIds] = useState<string[]>([])
   const [selectedDelegateIds, setSelectedDelegateIds] = useState<string[]>([])
   const [noteDraft, setNoteDraft] = useState('')
 
@@ -564,7 +566,6 @@ const AgentCatalogEditors: React.FC<{
       setPromptDraft(data.effective_suffix)
       const source = data.methodologies ?? data.assigned_methodologies
       setSelectedMethodologyIds(source.filter((row) => row.assigned).map((row) => row.id))
-      setSelectedSectionIds((data.sections ?? []).map((row) => row.id))
       setSelectedDelegateIds(data.delegation_target_ids ?? [])
     }
   }, [data])
@@ -578,19 +579,8 @@ const AgentCatalogEditors: React.FC<{
     [data]
   )
 
-  const sectionOptions = useMemo(
-    () =>
-      allSections.map((row) => ({
-        value: row.id,
-        label: `${row.label} · ${row.system_name} (${
-          ADMIN_SECTION_TYPE_LABEL[row.section_type] ?? row.section_type
-        })`,
-      })),
-    [allSections]
-  )
-
   const delegateOptions = useMemo(() => {
-    const allowed = new Set(data?.allowed_delegation_ids ?? data?.default_delegation_target_ids ?? [])
+    const allowed = new Set(data?.allowed_delegation_ids ?? [])
     return allAgentSelectOptions().filter((opt) => allowed.has(opt.value))
   }, [data])
 
@@ -601,9 +591,6 @@ const AgentCatalogEditors: React.FC<{
     .sort()
     .join(',')
   const methodologyDirty = selectedMethodologyIds.slice().sort().join(',') !== assignedIds
-  const sectionDirty =
-    selectedSectionIds.slice().sort().join(',') !==
-    (data?.sections ?? []).map((row) => row.id).sort().join(',')
   const delegationDirty =
     selectedDelegateIds.slice().sort().join(',') !==
     (data?.delegation_target_ids ?? []).slice().sort().join(',')
@@ -632,35 +619,19 @@ const AgentCatalogEditors: React.FC<{
         )}
       </EditorBlock>
 
-      <EditorBlock
-        title="Secciones que gestiona"
-        editable
-        actions={
-          <IconAction
-            label="Guardar secciones"
-            disabled={!sectionDirty || sectionsUpdate.isPending}
-            onClick={() =>
-              sectionsUpdate.mutate({ profileId: data.profile_id, sectionIds: selectedSectionIds })
-            }
-          >
-            <Save size={13} aria-hidden="true" />
-          </IconAction>
-        }
-      >
+      <EditorBlock title="Vistas que gestiona">
         <p className="text-sm text-text-secondary">
-          Pantallas del Admin bajo el dominio de este agente. Para quitar una sección de dominio por
-          defecto, reasígnala a otro agente en Settings → Secciones.
+          Derivado de solo lectura: vistas del Admin cuyo chat contextual lleva este agente. Para
+          cambiarlo, edita la vista en{' '}
+          <Link to="/settings/views" className="text-primary hover:underline">
+            Settings → Vistas
+          </Link>
+          .
         </p>
-        <ThemedMultiSelect
-          aria-label="Secciones de este agente"
-          value={selectedSectionIds}
-          onChange={setSelectedSectionIds}
-          options={sectionOptions}
-          placeholder="— Selecciona secciones —"
+        <ChipList
+          items={(data.views ?? []).map((row) => `${row.section_system_name} · ${row.label}`)}
+          empty="Ninguna vista asignada."
         />
-        {sectionsUpdate.isError && (
-          <p className="text-red-600 dark:text-red-400 text-xs">{getErrorMessage(sectionsUpdate.error)}</p>
-        )}
       </EditorBlock>
 
       <EditorBlock title="Herramientas">

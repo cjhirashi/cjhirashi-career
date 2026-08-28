@@ -31,7 +31,6 @@ from schemas.bedrock import (
     BedrockAgentNote,
     BedrockAgentPhotoResponse,
     BedrockAgentPhotoUpdateRequest,
-    BedrockAgentSectionsUpdateRequest,
     BedrockAuditLogResponse,
     BedrockChatRequest,
     BedrockConversationMessageResponse,
@@ -456,26 +455,10 @@ async def update_agent_delegation(
     return await profile_delegation.set_delegation_targets(db, profile_id, payload.target_ids)
 
 
-@router.put(
-    "/agent-profiles/{profile_id}/sections",
-    summary="Secciones del Admin que este agente gestiona",
-)
-async def update_agent_sections(
-    profile_id: str,
-    payload: BedrockAgentSectionsUpdateRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    from services import section_catalog
-
-    try:
-        get_profile(profile_id)
-    except KeyError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
-    try:
-        return await section_catalog.set_agent_sections(db, profile_id, payload.section_ids)
-    except KeyError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+# ADR-022: `PUT /agent-profiles/{id}/sections` se elimina. "Vistas que gestiona un
+# agente" es ahora una lista derivada solo-lectura (admin_views con
+# responsible_agent_profile_id == perfil); se edita por vista en
+# `PUT /admin/views/{vw_id}` o con la tool Bedrock `admin_view_settings`.
 
 
 @router.put(

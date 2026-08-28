@@ -7,8 +7,8 @@ import { conversationBucket, useBedrockChatStore } from '@/stores/bedrockChatSto
 import { AGENT_ORCHESTRATOR, resolveAgentProfileId } from '@/config/agentProfiles'
 import { resolveRecommendedModel } from '@/config/chatSectionProfiles'
 import { getErrorMessage } from '@/utils/errors'
-import { useAdminSections } from '@/hooks/useAdminSections'
-import { matchAdminSection } from '@/types/adminSections'
+import { useNavTree } from '@/hooks/useNavTree'
+import { flattenNavTree, matchActiveView } from '@/types/adminSections'
 import {
   BedrockAgentProfilePrompt,
   BedrockChatMessage,
@@ -62,15 +62,16 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const newConversation = useBedrockChatStore((s) => s.newConversation)
   const switchConversation = useBedrockChatStore((s) => s.switchConversation)
 
-  const { data: adminSections } = useAdminSections()
+  const { data: navTree } = useNavTree()
   const effectiveAgentProfileId = useMemo(() => {
     if (chatSurface === 'general') return AGENT_ORCHESTRATOR
-    const match = matchAdminSection(pageContext?.route ?? '', adminSections ?? [])
-    if (match?.section.chat_agent_profile_id) {
-      return match.section.chat_agent_profile_id
+    const sections = flattenNavTree(navTree)
+    const match = matchActiveView(pageContext?.route ?? '', sections, pageContext?.view_key)
+    if (match?.view.chat_enabled && match.view.responsible_agent_profile_id) {
+      return match.view.responsible_agent_profile_id
     }
     return resolveAgentProfileId({ chatSurface, pageContext })
-  }, [chatSurface, pageContext, adminSections])
+  }, [chatSurface, pageContext, navTree])
 
   const bucketKey = conversationBucket(sessionType, effectiveAgentProfileId)
   const activeSessionId = useBedrockChatStore((s) => s.activeSessionIds[bucketKey] ?? '')
@@ -379,19 +380,6 @@ export function useAgentDelegationUpdate() {
     onSuccess: (_data, { profileId }) => {
       queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
       queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
-    },
-  })
-}
-
-export function useAgentSectionsUpdate() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ profileId, sectionIds }: { profileId: string; sectionIds: string[] }) =>
-      bedrockApi.updateAgentSections(profileId, sectionIds),
-    onSuccess: (_data, { profileId }) => {
-      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog'] })
-      queryClient.invalidateQueries({ queryKey: ['bedrock', 'agent-catalog', profileId] })
-      queryClient.invalidateQueries({ queryKey: ['admin', 'sections'] })
     },
   })
 }

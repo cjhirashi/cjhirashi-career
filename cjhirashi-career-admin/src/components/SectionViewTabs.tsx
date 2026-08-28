@@ -11,8 +11,8 @@ import {
   Pencil,
   type LucideIcon,
 } from 'lucide-react'
-import { useAdminSections } from '@/hooks/useAdminSections'
-import { matchAdminSection } from '@/types/adminSections'
+import { useNavTree } from '@/hooks/useNavTree'
+import { flattenNavTree, matchActiveView } from '@/types/adminSections'
 
 export interface SectionViewTab {
   key: string
@@ -32,10 +32,14 @@ const VIEW_TAB_ICONS: Record<string, LucideIcon> = {
 
 export function useSectionViewTabs(fallback: SectionViewTab[]): SectionViewTab[] {
   const { pathname } = useLocation()
-  const { data: sections } = useAdminSections()
-  const matched = matchAdminSection(pathname, sections ?? [])
-  if (matched?.section.views.length) {
-    return matched.section.views.map((view) => ({ key: view.key, label: view.label }))
+  const { data: navTree } = useNavTree()
+  const sections = flattenNavTree(navTree)
+  const matched = matchActiveView(pathname, sections)
+  if (matched && matched.section.views.length) {
+    return matched.section.views
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((view) => ({ key: view.key, label: view.label }))
   }
   return fallback
 }

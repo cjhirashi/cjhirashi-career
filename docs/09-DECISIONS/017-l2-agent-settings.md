@@ -6,6 +6,14 @@ Aceptado — 2026-08-27
 
 Extiende el catálogo de [ADR-012](./012-bedrock-three-level-agents.md) sin cambiar las reglas de jerarquía (L1 delega a L2/L3; L2 delega solo a L3; delegación solo hacia abajo).
 
+> **Nota (2026-08-28)**: [ADR-022](./022-l2-split-configuration-vs-incidents.md) partió
+> `agent_settings` en `agent_configuration` (metaconfiguración) + `agent_settings` (incidencias y
+> bitácora). [ADR-023](./023-admin-sections-hierarchy-views.md) reemplaza además la propiedad de
+> secciones por agente: `admin_section_settings` (`action=update` sobre "agente dueño +
+> descripción" de una sección) pasa a `admin_view_settings`, que asigna `responsible_agent_profile_id`
+> (perfil **L2**) e `instructions` **por vista** (`vw-N`), no por sección. `set_agent_sections` se
+> elimina; la tabla `admin_section_overrides` desaparece.
+
 ## Contexto
 
 El Admin tiene un grupo de navegación **Settings** con tres pantallas: Catálogo de Agentes (`/settings/agents`), Secciones del Admin (`/settings/sections`) y Prompts Globales (`/settings/agent-prompts`). Ninguna de las tres tenía un L2 dueño: `_ROUTE_TO_PROFILE` no las mapeaba, así que su chat contextual caía al orquestador (la excepción documentada en los "Costos" de ADR-012). Además, no existía ninguna tool de Bedrock para tocar esas tres áreas — solo se editaban a mano desde los formularios del Admin (`useBedrockAgentProfilePromptUpdate`, `useAdminSectionUpdate`, `useBedrockInstructionsUpdate`, `useBedrockGlobalRulesUpdate`), todas contra endpoints REST directos, sin pasar por el loop de tool-calling.

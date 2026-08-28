@@ -67,6 +67,15 @@ TABLE_PREFIXES: dict[str, str] = {
     "work_history":               "wkh",
     # Catálogo de agentes (IDs asignados en código, no hay secuencia PG).
     "agent_profiles":             "agent",
+    # ADR-022: jerarquía de secciones del Admin + vistas en tablas reales.
+    # La API nunca hace INSERT en estas tablas; los ids los asigna el seeder de
+    # forma determinista (sec-N ↔ s1-N, grp-N, vw-N). La secuencia queda creada
+    # para el futuro catálogo de componentes UI (alta de vistas desde el Admin).
+    "admin_section_groups":       "grp",
+    "admin_sections_l1":          "s1",
+    "admin_sections_l2":          "s2",
+    "admin_sections_l3":          "s3",
+    "admin_views":                "vw",
 }
 
 

@@ -165,11 +165,17 @@ class BedrockAgentCatalogMethodology(BaseModel):
     assigned: bool
 
 
-class BedrockAgentCatalogSection(BaseModel):
+class BedrockAgentCatalogView(BaseModel):
+    """Vista del Admin que gestiona un perfil L2 (derivado, solo-lectura — ADR-022)."""
+
     id: str
+    key: str
     label: str
-    section_type: str
-    path: str
+    section_id: str
+    section_system_name: str
+    section_path: Optional[str] = None
+    data_source: str
+    resource_key: Optional[str] = None
 
 
 class BedrockAgentDelegationTarget(BaseModel):
@@ -189,7 +195,7 @@ class BedrockAgentCatalogItem(BaseModel):
     write_enabled: bool
     domain_keys: List[str]
     resource_keys: Optional[List[str]] = None
-    sections: List[BedrockAgentCatalogSection] = []
+    views: List[BedrockAgentCatalogView] = []
     default_model_id: Optional[str] = None
     tools: List[str]
     has_own_memory: bool
@@ -226,10 +232,6 @@ class BedrockAgentDelegationUpdateRequest(BaseModel):
     """`target_ids=None` restaura los destinos por nivel definidos en código."""
 
     target_ids: Optional[List[str]] = None
-
-
-class BedrockAgentSectionsUpdateRequest(BaseModel):
-    section_ids: List[str]
 
 
 class BedrockAgentNote(BaseModel):

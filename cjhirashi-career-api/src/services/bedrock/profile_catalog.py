@@ -14,7 +14,7 @@ from services.bedrock.agent_profiles import (
     tools_for_profile,
 )
 from services.methodology_scope import is_shared_methodology
-from services.section_catalog import list_sections as list_admin_sections
+from services.section_catalog import list_views as list_admin_views
 
 
 def resolved_tool_names(profile: AgentProfile) -> List[str]:
@@ -57,7 +57,7 @@ def _serialize_definition(profile: AgentProfile, prompt_meta: dict, photo_url: O
         "write_enabled": profile.write_enabled,
         "domain_keys": list(profile.domain_keys),
         "resource_keys": _resource_keys(profile),
-        "sections": [],
+        "views": [],
         "default_model_id": profile.default_model_id,
         "tools": resolved_tool_names(profile),
         "has_own_memory": profile.user_facing,
@@ -107,19 +107,23 @@ def _with_methodologies(
     return item
 
 
-def _attach_sections(item: Dict[str, Any], owned: List[Dict[str, Any]]) -> None:
-    item["sections"] = [
+def _attach_views(item: Dict[str, Any], owned_views: List[Dict[str, Any]]) -> None:
+    """Vistas del Admin que este perfil L2 gestiona (derivado, solo-lectura — ADR-022)."""
+    item["views"] = [
         {
-            "id": row["id"],  # PK sec-N (ADR-021)
-            "system_name": row["system_name"],
+            "id": row["id"],  # PK vw-N
+            "key": row["key"],
             "label": row["label"],
-            "section_type": row["section_type"],
-            "path": row["path"],
+            "section_id": row["owner"]["section_id"],
+            "section_system_name": row["owner"]["section_system_name"],
+            "section_path": row["owner"]["section_path"],
+            "data_source": row["data_source"],
+            "resource_key": row.get("resource_key"),
         }
-        for row in owned
+        for row in owned_views
     ]
     item["resource_keys"] = [
-        row["resource_key"] for row in owned if row.get("resource_key")
+        row["resource_key"] for row in owned_views if row.get("resource_key")
     ] or item.get("resource_keys")
 
 
@@ -139,16 +143,16 @@ async def list_catalog(db: AsyncSession, user_id: str) -> List[Dict[str, Any]]:
     conv_counts = await _conversation_counts(db, user_id)
     rows = await _methodology_rows(db, user_id)
     delegation = await profile_delegation.list_delegation_state(db)
-    owned_by_agent: Dict[str, List[Dict[str, Any]]] = {}
-    for row in await list_admin_sections(db):
-        owner = row.get("agent_profile_id")
+    owned_views_by_agent: Dict[str, List[Dict[str, Any]]] = {}
+    for row in await list_admin_views(db):
+        owner = row.get("responsible_agent_profile_id")
         if owner:
-            owned_by_agent.setdefault(owner, []).append(row)
+            owned_views_by_agent.setdefault(owner, []).append(row)
     items: List[Dict[str, Any]] = []
     for profile in list_profiles():
         item = _serialize_definition(profile, prompts[profile.id], photos.get(profile.id))
         item["conversation_count"] = conv_counts.get(profile.id, 0)
-        _attach_sections(item, owned_by_agent.get(profile.id, []))
+        _attach_views(item, owned_views_by_agent.get(profile.id, []))
         _attach_delegation(item, delegation[profile.id])
         items.append(_with_methodologies(item, _methodology_entries(rows, profile.id), include_all=False))
     return items
@@ -171,7 +175,11 @@ async def get_catalog_item(
     delegation = await profile_delegation.list_delegation_state(db)
     item = _serialize_definition(profile, prompt_meta, photos.get(profile.id))
     item["conversation_count"] = conv_counts.get(profile.id, 0)
-    owned = [row for row in await list_admin_sections(db) if row.get("agent_profile_id") == profile.id]
-    _attach_sections(item, owned)
+    owned_views = [
+        row
+        for row in await list_admin_views(db)
+        if row.get("responsible_agent_profile_id") == profile.id
+    ]
+    _attach_views(item, owned_views)
     _attach_delegation(item, delegation[profile.id])
     return _with_methodologies(item, _methodology_entries(rows, profile.id), include_all=True)

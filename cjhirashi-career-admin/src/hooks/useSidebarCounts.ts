@@ -6,9 +6,11 @@ import { pdfTemplatesApi } from '@/api/pdfTemplates'
 import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
 import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
-import { adminSectionsApi } from '@/api/adminSections'
+import { adminNavTreeApi, adminViewsApi } from '@/api/adminSections'
+import { NavGroup, flattenNavTree } from '@/types/adminSections'
+import { useNavTree } from '@/hooks/useNavTree'
 import { errorReportsApi } from '@/api/errorReports'
-import { CAREER_DOMAINS, CAREER_RESOURCES, isTableResource } from '@/config/careerResources'
+import { CAREER_RESOURCES, isTableResource } from '@/config/careerResources'
 import { careerQueryKey } from '@/hooks/useCareerResource'
 
 const STALE_MS = 30_000
@@ -18,22 +20,40 @@ const countQueryOptions = {
   refetchOnWindowFocus: false,
 }
 
-export function tableResourceKeysForDomain(domainKey: string | null): string[] {
-  if (!domainKey) return []
-  const domain = CAREER_DOMAINS.find((item) => item.key === domainKey)
-  if (!domain) return []
-  return domain.resourceKeys.filter((key) => isTableResource(CAREER_RESOURCES[key]))
+/**
+ * Table career resource keys (`career-*` sections whose config isn't a
+ * singleton) belonging to a nav-tree group, in the group's own section
+ * order. Replaces the old `CAREER_DOMAINS`-driven `tableResourceKeysForDomain`
+ * now that group membership is data (ADR-023), not a hardcoded map.
+ */
+export function tableResourceKeysForGroup(
+  groupSystemName: string | null,
+  groups: NavGroup[] | undefined
+): string[] {
+  if (!groupSystemName || !groups) return []
+  const group = groups.find((g) => g.system_name === groupSystemName)
+  if (!group) return []
+  return group.sections
+    .filter((section) => section.system_name.startsWith('career-'))
+    .map((section) => section.system_name.replace(/^career-/, ''))
+    .filter((key) => isTableResource(CAREER_RESOURCES[key]))
 }
 
 /**
  * Record counts for sidebar table sections. Career counts load only for the
- * expanded domain; files always (top-level table); agent tables when that
+ * expanded group (keyed by the nav-tree group's `system_name`); files/tasks
+ * always (pinned top-level tables); agent/settings tables only when their
  * accordion is open. Query keys match the list pages so mutations refresh
  * the badges without a second round trip.
  */
 export function useSidebarCounts(expandedDomain: string | null) {
-  const careerKeys = useMemo(() => tableResourceKeysForDomain(expandedDomain), [expandedDomain])
-  const loadAgent = expandedDomain === 'agent'
+  const { data: navTree } = useNavTree()
+  const groups = navTree?.groups
+  const careerKeys = useMemo(
+    () => tableResourceKeysForGroup(expandedDomain, groups),
+    [expandedDomain, groups]
+  )
+  const loadAgent = expandedDomain === 'agent-ai'
   const loadSettings = expandedDomain === 'settings'
 
   const careerQueries = useQueries({
@@ -77,9 +97,19 @@ export function useSidebarCounts(expandedDomain: string | null) {
     ...countQueryOptions,
   })
 
-  const sectionsQuery = useQuery({
-    queryKey: ['admin', 'sections'],
-    queryFn: adminSectionsApi.list,
+  const navTreeCountsQuery = useQuery({
+    queryKey: ['admin', 'nav-tree'],
+    queryFn: adminNavTreeApi.get,
+    enabled: loadSettings,
+    ...countQueryOptions,
+  })
+  const sectionsCount = navTreeCountsQuery.data
+    ? flattenNavTree(navTreeCountsQuery.data).length
+    : undefined
+
+  const viewsQuery = useQuery({
+    queryKey: ['admin', 'views', {}],
+    queryFn: () => adminViewsApi.list(),
     enabled: loadSettings,
     ...countQueryOptions,
   })
@@ -112,6 +142,10 @@ export function useSidebarCounts(expandedDomain: string | null) {
 
   return {
     career,
+    pinned: {
+      files: filesQuery.data,
+      tasks: tasksQuery.data,
+    },
     files: filesQuery.data,
     tasks: tasksQuery.data,
     agent: {
@@ -122,7 +156,8 @@ export function useSidebarCounts(expandedDomain: string | null) {
     },
     settings: {
       catalog: catalogQuery.data?.length,
-      sections: sectionsQuery.data?.length,
+      sections: sectionsCount,
+      views: viewsQuery.data?.length,
       errorsPending: errorReportsQuery.data?.pending,
     },
   }

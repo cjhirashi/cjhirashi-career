@@ -78,6 +78,18 @@ export function allAgentSelectOptions(): { value: string; label: string }[] {
   }))
 }
 
+/**
+ * L2 profiles only — the only level allowed to own a view's contextual chat
+ * (`responsible_agent_profile_id`, ADR-023). L1 only orchestrates and L3 has
+ * no chat of its own.
+ */
+export function l2AgentSelectOptions(): { value: string; label: string }[] {
+  return ALL_AGENT_PROFILES.filter((p) => p.level === 2).map((p) => ({
+    value: p.id,
+    label: p.label,
+  }))
+}
+
 /** Mirror of `_ROUTE_TO_PROFILE` in agent_profiles.py */
 const ROUTE_TO_PROFILE: Record<string, string> = {
   '/linkedin': AGENT_DIGITAL_PRESENCE,

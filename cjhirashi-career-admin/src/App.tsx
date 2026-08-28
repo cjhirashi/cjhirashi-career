@@ -24,6 +24,7 @@ import { AgentPromptsSettingsPage } from '@/pages/AgentPromptsSettingsPage'
 import { ErrorReportsPage, ErrorReportDetailPage } from '@/pages/ErrorReportsPage'
 import { AgentCatalogPage } from '@/pages/AgentCatalogPage'
 import { AdminSectionsPage, AdminSectionDetailPage } from '@/pages/AdminSectionsPage'
+import { AdminViewsPage, AdminViewDetailPage } from '@/pages/AdminViewsPage'
 import { AgentToolsPage } from '@/pages/AgentToolsPage'
 import { AgentMemoryPage } from '@/pages/AgentMemoryPage'
 import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
@@ -256,6 +257,26 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <AdminSectionDetailPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/views"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AdminViewsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings/views/:viewId"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AdminViewDetailPage />
                 </Layout>
               </PrivateRoute>
             }

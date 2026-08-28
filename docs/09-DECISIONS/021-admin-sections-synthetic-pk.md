@@ -2,11 +2,24 @@
 
 ## Estado
 
-Aceptado — 2026-08-27
+Supersedido parcialmente por [ADR-023](./023-admin-sections-hierarchy-views.md) — 2026-08-28.
+Aceptado — 2026-08-27.
 
 Complementa a [ADR-017](./017-l2-agent-settings.md) (L2 `agent_settings`, dueño de la pantalla
 "Secciones del Admin") y a [ADR-020](./020-admin-section-templates.md) (plantilla compartida de
 las vistas de tabla). No cambia ninguna regla de esos ADR — solo re-identifica las secciones.
+
+**Qué sigue vigente con ADR-023**: el consecutivo entero de las secciones se conserva —
+el re-key es `sec-N → s1-N` (mismo entero), `system_name` intacto, y la regla de numeración
+congelada / huecos permanentes se mantiene. La compatibilidad de URLs del SPA
+(`/settings/sections/:id`) sigue apoyándose en ese entero (`sec-N == s1-N`).
+
+**Qué cambia con ADR-023**: "Secciones del Admin" **deja de ser un registro en código** y pasa
+a seis tablas reales (`admin_section_groups`, `admin_sections_l1/l2/l3`, `admin_views`); la
+tabla `admin_section_overrides` **se elimina** (su contenido se convierte a columnas de
+`admin_views` en la migración `c4d5e6f7a8b9`); la clave canónica del cableado ya no es `sec-N`
+sino `s1-N` para la sección y `vw-N` para la vista; la tool Bedrock `admin_section_settings`
+pasa a `admin_view_settings` y opera por vista, no por sección.
 
 ## Contexto
 

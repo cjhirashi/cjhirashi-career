@@ -230,7 +230,7 @@ def test_agent_settings_owns_its_tools_only():
     assert "error_report_settings" in names
     assert "search_knowledge_base" in names
     assert "agent_catalog_settings" not in names
-    assert "admin_section_settings" not in names
+    assert "admin_view_settings" not in names
     assert "bedrock_global_settings" not in names
     assert "create_career_record" not in names
     assert "delegate_to_specialist" in names
@@ -242,7 +242,7 @@ def test_agent_configuration_owns_config_tools():
     assert profile.user_facing
     names = tools_for_profile(profile, all_tool_names())
     assert "agent_catalog_settings" in names
-    assert "admin_section_settings" in names
+    assert "admin_view_settings" in names
     assert "bedrock_global_settings" in names
     assert "search_knowledge_base" in names
     assert "delegate_to_specialist" in names

@@ -4,6 +4,13 @@
 
 Aceptado — 2026-08-27
 
+> **Nota (2026-08-28, [ADR-023](./023-admin-sections-hierarchy-views.md))**: el `SectionPageTemplate`
+> (Frente A, pendiente — ver §Seguimiento de ADR-021/ADR-023) consumirá el **árbol de
+> grupos → secciones L1/L2/L3 → vistas** de ADR-023 (`GET /admin/nav-tree` y la tabla
+> `admin_views`) como fuente del layout de cada página: pestañas = `admin_views`, chat contextual
+> e instrucciones del sidebar derecho = `responsible_agent_profile_id` / `instructions` de la vista
+> activa. Los primitivos `components/section/` de este ADR siguen siendo la base visual.
+
 ## Contexto
 
 Cada pantalla de lista del Admin Panel reescribía a mano el mismo *chrome* (el marco

@@ -6,6 +6,13 @@ Aceptado — 2026-08-25
 
 Reemplaza [ADR-009](./009-bedrock-multi-agent-profiles.md) (delegación binaria: solo el orquestador, solo en chat general).
 
+> **Nota (2026-08-28, [ADR-023](./023-admin-sections-hierarchy-views.md))**: la "propiedad de
+> secciones por agente" descrita aquí (un L2 dueño de una pantalla, `default_agent_profile_id` /
+> `set_agent_sections`) se reemplaza por `responsible_agent_profile_id` (perfil **L2**) por
+> **vista** en la tabla `admin_views`; `set_agent_sections` / `sections_for_agent` se eliminan y
+> "vistas que gestiona un agente" pasa a ser una lista derivada de solo lectura. Las reglas de
+> jerarquía y delegación de este ADR no cambian.
+
 ## Contexto
 
 El harness tenía dos capas rígidas: el orquestador (chat general) podía llamar especialistas; esos especialistas no podían delegar. El orquestador además tenía todas las tools (CRUD, PDF, discovery), de modo que era un todólogo. Hacía falta separar **quién habla con el usuario** de **quién ejecuta una tarea**, y que cada agente tenga una sola responsabilidad.

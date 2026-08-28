@@ -189,7 +189,7 @@ _GITHUB_TOOL_NAMES = {
 _CONFIGURATION_TOOL_NAMES = {
     "search_knowledge_base",
     "agent_catalog_settings",
-    "admin_section_settings",
+    "admin_view_settings",
     "bedrock_global_settings",
 }
 
@@ -313,10 +313,13 @@ _CONFIGURATION_SUFFIX = (
     "1) **Catálogo de agentes** — prompt suffix, destinos de delegación y metodologías "
     "asignadas por perfil. Tool `agent_catalog_settings` (action=list|get|update_prompt|"
     "update_delegation|update_methodologies, profile_id).\n"
-    "2) **Secciones del Admin** — qué agente domina cada pantalla y su descripción. "
-    "Tool `admin_section_settings` (action=list|get|update, section_id, agent_profile_id, "
-    "description). `section_id` es el PK `sec-N` (p.ej. sec-1); toma el campo `id` de "
-    "action=list. `system_name` (dashboard, career-projects…) es solo el nombre legible.\n"
+    "2) **Vistas del Admin** — qué agente L2 lleva el chat contextual de cada vista del panel y las "
+    "instrucciones que se muestran en su sidebar. Tool `admin_view_settings` (action=list|get|update, "
+    "view_id, responsible_agent_profile_id, instructions). `view_id` es el PK `vw-N` (toma el campo "
+    "`id` de action=list). Una vista es una pestaña de una sección (lista, kanban, ficha…). Solo "
+    "puedes poner como responsable un perfil de NIVEL 2; string vacío en responsible_agent_profile_id "
+    "quita el chat de esa vista, string vacío en instructions borra el panel. No editas la estructura "
+    "de secciones (grupos, anidamiento, rutas): eso vive en código.\n"
     "3) **Prompts globales** — system prompt base y reglas globales (grounding + asignación "
     "de metodologías) que aplican a TODOS los agentes. Tool `bedrock_global_settings` "
     "(action=get|update_system_prompt|update_global_rules).\n"
@@ -726,6 +729,11 @@ _PROFILES: dict[str, AgentProfile] = {
 # ============================================================================
 # Mapas de enrutamiento
 # ============================================================================
+# deprecated (ADR-022 ruling #6): la resolución del chat contextual ahora es
+# ruta → sección → vista activa → agente L2 responsable, en
+# `services/section_catalog.resolve_profile_for_turn`. `resolve_agent_profile` y
+# estos 3 mapas se retiran en el lote del Frente A / un cleanup dedicado. No
+# añadir entradas nuevas aquí.
 
 _ROUTE_TO_PROFILE = {
     "/linkedin": AGENT_DIGITAL_PRESENCE,
@@ -865,7 +873,10 @@ def resolve_agent_profile(
     agent_profile_id: Optional[str],
     page_context: Optional[dict],
 ) -> AgentProfile:
-    """Router: chat general → orquestador; contextual → ruta/recurso (solo L1/L2)."""
+    """deprecated (ADR-022 ruling #6): usar `section_catalog.resolve_profile_for_turn`.
+
+    Router legacy: chat general → orquestador; contextual → ruta/recurso (solo L1/L2).
+    """
     if chat_surface == "general":
         return get_profile(AGENT_ORCHESTRATOR)
     if agent_profile_id:

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
@@ -22,16 +22,20 @@ import {
   MessageCircle,
   Settings,
   LayoutGrid,
+  SquareStack,
   SlidersHorizontal,
   AlertTriangle,
+  Compass,
+  Globe,
+  Handshake,
+  Tag,
+  Circle,
+  Folder,
   type LucideIcon,
 } from 'lucide-react'
-import {
-  CAREER_DOMAINS,
-  CAREER_RESOURCES,
-  isTableResource,
-  resourceNavIcon,
-} from '@/config/careerResources'
+import { CAREER_RESOURCES, isTableResource, resourceNavIcon } from '@/config/careerResources'
+import { useNavTree } from '@/hooks/useNavTree'
+import { NavGroup, NavSection } from '@/types/adminSections'
 import { useSidebarCounts } from '@/hooks/useSidebarCounts'
 
 interface SidebarProps {
@@ -39,53 +43,79 @@ interface SidebarProps {
   onToggle: () => void
 }
 
-const menuItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Métricas', path: '/metrics', icon: BarChart3 },
-  { label: 'Archivos', path: '/files', icon: FolderOpen, table: true as const },
-  { label: 'Tareas', path: '/tasks', icon: ClipboardList, table: true as const, countKey: 'tasks' as const },
-]
+/**
+ * Static top-level entries always visible outside any collapsible group
+ * (Sidebar UX decision, not backend structure — these `system_name`s still
+ * come from the nav-tree, only their "pinned/flat" placement is local).
+ */
+const PINNED_SYSTEM_NAMES = ['dashboard', 'metrics', 'files', 'agent-tasks']
+const PINNED_COUNT_KEYS: Record<string, 'files' | 'tasks' | undefined> = {
+  files: 'files',
+  'agent-tasks': 'tasks',
+}
 
-const LINKEDIN_DOMAIN_KEY = 'digital'
-const SEARCH_METRICS_DOMAIN_KEY = 'search'
-const AGENT_DOMAIN_KEY = 'agent'
+/**
+ * Icon per section `system_name` (stable backend key — ADR-023's `NavSection`
+ * has no icon field on purpose, presentation lives entirely in the frontend).
+ * `career-*` sections resolve through `resourceNavIcon` instead (see
+ * `iconForSection`), so they aren't listed here.
+ */
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  metrics: BarChart3,
+  'search-metrics': LineChart,
+  'agent-metrics': BarChart3,
+  files: FolderOpen,
+  'agent-tasks': ClipboardList,
+  'linkedin-publish': Linkedin,
+  'job-discovery': Search,
+  'pdf-templates': FileText,
+  'pdf-styles': Palette,
+  'agent-chat': MessageCircle,
+  'agent-memory': Brain,
+  'agent-instructions': FileText,
+  'agent-tools': Plug,
+  'agent-audit-log': ScrollText,
+  'career-operational-methodologies': Workflow,
+  'settings-agents': Library,
+  'settings-sections': LayoutGrid,
+  'settings-views': SquareStack,
+  'settings-agent-prompts': SlidersHorizontal,
+  'settings-error-reports': AlertTriangle,
+}
 
-type AgentCountKey = 'pdfTemplates' | 'pdfStyles' | 'methodologies' | 'tools'
+/** Icon per group `system_name` (frozen list, ADR-023 `_FROZEN_GROUPS`). */
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  'professional-identity': Compass,
+  'search-ops': Search,
+  'digital-presence': Globe,
+  networking: Handshake,
+  support: Tag,
+  'agent-ai': Bot,
+  settings: Settings,
+}
 
-const AGENT_LINKS: {
-  label: string
-  path: string
-  icon: LucideIcon
-  countKey?: AgentCountKey
-}[] = [
-  { label: 'Chat General', path: '/agent/chat', icon: MessageCircle },
-  { label: 'Plantillas PDF', path: '/agent/pdf-templates', icon: FileText, countKey: 'pdfTemplates' },
-  { label: 'Estilos PDF', path: '/agent/pdf-template-styles', icon: Palette, countKey: 'pdfStyles' },
-  { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
-  {
-    label: 'Metodologías Operativas',
-    path: '/career/operational-methodologies',
-    icon: Workflow,
-    countKey: 'methodologies',
-  },
-  { label: 'Memoria', path: '/agent/memory', icon: Brain },
-  { label: 'Instrucciones', path: '/agent/instructions', icon: FileText },
-  { label: 'Herramientas', path: '/agent/tools', icon: Plug, countKey: 'tools' },
-  { label: 'Bitácora', path: '/agent/audit-log', icon: ScrollText },
-]
+function iconForSection(section: NavSection): LucideIcon {
+  if (section.system_name.startsWith('career-')) {
+    return resourceNavIcon(section.system_name.replace(/^career-/, ''))
+  }
+  return SECTION_ICONS[section.system_name] ?? Circle
+}
 
-const SETTINGS_DOMAIN_KEY = 'settings'
-const SETTINGS_LINKS: {
-  label: string
-  path: string
-  icon: LucideIcon
-  countKey?: 'catalog' | 'sections' | 'errorsPending'
-}[] = [
-  { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
-  { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
-  { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
-  { label: 'Reportes de Falla', path: '/settings/error-reports', icon: AlertTriangle, countKey: 'errorsPending' },
-]
+function iconForGroup(group: NavGroup): LucideIcon {
+  return GROUP_ICONS[group.system_name] ?? Folder
+}
+
+/** Table career resources show a record-count badge; singletons don't. */
+function countForSection(
+  section: NavSection,
+  career: Record<string, number | undefined>
+): number | undefined {
+  if (!section.system_name.startsWith('career-')) return undefined
+  const resourceKey = section.system_name.replace(/^career-/, '')
+  if (!isTableResource(CAREER_RESOURCES[resourceKey])) return undefined
+  return career[resourceKey]
+}
 
 const RecordCount: React.FC<{ count?: number }> = ({ count }) => {
   if (typeof count !== 'number') return null
@@ -120,14 +150,11 @@ const SidebarSubLink: React.FC<{
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
   const location = useLocation()
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null)
+  const { data: navTree } = useNavTree()
   const counts = useSidebarCounts(expandedDomain)
 
   const isActive = (path: string): boolean =>
     location.pathname === path || location.pathname.startsWith(`${path}/`)
-  const isCareerResourceActive = (resourceKey: string): boolean => {
-    const path = `/career/${resourceKey}`
-    return location.pathname === path || location.pathname.startsWith(`${path}/`)
-  }
 
   const closeMobileDrawer = () => {
     if (window.innerWidth < 768 && isOpen) onToggle()
@@ -141,6 +168,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
     }
     setExpandedDomain((current) => (current === domainKey ? null : domainKey))
   }
+
+  const groups = useMemo(() => navTree?.groups ?? [], [navTree])
+
+  const pinnedItems = useMemo(() => {
+    const bySystemName = new Map<string, NavSection>()
+    for (const group of groups) {
+      for (const section of group.sections) {
+        bySystemName.set(section.system_name, section)
+      }
+    }
+    return PINNED_SYSTEM_NAMES.map((name) => bySystemName.get(name)).filter(
+      (s): s is NavSection => Boolean(s?.path)
+    )
+  }, [groups])
+
+  const pinnedSystemNames = new Set(PINNED_SYSTEM_NAMES)
+  const accordionGroups = groups.filter((group) =>
+    group.sections.some((section) => !pinnedSystemNames.has(section.system_name))
+  )
 
   return (
     <aside
@@ -161,195 +207,74 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
       </div>
 
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={() => {
-              if (window.innerWidth < 768 && isOpen) onToggle()
-            }}
-            aria-current={isActive(item.path) ? 'page' : undefined}
-            aria-label={
-              item.table && item.path === '/files' && typeof counts.files === 'number'
-                ? `${item.label}, ${counts.files} registros`
-                : item.table && item.path === '/tasks' && typeof counts.tasks === 'number'
-                  ? `${item.label}, ${counts.tasks} registros`
-                  : undefined
-            }
-            className={clsx('sidebar-item', isActive(item.path) && 'is-active')}
-            title={isOpen ? undefined : item.label}
-          >
-            <item.icon size={20} className="flex-shrink-0" aria-hidden="true" />
-            {isOpen && <span className="text-sm font-medium truncate min-w-0 flex-1">{item.label}</span>}
-            {isOpen && item.table && (
-              <RecordCount count={item.path === '/tasks' ? counts.tasks : counts.files} />
-            )}
-          </Link>
-        ))}
+        {pinnedItems.map((section) => {
+          const Icon = iconForSection(section)
+          const countKey = PINNED_COUNT_KEYS[section.system_name]
+          const count = countKey ? counts.pinned[countKey] : undefined
+          return (
+            <Link
+              key={section.id}
+              to={section.path as string}
+              onClick={() => {
+                if (window.innerWidth < 768 && isOpen) onToggle()
+              }}
+              aria-current={isActive(section.path as string) ? 'page' : undefined}
+              aria-label={typeof count === 'number' ? `${section.label}, ${count} registros` : undefined}
+              className={clsx('sidebar-item', isActive(section.path as string) && 'is-active')}
+              title={isOpen ? undefined : section.label}
+            >
+              <Icon size={20} className="flex-shrink-0" aria-hidden="true" />
+              {isOpen && <span className="text-sm font-medium truncate min-w-0 flex-1">{section.label}</span>}
+              {isOpen && typeof count === 'number' && <RecordCount count={count} />}
+            </Link>
+          )
+        })}
 
-        <div className="pt-2 mt-2 border-t border-border space-y-1">
-          {CAREER_DOMAINS.map((domain) => {
-            const isDomainExpanded = expandedDomain === domain.key
-            return (
-              <div key={domain.key}>
-                <button
-                  type="button"
-                  onClick={() => handleDomainToggle(domain.key)}
-                  className="sidebar-item w-full justify-between"
-                  title={isOpen ? undefined : domain.label}
-                  aria-expanded={isDomainExpanded}
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <domain.icon size={20} className="flex-shrink-0" aria-hidden="true" />
-                    {isOpen && <span className="text-sm font-medium truncate">{domain.label}</span>}
-                  </span>
-                  {isOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={clsx('flex-shrink-0 transition-transform', isDomainExpanded && 'rotate-180')}
-                    />
-                  )}
-                </button>
-
-                {isOpen && isDomainExpanded && (
-                  <div className="mt-1 space-y-0.5 mb-1">
-                    {domain.key === SEARCH_METRICS_DOMAIN_KEY && (
-                      <>
-                        <SidebarSubLink
-                          to="/job-discovery"
-                          label="Descubrir vacantes"
-                          icon={Search}
-                          active={isActive('/job-discovery')}
-                          onClick={closeMobileDrawer}
-                        />
-                        <SidebarSubLink
-                          to="/search-metrics"
-                          label="Métricas de Búsqueda"
-                          icon={LineChart}
-                          active={isActive('/search-metrics')}
-                          onClick={closeMobileDrawer}
-                        />
-                      </>
-                    )}
-                    {domain.resourceKeys.map((resourceKey) => {
-                      const resource = CAREER_RESOURCES[resourceKey]
-                      if (!resource) return null
-                      const path = `/career/${resourceKey}`
-                      return (
-                        <SidebarSubLink
-                          key={resourceKey}
-                          to={path}
-                          label={resource.label}
-                          icon={resourceNavIcon(resourceKey)}
-                          active={isCareerResourceActive(resourceKey)}
-                          count={isTableResource(resource) ? counts.career[resourceKey] : undefined}
-                          onClick={closeMobileDrawer}
-                        />
-                      )
-                    })}
-                    {domain.key === LINKEDIN_DOMAIN_KEY && (
-                      <SidebarSubLink
-                        to="/linkedin"
-                        label="LinkedIn · Publicar"
-                        icon={Linkedin}
-                        active={isActive('/linkedin')}
-                        onClick={closeMobileDrawer}
-                      />
-                    )}
-                  </div>
+        {accordionGroups.map((group) => {
+          const isDomainExpanded = expandedDomain === group.system_name
+          const GroupIcon = iconForGroup(group)
+          const sections = group.sections.filter(
+            (section) => !pinnedSystemNames.has(section.system_name) && section.path
+          )
+          return (
+            <div key={group.id} className="pt-2 mt-2 border-t border-border space-y-1">
+              <button
+                type="button"
+                onClick={() => handleDomainToggle(group.system_name)}
+                className="sidebar-item w-full justify-between"
+                title={isOpen ? undefined : group.name}
+                aria-expanded={isDomainExpanded}
+              >
+                <span className="flex items-center gap-3 min-w-0">
+                  <GroupIcon size={20} className="flex-shrink-0" aria-hidden="true" />
+                  {isOpen && <span className="text-sm font-medium truncate">{group.name}</span>}
+                </span>
+                {isOpen && (
+                  <ChevronDown
+                    size={16}
+                    className={clsx('flex-shrink-0 transition-transform', isDomainExpanded && 'rotate-180')}
+                  />
                 )}
-              </div>
-            )
-          })}
-        </div>
+              </button>
 
-        <div className="pt-2 mt-2 border-t border-border space-y-1">
-          {(() => {
-            const isAgentExpanded = expandedDomain === AGENT_DOMAIN_KEY
-            return (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleDomainToggle(AGENT_DOMAIN_KEY)}
-                  className="sidebar-item w-full justify-between"
-                  title={isOpen ? undefined : 'Agente IA'}
-                  aria-expanded={isAgentExpanded}
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <Bot size={20} className="flex-shrink-0" aria-hidden="true" />
-                    {isOpen && <span className="text-sm font-medium truncate">Agente IA</span>}
-                  </span>
-                  {isOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={clsx('flex-shrink-0 transition-transform', isAgentExpanded && 'rotate-180')}
+              {isOpen && isDomainExpanded && (
+                <div className="mt-1 space-y-0.5 mb-1">
+                  {sections.map((section) => (
+                    <SidebarSubLink
+                      key={section.id}
+                      to={section.path as string}
+                      label={section.label}
+                      icon={iconForSection(section)}
+                      active={isActive(section.path as string)}
+                      count={countForSection(section, counts.career)}
+                      onClick={closeMobileDrawer}
                     />
-                  )}
-                </button>
-
-                {isOpen && isAgentExpanded && (
-                  <div className="mt-1 space-y-0.5 mb-1">
-                    {AGENT_LINKS.map((link) => (
-                      <SidebarSubLink
-                        key={link.path}
-                        to={link.path}
-                        label={link.label}
-                        icon={link.icon}
-                        active={isActive(link.path)}
-                        count={link.countKey ? counts.agent[link.countKey] : undefined}
-                        onClick={closeMobileDrawer}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </div>
-
-        <div className="pt-2 mt-2 border-t border-border space-y-1">
-          {(() => {
-            const isSettingsExpanded = expandedDomain === SETTINGS_DOMAIN_KEY
-            return (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleDomainToggle(SETTINGS_DOMAIN_KEY)}
-                  className="sidebar-item w-full justify-between"
-                  title={isOpen ? undefined : 'Settings'}
-                  aria-expanded={isSettingsExpanded}
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <Settings size={20} className="flex-shrink-0" aria-hidden="true" />
-                    {isOpen && <span className="text-sm font-medium truncate">Settings</span>}
-                  </span>
-                  {isOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={clsx('flex-shrink-0 transition-transform', isSettingsExpanded && 'rotate-180')}
-                    />
-                  )}
-                </button>
-
-                {isOpen && isSettingsExpanded && (
-                  <div className="mt-1 space-y-0.5 mb-1">
-                    {SETTINGS_LINKS.map((link) => (
-                      <SidebarSubLink
-                        key={link.path}
-                        to={link.path}
-                        label={link.label}
-                        icon={link.icon}
-                        active={isActive(link.path)}
-                        count={link.countKey ? counts.settings[link.countKey] : undefined}
-                        onClick={closeMobileDrawer}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
       {isOpen && (
