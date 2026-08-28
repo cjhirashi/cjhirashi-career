@@ -1,9 +1,7 @@
-# Claude Code local configuration
-# .claude/ es commiteable - contiene agents/ y memory/
-# Solo ignorar archivos personales dentro de .claude/
-CLAUDE.md
-.claude/settings.json
-.claude/hooks.json
+# Claude Code — la configuración del proyecto SÍ se versiona:
+#   CLAUDE.md, .claude/agents/, .claude/settings.json
+# Solo se ignoran los overrides personales por máquina.
+.claude/settings.local.json
 
 Bóveda/
 
