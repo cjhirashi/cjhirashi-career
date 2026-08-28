@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Tuple
 
 from services.bedrock.agent_profiles import (
     AGENT_CHANGELOG,
+    AGENT_CONFIGURATION,
     AGENT_DIGITAL_PRESENCE,
     AGENT_GITHUB,
     AGENT_LINKEDIN_PUBLISHING,
@@ -475,7 +476,8 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Bitácora",
         path="/agent/audit-log",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_CHANGELOG,
+        # ADR-022: pasa del L3 sin chat a un L2 con chat contextual propio.
+        default_agent_profile_id=AGENT_SETTINGS,
         description="Historial de cambios que el agente hizo en las tablas.",
         views=_main_view(
             "Bitácora",
@@ -492,7 +494,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Catálogo de Agentes",
         path="/settings/agents",
         section_type=SECTION_TABLE,
-        default_agent_profile_id=AGENT_SETTINGS,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="Definición y overrides de cada perfil de agente.",
         views=_crud_views(
             "Agentes",
@@ -510,7 +512,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Secciones del Admin",
         path="/settings/sections",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_SETTINGS,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="Catálogo de pantallas: tipo, agente de dominio e instrucciones.",
         views=_main_view(
             "Secciones del Admin",
@@ -527,7 +529,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Prompts Globales",
         path="/settings/agent-prompts",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_SETTINGS,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="System prompt base y reglas globales que aplican a TODOS los agentes.",
         views=_main_view(
             "Prompts Globales",

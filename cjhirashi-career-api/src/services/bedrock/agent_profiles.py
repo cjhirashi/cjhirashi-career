@@ -60,6 +60,7 @@ AGENT_COVER_LETTER_WRITING = "agent_cover_letter_writing"
 AGENT_WEB_SEARCH = "agent_web_search"
 AGENT_GITHUB = "agent_github"
 AGENT_SETTINGS = "agent_settings"
+AGENT_CONFIGURATION = "agent_configuration"
 
 # PK de catálogo (formato PREFIX-n, igual que el resto de tablas).
 # `agent_*` sigue siendo el nombre de sistema usado en código, FKs y Bedrock.
@@ -83,6 +84,8 @@ _AGENT_RECORD_IDS: dict[str, str] = {
     AGENT_WEB_SEARCH: "agent-17",
     AGENT_GITHUB: "agent-18",
     AGENT_SETTINGS: "agent-19",
+    # ADR-022: numeración congelada y a mano; agent-20 es el siguiente entero libre.
+    AGENT_CONFIGURATION: "agent-20",
 }
 _PROFILE_BY_RECORD_ID: dict[str, str] = {record_id: key for key, record_id in _AGENT_RECORD_IDS.items()}
 
@@ -181,11 +184,17 @@ _GITHUB_TOOL_NAMES = {
     "search_github_code",
 }
 
-_SETTINGS_TOOL_NAMES = {
+# ADR-022: `agent_configuration` (agent-20) opera la metaconfiguración del harness;
+# `agent_settings` (agent-19) queda solo con incidencias y bitácora.
+_CONFIGURATION_TOOL_NAMES = {
     "search_knowledge_base",
     "agent_catalog_settings",
     "admin_section_settings",
     "bedrock_global_settings",
+}
+
+_SETTINGS_TOOL_NAMES = {
+    "search_knowledge_base",
     "error_report_settings",
 }
 
@@ -282,7 +291,8 @@ _ORCHESTRATOR_SUFFIX = (
     "agent_search_operations, agent_digital_presence, agent_networking, agent_support, "
     "agent_methodologies, agent_pdf_design).\n"
     "- Configuración del sistema (catálogo de agentes, secciones del Admin, prompts "
-    "globales) → agent_settings.\n"
+    "globales) → agent_configuration.\n"
+    "- Reportes de falla / bitácora de cambios del agente → agent_settings.\n"
     "- Tarea transversal → L3 (agent_pdf_render, agent_visual_design, agent_changelog, "
     "agent_task_manager, agent_linkedin_publishing, agent_vacancy_search, "
     "agent_cv_writing, agent_cover_letter_writing, agent_web_search, agent_github).\n"
@@ -296,9 +306,10 @@ _ORCHESTRATOR_SUFFIX = (
     "Repos GitHub en vivo → agent_github. Nunca inventes vacantes."
 )
 
-_SETTINGS_SUFFIX = (
-    "Eres el especialista L2 de Configuración (Settings). Administras tres áreas del Admin, "
-    "cada una con su propia tool — no son tablas de carrera, no uses create/update_career_record:\n"
+_CONFIGURATION_SUFFIX = (
+    "Eres el especialista L2 de Configuración: metaconfiguración del harness de agentes. "
+    "Administras tres áreas, cada una con su propia tool — no son tablas de carrera, no uses "
+    "create/update_career_record:\n"
     "1) **Catálogo de agentes** — prompt suffix, destinos de delegación y metodologías "
     "asignadas por perfil. Tool `agent_catalog_settings` (action=list|get|update_prompt|"
     "update_delegation|update_methodologies, profile_id).\n"
@@ -309,17 +320,30 @@ _SETTINGS_SUFFIX = (
     "3) **Prompts globales** — system prompt base y reglas globales (grounding + asignación "
     "de metodologías) que aplican a TODOS los agentes. Tool `bedrock_global_settings` "
     "(action=get|update_system_prompt|update_global_rules).\n"
-    "4) **Reportes de falla** — bitácora de errores del sistema (tabla error_reports). "
-    "Tool `error_report_settings` (action=list|get|resolve|reopen|summary, report_id). "
-    "Marca un reporte como resuelto SOLO cuando el problema ya se corrigió en el código.\n"
     "No tocas fotos de agente: eso es agent_visual_design con resource_key=agent-profile. "
     "No tocas operational-methodologies (contenido de las metodologías): eso es "
     "agent_methodologies; tú solo asignas cuáles consulta cada agente. "
+    "Reportes de falla y bitácora de cambios del agente son de agent_settings, no tuyos. "
     "Redactar en el chat NO guarda nada: llama la tool correspondiente con el campo a "
     "cambiar. No afirmes que guardaste hasta que la tool devuelva el resultado. "
     "Un override de prompt (de perfil o global) aplica desde el siguiente turno de ese "
     "agente; string vacío o null en el campo de texto restaura el default del código. "
     "Bitácora → agent_changelog."
+)
+
+_SETTINGS_SUFFIX = (
+    "Eres el especialista L2 de Incidencias y Bitácora. Cubres dos áreas de observación — "
+    "no cambian el comportamiento de los agentes, se consultan y se resuelven/restauran:\n"
+    "1) **Reportes de falla** — bitácora de errores del sistema (tabla error_reports, IDs err-N). "
+    "Tool `error_report_settings` (action=list|get|resolve|reopen|summary, report_id). "
+    "Marca un reporte como resuelto SOLO cuando el problema ya se corrigió en el código.\n"
+    "2) **Bitácora de cambios del agente** (`/agent/audit-log`) — para inspeccionar o restaurar "
+    "create/update/delete que hicieron los agentes, delega a `agent_changelog` (L3) con "
+    "list_recent_changes / restore_deleted_record. No recrees registros a mano.\n"
+    "No editas catálogo de agentes, secciones del Admin ni prompts globales: eso es "
+    "agent_configuration. "
+    "Redactar en el chat NO guarda nada: llama la tool correspondiente. No afirmes que "
+    "resolviste o restauraste hasta que la tool devuelva el resultado."
 )
 
 _PDF_RENDER_SUFFIX = (
@@ -674,13 +698,26 @@ _PROFILES: dict[str, AgentProfile] = {
     ),
     AGENT_SETTINGS: AgentProfile(
         id=AGENT_SETTINGS,
-        label="Configuración",
+        # ADR-022: se conserva el system-name `agent_settings` (FK en 4 tablas);
+        # solo cambian label, suffix y tools — ahora cubre incidencias y bitácora.
+        label="Incidencias y Bitácora",
         domain_keys=["meta_settings"],
         resource_keys=None,
         methodology_sections=[],
         system_prompt_suffix=_SETTINGS_SUFFIX,
         default_model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
         allowed_tool_names=_SETTINGS_TOOL_NAMES,
+        level=2,
+    ),
+    AGENT_CONFIGURATION: AgentProfile(
+        id=AGENT_CONFIGURATION,
+        label="Configuración",
+        domain_keys=["meta_settings"],
+        resource_keys=None,
+        methodology_sections=[],
+        system_prompt_suffix=_CONFIGURATION_SUFFIX,
+        default_model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        allowed_tool_names=_CONFIGURATION_TOOL_NAMES,
         level=2,
     ),
 }
@@ -698,10 +735,11 @@ _ROUTE_TO_PROFILE = {
     "/agent/chat": AGENT_ORCHESTRATOR,
     "/agent/pdf-templates": AGENT_PDF_DESIGN,
     "/agent/pdf-template-styles": AGENT_PDF_DESIGN,
-    "/settings/agents": AGENT_SETTINGS,
-    "/settings/sections": AGENT_SETTINGS,
-    "/settings/agent-prompts": AGENT_SETTINGS,
+    "/settings/agents": AGENT_CONFIGURATION,
+    "/settings/sections": AGENT_CONFIGURATION,
+    "/settings/agent-prompts": AGENT_CONFIGURATION,
     "/settings/error-reports": AGENT_SETTINGS,
+    "/agent/audit-log": AGENT_SETTINGS,
 }
 
 _RESOURCE_TO_DOMAIN = {

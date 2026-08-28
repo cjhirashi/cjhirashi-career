@@ -16,6 +16,7 @@ from services.bedrock.agent_profiles import (
     AGENT_WEB_SEARCH,
     AGENT_GITHUB,
     AGENT_SETTINGS,
+    AGENT_CONFIGURATION,
     can_delegate_to,
     delegation_error,
     get_profile,
@@ -192,7 +193,7 @@ def test_pdf_admin_routes_resolve_to_pdf_design():
         assert profile.level == 2
 
 
-def test_settings_routes_resolve_to_agent_settings():
+def test_configuration_routes_resolve_to_agent_configuration():
     for route in (
         "/settings/agents",
         "/settings/agents/agent-2",
@@ -205,17 +206,55 @@ def test_settings_routes_resolve_to_agent_settings():
             agent_profile_id=None,
             page_context={"route": route},
         )
+        assert profile.id == AGENT_CONFIGURATION
+        assert profile.level == 2
+
+
+def test_incident_routes_resolve_to_agent_settings():
+    for route in (
+        "/settings/error-reports",
+        "/settings/error-reports/err-3",
+        "/agent/audit-log",
+    ):
+        profile = resolve_agent_profile(
+            chat_surface="contextual",
+            agent_profile_id=None,
+            page_context={"route": route},
+        )
         assert profile.id == AGENT_SETTINGS
         assert profile.level == 2
 
 
 def test_agent_settings_owns_its_tools_only():
     names = tools_for_profile(get_profile(AGENT_SETTINGS), all_tool_names())
+    assert "error_report_settings" in names
+    assert "search_knowledge_base" in names
+    assert "agent_catalog_settings" not in names
+    assert "admin_section_settings" not in names
+    assert "bedrock_global_settings" not in names
+    assert "create_career_record" not in names
+    assert "delegate_to_specialist" in names
+
+
+def test_agent_configuration_owns_config_tools():
+    profile = get_profile(AGENT_CONFIGURATION)
+    assert profile.level == 2
+    assert profile.user_facing
+    names = tools_for_profile(profile, all_tool_names())
     assert "agent_catalog_settings" in names
     assert "admin_section_settings" in names
     assert "bedrock_global_settings" in names
-    assert "create_career_record" not in names
+    assert "search_knowledge_base" in names
     assert "delegate_to_specialist" in names
+    assert "error_report_settings" not in names
+    assert "create_career_record" not in names
+    # Ambos L2 delegan la bitácora al L3 agent_changelog.
+    assert can_delegate_to(profile, get_profile(AGENT_CHANGELOG))
+    assert delegation_error(profile, AGENT_CHANGELOG) is None
+    # El orquestador lista agent_configuration como destino de delegación.
+    orchestrator = get_profile(AGENT_ORCHESTRATOR)
+    assert can_delegate_to(orchestrator, profile)
+    assert "agent_configuration" in orchestrator.system_prompt_suffix
 
 
 def test_history_manager_filters_by_agent_profile():
@@ -261,6 +300,8 @@ def test_user_facing_profiles_exclude_l3():
     facing = {p.id for p in list_user_facing_profiles()}
     assert AGENT_ORCHESTRATOR in facing
     assert AGENT_PDF_DESIGN in facing
+    assert AGENT_SETTINGS in facing
+    assert AGENT_CONFIGURATION in facing
     assert AGENT_PDF_RENDER not in facing
     assert AGENT_VISUAL_DESIGN not in facing
     assert AGENT_CHANGELOG not in facing

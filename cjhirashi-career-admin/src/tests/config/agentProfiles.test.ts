@@ -17,6 +17,7 @@ import {
   AGENT_WEB_SEARCH,
   AGENT_GITHUB,
   AGENT_SETTINGS,
+  AGENT_CONFIGURATION,
   allAgentSelectOptions,
   getAgentProfileLabel,
   resolveAgentProfileId,
@@ -98,31 +99,62 @@ describe('resolveAgentProfileId', () => {
     ).toBe(AGENT_PDF_DESIGN)
   })
 
-  it('maps the Settings pages to agent_settings', () => {
+  it('maps the configuration Settings pages to agent_configuration (ADR-022)', () => {
     expect(
       resolveAgentProfileId({
         chatSurface: 'contextual',
         pageContext: { route: '/settings/agents' },
       })
-    ).toBe(AGENT_SETTINGS)
+    ).toBe(AGENT_CONFIGURATION)
     expect(
       resolveAgentProfileId({
         chatSurface: 'contextual',
         pageContext: { route: '/settings/agents/agent-2' },
       })
-    ).toBe(AGENT_SETTINGS)
+    ).toBe(AGENT_CONFIGURATION)
     expect(
       resolveAgentProfileId({
         chatSurface: 'contextual',
         pageContext: { route: '/settings/sections' },
       })
-    ).toBe(AGENT_SETTINGS)
+    ).toBe(AGENT_CONFIGURATION)
     expect(
       resolveAgentProfileId({
         chatSurface: 'contextual',
         pageContext: { route: '/settings/agent-prompts' },
       })
+    ).toBe(AGENT_CONFIGURATION)
+  })
+
+  it('maps incidents/audit-log pages to agent_settings (ADR-022)', () => {
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/settings/error-reports' },
+      })
     ).toBe(AGENT_SETTINGS)
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/agent/audit-log' },
+      })
+    ).toBe(AGENT_SETTINGS)
+    expect(
+      resolveAgentProfileId({
+        chatSurface: 'contextual',
+        pageContext: { route: '/agent/audit-log/err-3' },
+      })
+    ).toBe(AGENT_SETTINGS)
+  })
+
+  it('exposes both metaconfig L2 profiles with distinct labels (ADR-022)', () => {
+    const ids = AGENT_PROFILES.map((p) => p.id)
+    expect(ids).toContain(AGENT_CONFIGURATION)
+    expect(ids).toContain(AGENT_SETTINGS)
+    expect(getAgentProfileLabel(AGENT_CONFIGURATION)).toBe('Configuración')
+    expect(getAgentProfileLabel(AGENT_SETTINGS)).toBe('Incidencias y Bitácora')
+    expect(AGENT_PROFILES.find((p) => p.id === AGENT_CONFIGURATION)?.level).toBe(2)
+    expect(AGENT_PROFILES.find((p) => p.id === AGENT_SETTINGS)?.level).toBe(2)
   })
 
   it('falls back to orchestrator when the page is not mapped', () => {

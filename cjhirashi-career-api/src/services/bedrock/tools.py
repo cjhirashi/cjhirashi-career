@@ -672,7 +672,7 @@ async def _run_render_record_pdf(db, user_id: str, tool_input: Dict[str, Any]) -
 
 
 async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Catálogo de agentes (L2 agent_settings): prompt, delegación, metodologías."""
+    """Catálogo de agentes (L2 agent_configuration): prompt, delegación, metodologías."""
     from services.bedrock import profile_catalog, profile_delegation, profile_prompts
     from services.bedrock.agent_profiles import get_profile
     from services.methodology_scope import set_agent_methodologies
@@ -713,7 +713,7 @@ async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, An
 
 
 async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Secciones del Admin (L2 agent_settings): agente dueño y descripción."""
+    """Secciones del Admin (L2 agent_configuration): agente dueño y descripción."""
     from services import section_catalog
     from services.admin_sections import get_section_spec
     from services.bedrock.agent_profiles import get_profile
@@ -769,7 +769,7 @@ async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[st
 
 
 async def _run_bedrock_global_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Prompts globales (L2 agent_settings): aplican a TODOS los agentes."""
+    """Prompts globales (L2 agent_configuration): aplican a TODOS los agentes."""
     action = tool_input.get("action")
 
     async def _snapshot() -> Dict[str, Any]:
