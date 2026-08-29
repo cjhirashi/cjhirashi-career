@@ -81,7 +81,7 @@ _SECTIONS = [
     (14, "agent-tools", "Herramientas", "/agent/tools", "functional", "Agente IA", 54, False, "agent_orchestrator", ()),
     (15, "agent-audit-log", "Bitácora", "/agent/audit-log", "functional", "Agente IA", 55, False, "agent_settings", _AUDIT_TOOLS),
     (16, "settings-agents", "Catálogo de Agentes", "/settings/agents", "table", "Settings", 90, False, "agent_configuration", ()),
-    (17, "settings-sections", "Secciones del Admin", "/settings/sections", "functional", "Settings", 91, False, "agent_configuration", ()),
+    (17, "admin-sections", "Secciones del Admin", "/settings/sections", "functional", "Settings", 91, False, "agent_configuration", ()),
     (18, "settings-agent-prompts", "Prompts Globales", "/settings/agent-prompts", "functional", "Settings", 92, False, "agent_configuration", ()),
     (19, "settings-error-reports", "Reportes de Falla", "/settings/error-reports", "table", "Settings", 93, False, "agent_settings", ("error_report_settings",)),
     (20, "career-personal-profile", "Datos personales", "/career/personal-profile", "table", "Identidad Profesional", 100, True, "agent_professional_identity", ()),

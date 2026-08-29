@@ -50,6 +50,11 @@ class AdminSectionL2(Base):
     section_type = Column(String(20), nullable=False)
     sort_order = Column(Integer, nullable=False, default=0, server_default="0")
     origin = Column(String(16), nullable=False, default="code", server_default="code")
+    # ADR-023 (corrección): gate genérico de visibilidad — ver
+    # services/section_catalog.py::VISIBILITY_LEVELS.
+    visibility_level = Column(
+        String(20), nullable=False, default="standard", server_default="standard"
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True),

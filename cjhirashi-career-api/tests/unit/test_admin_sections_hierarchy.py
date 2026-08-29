@@ -15,12 +15,16 @@ from schemas.admin_sections import (
     GroupOrderRequest,
     SectionGroupUpdateRequest,
     SectionReorderRequest,
-    SectionReparentRequest,
+    SectionUpdateRequest,
 )
 from services import section_catalog
 from services.bedrock.agent_profiles import AGENT_ORCHESTRATOR
 
 _USER = MagicMock()
+_USER.is_superuser = True  # superusuario — ve todos los grupos incluyendo admin
+
+_STANDARD_USER = MagicMock()
+_STANDARD_USER.is_superuser = False  # usuario estándar — no ve el grupo admin
 
 
 # ---------------------------------------------------------------------------
@@ -29,7 +33,8 @@ _USER = MagicMock()
 
 
 async def test_nav_tree_shape(hier_db):
-    tree = await routes.get_nav_tree(current_user=_USER, db=hier_db)
+    # Usuario estándar no ve el grupo admin (visibility_level='superuser')
+    tree = await routes.get_nav_tree(current_user=_STANDARD_USER, db=hier_db)
     assert set(tree) == {"groups", "generated_at"}
     assert len(tree["groups"]) == 11
     # grupos ordenados por sort_order
@@ -114,7 +119,7 @@ async def test_get_section_detail_and_404(hier_db):
 async def test_update_section_move_l1_to_other_group(hier_db):
     out = await routes.update_section(
         "s1-1",
-        SectionReparentRequest(group_id="grp-8", sort_order=5),
+        SectionUpdateRequest(group_id="grp-8", sort_order=5),
         current_user=_USER,
         db=hier_db,
     )
@@ -126,7 +131,7 @@ async def test_update_section_rejects_parent_id_on_l1(hier_db):
     with pytest.raises(Exception) as exc:
         await routes.update_section(
             "s1-1",
-            SectionReparentRequest(parent_id="s1-2"),
+            SectionUpdateRequest(parent_id="s1-2"),
             current_user=_USER,
             db=hier_db,
         )
@@ -137,7 +142,7 @@ async def test_update_section_unknown_group_is_400(hier_db):
     with pytest.raises(Exception) as exc:
         await routes.update_section(
             "s1-1",
-            SectionReparentRequest(group_id="grp-nope"),
+            SectionUpdateRequest(group_id="grp-nope"),
             current_user=_USER,
             db=hier_db,
         )

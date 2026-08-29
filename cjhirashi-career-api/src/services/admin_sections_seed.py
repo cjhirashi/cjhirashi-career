@@ -1,23 +1,30 @@
-"""Seeder idempotente de la jerarquía de secciones del Admin (ADR-022).
+"""Seeder de arranque de la jerarquía de secciones del Admin (ADR-022; ADR-023 corrección).
 
-``sync_structure`` alinea las 6 tablas reales con el registro de código
-(``services/admin_sections.py``). Es idempotente y se llama desde
-``database.init_db()`` tras ``create_all`` (dev/CI/tests, que no corren Alembic).
-La migración ``c4d5e6f7a8b9`` reproduce esta misma estructura con un snapshot
-CONGELADO embebido (no importa este módulo) y encima siembra la conversión de
-``admin_section_overrides`` — un test verifica que ambos caminos producen el
-mismo conjunto de filas.
+Desde ADR-023 (corrección) el CRUD de grupos y secciones L1/L2/L3 es 100% Admin
+(ver ``services/section_catalog.py``): el seeder de código deja de sembrar y
+podar esas 65 filas tras el arranque inicial (la migración ``c4d5e6f7a8b9``, o
+esta misma alta idempotente, las siembran UNA vez). Lo único que sigue
+corriendo en cada arranque es:
 
-Contrato invariante:
+1. ``ensure_admin_group_and_section`` — alta **idempotente** (nunca UPDATE/prune)
+   del grupo + sección protegidos ``admin``/``admin-sections``. Usa los mismos
+   IDs fijos (``grp-12``/``s1-55``) que la migración nueva
+   (``<rev>_admin_sections_crud_is_superuser.py``) para que, si ambos caminos
+   llegan a competir (migración no corrida todavía en un entorno nuevo),
+   converjan en el mismo valor — el `system_name` es lo que realmente evita el
+   duplicado.
+2. ``sync_views`` — upsert + prune de ``admin_views`` por ``(owner_l1_id, key)``,
+   igual que siempre (las vistas siguen naciendo en código). Ya NO crea la
+   sección dueña si falta (el operador pudo haberla borrado/movido) — solo
+   loguea un warning y sigue.
+
+Contrato invariante (sin cambio):
 - **NUNCA** escribe ``admin_views.responsible_agent_profile_id`` ni
-  ``admin_views.instructions`` (columnas del operador).
-- Grupos: upsert por ``system_name``; INSERT trae el ``sort_order`` de código,
-  UPDATE solo refresca ``name``.
-- Secciones L1: upsert por ``system_name``; INSERT trae ``group_id``/``sort_order``
-  de código, UPDATE solo ``label``/``path``/``section_type``.
+  ``admin_views.instructions`` (columnas del operador) salvo la alta inicial
+  vía migración.
 - Vistas: upsert por ``(owner_l1_id, key)`` de TODAS las columnas de código.
-- Prune: solo filas ``origin='code'`` ausentes del registro (el CASCADE de L1
-  arrastra vistas y sub-secciones L2/L3).
+- Prune de vistas: solo filas ``origin='code'`` ausentes del registro (sin
+  cambio respecto a ADR-022).
 """
 from __future__ import annotations
 
@@ -30,7 +37,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.admin_section_group import AdminSectionGroup
 from models.admin_section_l1 import AdminSectionL1
 from models.admin_view import AdminView
-from services.admin_sections import GROUPS, list_section_specs
+from services.admin_sections import list_section_specs
 from services.bedrock.agent_profiles import (
     AGENT_DIGITAL_PRESENCE,
     AGENT_GITHUB,
@@ -52,7 +59,15 @@ _L3_CHAT_FALLBACK: Dict[str, str] = {
     AGENT_GITHUB: AGENT_DIGITAL_PRESENCE,
 }
 
-_GROUP_SYSTEM_BY_NAME: Dict[str, str] = {name: system for _gid, system, name, _so in GROUPS}
+# ADR-023 (corrección) §5.1 — IDs congelados, siguientes libres tras
+# _FROZEN_GROUPS (grp-1..grp-11) y _SEC_TO_S1 (s1-1..s1-54) de c4d5e6f7a8b9.
+# Deben coincidir exactamente con los que usa la migración
+# <rev>_admin_sections_crud_is_superuser.py.
+ADMIN_GROUP_ID = "grp-12"
+ADMIN_SECTION_ID = "s1-55"
+ADMIN_GROUP_SYSTEM_NAME = "admin"
+ADMIN_SECTION_SYSTEM_NAME = "admin-sections"
+ADMIN_SECTION_PATH = "/settings/sections"
 
 
 def _frozen_view_id_map() -> Dict[Tuple[str, str], str]:
@@ -69,71 +84,108 @@ def _frozen_view_id_map() -> Dict[Tuple[str, str], str]:
 VIEW_ID_MAP: Dict[Tuple[str, str], str] = _frozen_view_id_map()
 
 
-async def sync_structure(session: AsyncSession) -> None:
+async def ensure_admin_group_and_section(session: AsyncSession) -> None:
+    """Alta idempotente del grupo + sección protegidos ``admin``. NUNCA hace UPDATE.
+
+    Si ya existen (sembrados por la migración o por un arranque anterior), no
+    se toca nada — ni siquiera para refrescar ``label``/``path``: a partir de
+    la migración esa fila es 100% propiedad del operador, igual que cualquier
+    otra sección/grupo.
+    """
+    group = (
+        await session.execute(
+            select(AdminSectionGroup).where(
+                AdminSectionGroup.system_name == ADMIN_GROUP_SYSTEM_NAME
+            )
+        )
+    ).scalar_one_or_none()
+    if group is None:
+        group = AdminSectionGroup(
+            id=ADMIN_GROUP_ID,
+            system_name=ADMIN_GROUP_SYSTEM_NAME,
+            name="Administración",
+            sort_order=0,
+            origin="code",
+            visibility_level="superuser",
+        )
+        session.add(group)
+        await session.flush()
+
+    section = (
+        await session.execute(
+            select(AdminSectionL1).where(
+                AdminSectionL1.system_name == ADMIN_SECTION_SYSTEM_NAME
+            )
+        )
+    ).scalar_one_or_none()
+    if section is None:
+        # En BD con datos previos de c4d5e6f7a8b9, s1-17 ya existe con la misma
+        # path pero system_name='settings-sections'. Lo migramos en vez de insertar
+        # s1-55 (que colisionaría con el índice UNIQUE de path).
+        existing_by_path = (
+            await session.execute(
+                select(AdminSectionL1).where(
+                    AdminSectionL1.path == ADMIN_SECTION_PATH
+                )
+            )
+        ).scalar_one_or_none()
+        if existing_by_path is not None:
+            # Migrar s1-17 (legacy 'settings-sections') al grupo admin.
+            # Se renombra a 'admin-sections' para que sync_views lo encuentre
+            # con el system_name canónico que usa list_section_specs().
+            existing_by_path.group_id = group.id
+            existing_by_path.system_name = ADMIN_SECTION_SYSTEM_NAME
+            existing_by_path.visibility_level = "superuser"
+            await session.flush()
+        else:
+            session.add(
+                AdminSectionL1(
+                    id=ADMIN_SECTION_ID,
+                    group_id=group.id,
+                    system_name=ADMIN_SECTION_SYSTEM_NAME,
+                    label="Secciones del Admin",
+                    path=ADMIN_SECTION_PATH,
+                    section_type="table",
+                    sort_order=0,
+                    origin="code",
+                    visibility_level="superuser",
+                )
+            )
+            await session.flush()
+
+
+async def sync_views(session: AsyncSession) -> None:
+    """Upsert + prune de ``admin_views`` por ``(owner_l1_id, key)`` (sin cambio de lógica).
+
+    A diferencia de ADR-022, ya NO crea la sección L1 dueña si falta en la BD
+    — resuelve el owner contra lo que ya exista (creado por migración o por el
+    operador vía API); si una sección de código fue borrada/movida por el
+    operador, sus vistas de código dejan de sincronizarse (warning en log, sin
+    excepción).
+    """
     specs = list_section_specs()
 
-    # --- Grupos ---------------------------------------------------------------
-    groups_by_system = {
-        g.system_name: g
-        for g in (await session.execute(select(AdminSectionGroup))).scalars()
-    }
-    group_id_by_system: Dict[str, str] = {}
-    for gid, system_name, name, sort_order in GROUPS:
-        row = groups_by_system.get(system_name)
-        if row is None:
-            row = AdminSectionGroup(
-                id=gid, system_name=system_name, name=name, sort_order=sort_order
-            )
-            session.add(row)
-        else:
-            row.name = name
-        group_id_by_system[system_name] = row.id
-    await session.flush()
-
-    # --- Secciones L1 ------------------------------------------------------------
-    l1_by_system = {
+    l1_by_system: Dict[str, AdminSectionL1] = {
         s.system_name: s
         for s in (await session.execute(select(AdminSectionL1))).scalars()
     }
-    wanted_l1: set[str] = set()
-    l1_id_by_system: Dict[str, str] = {}
-    for spec in specs:
-        wanted_l1.add(spec.system_name)
-        group_system = _GROUP_SYSTEM_BY_NAME[spec.group]
-        row = l1_by_system.get(spec.system_name)
-        if row is None:
-            row = AdminSectionL1(
-                id=spec.id,
-                group_id=group_id_by_system[group_system],
-                system_name=spec.system_name,
-                label=spec.label,
-                path=spec.path,
-                section_type=spec.section_type,
-                sort_order=spec.sort_order,
-                origin="code",
-            )
-            session.add(row)
-        else:
-            row.label = spec.label
-            row.path = spec.path
-            row.section_type = spec.section_type
-        l1_id_by_system[spec.system_name] = row.id
-    await session.flush()
 
-    for system_name, row in l1_by_system.items():
-        if system_name not in wanted_l1 and row.origin == "code":
-            logger.warning("admin_sections_seed: prune L1 %s (%s)", row.id, system_name)
-            await session.delete(row)
-    await session.flush()
-
-    # --- Vistas ---------------------------------------------------------------
     views_by_owner: Dict[str, Dict[str, AdminView]] = {}
     for view in (await session.execute(select(AdminView))).scalars():
         if view.owner_l1_id:
             views_by_owner.setdefault(view.owner_l1_id, {})[view.key] = view
 
     for spec in specs:
-        owner_id = l1_id_by_system[spec.system_name]
+        l1 = l1_by_system.get(spec.system_name)
+        if l1 is None:
+            logger.warning(
+                "sync_views: sección de código %r ya no existe en BD (borrada "
+                "por el operador); sus vistas de código no se sincronizan",
+                spec.system_name,
+            )
+            continue
+
+        owner_id = l1.id
         current = views_by_owner.get(owner_id, {})
         wanted_keys: set[str] = set()
         for idx, view in enumerate(spec.views):

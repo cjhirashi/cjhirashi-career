@@ -117,6 +117,12 @@ class AdminView(Base):
     responsible_agent_profile_id = Column(String(50), nullable=True)
     instructions = Column(Text, nullable=True)
     origin = Column(String(16), nullable=False, default="code", server_default="code")
+    # ADR-023 (corrección): columna nueva en las 4 tablas por consistencia del
+    # mecanismo genérico; el gate de superusuario NO aplica hoy a vistas (§2 del
+    # contrato — ninguna vista cuelga del grupo `admin` en este lote).
+    visibility_level = Column(
+        String(20), nullable=False, default="standard", server_default="standard"
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True),

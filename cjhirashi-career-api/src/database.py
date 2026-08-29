@@ -77,13 +77,17 @@ async def init_db():
         for prefix in TABLE_PREFIXES.values():
             await conn.execute(text(f"CREATE SEQUENCE IF NOT EXISTS {prefix}_id_seq START 1"))
 
-    # ADR-022: dev/CI/tests no corren Alembic. El seeder idempotente alinea la
-    # jerarquía de secciones del Admin (6 tablas) con el registro de código sin
-    # tocar los campos del operador (responsible_agent_profile_id / instructions).
-    from services.admin_sections_seed import sync_structure
+    # ADR-022 + ADR-023 (corrección): dev/CI/tests no corren Alembic. Desde la
+    # corrección, grupos/secciones L1/L2/L3 son 100% Admin (el seeder ya NO los
+    # siembra/poda); solo queda el alta idempotente del grupo/sección
+    # protegidos `admin` (nunca UPDATE) y el upsert/prune de vistas (que siguen
+    # naciendo en código), sin tocar los campos del operador
+    # (responsible_agent_profile_id / instructions).
+    from services.admin_sections_seed import ensure_admin_group_and_section, sync_views
 
     async with AsyncSessionLocal() as session:
-        await sync_structure(session)
+        await ensure_admin_group_and_section(session)
+        await sync_views(session)
         await session.commit()
 
     logger.info("Database tables created successfully")

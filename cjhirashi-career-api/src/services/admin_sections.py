@@ -231,7 +231,7 @@ _STATIC_SECTIONS: List[AdminSectionSpec] = [
              55, default_agent_profile_id=AGENT_SETTINGS, related_tools=_AUDIT_TOOLS),
     _section(16, "settings-agents", "Catálogo de Agentes", "/settings/agents", SECTION_TABLE,
              "Settings", 90, default_agent_profile_id=AGENT_CONFIGURATION),
-    _section(17, "settings-sections", "Secciones del Admin", "/settings/sections", SECTION_FUNCTIONAL,
+    _section(17, "admin-sections", "Secciones del Admin", "/settings/sections", SECTION_FUNCTIONAL,
              "Settings", 91, default_agent_profile_id=AGENT_CONFIGURATION),
     _section(18, "settings-agent-prompts", "Prompts Globales", "/settings/agent-prompts",
              SECTION_FUNCTIONAL, "Settings", 92, default_agent_profile_id=AGENT_CONFIGURATION),

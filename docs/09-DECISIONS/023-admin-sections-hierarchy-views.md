@@ -376,6 +376,58 @@ justo después del rebuild.
   `admin_views` como fuente del layout de cada página; no introduce cambios en las claves definidas
   aquí.
 
+## Corrección — Grupos/Secciones pasan a gestión 100% Admin (2026-08-28, post-QA en producción)
+
+Tras el primer despliegue, Carlos probó la pantalla "Secciones del Admin" en producción y corrigió
+la decisión original de este ADR (§Decisión punto 2, "Qué es de código y qué es del operador"): la
+estructura de **grupos y secciones (L1/L2/L3) NO debía quedar sembrada/gobernada por código**. Se
+revierte esa parte; el resto del ADR (6 tablas, PKs `grp-N`/`s1-N`/`s2-N`/`s3-N`/`vw-N`, el modelo
+de vistas con sus 3 paneles del sidebar derecho) queda intacto y confirmado correcto.
+
+**Modelo corregido:**
+
+- **Grupos y Secciones (L1/L2/L3)** = estructura de navegación pura, propiedad 100% del operador.
+  CRUD completo (crear, editar `label`/`system_name`/`path`/`section_type`, eliminar, reordenar,
+  **mover entre niveles** — no solo dentro del mismo nivel) se hace **desde el Admin, sin tocar
+  código ni redeploy**. El seeder deja de resincronizar grupos/secciones en cada arranque — la
+  migración `c4d5e6f7a8b9` (+ su `sync_structure()` de este lote) fue la **única** carga inicial;
+  de aquí en adelante la BD es la única fuente de verdad para el árbol. Mover una sección entre
+  niveles implica migrar la fila entre `admin_sections_l1/l2/l3` (cambia el prefijo de PK
+  `s1-N`→`s2-N`, etc.) y recalcular las referencias de sus hijas/vistas — no es un simple UPDATE de
+  columna.
+- **Vistas** = lo único que sigue naciendo en código (una vista es una pantalla/funcionalidad real:
+  Carlos la pide por chat, un especialista la construye y la registra como fila de `admin_views`).
+  Las vistas ya creadas se conservan tal cual. Lo que **deja de ser fijo por código** es su
+  `owner`/sección: Carlos elige desde el Admin en qué grupo/sección(es) mostrar cada vista, y puede
+  reasignarla cuando quiera. El modelo de los 3 paneles del sidebar derecho por vista **no cambia**
+  y queda confirmado correcto tal como se implementó: chat contextual (activado al asignar
+  `responsible_agent_profile_id`), panel de instrucciones (activado al cargar `instructions`) y
+  panel de controles especiales (`has_controls_window`, construido en código cuando la vista lo
+  requiere). Sidebar derecho inactivo si ninguno de los 3 aplica.
+- **Grupo protegido `admin`** (nuevo): contiene la sección/tabla "Secciones del Admin" (esta misma
+  pantalla de gestión). Visible y editable **solo para usuarios `is_superuser`** — el resto de
+  grupos/secciones (las 54 actuales incluidas) quedan completamente editables/eliminables por
+  cualquier usuario del Admin. Requiere una columna nueva `is_superuser` en `users` (migración con
+  backfill `true` para las filas existentes, para no romper el acceso actual).
+
+**Implicaciones para implementación** (reemplazan los pendientes de `api-rest-developer` /
+`admin-panel-specialist` de más arriba en lo que toca a grupos/secciones; lo de Bedrock/vistas de
+esas listas sigue vigente):
+
+- [ ] `api-rest-specialist` + `api-rest-developer`: `POST`/`DELETE` para `admin_section_groups` y
+  `admin_sections_l1/l2/l3`; ampliar `PUT` para editar campos (no solo `sort_order`/`parent_id`);
+  soporte de mover una sección entre niveles (migración de fila entre tablas + recálculo de PKs
+  referenciadas); `AdminViewUpdateRequest` gana el campo para reasignar `owner` (sección dueña);
+  columna `is_superuser` en `users` + gate en las rutas del grupo `admin`; retirar la llamada a
+  sync de grupos/secciones de `init_db()` (dejar solo el sync de vistas, si aplica cuando se
+  registre una vista nueva por código).
+- [ ] `admin-panel-specialist`: formularios de crear/editar/eliminar grupo y sección en
+  `AdminSectionsPage.tsx`, control de mover entre niveles, reasignación de sección dueña en
+  `AdminViewsPage.tsx`, ocultar el grupo `admin` en `Sidebar.tsx` para usuarios no-superuser,
+  reescribir el copy de la pantalla (ya no dice "lo siembra el código").
+- [ ] Actualizar el punto (a) de §Seguimiento ("drag L1↔L2↔L3 diferido") — queda resuelto por esta
+  corrección, no diferido.
+
 ---
 
 **Creado por**: Arquitecto de Soluciones
@@ -383,3 +435,4 @@ justo después del rebuild.
 **Fecha de creación**: 2026-08-28
 **Estado de vigencia**: Pendiente implementación (requiere `alembic upgrade head` en cada entorno
 donde ya existan filas en `admin_section_overrides`)
+**Corrección**: 2026-08-28 — ver "Corrección — Grupos/Secciones pasan a gestión 100% Admin" arriba.

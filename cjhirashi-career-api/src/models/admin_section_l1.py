@@ -1,13 +1,13 @@
-"""Sección L1 del Admin (ADR-022).
+"""Sección L1 del Admin (ADR-022; CRUD ADR-023 corrección).
 
 Nodo de primer nivel bajo un grupo. Puede tener 0–10 vistas y sub-secciones L2.
-``system_name`` / ``label`` / ``path`` / ``section_type`` son propiedad del código
-(seeder). ``group_id`` (re-parent) y ``sort_order`` son propiedad del operador.
 
-``origin`` (ruling #5 de ADR-022): ``'code'`` para todo lo que siembra el registro
-en código; el prune del seeder solo borra filas ``origin='code'``. Reservado para
-el futuro catálogo de componentes UI, donde el operador podrá crear secciones
-(``origin='admin'``) que el seeder no debe tocar.
+Desde ADR-023 (corrección) el CRUD completo (crear, editar, borrar, mover de
+nivel) vive en la API — ver ``services/section_catalog.py``. ``origin='code'``
+identifica lo sembrado por el seeder/migración (prune acotado a esas filas);
+``origin='admin'`` identifica lo creado por el operador vía API (nunca tocado
+por el seeder). ``visibility_level`` (ADR-023) es el gate genérico de acceso —
+ver ``VISIBILITY_LEVELS`` en ``section_catalog.py``.
 """
 from sqlalchemy import (
     CheckConstraint,
@@ -56,6 +56,11 @@ class AdminSectionL1(Base):
     section_type = Column(String(20), nullable=False)
     sort_order = Column(Integer, nullable=False, default=0, server_default="0")
     origin = Column(String(16), nullable=False, default="code", server_default="code")
+    # ADR-023 (corrección): gate genérico de visibilidad — ver
+    # services/section_catalog.py::VISIBILITY_LEVELS.
+    visibility_level = Column(
+        String(20), nullable=False, default="standard", server_default="standard"
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(timezone=True),

@@ -2,7 +2,7 @@
 User Model - Core authentication and user management.
 Implements Single Responsibility Principle.
 """
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from database import Base
@@ -39,6 +39,10 @@ class User(Base):
     # --- Estado de cuenta ---
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_verified = Column(Boolean, default=False, nullable=False)
+    # ADR-023 (corrección): determina qué visibility_level puede ver/mutar el
+    # usuario (gate genérico en section_catalog._is_admin_subtree). Backfill
+    # `true` para filas existentes en la migración; cuentas nuevas nacen `false`.
+    is_superuser = Column(Boolean, default=False, nullable=False, server_default=text("false"))
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)

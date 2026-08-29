@@ -52,7 +52,7 @@ _SLUG_TO_PK: dict[str, str] = {
     "agent-tools": "sec-14",
     "agent-audit-log": "sec-15",
     "settings-agents": "sec-16",
-    "settings-sections": "sec-17",
+    "admin-sections": "sec-17",
     "settings-agent-prompts": "sec-18",
     "settings-error-reports": "sec-19",
     "career-personal-profile": "sec-20",

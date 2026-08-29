@@ -12,7 +12,7 @@ from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
 from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
 from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
 from services import section_catalog
-from services.admin_sections_seed import sync_structure
+from services.admin_sections_seed import ensure_admin_group_and_section, sync_views
 from services.bedrock.agent_profiles import (
     AGENT_CONFIGURATION,
     AGENT_ORCHESTRATOR,
@@ -68,7 +68,8 @@ async def catalog_db(catalog_session_factory):
     """Sesión con la jerarquía de secciones sembrada por el seeder real."""
     section_catalog.invalidate_cache()
     async with catalog_session_factory() as session:
-        await sync_structure(session)
+        await ensure_admin_group_and_section(session)
+        await sync_views(session)
         await session.commit()
     async with catalog_session_factory() as session:
         yield session

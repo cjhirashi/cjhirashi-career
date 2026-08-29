@@ -1,10 +1,11 @@
-"""Catálogo efectivo de la jerarquía de secciones del Admin (ADR-022).
+"""Catálogo efectivo de la jerarquía de secciones del Admin (ADR-022; CRUD ADR-023).
 
 Lee las 6 tablas reales (``admin_section_groups``, ``admin_sections_l1/l2/l3``,
-``admin_views``) con una caché en memoria que se invalida en cada mutación. La
-estructura la mantiene el seeder (``services/admin_sections_seed.py``); aquí solo
-se sirve el árbol, se reordena/re-parenta secciones y se editan los 2 campos del
-operador de cada vista (``responsible_agent_profile_id`` L2 + ``instructions``).
+``admin_views``) con una caché en memoria que se invalida en cada mutación.
+Desde ADR-023 (corrección) el CRUD de grupos y secciones es 100% Admin: crear,
+editar, borrar, mover entre niveles. El seeder (``services/admin_sections_seed.py``)
+deja de tocar grupos/secciones tras el primer arranque; solo sigue sembrando
+vistas y el alta idempotente del grupo/sección protegidos ``admin``.
 """
 from __future__ import annotations
 
@@ -13,7 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.admin_section_group import AdminSectionGroup
@@ -33,6 +34,15 @@ logger = logging.getLogger(__name__)
 _LEVEL_MODEL = {1: AdminSectionL1, 2: AdminSectionL2, 3: AdminSectionL3}
 _LEVEL_PREFIX = {"s1": 1, "s2": 2, "s3": 3}
 _OWNER_COL = {1: "owner_l1_id", 2: "owner_l2_id", 3: "owner_l3_id"}
+_PARENT_COL = {2: "parent_l1_id", 3: "parent_l2_id"}
+
+# ADR-023 (corrección) §3.1 — enum genérico, extensible sin migrar schema.
+# Única fuente de verdad; validado también en schemas/admin_sections.py.
+VISIBILITY_LEVELS: tuple[str, ...] = ("standard", "superuser")
+
+# ADR-023 (corrección) §3.2 — system_name reservado del único grupo protegido.
+ADMIN_GROUP_SYSTEM_NAME = "admin"
+ADMIN_SECTION_SYSTEM_NAME = "admin-sections"
 
 
 # ---------------------------------------------------------------------------
@@ -55,6 +65,44 @@ class ProfileNotLevel2Error(ValueError):
 
 class EmptyViewUpdateError(ValueError):
     pass
+
+
+class ProtectedResourceError(ValueError):
+    """El recurso no forma parte del CRUD genérico (grupo/sección `admin`)."""
+
+
+class ForbiddenVisibilityError(PermissionError):
+    """El usuario actual no satisface el ``visibility_level`` del recurso."""
+
+
+class HasChildrenError(ValueError):
+    """El grupo/sección tiene hijas vivas; borrado/move bloqueado (sin cascada)."""
+
+
+class HasViewsError(ValueError):
+    """La sección tiene vistas propias; borrado bloqueado (sin cascada)."""
+
+
+class UnknownSectionTargetError(ValueError):
+    """``owner_l{n}_id`` de destino (reasignación de vista) no existe."""
+
+    def __init__(self, value: str):
+        self.value = value
+        super().__init__(f"unknown target section: {value}")
+
+
+class DuplicateViewKeyError(ValueError):
+    """La sección destino ya tiene una vista con el mismo ``key`` (reasignación)."""
+
+    def __init__(self, section_id: str, key: str):
+        self.section_id = section_id
+        self.key = key
+        super().__init__(f"section {section_id} already has a view with key {key!r}")
+
+
+# Sentinel "campo ausente" (≠ None explícito) — usado por update_section (path)
+# y update_view (responsible/instructions/owner_*).
+_UNSET = object()
 
 
 # ---------------------------------------------------------------------------
@@ -95,6 +143,7 @@ def _view_public(view: AdminView) -> Dict[str, Any]:
         "responsible_agent_profile_id": responsible,
         "has_instructions": bool((view.instructions or "").strip()),
         "chat_enabled": responsible is not None,
+        "visibility_level": view.visibility_level,
     }
 
 
@@ -133,6 +182,7 @@ def _view_item(view: AdminView, section: Any, level: int) -> Dict[str, Any]:
         "instructions": instructions,
         "chat_enabled": bool(view.responsible_agent_profile_id),
         "instructions_enabled": bool((view.instructions or "").strip()),
+        "visibility_level": view.visibility_level,
     }
 
 
@@ -192,6 +242,7 @@ async def _load(db: AsyncSession) -> Dict[str, Any]:
             "section_type": row.section_type,
             "sort_order": row.sort_order,
             "origin": row.origin,
+            "visibility_level": row.visibility_level,
             "has_layout": len(vs) >= 1,
             "view_count": len(vs),
             "views": [_view_public(v) for v in vs],
@@ -221,6 +272,7 @@ async def _load(db: AsyncSession) -> Dict[str, Any]:
                 "system_name": grp.system_name,
                 "name": grp.name,
                 "sort_order": grp.sort_order,
+                "visibility_level": grp.visibility_level,
                 "sections": [
                     _section_node(r, 1, _build_l2(r.id)) for r in l1_rows
                 ],
@@ -232,9 +284,12 @@ async def _load(db: AsyncSession) -> Dict[str, Any]:
         if row.path:
             path_index[row.path] = (levels[sid], sid)
 
+    groups_by_id: Dict[str, AdminSectionGroup] = {g.id: g for g in groups}
+
     _CACHE = {
         "groups": groups_out,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "groups_by_id": groups_by_id,
         "sections_by_id": sections_by_id,
         "levels": levels,
         "views_by_owner": views_by_owner,
@@ -244,13 +299,66 @@ async def _load(db: AsyncSession) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Gate genérico de visibilidad (ADR-023 corrección §3.3)
+# ---------------------------------------------------------------------------
+
+
+async def _root_group_id_of_section(db: AsyncSession, sid: str) -> str:
+    """Sube hasta el grupo raíz de una sección L1/L2/L3, usando la caché."""
+    data = await _load(db)
+    row = data["sections_by_id"].get(sid)
+    if row is None:
+        raise KeyError(f"unknown admin section: {sid}")
+    level = data["levels"][sid]
+    while level != 1:
+        parent_id = row.parent_l1_id if level == 2 else row.parent_l2_id
+        row = data["sections_by_id"][parent_id]
+        level = data["levels"][parent_id]
+    return row.group_id
+
+
+async def _is_admin_subtree(db: AsyncSession, section_or_group_id: str) -> bool:
+    """True si el grupo, o el grupo raíz de la sección dada, es el grupo protegido `admin`."""
+    data = await _load(db)
+    prefix = section_or_group_id.split("-", 1)[0]
+    if prefix == "grp":
+        group = data["groups_by_id"].get(section_or_group_id)
+        if group is None:
+            raise KeyError(f"unknown section group: {section_or_group_id}")
+        return group.system_name == ADMIN_GROUP_SYSTEM_NAME
+    root_group_id = await _root_group_id_of_section(db, section_or_group_id)
+    group = data["groups_by_id"].get(root_group_id)
+    return group is not None and group.system_name == ADMIN_GROUP_SYSTEM_NAME
+
+
+def _visibility_satisfied(visibility_level: str, is_superuser: bool) -> bool:
+    if visibility_level == "superuser":
+        return is_superuser
+    return True
+
+
+async def _require_visibility(db: AsyncSession, *, visibility_level: str, is_superuser: bool) -> None:
+    if not _visibility_satisfied(visibility_level, is_superuser):
+        raise ForbiddenVisibilityError(
+            "forbidden: the admin group is restricted to superusers"
+        )
+
+
+def _filter_groups_for_user(groups: List[Dict[str, Any]], is_superuser: bool) -> List[Dict[str, Any]]:
+    if is_superuser:
+        return groups
+    return [g for g in groups if g["visibility_level"] != "superuser"]
+
+
+# ---------------------------------------------------------------------------
 # nav-tree
 # ---------------------------------------------------------------------------
 
 
-async def list_nav_tree(db: AsyncSession) -> Dict[str, Any]:
+async def list_nav_tree(db: AsyncSession, *, is_superuser: bool = False) -> Dict[str, Any]:
     data = await _load(db)
-    return {"groups": data["groups"], "generated_at": data["generated_at"]}
+    groups = _filter_groups_for_user(data["groups"], is_superuser)
+    return {"groups": groups, "generated_at": data["generated_at"]}
 
 
 # ---------------------------------------------------------------------------
@@ -258,17 +366,100 @@ async def list_nav_tree(db: AsyncSession) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-async def list_section_groups(db: AsyncSession) -> List[Dict[str, Any]]:
+def _group_item(g: AdminSectionGroup) -> Dict[str, Any]:
+    return {
+        "id": g.id,
+        "system_name": g.system_name,
+        "name": g.name,
+        "sort_order": g.sort_order,
+        "origin": g.origin,
+        "visibility_level": g.visibility_level,
+    }
+
+
+async def list_section_groups(
+    db: AsyncSession, *, is_superuser: bool = False
+) -> List[Dict[str, Any]]:
     rows = (await db.execute(select(AdminSectionGroup))).scalars()
-    return [
-        {
-            "id": g.id,
-            "system_name": g.system_name,
-            "name": g.name,
-            "sort_order": g.sort_order,
-        }
-        for g in sorted(rows, key=lambda g: (g.sort_order, g.name))
+    items = [
+        _group_item(g) for g in sorted(rows, key=lambda g: (g.sort_order, g.name))
     ]
+    if is_superuser:
+        return items
+    return [i for i in items if i["visibility_level"] != "superuser"]
+
+
+async def create_group(
+    db: AsyncSession,
+    *,
+    name: str,
+    system_name: str,
+    sort_order: Optional[int] = None,
+    visibility_level: str = "standard",
+) -> Dict[str, Any]:
+    if visibility_level not in VISIBILITY_LEVELS:
+        raise ValueError(f"visibility_level debe ser uno de {VISIBILITY_LEVELS}")
+    if system_name == ADMIN_GROUP_SYSTEM_NAME:
+        raise ProtectedResourceError(
+            "system_name 'admin' is reserved for the protected admin group"
+        )
+
+    existing = (
+        await db.execute(
+            select(AdminSectionGroup).where(
+                (AdminSectionGroup.name == name)
+                | (AdminSectionGroup.system_name == system_name)
+            )
+        )
+    ).scalars().first()
+    if existing is not None:
+        raise _DuplicateError(f"group name or system_name already exists: {name!r}/{system_name!r}")
+
+    if sort_order is None:
+        max_sort = (
+            await db.execute(select(func.max(AdminSectionGroup.sort_order)))
+        ).scalar()
+        sort_order = (max_sort or 0) + 10
+
+    row = AdminSectionGroup(
+        system_name=system_name,
+        name=name,
+        sort_order=sort_order,
+        visibility_level=visibility_level,
+    )
+    db.add(row)
+    await db.flush()
+    await db.commit()
+    invalidate_cache()
+    return _group_item(row)
+
+
+async def delete_group(db: AsyncSession, grp_id: str, *, is_superuser: bool) -> None:
+    row = (
+        await db.execute(select(AdminSectionGroup).where(AdminSectionGroup.id == grp_id))
+    ).scalar_one_or_none()
+    if row is None:
+        raise KeyError(f"unknown section group: {grp_id}")
+    if row.system_name == ADMIN_GROUP_SYSTEM_NAME:
+        raise ProtectedResourceError("the admin group is protected and cannot be deleted")
+    await _require_visibility(db, visibility_level=row.visibility_level, is_superuser=is_superuser)
+
+    child_count = (
+        await db.execute(
+            select(func.count()).select_from(AdminSectionL1).where(
+                AdminSectionL1.group_id == grp_id
+            )
+        )
+    ).scalar_one()
+    if child_count:
+        raise HasChildrenError(
+            f"group {grp_id} has {child_count} child section(s); move or delete them first"
+        )
+
+    await db.delete(row)
+    await db.flush()
+    await db.commit()
+    invalidate_cache()
 
 
 async def reorder_groups(db: AsyncSession, order: Sequence[str]) -> List[Dict[str, Any]]:
@@ -280,7 +471,7 @@ async def reorder_groups(db: AsyncSession, order: Sequence[str]) -> List[Dict[st
     await db.flush()
     await db.commit()
     invalidate_cache()
-    return await list_section_groups(db)
+    return await list_section_groups(db, is_superuser=True)
 
 
 async def update_group(db: AsyncSession, grp_id: str, sort_order: int) -> Dict[str, Any]:
@@ -293,17 +484,19 @@ async def update_group(db: AsyncSession, grp_id: str, sort_order: int) -> Dict[s
     await db.flush()
     await db.commit()
     invalidate_cache()
-    return {
-        "id": row.id,
-        "system_name": row.system_name,
-        "name": row.name,
-        "sort_order": row.sort_order,
-    }
+    return _group_item(row)
 
 
 # ---------------------------------------------------------------------------
 # Secciones
 # ---------------------------------------------------------------------------
+
+
+class _DuplicateError(ValueError):
+    pass
+
+
+DuplicateError = _DuplicateError
 
 
 def _section_summary(row: Any, level: int, views: Sequence[AdminView]) -> Dict[str, Any]:
@@ -324,26 +517,52 @@ def _section_summary(row: Any, level: int, views: Sequence[AdminView]) -> Dict[s
         "section_type": row.section_type,
         "sort_order": row.sort_order,
         "origin": row.origin,
+        "visibility_level": row.visibility_level,
         "group_id": group_id,
         "parent_id": parent_id,
         "view_count": len(views),
     }
 
 
-async def list_sections(db: AsyncSession, level: int) -> List[Dict[str, Any]]:
+async def _filter_sections_for_user(
+    db: AsyncSession, rows: List[Any], is_superuser: bool
+) -> List[Any]:
+    if is_superuser:
+        return rows
+    out = []
+    for row in rows:
+        if row.visibility_level == "superuser":
+            continue
+        if await _is_admin_subtree(db, row.id):
+            continue
+        out.append(row)
+    return out
+
+
+async def list_sections(
+    db: AsyncSession, level: int, *, is_superuser: bool = False
+) -> List[Dict[str, Any]]:
     data = await _load(db)
     rows = [r for sid, r in data["sections_by_id"].items() if data["levels"][sid] == level]
     rows.sort(key=lambda r: (r.sort_order, r.label))
+    rows = await _filter_sections_for_user(db, rows, is_superuser)
     return [
         _section_summary(r, level, data["views_by_owner"].get(r.id, [])) for r in rows
     ]
 
 
-async def get_section(db: AsyncSession, sid: str) -> Dict[str, Any]:
+async def get_section(
+    db: AsyncSession, sid: str, *, is_superuser: bool = False
+) -> Dict[str, Any]:
     level = _level_of(sid)
     data = await _load(db)
     row = data["sections_by_id"].get(sid)
     if row is None or data["levels"][sid] != level:
+        raise KeyError(f"unknown admin section: {sid}")
+    if not is_superuser and (
+        row.visibility_level == "superuser" or await _is_admin_subtree(db, sid)
+    ):
+        # ADR-023 §3.3: 404, no 403 — no confirmar existencia a quien no puede verla.
         raise KeyError(f"unknown admin section: {sid}")
     views = data["views_by_owner"].get(sid, [])
     summary = _section_summary(row, level, views)
@@ -351,19 +570,174 @@ async def get_section(db: AsyncSession, sid: str) -> Dict[str, Any]:
     return summary
 
 
+async def _is_protected_section(db: AsyncSession, sid: str) -> bool:
+    """True si `sid` ES la sección protegida "Secciones del Admin" (§1.4/§1.5/§1.6)."""
+    data = await _load(db)
+    row = data["sections_by_id"].get(sid)
+    if row is None or data["levels"].get(sid) != 1:
+        return False
+    return row.system_name == ADMIN_SECTION_SYSTEM_NAME
+
+
+async def create_section(
+    db: AsyncSession,
+    *,
+    level: int,
+    label: str,
+    system_name: str,
+    section_type: str,
+    path: Optional[str] = None,
+    group_id: Optional[str] = None,
+    parent_id: Optional[str] = None,
+    visibility_level: str = "standard",
+    is_superuser: bool = False,
+) -> Dict[str, Any]:
+    if visibility_level not in VISIBILITY_LEVELS:
+        raise ValueError(f"visibility_level debe ser uno de {VISIBILITY_LEVELS}")
+    if level not in (1, 2, 3):
+        raise ValueError("level debe ser 1, 2 o 3")
+
+    if level == 1:
+        if group_id is None or parent_id is not None:
+            raise ValueError("level=1 requiere group_id y no admite parent_id")
+        group = (
+            await db.execute(select(AdminSectionGroup).where(AdminSectionGroup.id == group_id))
+        ).scalar_one_or_none()
+        if group is None:
+            raise ValueError(f"unknown section group: {group_id}")
+        if group.system_name == ADMIN_GROUP_SYSTEM_NAME and not is_superuser:
+            raise ForbiddenVisibilityError(
+                "forbidden: the admin group is restricted to superusers"
+            )
+        if group.system_name == ADMIN_GROUP_SYSTEM_NAME:
+            raise ProtectedResourceError(
+                "cannot create a section inside the protected admin group"
+            )
+    else:
+        if parent_id is None or group_id is not None:
+            raise ValueError("level in (2,3) requiere parent_id y no admite group_id")
+        parent_level = _level_of(parent_id)
+        if parent_level != level - 1:
+            raise ValueError(
+                f"parent_id debe ser una sección L{level - 1} (recibido {parent_id})"
+            )
+        parent_model = _LEVEL_MODEL[parent_level]
+        parent = (
+            await db.execute(select(parent_model).where(parent_model.id == parent_id))
+        ).scalar_one_or_none()
+        if parent is None:
+            raise ValueError(f"unknown parent section: {parent_id}")
+        if await _is_admin_subtree(db, parent_id):
+            raise ProtectedResourceError(
+                "cannot create a section inside the protected admin group"
+            )
+
+    model = _LEVEL_MODEL[level]
+    existing_name = (
+        await db.execute(select(model).where(model.system_name == system_name))
+    ).scalar_one_or_none()
+    if existing_name is not None:
+        raise _DuplicateError(f"system_name already exists: {system_name!r}")
+
+    if path:
+        for lvl, mdl in _LEVEL_MODEL.items():
+            clash = (
+                await db.execute(select(mdl).where(mdl.path == path))
+            ).scalar_one_or_none()
+            if clash is not None:
+                raise _DuplicateError(f"path already exists: {path!r}")
+
+    kwargs: Dict[str, Any] = dict(
+        system_name=system_name,
+        label=label,
+        path=path,
+        section_type=section_type,
+        origin="admin",
+        visibility_level=visibility_level,
+    )
+    if level == 1:
+        kwargs["group_id"] = group_id
+    elif level == 2:
+        kwargs["parent_l1_id"] = parent_id
+    else:
+        kwargs["parent_l2_id"] = parent_id
+
+    row = model(**kwargs)
+    db.add(row)
+    await db.flush()
+    await db.commit()
+    invalidate_cache()
+    return await get_section(db, row.id, is_superuser=True)
+
+
 async def update_section(
     db: AsyncSession,
     sid: str,
     *,
+    label: Optional[str] = None,
+    system_name: Optional[str] = None,
+    path: Any = _UNSET,
+    section_type: Optional[str] = None,
     sort_order: Optional[int] = None,
+    visibility_level: Optional[str] = None,
     group_id: Optional[str] = None,
     parent_id: Optional[str] = None,
+    is_superuser: bool = False,
 ) -> Dict[str, Any]:
+    """``path`` sigue el sentinel ``_UNSET`` (ausente = sin cambio); ``""``/``None``
+    explícito pone la columna a ``NULL`` (nodo agrupador sin layout)."""
     level = _level_of(sid)
     model = _LEVEL_MODEL[level]
     row = (await db.execute(select(model).where(model.id == sid))).scalar_one_or_none()
     if row is None:
         raise KeyError(f"unknown admin section: {sid}")
+
+    if await _is_protected_section(db, sid):
+        raise ProtectedResourceError(
+            "the admin sections screen is protected and cannot be edited"
+        )
+
+    await _require_visibility(
+        db, visibility_level=row.visibility_level, is_superuser=is_superuser
+    )
+    if await _is_admin_subtree(db, sid) and not is_superuser:
+        raise ForbiddenVisibilityError(
+            "forbidden: the admin group is restricted to superusers"
+        )
+
+    if visibility_level is not None:
+        if visibility_level not in VISIBILITY_LEVELS:
+            raise ValueError(f"visibility_level debe ser uno de {VISIBILITY_LEVELS}")
+        row.visibility_level = visibility_level
+
+    if label is not None:
+        row.label = label
+    if section_type is not None:
+        row.section_type = section_type
+
+    if system_name is not None:
+        clash = (
+            await db.execute(
+                select(model).where(model.system_name == system_name, model.id != sid)
+            )
+        ).scalar_one_or_none()
+        if clash is not None:
+            raise _DuplicateError(f"system_name already exists: {system_name!r}")
+        row.system_name = system_name
+
+    if path is not _UNSET:
+        new_path = path or None
+        if new_path is not None:
+            if not new_path.startswith("/"):
+                raise ValueError(f"path debe empezar con '/': {new_path!r}")
+            for lvl, mdl in _LEVEL_MODEL.items():
+                query = select(mdl).where(mdl.path == new_path)
+                if lvl == level:
+                    query = query.where(mdl.id != sid)
+                clash = (await db.execute(query)).scalar_one_or_none()
+                if clash is not None:
+                    raise _DuplicateError(f"path already exists: {new_path!r}")
+        row.path = new_path
 
     if group_id is not None:
         if level != 1:
@@ -375,6 +749,10 @@ async def update_section(
         ).scalar_one_or_none()
         if target is None:
             raise ValueError(f"unknown section group: {group_id}")
+        if target.system_name == ADMIN_GROUP_SYSTEM_NAME and not is_superuser:
+            raise ForbiddenVisibilityError(
+                "forbidden: the admin group is restricted to superusers"
+            )
         row.group_id = group_id
 
     if parent_id is not None:
@@ -404,7 +782,7 @@ async def update_section(
     await db.flush()
     await db.commit()
     invalidate_cache()
-    return await get_section(db, sid)
+    return await get_section(db, sid, is_superuser=True)
 
 
 class _CycleError(ValueError):
@@ -412,6 +790,188 @@ class _CycleError(ValueError):
 
 
 CycleError = _CycleError
+
+
+async def delete_section(db: AsyncSession, sid: str, *, is_superuser: bool) -> None:
+    level = _level_of(sid)
+    model = _LEVEL_MODEL[level]
+    row = (await db.execute(select(model).where(model.id == sid))).scalar_one_or_none()
+    if row is None:
+        raise KeyError(f"unknown admin section: {sid}")
+
+    if await _is_protected_section(db, sid):
+        raise ProtectedResourceError(
+            "the admin sections screen is protected and cannot be deleted"
+        )
+
+    await _require_visibility(
+        db, visibility_level=row.visibility_level, is_superuser=is_superuser
+    )
+    if await _is_admin_subtree(db, sid) and not is_superuser:
+        raise ForbiddenVisibilityError(
+            "forbidden: the admin group is restricted to superusers"
+        )
+
+    if level in (1, 2):
+        child_model = _LEVEL_MODEL[level + 1]
+        parent_col = "parent_l1_id" if level == 1 else "parent_l2_id"
+        child_count = (
+            await db.execute(
+                select(func.count()).select_from(child_model).where(
+                    getattr(child_model, parent_col) == sid
+                )
+            )
+        ).scalar_one()
+        if child_count:
+            raise HasChildrenError(
+                f"section {sid} has {child_count} child section(s); move or delete them first"
+            )
+
+    owner_col = getattr(AdminView, _OWNER_COL[level])
+    view_count = (
+        await db.execute(select(func.count()).select_from(AdminView).where(owner_col == sid))
+    ).scalar_one()
+    if view_count:
+        raise HasViewsError(
+            f"section {sid} owns {view_count} view(s); reassign them to another section first"
+        )
+
+    await db.delete(row)
+    await db.flush()
+    await db.commit()
+    invalidate_cache()
+
+
+async def move_section(
+    db: AsyncSession,
+    sid: str,
+    *,
+    target_level: int,
+    target_parent_id: str,
+    is_superuser: bool,
+) -> Dict[str, Any]:
+    level = _level_of(sid)
+    if target_level == level:
+        raise ValueError("target_level must differ from the current level")
+    if target_level not in (1, 2, 3):
+        raise ValueError("target_level debe ser 1, 2 o 3")
+
+    model = _LEVEL_MODEL[level]
+    row = (await db.execute(select(model).where(model.id == sid))).scalar_one_or_none()
+    if row is None:
+        raise KeyError(f"unknown admin section: {sid}")
+
+    if await _is_protected_section(db, sid):
+        raise ProtectedResourceError("protected, cannot be moved")
+
+    if level in (1, 2):
+        child_model = _LEVEL_MODEL[level + 1]
+        parent_col = "parent_l1_id" if level == 1 else "parent_l2_id"
+        child_count = (
+            await db.execute(
+                select(func.count()).select_from(child_model).where(
+                    getattr(child_model, parent_col) == sid
+                )
+            )
+        ).scalar_one()
+        if child_count:
+            raise HasChildrenError(
+                f"section {sid} has {child_count} child section(s); move or delete them "
+                "first (moving a section with children between levels is not supported yet)"
+            )
+
+    if target_level == 1:
+        target = (
+            await db.execute(
+                select(AdminSectionGroup).where(AdminSectionGroup.id == target_parent_id)
+            )
+        ).scalar_one_or_none()
+        if target is None:
+            raise ValueError(f"unknown section group: {target_parent_id}")
+        target_is_admin = target.system_name == ADMIN_GROUP_SYSTEM_NAME
+    else:
+        parent_level_expected = target_level - 1
+        target_prefix_level = _level_of(target_parent_id)
+        if target_prefix_level != parent_level_expected:
+            raise ValueError(
+                f"target_parent_id must be a level {parent_level_expected} section"
+            )
+        parent_model = _LEVEL_MODEL[parent_level_expected]
+        target = (
+            await db.execute(
+                select(parent_model).where(parent_model.id == target_parent_id)
+            )
+        ).scalar_one_or_none()
+        if target is None:
+            raise ValueError(f"unknown parent section: {target_parent_id}")
+        target_is_admin = await _is_admin_subtree(db, target_parent_id)
+
+    await _require_visibility(
+        db, visibility_level=row.visibility_level, is_superuser=is_superuser
+    )
+    if await _is_admin_subtree(db, sid) and not is_superuser:
+        raise ForbiddenVisibilityError(
+            "forbidden: the admin group is restricted to superusers"
+        )
+    if target_is_admin and not is_superuser:
+        raise ForbiddenVisibilityError(
+            "forbidden: the admin group is restricted to superusers"
+        )
+
+    previous_id = row.id
+    target_model = _LEVEL_MODEL[target_level]
+    sibling_filter_col = "group_id" if target_level == 1 else _PARENT_COL[target_level]
+    max_sort = (
+        await db.execute(
+            select(func.max(target_model.sort_order)).where(
+                getattr(target_model, sibling_filter_col) == target_parent_id
+            )
+        )
+    ).scalar()
+    new_sort_order = (max_sort + 10) if max_sort is not None else 10
+
+    new_kwargs: Dict[str, Any] = dict(
+        system_name=row.system_name,
+        label=row.label,
+        path=row.path,
+        section_type=row.section_type,
+        sort_order=new_sort_order,
+        visibility_level=row.visibility_level,
+        origin=row.origin,
+    )
+    if target_level == 1:
+        new_kwargs["group_id"] = target_parent_id
+    elif target_level == 2:
+        new_kwargs["parent_l1_id"] = target_parent_id
+    else:
+        new_kwargs["parent_l2_id"] = target_parent_id
+
+    new_row = target_model(**new_kwargs)
+    db.add(new_row)
+    await db.flush()
+    new_id = new_row.id
+
+    owner_col_old = _OWNER_COL[level]
+    owner_col_new = _OWNER_COL[target_level]
+    views = list(
+        (
+            await db.execute(
+                select(AdminView).where(getattr(AdminView, owner_col_old) == sid)
+            )
+        ).scalars()
+    )
+    for view in views:
+        setattr(view, owner_col_old, None)
+        setattr(view, owner_col_new, new_id)
+
+    await db.delete(row)
+    await db.flush()
+    await db.commit()
+    invalidate_cache()
+
+    detail = await get_section(db, new_id, is_superuser=True)
+    detail["previous_id"] = previous_id
+    return detail
 
 
 async def reorder_sections(
@@ -507,19 +1067,32 @@ def resolve_responsible(value: str) -> str:
     return canonical_profile_id(value)
 
 
-_UNSET = object()
-
-
 async def update_view(
     db: AsyncSession,
     view_id: str,
     *,
     responsible: Any = _UNSET,
     instructions: Any = _UNSET,
+    owner_l1_id: Any = _UNSET,
+    owner_l2_id: Any = _UNSET,
+    owner_l3_id: Any = _UNSET,
 ) -> Dict[str, Any]:
-    if responsible is _UNSET and instructions is _UNSET:
+    """ADR-023 (corrección) §2: ``owner_l{1,2,3}_id`` reasignan la sección dueña.
+
+    Si NINGUNO de los 3 viene (los 3 son ``_UNSET``), el owner actual no se
+    toca. Si ALGUNO viene, se arma el trío completo a partir de lo presente
+    (ausentes ⇒ ``None`` en el trío nuevo) — mover de L1 a L2 basta con
+    ``owner_l2_id=...``.
+    """
+    if (
+        responsible is _UNSET
+        and instructions is _UNSET
+        and owner_l1_id is _UNSET
+        and owner_l2_id is _UNSET
+        and owner_l3_id is _UNSET
+    ):
         raise EmptyViewUpdateError(
-            "update requiere responsible_agent_profile_id y/o instructions"
+            "update requiere responsible_agent_profile_id y/o instructions y/o owner_l{1,2,3}_id"
         )
     view, section, level = await _view_with_section(db, view_id)
 
@@ -530,6 +1103,44 @@ async def update_view(
     if instructions is not _UNSET:
         text_value = (instructions or "").strip()
         view.instructions = text_value or None
+
+    owner_touched = not (
+        owner_l1_id is _UNSET and owner_l2_id is _UNSET and owner_l3_id is _UNSET
+    )
+    if owner_touched:
+        new_l1 = owner_l1_id if owner_l1_id is not _UNSET else None
+        new_l2 = owner_l2_id if owner_l2_id is not _UNSET else None
+        new_l3 = owner_l3_id if owner_l3_id is not _UNSET else None
+
+        if new_l1:
+            target_level, target_model, target_id = 1, AdminSectionL1, new_l1
+        elif new_l2:
+            target_level, target_model, target_id = 2, AdminSectionL2, new_l2
+        else:
+            target_level, target_model, target_id = 3, AdminSectionL3, new_l3
+
+        target = (
+            await db.execute(select(target_model).where(target_model.id == target_id))
+        ).scalar_one_or_none()
+        if target is None:
+            raise UnknownSectionTargetError(target_id)
+
+        owner_col = _OWNER_COL[target_level]
+        clash = (
+            await db.execute(
+                select(AdminView).where(
+                    getattr(AdminView, owner_col) == target_id,
+                    AdminView.key == view.key,
+                    AdminView.id != view.id,
+                )
+            )
+        ).scalar_one_or_none()
+        if clash is not None:
+            raise DuplicateViewKeyError(target_id, view.key)
+
+        view.owner_l1_id = new_l1
+        view.owner_l2_id = new_l2
+        view.owner_l3_id = new_l3
 
     await db.flush()
     await db.commit()
