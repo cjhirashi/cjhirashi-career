@@ -237,7 +237,7 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
         },
     },
     {
-        "name": "bedrock_global_settings",
+        "name": "agent_system_global_settings",
         "description": "Prompts globales que aplican a TODOS los agentes (system prompt base + reglas de grounding/metodologías). action=get|update_system_prompt|update_global_rules.",
         "schema": {
             "type": "object",
@@ -281,7 +281,7 @@ _WRITE_TOOLS = {
     "save_job_listings",
     "agent_catalog_settings",
     "admin_view_settings",
-    "bedrock_global_settings",
+    "agent_system_global_settings",
     "error_report_settings",
 }
 
@@ -964,7 +964,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     if name == "admin_view_settings":
         return await _run_admin_view_settings(db, tool_input)
 
-    if name == "bedrock_global_settings":
+    if name == "agent_system_global_settings":
         return await _run_bedrock_global_settings(db, tool_input)
 
     if name == "error_report_settings":
@@ -1274,7 +1274,7 @@ def invalidation_key(name: str, tool_input: Dict[str, Any], tool_result: Dict[st
             return "agent-profiles"
     if name == "admin_view_settings" and tool_input.get("action") == "update":
         return "admin-views"
-    if name == "bedrock_global_settings" and tool_input.get("action") in (
+    if name == "agent_system_global_settings" and tool_input.get("action") in (
         "update_system_prompt",
         "update_global_rules",
     ):

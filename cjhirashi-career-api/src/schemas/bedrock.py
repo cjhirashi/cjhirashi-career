@@ -139,7 +139,7 @@ class BedrockGlobalRulesUpdateRequest(BaseModel):
 # Perfiles de agente — respuestas y solicitudes
 # ============================================================================
 
-class BedrockAgentProfilePromptResponse(BaseModel):
+class AgentSystemProfilePromptResponse(BaseModel):
     profile_id: str
     label: str
     level: int = 2
@@ -151,7 +151,7 @@ class BedrockAgentProfilePromptResponse(BaseModel):
     notes: Optional[str] = None
 
 
-class BedrockAgentProfilePromptUpdateRequest(BaseModel):
+class AgentSystemProfilePromptUpdateRequest(BaseModel):
     """`system_prompt_suffix=None` clears the override for this profile."""
 
     system_prompt_suffix: Optional[str] = None
@@ -178,7 +178,7 @@ class BedrockAgentCatalogView(BaseModel):
     resource_key: Optional[str] = None
 
 
-class BedrockAgentDelegationTarget(BaseModel):
+class AgentSystemDelegationTarget(BaseModel):
     id: str
     label: str
     level: int
@@ -207,7 +207,7 @@ class BedrockAgentCatalogItem(BaseModel):
     assigned_methodologies: List[BedrockAgentCatalogMethodology] = []
     methodologies: Optional[List[BedrockAgentCatalogMethodology]] = None
     conversation_count: int = 0
-    delegation_targets: List[BedrockAgentDelegationTarget] = []
+    delegation_targets: List[AgentSystemDelegationTarget] = []
     delegation_target_ids: List[str] = []
     default_delegation_target_ids: List[str] = []
     allowed_delegation_ids: List[str] = []
@@ -228,7 +228,7 @@ class BedrockAgentMethodologiesUpdateRequest(BaseModel):
     methodology_ids: List[str]
 
 
-class BedrockAgentDelegationUpdateRequest(BaseModel):
+class AgentSystemDelegationUpdateRequest(BaseModel):
     """`target_ids=None` restaura los destinos por nivel definidos en código."""
 
     target_ids: Optional[List[str]] = None
@@ -249,13 +249,13 @@ class BedrockAgentMemoryResponse(BaseModel):
 # Herramientas personalizadas — solicitudes y respuestas
 # ============================================================================
 
-class BedrockCustomToolCreateRequest(BaseModel):
+class AgentSystemCustomToolCreateRequest(BaseModel):
     name: str
     url: str
     headers: Optional[Dict[str, str]] = None
 
 
-class BedrockCustomToolResponse(BaseModel):
+class AgentSystemCustomToolResponse(BaseModel):
     id: str
     name: str
     url: str
@@ -307,7 +307,7 @@ class BedrockManualMemoryRequest(BaseModel):
 # Conversaciones — respuestas y solicitudes
 # ============================================================================
 
-class BedrockConversationResponse(BaseModel):
+class AgentSystemConversationResponse(BaseModel):
     session_id: str
     title: str
     session_type: str = "contextual"
@@ -320,7 +320,7 @@ class BedrockConversationResponse(BaseModel):
         from_attributes = True
 
 
-class BedrockConversationMessageResponse(BaseModel):
+class AgentSystemConversationMessageResponse(BaseModel):
     id: str
     role: str
     content: str
@@ -331,7 +331,7 @@ class BedrockConversationMessageResponse(BaseModel):
         from_attributes = True
 
 
-class BedrockConversationRenameRequest(BaseModel):
+class AgentSystemConversationRenameRequest(BaseModel):
     title: str
 
 

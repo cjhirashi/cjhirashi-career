@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Sequence
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_conversation import BedrockConversation
+from models.agent_system_conversations import AgentSystemConversation
 from services.bedrock import profile_delegation, profile_prompts, tools as bedrock_tools
 from services.bedrock.agent_profiles import (
     AgentProfile,
@@ -71,9 +71,9 @@ def _serialize_definition(profile: AgentProfile, prompt_meta: dict, photo_url: O
 
 async def _conversation_counts(db: AsyncSession, user_id: str) -> Dict[str, int]:
     result = await db.execute(
-        select(BedrockConversation.agent_profile_id, func.count())
-        .where(BedrockConversation.user_id == user_id)
-        .group_by(BedrockConversation.agent_profile_id)
+        select(AgentSystemConversation.agent_profile_id, func.count())
+        .where(AgentSystemConversation.user_id == user_id)
+        .group_by(AgentSystemConversation.agent_profile_id)
     )
     counts: Dict[str, int] = {}
     for profile_id, total in result.all():

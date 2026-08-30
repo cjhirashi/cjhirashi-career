@@ -120,19 +120,19 @@ async def switch_model(model_id: str) -> None:
 
 
 
-async def list_custom_tools(db) -> List["BedrockCustomTool"]:  # noqa: F821 - imported below for the type only
+async def list_custom_tools(db) -> List["AgentSystemCustomTool"]:  # noqa: F821 - imported below for the type only
     from sqlalchemy import select
 
-    from models.bedrock_custom_tool import BedrockCustomTool
+    from models.agent_system_custom_tool import AgentSystemCustomTool
 
-    result = await db.execute(select(BedrockCustomTool).order_by(BedrockCustomTool.created_at.desc()))
+    result = await db.execute(select(AgentSystemCustomTool).order_by(AgentSystemCustomTool.created_at.desc()))
     return result.scalars().all()
 
 
-async def create_custom_tool(db, name: str, url: str, headers: Optional[Dict[str, str]] = None) -> "BedrockCustomTool":  # noqa: F821
-    from models.bedrock_custom_tool import BedrockCustomTool
+async def create_custom_tool(db, name: str, url: str, headers: Optional[Dict[str, str]] = None) -> "AgentSystemCustomTool":  # noqa: F821
+    from models.agent_system_custom_tool import AgentSystemCustomTool
 
-    tool = BedrockCustomTool(name=name, url=url, headers=headers or None, is_enabled=True)
+    tool = AgentSystemCustomTool(name=name, url=url, headers=headers or None, is_enabled=True)
     db.add(tool)
     await db.flush()
     await db.refresh(tool)
@@ -140,12 +140,12 @@ async def create_custom_tool(db, name: str, url: str, headers: Optional[Dict[str
     return tool
 
 
-async def set_custom_tool_enabled(db, tool_id: str, is_enabled: bool) -> Optional["BedrockCustomTool"]:  # noqa: F821
+async def set_custom_tool_enabled(db, tool_id: str, is_enabled: bool) -> Optional["AgentSystemCustomTool"]:  # noqa: F821
     from sqlalchemy import select
 
-    from models.bedrock_custom_tool import BedrockCustomTool
+    from models.agent_system_custom_tool import AgentSystemCustomTool
 
-    result = await db.execute(select(BedrockCustomTool).where(BedrockCustomTool.id == tool_id))
+    result = await db.execute(select(AgentSystemCustomTool).where(AgentSystemCustomTool.id == tool_id))
     tool = result.scalar_one_or_none()
     if tool is None:
         return None
@@ -158,9 +158,9 @@ async def set_custom_tool_enabled(db, tool_id: str, is_enabled: bool) -> Optiona
 async def delete_custom_tool(db, tool_id: str) -> bool:
     from sqlalchemy import select
 
-    from models.bedrock_custom_tool import BedrockCustomTool
+    from models.agent_system_custom_tool import AgentSystemCustomTool
 
-    result = await db.execute(select(BedrockCustomTool).where(BedrockCustomTool.id == tool_id))
+    result = await db.execute(select(AgentSystemCustomTool).where(AgentSystemCustomTool.id == tool_id))
     tool = result.scalar_one_or_none()
     if tool is None:
         return False
@@ -579,9 +579,9 @@ async def get_system_prompt(db) -> str:
     on the very next message."""
     from sqlalchemy import select
 
-    from models.bedrock_settings import BedrockSettings
+    from models.agent_system_settings import AgentSystemSettings
 
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     if row and row.system_prompt:
         return row.system_prompt
@@ -590,16 +590,16 @@ async def get_system_prompt(db) -> str:
 
 async def set_system_prompt(db, text: Optional[str]) -> str:
     """Set (or, with `text=None`, clear) the override. Returns the resulting
-    active prompt. Single-row table (`BedrockSettings` is a single-operator
+    active prompt. Single-row table (`AgentSystemSettings` is a single-operator
     setting, not per-user) - creates the row on first use."""
     from sqlalchemy import select
 
-    from models.bedrock_settings import BedrockSettings
+    from models.agent_system_settings import AgentSystemSettings
 
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     if row is None:
-        row = BedrockSettings(system_prompt=text)
+        row = AgentSystemSettings(system_prompt=text)
         db.add(row)
     else:
         row.system_prompt = text
@@ -622,9 +622,9 @@ async def get_global_rules(db) -> str:
     takes effect on the very next message."""
     from sqlalchemy import select
 
-    from models.bedrock_settings import BedrockSettings
+    from models.agent_system_settings import AgentSystemSettings
 
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     if row and row.global_rules:
         return row.global_rules
@@ -633,16 +633,16 @@ async def get_global_rules(db) -> str:
 
 async def set_global_rules(db, text: Optional[str]) -> str:
     """Set (or, with `text=None`, clear) the override. Returns the resulting
-    active global rules. Single-row table (`BedrockSettings` is a
+    active global rules. Single-row table (`AgentSystemSettings` is a
     single-operator setting, not per-user) - creates the row on first use."""
     from sqlalchemy import select
 
-    from models.bedrock_settings import BedrockSettings
+    from models.agent_system_settings import AgentSystemSettings
 
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     if row is None:
-        row = BedrockSettings(global_rules=text)
+        row = AgentSystemSettings(global_rules=text)
         db.add(row)
     else:
         row.global_rules = text
@@ -654,29 +654,29 @@ async def set_global_rules(db, text: Optional[str]) -> str:
 # Conversaciones — historial en PostgreSQL (history_manager + endpoints /bedrock/conversations).
 # ---------------------------------------------------------------------------
 
-async def list_conversations(db, user_id: str) -> List["BedrockConversation"]:  # noqa: F821
+async def list_conversations(db, user_id: str) -> List["AgentSystemConversation"]:  # noqa: F821
     from sqlalchemy import select
 
-    from models.bedrock_conversation import BedrockConversation
+    from models.agent_system_conversation import AgentSystemConversation
 
     result = await db.execute(
-        select(BedrockConversation)
-        .where(BedrockConversation.user_id == user_id)
-        .order_by(BedrockConversation.updated_at.desc())
+        select(AgentSystemConversation)
+        .where(AgentSystemConversation.user_id == user_id)
+        .order_by(AgentSystemConversation.updated_at.desc())
     )
     return result.scalars().all()
 
 
-async def get_conversation_messages(db, user_id: str, session_id: str) -> List["BedrockConversationMessage"]:  # noqa: F821
+async def get_conversation_messages(db, user_id: str, session_id: str) -> List["AgentSystemConversationMessage"]:  # noqa: F821
     from sqlalchemy import select
     from sqlalchemy.orm import selectinload
 
-    from models.bedrock_conversation import BedrockConversation
+    from models.agent_system_conversation import AgentSystemConversation
 
     result = await db.execute(
-        select(BedrockConversation)
-        .options(selectinload(BedrockConversation.messages))
-        .where(BedrockConversation.session_id == session_id, BedrockConversation.user_id == user_id)
+        select(AgentSystemConversation)
+        .options(selectinload(AgentSystemConversation.messages))
+        .where(AgentSystemConversation.session_id == session_id, AgentSystemConversation.user_id == user_id)
     )
     conversation = result.scalar_one_or_none()
     return conversation.messages if conversation else []
@@ -685,11 +685,11 @@ async def get_conversation_messages(db, user_id: str, session_id: str) -> List["
 async def rename_conversation(db, user_id: str, session_id: str, title: str) -> bool:
     from sqlalchemy import select
 
-    from models.bedrock_conversation import BedrockConversation
+    from models.agent_system_conversation import AgentSystemConversation
 
     result = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.session_id == session_id, BedrockConversation.user_id == user_id
+        select(AgentSystemConversation).where(
+            AgentSystemConversation.session_id == session_id, AgentSystemConversation.user_id == user_id
         )
     )
     conversation = result.scalar_one_or_none()
@@ -703,11 +703,11 @@ async def rename_conversation(db, user_id: str, session_id: str, title: str) -> 
 async def delete_conversation(db, user_id: str, session_id: str) -> bool:
     from sqlalchemy import select
 
-    from models.bedrock_conversation import BedrockConversation
+    from models.agent_system_conversation import AgentSystemConversation
 
     result = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.session_id == session_id, BedrockConversation.user_id == user_id
+        select(AgentSystemConversation).where(
+            AgentSystemConversation.session_id == session_id, AgentSystemConversation.user_id == user_id
         )
     )
     conversation = result.scalar_one_or_none()

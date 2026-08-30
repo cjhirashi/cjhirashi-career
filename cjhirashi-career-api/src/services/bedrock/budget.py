@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_usage_log import BedrockUsageLog
+from models.agent_system_usage_logs import AgentSystemUsageLog
 from services.bedrock.errors import BedrockBudgetExceeded
 
 
@@ -25,9 +25,9 @@ async def get_daily_spend_usd(db: AsyncSession, user_id: str) -> float:
     day_start = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
 
     result = await db.execute(
-        select(func.coalesce(func.sum(BedrockUsageLog.estimated_cost_usd), 0)).where(
-            BedrockUsageLog.user_id == user_id,
-            BedrockUsageLog.created_at >= day_start,
+        select(func.coalesce(func.sum(AgentSystemUsageLog.estimated_cost_usd), 0)).where(
+            AgentSystemUsageLog.user_id == user_id,
+            AgentSystemUsageLog.created_at >= day_start,
         )
     )
     return float(result.scalar_one() or 0)

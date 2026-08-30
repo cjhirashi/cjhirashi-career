@@ -1,5 +1,5 @@
 """
-BedrockSettings Model - single-row table holding the agent's runtime-editable
+AgentSystemSettings Model - single-row table holding the agent's runtime-editable
 configuration (currently just the system prompt override). Single row
 because Agent Bedrock is a single-operator assistant (Carlos), not a
 multi-tenant product - see CLAUDE.md.
@@ -13,8 +13,8 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class BedrockSettings(Base):
-    __tablename__ = "bedrock_settings"
+class AgentSystemSettings(Base):
+    __tablename__ = "agent_system_settings"
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -34,4 +34,4 @@ class BedrockSettings(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
-        return f"<BedrockSettings(id={self.id})>"
+        return f"<AgentSystemSettings(id={self.id})>"

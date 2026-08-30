@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
 from services import qdrant_service
 from services.bedrock.embeddings import embed_text
 from services.bedrock.errors import BedrockError
@@ -25,9 +25,9 @@ async def list_memory_events(
 ) -> List[Dict[str, Any]]:
     """Mensajes PG de una conversación, formato compatible con la UI de memoria."""
     conv = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.user_id == user_id,
-            BedrockConversation.session_id == session_id,
+        select(AgentSystemConversation).where(
+            AgentSystemConversation.user_id == user_id,
+            AgentSystemConversation.session_id == session_id,
         )
     )
     conversation = conv.scalar_one_or_none()
@@ -35,9 +35,9 @@ async def list_memory_events(
         return []
 
     result = await db.execute(
-        select(BedrockConversationMessage)
-        .where(BedrockConversationMessage.conversation_id == conversation.id)
-        .order_by(BedrockConversationMessage.created_at.asc())
+        select(AgentSystemConversationMessage)
+        .where(AgentSystemConversationMessage.conversation_id == conversation.id)
+        .order_by(AgentSystemConversationMessage.created_at.asc())
         .limit(max_results)
     )
     messages = result.scalars().all()

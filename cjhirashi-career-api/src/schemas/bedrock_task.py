@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from models.bedrock_task import TASK_ASSIGNEE_TYPES, TASK_PRIORITIES, TASK_STATUSES
+from models.agent_system_tasks import TASK_ASSIGNEE_TYPES, TASK_PRIORITIES, TASK_STATUSES
 
 
 def _normalize_optional_str(value: Optional[str]) -> Optional[str]:
@@ -17,7 +17,7 @@ def _normalize_optional_str(value: Optional[str]) -> Optional[str]:
     return stripped or None
 
 
-class BedrockTaskBase(BaseModel):
+class AgentSystemTaskBase(BaseModel):
     title: str = Field(..., max_length=255)
     description: Optional[str] = None
     status: str = Field(default="pending", max_length=20)
@@ -34,7 +34,7 @@ class BedrockTaskBase(BaseModel):
 
 
 # Shared write-side validation (Create/Update/subtasks). Deliberately NOT on
-# BedrockTaskBase: BedrockTaskResponse also extends it, and a row whose
+# AgentSystemTaskBase: AgentSystemTaskResponse also extends it, and a row whose
 # status/priority/agent_profile_id no longer matches current allowed values
 # (e.g. a renamed or removed agent profile) must still be readable, or every
 # GET on this resource 500s until someone edits that one record.
@@ -84,18 +84,18 @@ class _TaskWriteValidation:
         return self
 
 
-class SubtaskInput(_TaskWriteValidation, BedrockTaskBase):
+class SubtaskInput(_TaskWriteValidation, AgentSystemTaskBase):
     """Hija enviada anidada en create/update del padre. `parent_id` lo pone el servidor."""
 
     id: Optional[str] = Field(default=None, max_length=20)
     parent_id: Optional[str] = Field(default=None, max_length=20)
 
 
-class BedrockTaskCreate(_TaskWriteValidation, BedrockTaskBase):
+class AgentSystemTaskCreate(_TaskWriteValidation, AgentSystemTaskBase):
     subtasks: Optional[List[SubtaskInput]] = None
 
 
-class BedrockTaskUpdate(BaseModel):
+class AgentSystemTaskUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
     status: Optional[str] = Field(None, max_length=20)
@@ -163,7 +163,7 @@ class BedrockTaskUpdate(BaseModel):
         return self
 
 
-class BedrockTaskResponse(BedrockTaskBase):
+class AgentSystemTaskResponse(AgentSystemTaskBase):
     id: str
     user_id: str
     execution_result: Optional[str] = None

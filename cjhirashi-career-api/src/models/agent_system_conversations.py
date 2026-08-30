@@ -1,8 +1,8 @@
 """
-BedrockConversation / BedrockConversationMessage — historial de chat en PostgreSQL.
+AgentSystemConversation / AgentSystemConversationMessage — historial de chat en PostgreSQL.
 
 Mismo `session_id` en cliente y servidor (UUID). Una fila por conversación;
-los mensajes viven en bedrock_conversation_messages. Ver history_manager.py.
+los mensajes viven en agent_system_conversation_messages. Ver history_manager.py.
 """
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.sql import func
@@ -12,11 +12,11 @@ from database import Base
 from services.id_generator import register_id_listener
 
 
-class BedrockConversation(Base):
-    __tablename__ = "bedrock_conversations"
+class AgentSystemConversation(Base):
+    __tablename__ = "agent_system_conversations"
     __table_args__ = (
         Index(
-            "ix_bedrock_conversations_user_type_profile",
+            "ix_agent_system_conversations_user_type_profile",
             "user_id",
             "session_type",
             "agent_profile_id",
@@ -39,27 +39,27 @@ class BedrockConversation(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False, index=True)
 
     messages = relationship(
-        "BedrockConversationMessage", back_populates="conversation", cascade="all, delete-orphan", order_by="BedrockConversationMessage.created_at"
+        "AgentSystemConversationMessage", back_populates="conversation", cascade="all, delete-orphan", order_by="AgentSystemConversationMessage.created_at"
     )
 
     def __repr__(self):
-        return f"<BedrockConversation(id={self.id}, session_id='{self.session_id}')>"
+        return f"<AgentSystemConversation(id={self.id}, session_id='{self.session_id}')>"
 
 
-class BedrockConversationMessage(Base):
-    __tablename__ = "bedrock_conversation_messages"
+class AgentSystemConversationMessage(Base):
+    __tablename__ = "agent_system_conversation_messages"
 
     id = Column(String(20), primary_key=True)
-    conversation_id = Column(String(20), ForeignKey("bedrock_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
+    conversation_id = Column(String(20), ForeignKey("agent_system_conversations.id", ondelete="CASCADE"), nullable=False, index=True)
     role = Column(String(20), nullable=False)  # "user" | "assistant"
     content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    conversation = relationship("BedrockConversation", back_populates="messages")
+    conversation = relationship("AgentSystemConversation", back_populates="messages")
 
     def __repr__(self):
-        return f"<BedrockConversationMessage(id={self.id}, role='{self.role}')>"
+        return f"<AgentSystemConversationMessage(id={self.id}, role='{self.role}')>"
 
 
-register_id_listener(BedrockConversation, "bco")
-register_id_listener(BedrockConversationMessage, "bcm")
+register_id_listener(AgentSystemConversation, "bco")
+register_id_listener(AgentSystemConversationMessage, "bcm")

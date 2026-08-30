@@ -6,8 +6,8 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class BedrockAgentDelegation(Base):
-    __tablename__ = "bedrock_agent_delegation"
+class AgentSystemDelegation(Base):
+    __tablename__ = "agent_system_agent_delegation"
 
     profile_id = Column(String(50), primary_key=True)
     # Lista de agent_* ; fila presente = override (lista vacía = no delega a nadie).
@@ -20,4 +20,4 @@ class BedrockAgentDelegation(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<BedrockAgentDelegation(profile_id={self.profile_id!r})>"
+        return f"<AgentSystemDelegation(profile_id={self.profile_id!r})>"

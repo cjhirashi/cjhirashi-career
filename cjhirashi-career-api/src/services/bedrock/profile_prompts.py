@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
+from models.agent_system_profile_prompts import AgentSystemProfilePrompt
 from services.bedrock.agent_profiles import AgentProfile, get_profile, list_profiles
 
 
@@ -13,7 +13,7 @@ from services.bedrock.agent_profiles import AgentProfile, get_profile, list_prof
 # ============================================================================
 
 async def _overrides_map(db: AsyncSession) -> Dict[str, str]:
-    result = await db.execute(select(BedrockAgentProfilePrompt))
+    result = await db.execute(select(AgentSystemProfilePrompt))
     return {row.profile_id: row.system_prompt_suffix for row in result.scalars().all()}
 
 
@@ -23,8 +23,8 @@ async def _overrides_map(db: AsyncSession) -> Dict[str, str]:
 
 async def get_effective_suffix(db: AsyncSession, profile: AgentProfile) -> str:
     result = await db.execute(
-        select(BedrockAgentProfilePrompt).where(
-            BedrockAgentProfilePrompt.profile_id == profile.id
+        select(AgentSystemProfilePrompt).where(
+            AgentSystemProfilePrompt.profile_id == profile.id
         )
     )
     row = result.scalar_one_or_none()
@@ -68,8 +68,8 @@ async def set_profile_prompt_suffix(
     text = system_prompt_suffix.strip() if system_prompt_suffix else None
 
     result = await db.execute(
-        select(BedrockAgentProfilePrompt).where(
-            BedrockAgentProfilePrompt.profile_id == profile_id
+        select(AgentSystemProfilePrompt).where(
+            AgentSystemProfilePrompt.profile_id == profile_id
         )
     )
     row = result.scalar_one_or_none()
@@ -83,7 +83,7 @@ async def set_profile_prompt_suffix(
         await db.commit()
         await db.refresh(row)
     else:
-        db.add(BedrockAgentProfilePrompt(profile_id=profile_id, system_prompt_suffix=text))
+        db.add(AgentSystemProfilePrompt(profile_id=profile_id, system_prompt_suffix=text))
         await db.commit()
 
     profile = get_profile(profile_id)

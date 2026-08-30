@@ -1,5 +1,5 @@
 """
-BedrockTask — tablero de trabajo, cola de agentes y orquestador de planes (ADR-015/016).
+AgentSystemTask — tablero de trabajo, cola de agentes y orquestador de planes (ADR-015/016).
 
 Una fila puede ser:
 
@@ -23,8 +23,8 @@ TASK_TERMINAL_STATUSES = ("done", "cancelled")
 from services.id_generator import register_id_listener
 
 
-class BedrockTask(Base):
-    __tablename__ = "bedrock_tasks"
+class AgentSystemTask(Base):
+    __tablename__ = "agent_system_tasks"
     __table_args__ = (
         Index("ix_bedrock_tasks_scheduler", "assignee_type", "status", "scheduled_at"),
         Index("ix_bedrock_tasks_parent_sort", "parent_id", "sort_order"),
@@ -46,7 +46,7 @@ class BedrockTask(Base):
 
     parent_id = Column(
         String(20),
-        ForeignKey("bedrock_tasks.id", ondelete="CASCADE"),
+        ForeignKey("agent_system_tasks.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )
@@ -63,7 +63,7 @@ class BedrockTask(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     def __repr__(self):
-        return f"<BedrockTask(id={self.id}, title='{self.title}', status='{self.status}')>"
+        return f"<AgentSystemTask(id={self.id}, title='{self.title}', status='{self.status}')>"
 
 
-register_id_listener(BedrockTask, "btk")
+register_id_listener(AgentSystemTask, "btk")

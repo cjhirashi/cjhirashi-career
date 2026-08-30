@@ -318,9 +318,9 @@ class CareerRepository(Generic[ModelType]):
             return
         if self_id and parent_id == self_id:
             raise ValueError("una tarea no puede ser padre de sí misma")
-        from models.bedrock_task import BedrockTask
+        from models.bedrock_task import AgentSystemTask
 
-        parent = await db.get(BedrockTask, parent_id)
+        parent = await db.get(AgentSystemTask, parent_id)
         if parent is None or parent.user_id != user_id:
             raise ValueError("parent_id no existe o no es tuyo")
         if parent.parent_id:
@@ -395,13 +395,13 @@ class CareerRepository(Generic[ModelType]):
             await self._sync_subtasks(db, user_id, obj, virtual.get("subtasks") or [])
 
     async def _sync_subtasks(self, db: AsyncSession, user_id: str, parent, items: list) -> None:
-        from models.bedrock_task import BedrockTask
+        from models.bedrock_task import AgentSystemTask
         from schemas.bedrock_task import SubtaskInput
 
         if getattr(parent, "parent_id", None):
             raise ValueError("las subtareas no pueden tener subtareas")
         result = await db.execute(
-            select(BedrockTask).where(BedrockTask.user_id == user_id, BedrockTask.parent_id == parent.id)
+            select(AgentSystemTask).where(AgentSystemTask.user_id == user_id, AgentSystemTask.parent_id == parent.id)
         )
         existing = {child.id: child for child in result.scalars().all()}
         keep: set[str] = set()
@@ -420,7 +420,7 @@ class CareerRepository(Generic[ModelType]):
                     setattr(child, key, value)
                 keep.add(child_id)
             else:
-                child = BedrockTask(user_id=user_id, **data)
+                child = AgentSystemTask(user_id=user_id, **data)
                 db.add(child)
                 await db.flush()
                 keep.add(child.id)

@@ -1,5 +1,5 @@
 """
-BedrockCustomTool — servidores MCP remotos registrados por el operador.
+AgentSystemCustomTool — servidores MCP remotos registrados por el operador.
 
 Solo `remote_mcp` está soportado. Las tools builtin (CRUD, LinkedIn, PDF, etc.)
 viven en services/bedrock/tools.py. Ver routes/bedrock.py /tools.
@@ -12,8 +12,8 @@ from database import Base
 from services.id_generator import register_id_listener
 
 
-class BedrockCustomTool(Base):
-    __tablename__ = "bedrock_custom_tools"
+class AgentSystemCustomTool(Base):
+    __tablename__ = "agent_system_custom_tools"
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(String(20), primary_key=True)
@@ -26,6 +26,6 @@ class BedrockCustomTool(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     def __repr__(self):
-        return f"<BedrockCustomTool(id={self.id}, name='{self.name}')>"
+        return f"<AgentSystemCustomTool(id={self.id}, name='{self.name}')>"
 
-register_id_listener(BedrockCustomTool, "bct")
+register_id_listener(AgentSystemCustomTool, "bct")

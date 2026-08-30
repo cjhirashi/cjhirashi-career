@@ -21,7 +21,6 @@ Son los 5 roles transversales que gobiernan el framework de calidad (ver [METODO
 | Agente | Área |
 |--------|------|
 | `api-rest-specialist` | Diseño API REST: schema, endpoints, seguridad, contrato, testing |
-| `api-rest-developer` | Implementación API REST: FastAPI, SQLAlchemy, PostgreSQL, Alembic |
 | `admin-panel-specialist` | Admin Panel: React SPA, CRUD, auth JWT, métricas real-time, Zustand + React Query |
 | `portal-publico-specialist` | Portal Público: React SPA read-only (About, Projects, Blog, Contact) |
 | `revisor-fallas` | Triage de `error_reports` (ADR-018): diagnostica causa raíz, coordina fix, marca `resolved` |
@@ -46,7 +45,8 @@ Disponibles en **todos** los proyectos de Charlie. Delegar a estos cuando la tar
 | `desarrollo-mcps` | Servidores MCP: tools, resources y prompts expuestos a agentes IA (módulo `cjhirashi-career-mcp`) |
 | `harness-agentes` | Harness de sistemas de agentes: bucle agéntico, diseño de tools, gestión de contexto, subagentes, hooks, memoria y **eficiencia** (tokens/latencia/coste). Investiga docs oficiales (Claude Code, Agent SDK, MCP) y buenas prácticas |
 | `aws-bedrock` | AWS Bedrock end-to-end: catálogo y capacidades de modelos, Converse API, Bedrock Agents, **AgentCore**, Knowledge Bases, Guardrails, Flows, conexiones efectivas (boto3/IAM/VPC endpoints) y throttling. Siempre consulta docs oficiales de AWS |
-| `modelado-datos-api` | Estructura de las tablas de una API — clasificación de modelos en **Sistema / Operativa / Integración** para que la arquitectura de datos sea reutilizable al replicar la API en otro proyecto; organización de carpetas `models`/`schemas`, plan de migración de imports, convenciones de PK/auditoría, documentación del esquema con diagramas |
+| `modelado-datos-api` | Estructura de las tablas de una API — clasificación de modelos en **Sistema / Operativa / Integración** para que la arquitectura de datos sea reutilizable al replicar la API en otro proyecto; organización de carpetas `models`/`schemas`, plan de migración de imports, convenciones de PK/auditoría, documentación del esquema con diagramas. **Solo diseña en `docs/`, nunca toca código** |
+| `implementador-modelos-api` | Ejecuta en código el plan que diseña `modelado-datos-api`: modelos SQLAlchemy, esquemas Pydantic, migraciones Alembic (rename, no recreación) y los endpoints/servicios/imports afectados. No decide clasificación ni columnas de dominio nuevas |
 | `ingenieria-llm` | Integración con LLMs: system prompts, routing de modelos, evaluación de calidad, optimización de llamadas (agentes Bedrock) |
 | `rag` | RAG: embeddings, indexación en Qdrant, chunking de documentos, recuperación semántica |
 | `skills-agentes` | Diseño y empaquetado de skills/herramientas reutilizables para agentes IA |

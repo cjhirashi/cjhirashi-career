@@ -1,5 +1,5 @@
 """
-BedrockUsageLog Model - token usage/cost per Agent Bedrock chat turn.
+AgentSystemUsageLog Model - token usage/cost per Agent Bedrock chat turn.
 
 Written best-effort by `services/bedrock_service.py` after every turn (one
 row per turn, summed across however many tool-use round-trips it took) -
@@ -11,8 +11,8 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class BedrockUsageLog(Base):
-    __tablename__ = "bedrock_usage_logs"
+class AgentSystemUsageLog(Base):
+    __tablename__ = "agent_system_usage_logs"
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -33,4 +33,4 @@ class BedrockUsageLog(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
     def __repr__(self):
-        return f"<BedrockUsageLog(id={self.id}, model_id='{self.model_id}', cost={self.estimated_cost_usd})>"
+        return f"<AgentSystemUsageLog(id={self.id}, model_id='{self.model_id}', cost={self.estimated_cost_usd})>"

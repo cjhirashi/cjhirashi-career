@@ -13,10 +13,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from middleware.auth import get_current_user
-from models.bedrock_task import BedrockTask
+from models.agent_system_tasks import AgentSystemTask
 from models.user import User
 from routes.career_common import build_crud_router
-from schemas.bedrock_task import BedrockTaskCreate, BedrockTaskResponse, BedrockTaskUpdate
+from schemas.bedrock_task import AgentSystemTaskCreate, AgentSystemTaskResponse, AgentSystemTaskUpdate
 from services import task_scheduler
 
 logger = logging.getLogger(__name__)
@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 router = build_crud_router(
     prefix="/agent-tasks",
     tags=["Agent - Tasks"],
-    model=BedrockTask,
-    create_schema=BedrockTaskCreate,
-    update_schema=BedrockTaskUpdate,
-    response_schema=BedrockTaskResponse,
+    model=AgentSystemTask,
+    create_schema=AgentSystemTaskCreate,
+    update_schema=AgentSystemTaskUpdate,
+    response_schema=AgentSystemTaskResponse,
     entity_name="tarea",
     after_write=lambda obj: task_scheduler.enqueue_advance(getattr(obj, "id", None), getattr(obj, "parent_id", None)),
 )
@@ -35,7 +35,7 @@ router = build_crud_router(
 
 @router.post(
     "/{item_id}/run",
-    response_model=BedrockTaskResponse,
+    response_model=AgentSystemTaskResponse,
     summary="Ejecutar ahora una tarea asignada a un agente",
 )
 async def run_task_now(

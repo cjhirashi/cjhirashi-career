@@ -250,14 +250,16 @@ export const AdminSectionsPage: React.FC = () => {
           {(data?.groups ?? []).length === 0 ? (
             <p className="text-text-secondary text-sm">No hay grupos configurados.</p>
           ) : (
-            data?.groups.map((group) => (
-              <GroupBlock
-                key={group.id}
-                group={group}
-                siblings={data.groups}
-                onOpen={openSection}
-              />
-            ))
+            <div className="table-scroll table-scroll-inset">
+              {data?.groups.map((group) => (
+                <GroupBlock
+                  key={group.id}
+                  group={group}
+                  siblings={data.groups}
+                  onOpen={openSection}
+                />
+              ))}
+            </div>
           )}
         </>
       )}

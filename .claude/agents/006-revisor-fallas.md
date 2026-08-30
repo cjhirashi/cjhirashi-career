@@ -102,7 +102,7 @@ Para **reabrir** (si el fix no bastó): `resolved = false`, y limpia
 
 ## 🤝 Delegación
 
-- Fallas en `api:*` / `route:*` / `service:*` / `repository:*` → `api-rest-developer`.
+- Fallas en `api:*` / `route:*` / `service:*` / `repository:*` → `implementador-modelos-api`.
 - Fallas en `admin:*` → `admin-panel-specialist`.
 - Fallas en `portfolio:*` → `portal-publico-specialist`.
 - Fallas en `bedrock:*` que sean de prompt/tool-calling → revisar `agent_profiles.py` / `tools.py`.

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
 from services.bedrock.reply_text import sanitize_assistant_reply
 
 
@@ -32,11 +32,11 @@ async def get_or_create_conversation(
     first_message: str,
     session_type: str = "contextual",
     agent_profile_id: Optional[str] = None,
-) -> BedrockConversation:
+) -> AgentSystemConversation:
     result = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.user_id == user_id,
-            BedrockConversation.session_id == session_id,
+        select(AgentSystemConversation).where(
+            AgentSystemConversation.user_id == user_id,
+            AgentSystemConversation.session_id == session_id,
         )
     )
     row = result.scalar_one_or_none()
@@ -45,7 +45,7 @@ async def get_or_create_conversation(
             row.agent_profile_id = agent_profile_id
             await db.commit()
         return row
-    row = BedrockConversation(
+    row = AgentSystemConversation(
         user_id=user_id,
         session_id=session_id,
         title=conversation_title_from(first_message),
@@ -59,8 +59,8 @@ async def get_or_create_conversation(
     return row
 
 
-async def append_message(db: AsyncSession, conversation: BedrockConversation, role: str, content: str) -> None:
-    db.add(BedrockConversationMessage(conversation_id=conversation.id, role=role, content=content))
+async def append_message(db: AsyncSession, conversation: AgentSystemConversation, role: str, content: str) -> None:
+    db.add(AgentSystemConversationMessage(conversation_id=conversation.id, role=role, content=content))
     await db.commit()
 
 
@@ -76,18 +76,18 @@ async def load_converse_messages(
 ) -> List[Dict[str, Any]]:
     """Últimos N mensajes user/assistant como historial Converse (solo texto)."""
     result = await db.execute(
-        select(BedrockConversation).where(
-            BedrockConversation.user_id == user_id,
-            BedrockConversation.session_id == session_id,
+        select(AgentSystemConversation).where(
+            AgentSystemConversation.user_id == user_id,
+            AgentSystemConversation.session_id == session_id,
         )
     )
     conv = result.scalar_one_or_none()
     if not conv:
         return []
     msgs = await db.execute(
-        select(BedrockConversationMessage)
-        .where(BedrockConversationMessage.conversation_id == conv.id)
-        .order_by(BedrockConversationMessage.created_at.asc())
+        select(AgentSystemConversationMessage)
+        .where(AgentSystemConversationMessage.conversation_id == conv.id)
+        .order_by(AgentSystemConversationMessage.created_at.asc())
     )
     rows = msgs.scalars().all()
     if window and len(rows) > window:
@@ -112,12 +112,12 @@ async def list_conversations(
     user_id: str,
     session_type: Optional[str] = None,
     agent_profile_id: Optional[str] = None,
-) -> List[BedrockConversation]:
-    q = select(BedrockConversation).where(BedrockConversation.user_id == user_id)
+) -> List[AgentSystemConversation]:
+    q = select(AgentSystemConversation).where(AgentSystemConversation.user_id == user_id)
     if session_type:
-        q = q.where(BedrockConversation.session_type == session_type)
+        q = q.where(AgentSystemConversation.session_type == session_type)
     if agent_profile_id:
-        q = q.where(BedrockConversation.agent_profile_id == agent_profile_id)
-    q = q.order_by(BedrockConversation.updated_at.desc())
+        q = q.where(AgentSystemConversation.agent_profile_id == agent_profile_id)
+    q = q.order_by(AgentSystemConversation.updated_at.desc())
     result = await db.execute(q)
     return list(result.scalars().all())

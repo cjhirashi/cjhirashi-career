@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Sequence, Set
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_agent_delegation import BedrockAgentDelegation
+from models.agent_system_agent_delegation import AgentSystemDelegation
 from services.bedrock.agent_profiles import (
     AgentProfile,
     can_delegate_to,
@@ -35,7 +35,7 @@ def filter_level_allowed(profile: AgentProfile, target_ids: Sequence[str]) -> Li
 
 
 async def _overrides_map(db: AsyncSession) -> Dict[str, List[str]]:
-    result = await db.execute(select(BedrockAgentDelegation))
+    result = await db.execute(select(AgentSystemDelegation))
     out: Dict[str, List[str]] = {}
     for row in result.scalars().all():
         ids = row.target_ids if isinstance(row.target_ids, list) else []
@@ -85,7 +85,7 @@ async def set_delegation_targets(
     profile = get_profile(profile_id)
     profile_id = profile.id
     result = await db.execute(
-        select(BedrockAgentDelegation).where(BedrockAgentDelegation.profile_id == profile_id)
+        select(AgentSystemDelegation).where(AgentSystemDelegation.profile_id == profile_id)
     )
     row = result.scalar_one_or_none()
     if target_ids is None:
@@ -97,7 +97,7 @@ async def set_delegation_targets(
         if row:
             row.target_ids = filtered
         else:
-            db.add(BedrockAgentDelegation(profile_id=profile_id, target_ids=filtered))
+            db.add(AgentSystemDelegation(profile_id=profile_id, target_ids=filtered))
         await db.commit()
     effective = await get_effective_delegation_ids(db, profile)
     defaults = default_delegation_ids(profile)

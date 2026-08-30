@@ -1,5 +1,5 @@
 """
-BedrockUsageRoundLog — costo granular por llamada Converse, tool o imagen.
+AgentSystemUsageRoundLog — costo granular por llamada Converse, tool o imagen.
 
 Un turno puede generar varias filas (orquestador + delegaciones).
 Ver docs/BEDROCK-SYSTEM.md.
@@ -9,8 +9,8 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class BedrockUsageRoundLog(Base):
-    __tablename__ = "bedrock_usage_round_logs"
+class AgentSystemUsageRoundLog(Base):
+    __tablename__ = "agent_system_usage_round_logs"
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)

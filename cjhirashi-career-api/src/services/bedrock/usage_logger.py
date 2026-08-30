@@ -8,8 +8,8 @@ from typing import Dict, Optional
 
 from config import settings
 from database import AsyncSessionLocal
-from models.bedrock_usage_log import BedrockUsageLog
-from models.bedrock_usage_round_log import BedrockUsageRoundLog
+from models.agent_system_usage_logs import AgentSystemUsageLog
+from models.agent_system_usage_round_logs import AgentSystemUsageRoundLog
 from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ async def record_turn_usage(
         cache_read, cache_write = _cache_tokens(usage)
         async with AsyncSessionLocal() as db:
             db.add(
-                BedrockUsageLog(
+                AgentSystemUsageLog(
                     user_id=user_id,
                     session_id=session_id,
                     model_id=model_id,
@@ -132,7 +132,7 @@ async def record_round_log(
         )
         async with AsyncSessionLocal() as db:
             db.add(
-                BedrockUsageRoundLog(
+                AgentSystemUsageRoundLog(
                     user_id=user_id,
                     session_id=session_id,
                     model_id=model_id,

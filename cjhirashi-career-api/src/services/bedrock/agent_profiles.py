@@ -190,7 +190,7 @@ _CONFIGURATION_TOOL_NAMES = {
     "search_knowledge_base",
     "agent_catalog_settings",
     "admin_view_settings",
-    "bedrock_global_settings",
+    "agent_system_global_settings",
 }
 
 _SETTINGS_TOOL_NAMES = {

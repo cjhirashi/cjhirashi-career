@@ -9,8 +9,8 @@ from sqlalchemy.sql import func
 from database import Base
 
 
-class BedrockAgentProfilePhoto(Base):
-    __tablename__ = "bedrock_agent_profile_photos"
+class AgentSystemProfilePhoto(Base):
+    __tablename__ = "agent_system_agent_profile_photos"
 
     profile_id = Column(String(50), primary_key=True)
     photo_url = Column(String(1024), nullable=False)
@@ -22,4 +22,4 @@ class BedrockAgentProfilePhoto(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<BedrockAgentProfilePhoto(profile_id={self.profile_id!r})>"
+        return f"<AgentSystemProfilePhoto(profile_id={self.profile_id!r})>"

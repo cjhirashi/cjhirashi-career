@@ -25,9 +25,10 @@ Desarrolladores responsables de **módulos específicos**:
 | ID | Nombre | Módulo | Responsabilidad |
 |----|--------|--------|-----------------|
 | 101 | API REST Specialist | API REST | Diseño: schema, endpoints, seguridad, testing strategy (incluye PDF WeasyPrint) |
-| 102 | API REST Developer | API REST | Implementación: FastAPI, SQLAlchemy, PostgreSQL, PDF in-process |
 | 103 | Admin Panel Specialist | Admin Panel | Implementación: React SPA, CRUD, autenticación, métricas |
 | 104 | Portal Público Specialist | Portal Público | Implementación: React SPA read-only, Home (entry point), About, Projects, Blog, Contact |
+
+**Nota:** el 102 (API REST Developer, local) fue retirado — la implementación de lo que diseña el arquitecto de datos ahora la hace `implementador-modelos-api` (agente global, `~/.claude/agents/`), contraparte de ejecución de `modelado-datos-api`. Ninguno de los dos trabaja con un esquema de tablas fijo: el arquitecto diseña el esquema del proyecto en curso y el implementador construye exactamente ese diseño, no un esquema predefinido de fábrica.
 
 ## 🎯 Cómo Usar
 
@@ -66,17 +67,17 @@ Arquitecto → [Invoca agente global] → Experto → Entrega
 # Semana 1: API REST Specialist (Diseño)
 Arquitecto → API REST Specialist → Especificación técnica ✓
 
-# Semanas 2-3: API REST Developer (Implementación)
-API REST Specialist → API REST Developer → API funcional ✓
+# Semanas 2-3: implementador-modelos-api (Implementación)
+API REST Specialist → implementador-modelos-api → API funcional ✓
 
 # Semanas 3-4: Admin Panel Specialist
-API REST Developer → Admin Panel Specialist → Admin Panel ✓
+implementador-modelos-api → Admin Panel Specialist → Admin Panel ✓
 
 # Semanas 4-5: Portal Público Specialist
-API REST Developer → Portal Público Specialist → Portal ✓
+implementador-modelos-api → Portal Público Specialist → Portal ✓
 
 # Semanas 3-4: Admin Panel Specialist
-API REST Developer → Admin Panel Specialist → Admin Panel (PDF vía API) ✓
+implementador-modelos-api → Admin Panel Specialist → Admin Panel (PDF vía API) ✓
 ```
 
 ## 📌 Responsabilidades Claras
@@ -143,7 +144,7 @@ API REST Developer → Admin Panel Specialist → Admin Panel (PDF vía API) ✓
 
 ### Fase 1 (MVP - 8 semanas)
 - **Semana 1:** API REST Specialist diseña
-- **Semanas 2-3:** API REST Developer implementa
+- **Semanas 2-3:** `implementador-modelos-api` implementa
 - **Semanas 3-4:** Admin Panel Specialist
 - **Semanas 4-5:** Portal Público Specialist
 - **Semanas 5-8:** Integración, testing, bugfixes

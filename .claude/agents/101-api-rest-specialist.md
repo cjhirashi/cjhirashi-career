@@ -304,7 +304,7 @@ All responses: { "error": "message", "code": "ERROR_CODE" }
 
 ```
 Design review: 1 semana (yo, especialista)
-Implementation: 2-3 semanas (API REST Developer)
+Implementation: 2-3 semanas (implementador-modelos-api)
 Testing: 1 semana (Developer + QA Engineer)
 Documentation: 1 semana (Developer + Documentador)
 
@@ -326,7 +326,7 @@ especificación debe apoyarse en**:
 | Diseño del runtime, contratos de tools, gestión de contexto, subagentes, **eficiencia** (tokens/latencia/coste) | `harness-agentes` | Patrón de arquitectura recomendado + criterios de eficiencia medibles, citando docs oficiales |
 | Específico de AWS Bedrock/AgentCore: modelo e inference profile, parámetros Converse, `cachePoint`, KB/Guardrails/Flows, permisos IAM, VPC endpoints, cuotas/throttling | `aws-bedrock` | Parámetros concretos verificados contra la doc de AWS y comprobación de disponibilidad regional |
 
-La spec resultante la implementa `api-rest-developer`; los prompts de negocio y la
+La spec resultante la implementa `implementador-modelos-api` (agente global); los prompts de negocio y la
 evaluación de calidad de cada agente son de `ingenieria-llm`. No fijar en la
 especificación APIs, límites o IDs de Bedrock/harness sin verificarlos antes contra
 documentación oficial.
@@ -362,7 +362,7 @@ documentación oficial.
 - Documento de especificación (Artifact)
 - Approved by Arquitecto ✅
 
-**Siguiente paso:** API REST Developer implementa según especificación.
+**Siguiente paso:** `implementador-modelos-api` implementa según especificación.
 
 ## 📚 Referencia
 
@@ -375,4 +375,4 @@ documentación oficial.
 
 **Rol:** Diseño (no implementación)
 **Entrega:** Especificación técnica profesional
-**Próximo:** API REST Developer implementa
+**Próximo:** `implementador-modelos-api` implementa

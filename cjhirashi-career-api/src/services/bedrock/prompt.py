@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.bedrock_settings import BedrockSettings
+from models.agent_system_settings import AgentSystemSettings
 from services.bedrock.agent_profiles import (
     AgentProfile,
     AGENT_METHODOLOGIES,
@@ -160,7 +160,7 @@ def default_system_prompt() -> str:
 
 
 async def get_system_prompt_override(db: AsyncSession) -> Optional[str]:
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     return row.system_prompt if row and row.system_prompt else None
 
@@ -172,7 +172,7 @@ def default_global_rules() -> str:
 
 
 async def get_global_rules_override(db: AsyncSession) -> Optional[str]:
-    result = await db.execute(select(BedrockSettings).limit(1))
+    result = await db.execute(select(AgentSystemSettings).limit(1))
     row = result.scalar_one_or_none()
     return row.global_rules if row and row.global_rules else None
 

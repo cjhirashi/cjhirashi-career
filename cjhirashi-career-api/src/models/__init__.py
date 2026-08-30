@@ -54,21 +54,21 @@ from models.tag import Tag
 # Dominio 5: Metodologías Operativas
 from models.operational_methodology import OperationalMethodology
 
-# Agent Bedrock
-from models.bedrock_usage_log import BedrockUsageLog
-from models.bedrock_usage_round_log import BedrockUsageRoundLog
-from models.bedrock_settings import BedrockSettings
-from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
-from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
-from models.bedrock_agent_delegation import BedrockAgentDelegation
+# Agent System (Motor de Agentes)
+from models.agent_system_usage_logs import AgentSystemUsageLog
+from models.agent_system_usage_round_logs import AgentSystemUsageRoundLog
+from models.agent_system_settings import AgentSystemSettings
+from models.agent_system_profile_prompts import AgentSystemProfilePrompt
+from models.agent_system_profile_photos import AgentSystemProfilePhoto
+from models.agent_system_delegation import AgentSystemDelegation
 from models.admin_section_group import AdminSectionGroup
 from models.admin_section_l1 import AdminSectionL1
 from models.admin_section_l2 import AdminSectionL2
 from models.admin_section_l3 import AdminSectionL3
 from models.admin_view import AdminView
-from models.bedrock_custom_tool import BedrockCustomTool
-from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
-from models.bedrock_task import BedrockTask
+from models.agent_system_custom_tools import AgentSystemCustomTool
+from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
+from models.agent_system_tasks import AgentSystemTask
 from models.user_notification import UserNotification
 from models.error_report import ErrorReport
 from models.pdf_output_template import PdfOutputTemplate
@@ -140,22 +140,22 @@ __all__ = [
     "Tag",
     # Operational methodologies domain
     "OperationalMethodology",
-    # Agent Bedrock
-    "BedrockUsageLog",
-    "BedrockUsageRoundLog",
-    "BedrockSettings",
-    "BedrockAgentProfilePrompt",
-    "BedrockAgentProfilePhoto",
-    "BedrockAgentDelegation",
+    # Agent System (Motor de Agentes)
+    "AgentSystemUsageLog",
+    "AgentSystemUsageRoundLog",
+    "AgentSystemSettings",
+    "AgentSystemProfilePrompt",
+    "AgentSystemProfilePhoto",
+    "AgentSystemDelegation",
     "AdminSectionGroup",
     "AdminSectionL1",
     "AdminSectionL2",
     "AdminSectionL3",
     "AdminView",
-    "BedrockCustomTool",
-    "BedrockConversation",
-    "BedrockConversationMessage",
-    "BedrockTask",
+    "AgentSystemCustomTool",
+    "AgentSystemConversation",
+    "AgentSystemConversationMessage",
+    "AgentSystemTask",
     "UserNotification",
     "ErrorReport",
     "PdfOutputTemplate",

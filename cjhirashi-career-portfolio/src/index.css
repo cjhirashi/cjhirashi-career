@@ -524,10 +524,11 @@ textarea:focus-visible {
 }
 
 /*
- * Blog post body (BlogPostPage) - the admin authors it as Markdown, so it's
- * rendered with react-markdown here too. Deliberately lighter than the admin
- * panel's pipeline (no syntax highlighting/Mermaid/raw HTML) - a public blog
- * post is prose, not a data-editing surface.
+ * Blog post body (BlogPostPage) and other admin-authored Markdown fields -
+ * rendered with react-markdown here too. Lighter than the admin panel's
+ * pipeline (no syntax highlighting, no raw HTML - a public page is prose,
+ * not a data-editing surface) but ```mermaid fenced blocks do render as
+ * real diagrams, matching the admin record view (see MermaidDiagram).
  */
 .markdown-content {
   min-width: 0;
@@ -700,5 +701,73 @@ textarea:focus-visible {
   border: 1px solid var(--border);
   padding: 0.5rem;
   text-align: left;
+}
+
+/* ```mermaid fenced blocks, rendered as real diagrams by MermaidDiagram
+   (dynamic import of mermaid + svg-pan-zoom) - same treatment as the admin
+   panel's record view. */
+.markdown-content .mermaid-diagram-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.markdown-content .mermaid-diagram {
+  border: 1px solid var(--border-glass);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: var(--bg-glass);
+  /* Fixed viewport, not auto-height - svg-pan-zoom fits/centers the diagram
+     inside this box; an unbounded height would just grow the page for a
+     large diagram instead of giving something to pan/zoom within. */
+  height: 22rem;
+  overflow: hidden;
+}
+
+.markdown-content .mermaid-diagram svg {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.markdown-content .mermaid-diagram svg:active {
+  cursor: grabbing;
+}
+
+.markdown-content .mermaid-diagram-controls {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.markdown-content .mermaid-zoom-btn {
+  display: inline-flex;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+}
+
+.markdown-content .mermaid-zoom-btn:hover {
+  color: var(--text);
+}
+
+.markdown-content .mermaid-diagram-loading {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.markdown-content .mermaid-diagram-error {
+  font-size: 0.8rem;
+  color: var(--error-text);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 }

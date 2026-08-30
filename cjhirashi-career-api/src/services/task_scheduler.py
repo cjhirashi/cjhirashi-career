@@ -22,7 +22,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import AsyncSessionLocal
-from models.bedrock_task import TASK_TERMINAL_STATUSES, BedrockTask
+from models.agent_system_tasks import TASK_TERMINAL_STATUSES, AgentSystemTask
 from models.user_notification import UserNotification
 from services.error_reporting import report_error
 
@@ -37,7 +37,7 @@ _RUNNABLE_STATUSES = ("pending", "failed")
 _background_tasks: set[asyncio.Task] = set()
 
 
-def build_execution_prompt(task: BedrockTask) -> str:
+def build_execution_prompt(task: AgentSystemTask) -> str:
     """Instrucción que el harness recibe como si fuera un turno de usuario."""
     description = (task.description or "").strip() or "(sin descripción)"
     due = task.due_at.isoformat() if task.due_at else "no definida"
@@ -56,8 +56,8 @@ def build_execution_prompt(task: BedrockTask) -> str:
     )
 
 
-def group_children(tasks: Iterable[BedrockTask]) -> dict[str | None, list[BedrockTask]]:
-    grouped: dict[str | None, list[BedrockTask]] = defaultdict(list)
+def group_children(tasks: Iterable[AgentSystemTask]) -> dict[str | None, list[AgentSystemTask]]:
+    grouped: dict[str | None, list[AgentSystemTask]] = defaultdict(list)
     for task in tasks:
         grouped[task.parent_id].append(task)
     for siblings in grouped.values():
@@ -65,7 +65,7 @@ def group_children(tasks: Iterable[BedrockTask]) -> dict[str | None, list[Bedroc
     return grouped
 
 
-def is_blocked(task: BedrockTask, siblings: list[BedrockTask]) -> bool:
+def is_blocked(task: AgentSystemTask, siblings: list[AgentSystemTask]) -> bool:
     """True if a previous blocking sibling is not done/cancelled."""
     if not task.parent_id:
         return False
@@ -77,11 +77,11 @@ def is_blocked(task: BedrockTask, siblings: list[BedrockTask]) -> bool:
     return False
 
 
-def has_children(task: BedrockTask, grouped: dict[str | None, list[BedrockTask]]) -> bool:
+def has_children(task: AgentSystemTask, grouped: dict[str | None, list[AgentSystemTask]]) -> bool:
     return bool(grouped.get(task.id))
 
 
-def is_agent_ready(task: BedrockTask, siblings: list[BedrockTask], now: datetime, *, orchestrator: bool) -> bool:
+def is_agent_ready(task: AgentSystemTask, siblings: list[AgentSystemTask], now: datetime, *, orchestrator: bool) -> bool:
     if orchestrator:
         return False
     if task.assignee_type != "agent" or not task.agent_profile_id:
@@ -100,7 +100,7 @@ def is_agent_ready(task: BedrockTask, siblings: list[BedrockTask], now: datetime
     return scheduled <= now
 
 
-def is_user_turn(task: BedrockTask, siblings: list[BedrockTask], *, orchestrator: bool) -> bool:
+def is_user_turn(task: AgentSystemTask, siblings: list[AgentSystemTask], *, orchestrator: bool) -> bool:
     if orchestrator:
         return False
     if task.assignee_type != "user" or task.status != "pending":
@@ -108,7 +108,7 @@ def is_user_turn(task: BedrockTask, siblings: list[BedrockTask], *, orchestrator
     return not is_blocked(task, siblings)
 
 
-def rollup_parent_status(parent: BedrockTask, children: list[BedrockTask]) -> None:
+def rollup_parent_status(parent: AgentSystemTask, children: list[AgentSystemTask]) -> None:
     if not children or parent.status == "cancelled":
         return
     active = [child for child in children if child.status not in TASK_TERMINAL_STATUSES]
@@ -119,7 +119,7 @@ def rollup_parent_status(parent: BedrockTask, children: list[BedrockTask]) -> No
         parent.status = "in_progress"
 
 
-def _is_runnable_agent_task(task: BedrockTask) -> bool:
+def _is_runnable_agent_task(task: AgentSystemTask) -> bool:
     return (
         task.assignee_type == "agent"
         and bool(task.agent_profile_id)
@@ -129,22 +129,22 @@ def _is_runnable_agent_task(task: BedrockTask) -> bool:
 
 async def claim_task_for_user(
     db: AsyncSession, user_id: str, task_id: str
-) -> Optional[BedrockTask]:
+) -> Optional[AgentSystemTask]:
     """Marca una tarea del usuario como in_progress si es ejecutable por un agente."""
     result = await db.execute(
-        select(BedrockTask).where(BedrockTask.id == task_id, BedrockTask.user_id == user_id)
+        select(AgentSystemTask).where(AgentSystemTask.id == task_id, AgentSystemTask.user_id == user_id)
     )
     task = result.scalar_one_or_none()
     if task is None or not _is_runnable_agent_task(task):
         return None
-    child = await db.execute(select(BedrockTask.id).where(BedrockTask.parent_id == task_id).limit(1))
+    child = await db.execute(select(AgentSystemTask.id).where(AgentSystemTask.parent_id == task_id).limit(1))
     if child.scalar_one_or_none() is not None:
         return None
     if task.parent_id:
         siblings_result = await db.execute(
-            select(BedrockTask).where(
-                BedrockTask.user_id == user_id,
-                BedrockTask.parent_id == task.parent_id,
+            select(AgentSystemTask).where(
+                AgentSystemTask.user_id == user_id,
+                AgentSystemTask.parent_id == task.parent_id,
             )
         )
         siblings = group_children(siblings_result.scalars().all())[task.parent_id]
@@ -156,7 +156,7 @@ async def claim_task_for_user(
     return task
 
 
-def _pick_ready_agent_ids(tasks: list[BedrockTask], now: datetime) -> list[str]:
+def _pick_ready_agent_ids(tasks: list[AgentSystemTask], now: datetime) -> list[str]:
     grouped = group_children(tasks)
     ids: list[str] = []
     for task in tasks:
@@ -170,8 +170,8 @@ def _pick_ready_agent_ids(tasks: list[BedrockTask], now: datetime) -> list[str]:
     return ids
 
 
-async def _load_tasks(db: AsyncSession) -> list[BedrockTask]:
-    result = await db.execute(select(BedrockTask))
+async def _load_tasks(db: AsyncSession) -> list[AgentSystemTask]:
+    result = await db.execute(select(AgentSystemTask))
     return list(result.scalars().all())
 
 
@@ -197,7 +197,7 @@ async def claim_due_task_ids(now: Optional[datetime] = None) -> list[str]:
         return ids
 
 
-async def _notify_user_turns(db: AsyncSession, tasks: list[BedrockTask]) -> None:
+async def _notify_user_turns(db: AsyncSession, tasks: list[AgentSystemTask]) -> None:
     grouped = group_children(tasks)
     now = datetime.now(timezone.utc)
     for task in tasks:
@@ -225,7 +225,7 @@ async def _notify_user_turns(db: AsyncSession, tasks: list[BedrockTask]) -> None
         task.turn_notified_at = now
 
 
-async def _rollup_parents(tasks: list[BedrockTask]) -> None:
+async def _rollup_parents(tasks: list[AgentSystemTask]) -> None:
     grouped = group_children(tasks)
     by_id = {task.id: task for task in tasks}
     for parent_id, children in grouped.items():
@@ -270,7 +270,7 @@ async def execute_claimed_task(task_id: str) -> None:
     from services.bedrock.errors import BedrockError
 
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(BedrockTask).where(BedrockTask.id == task_id))
+        result = await db.execute(select(AgentSystemTask).where(AgentSystemTask.id == task_id))
         task = result.scalar_one_or_none()
         if task is None:
             logger.warning("Scheduled task %s disappeared before execution", task_id)
@@ -331,7 +331,7 @@ async def execute_claimed_task(task_id: str) -> None:
             except Exception:
                 logger.exception("Rollback after task %s failure also failed", task_id)
             async with AsyncSessionLocal() as db2:
-                failed = await db2.get(BedrockTask, task_id)
+                failed = await db2.get(AgentSystemTask, task_id)
                 if failed is not None and failed.status == "in_progress":
                     failed.status = "failed"
                     failed.error_message = str(exc)[:ERROR_MAX_CHARS]

@@ -10,10 +10,31 @@ protegidos ``admin``, vía ``ensure_admin_group_and_section``). Para que los
 secciones) sigan funcionando sin reescritura masiva, ``hier_db`` reproduce ese
 seed histórico **aquí, en el harness de test** (``_seed_legacy_groups_and_sections``)
 y encima corre el seeder real (``ensure_admin_group_and_section`` + ``sync_views``).
+
+``hier_engine`` registra una UDF ``nextval(seq)`` en SQLite para emular las
+secuencias PostgreSQL que usa ``services/id_generator.py`` al crear filas vía
+el listener ``before_insert``. Sin esto los tests de CRUD (``create_group``,
+``create_section``, etc.) fallan con "no such function: nextval".
 """
+import threading
+
 import pytest
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+# ---------------------------------------------------------------------------
+# Emulación de nextval() para SQLite (no existe en PostgreSQL-less mode)
+# ---------------------------------------------------------------------------
+
+_SEQ_LOCK = threading.Lock()
+_SEQ_COUNTERS: dict[str, int] = {}
+
+
+def _sqlite_nextval(seq_name: str) -> int:
+    """UDF registrada en cada conexión SQLite para emular SELECT nextval('seq')."""
+    with _SEQ_LOCK:
+        _SEQ_COUNTERS[seq_name] = _SEQ_COUNTERS.get(seq_name, 0) + 1
+        return _SEQ_COUNTERS[seq_name]
 
 from models.admin_section_group import AdminSectionGroup
 from models.admin_section_l1 import AdminSectionL1
@@ -80,11 +101,20 @@ async def _seed_full(session) -> None:
 
 @pytest.fixture
 async def hier_engine():
+    # Reiniciar contadores de secuencia al iniciar cada test engine.
+    # El seed histórico usa IDs hasta grp-12, s1-54, vw-123; arrancamos en 200
+    # para que los INSERTs de CRUD no colisionen con los registros pre-sembrados.
+    with _SEQ_LOCK:
+        _SEQ_COUNTERS.clear()
+        for seq in ("grp_id_seq", "s1_id_seq", "s2_id_seq", "s3_id_seq", "vw_id_seq"):
+            _SEQ_COUNTERS[seq] = 200
+
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
 
     @event.listens_for(engine.sync_engine, "connect")
     def _fk_on(dbapi_conn, _rec):  # pragma: no cover - trivial
         dbapi_conn.execute("PRAGMA foreign_keys=ON")
+        dbapi_conn.create_function("nextval", 1, _sqlite_nextval)
 
     async with engine.begin() as conn:
         for table in _TABLES:
