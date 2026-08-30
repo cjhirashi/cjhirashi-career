@@ -1,4 +1,7 @@
 {
+  "env": {
+    "DISABLE_PROMPT_CACHING": "1"
+  },
   "permissions": {
     "allow": [
       "Read(//mnt/disco2/cjhirashi-data/proyectos/fabrica-agentes-transversales/agents/documentacion-especialista/protocols/**)"

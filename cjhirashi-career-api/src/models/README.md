@@ -13,7 +13,7 @@ flowchart TB
     Base --> Search[Búsqueda — 14 modelos]
     Base --> Digital[Digital — portal / publications / perfiles]
     Base --> Support[tag / operational_methodology]
-    Base --> Agent[bedrock_* / pdf_* / linkedin_*]
+    Base --> Agent[Motor de Agentes —* / pdf_* / linkedin_*]
     Core --> PG[(PostgreSQL)]
     Identity --> PG
     Search --> PG
@@ -1336,27 +1336,27 @@ erDiagram
 
 ---
 
-## Bedrock y PDF
+## AgentSystem y PDF
 
 | Módulo | Contenido |
 |--------|-----------|
-| `bedrock_settings.py` | Fila única: modelo, presupuesto, prompt override, límites |
-| `bedrock_agent_profile_prompt.py` | Suffix editable por perfil de agente |
-| `bedrock_agent_profile_photo.py` | Foto por perfil de agente (bucket MinIO) |
-| `bedrock_agent_delegation.py` | Override de destinos de delegación por perfil |
-| `bedrock_custom_tool.py` | Servidores MCP remotos registrados |
-| `bedrock_conversation.py` | `BedrockConversation` + `BedrockConversationMessage` (historial por `session_type` + `agent_profile_id`) |
-| `bedrock_usage_log.py` | Costo/tokens por turno |
-| `bedrock_usage_round_log.py` | Costo granular (Converse, tool, imagen) |
-| `bedrock_task.py` | Tareas/plan del agente (`/agent-tasks`) |
+| `agent_system_settings.py` | Fila única: modelo, presupuesto, prompt override, límites |
+| `agent_system_agent_profile_prompt.py` | Suffix editable por perfil de agente |
+| `agent_system_agent_profile_photo.py` | Foto por perfil de agente (bucket MinIO) |
+| `agent_system_agent_delegation.py` | Override de destinos de delegación por perfil |
+| `agent_system_custom_tool.py` | Servidores MCP remotos registrados |
+| `agent_system_conversation.py` | `AgentSystemConversation` + `AgentSystemConversationMessage` (historial por `session_type` + `agent_profile_id`) |
+| `agent_system_usage_log.py` | Costo/tokens por turno |
+| `agent_system_usage_round_log.py` | Costo granular (Converse, tool, imagen) |
+| `agent_system_task.py` | Tareas/plan del agente (`/agent-tasks`) |
 | `pdf_output_template.py` | Plantillas HTML → PDF |
 | `pdf_template_style.py` | CSS reutilizable (`style_id`) |
 
-#### `bedrock_settings`
+#### `agent_system_settings`
 
 ```mermaid
 erDiagram
-    bedrock_settings {
+    agent_system_settings {
         Integer id PK
         Text system_prompt "NULL = usa default"
         Text global_rules "NULL = usa default"
@@ -1371,11 +1371,11 @@ erDiagram
 
 Fila única, sin `user_id` (configuración global de un asistente single-tenant, ver CLAUDE.md).
 
-#### `bedrock_agent_profile_prompts`
+#### `agent_system_agent_profile_prompts`
 
 ```mermaid
 erDiagram
-    bedrock_agent_profile_prompts {
+    agent_system_agent_profile_prompts {
         String_50 profile_id PK "coincide con agent_profiles.py"
         Text system_prompt_suffix
         DateTime updated_at
@@ -1384,11 +1384,11 @@ erDiagram
 
 Sin `user_id` (configuración global). `profile_id` no lleva FK dura — referencia blanda al catálogo en código `agent_profiles.py`.
 
-#### `bedrock_agent_profile_photos`
+#### `agent_system_agent_profile_photos`
 
 ```mermaid
 erDiagram
-    bedrock_agent_profile_photos {
+    agent_system_agent_profile_photos {
         String_50 profile_id PK
         String_1024 photo_url
         DateTime updated_at
@@ -1397,11 +1397,11 @@ erDiagram
 
 Sin `user_id` (configuración global). Independiente del override de prompt.
 
-#### `bedrock_agent_delegation`
+#### `agent_system_agent_delegation`
 
 ```mermaid
 erDiagram
-    bedrock_agent_delegation {
+    agent_system_agent_delegation {
         String_50 profile_id PK
         JSONB target_ids "lista agent_*; vacía = no delega"
         DateTime updated_at
@@ -1410,11 +1410,11 @@ erDiagram
 
 Sin `user_id` (configuración global).
 
-#### `bedrock_custom_tools`
+#### `agent_system_custom_tools`
 
 ```mermaid
 erDiagram
-    bedrock_custom_tools {
+    agent_system_custom_tools {
         String_20 id PK
         String_100 name UK
         Text url
@@ -1426,11 +1426,11 @@ erDiagram
 
 Sin `user_id` (configuración global).
 
-#### `bedrock_conversations`
+#### `agent_system_conversations`
 
 ```mermaid
 erDiagram
-    bedrock_conversations {
+    agent_system_conversations {
         String_20 id PK
         String_20 user_id FK
         String_100 session_id UK
@@ -1441,33 +1441,33 @@ erDiagram
         DateTime updated_at
     }
     users
-    bedrock_conversation_messages
+    agent_system_conversation_messages
 
-    users ||--o{ bedrock_conversations : "cascade"
-    bedrock_conversations ||--o{ bedrock_conversation_messages : "cascade"
+    users ||--o{ agent_system_conversations : "cascade"
+    agent_system_conversations ||--o{ agent_system_conversation_messages : "cascade"
 ```
 
-#### `bedrock_conversation_messages`
+#### `agent_system_conversation_messages`
 
 ```mermaid
 erDiagram
-    bedrock_conversation_messages {
+    agent_system_conversation_messages {
         String_20 id PK
         String_20 conversation_id FK
         String_20 role "user|assistant"
         Text content
         DateTime created_at
     }
-    bedrock_conversations
+    agent_system_conversations
 
-    bedrock_conversations ||--o{ bedrock_conversation_messages : "cascade"
+    agent_system_conversations ||--o{ agent_system_conversation_messages : "cascade"
 ```
 
-#### `bedrock_usage_logs`
+#### `agent_system_usage_logs`
 
 ```mermaid
 erDiagram
-    bedrock_usage_logs {
+    agent_system_usage_logs {
         Integer id PK
         String_20 user_id FK
         String_64 session_id
@@ -1481,14 +1481,14 @@ erDiagram
     }
     users
 
-    users ||--o{ bedrock_usage_logs : "cascade"
+    users ||--o{ agent_system_usage_logs : "cascade"
 ```
 
-#### `bedrock_usage_round_logs`
+#### `agent_system_usage_round_logs`
 
 ```mermaid
 erDiagram
-    bedrock_usage_round_logs {
+    agent_system_usage_round_logs {
         Integer id PK
         String_20 user_id FK
         String_100 session_id
@@ -1506,14 +1506,14 @@ erDiagram
     }
     users
 
-    users ||--o{ bedrock_usage_round_logs : "cascade"
+    users ||--o{ agent_system_usage_round_logs : "cascade"
 ```
 
-#### `bedrock_tasks`
+#### `agent_system_tasks`
 
 ```mermaid
 erDiagram
-    bedrock_tasks {
+    agent_system_tasks {
         String_20 id PK
         String_20 user_id FK
         String_255 title
@@ -1538,8 +1538,8 @@ erDiagram
     }
     users
 
-    users ||--o{ bedrock_tasks : "cascade"
-    bedrock_tasks ||--o{ bedrock_tasks : "cascade, self-reference parent_id"
+    users ||--o{ agent_system_tasks : "cascade"
+    agent_system_tasks ||--o{ agent_system_tasks : "cascade, self-reference parent_id"
 ```
 
 #### `pdf_output_templates`
@@ -1735,7 +1735,7 @@ erDiagram
     admin_sections_l3 ||--o{ admin_views : "cascade (owner_l3_id)"
 ```
 
-`admin_views.responsible_agent_profile_id` referencia el `profile_id` canónico de `agent_profiles.py` (mismo dominio que `bedrock_agent_profile_prompts.profile_id`), pero **sin FK dura** — no existe tabla de perfiles Bedrock en la base de datos.
+`admin_views.responsible_agent_profile_id` referencia el `profile_id` canónico de `agent_profiles.py` (mismo dominio que `agent_system_agent_profile_prompts.profile_id`), pero **sin FK dura** — no existe tabla de perfiles AgentSystem en la base de datos.
 
 ---
 
