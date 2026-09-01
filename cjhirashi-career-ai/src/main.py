@@ -90,16 +90,17 @@ async def root():
 
 
 # ============================================================================
-# Router Imports (FASE 3 — Bedrock Service Endpoints)
+# Router Imports (FASE 3-5)
 # ============================================================================
 # Import routers and register them
 try:
-    from routes import bedrock, bedrock_tasks
+    from routes import bedrock, bedrock_tasks, metrics
     app.include_router(bedrock.router, prefix="/api")
     app.include_router(bedrock_tasks.router, prefix="/api")
-    logger.info("Bedrock routers registered successfully")
+    app.include_router(metrics.router, prefix="/api")
+    logger.info("Bedrock, tasks, and metrics routers registered successfully")
 except ImportError as e:
-    logger.warning(f"Failed to import bedrock routers: {e}. Continue without them.")
+    logger.warning(f"Failed to import routers: {e}. Continue without them.")
 
 
 # ============================================================================
