@@ -400,6 +400,84 @@ class OrchestratorClient:
                 logger.error(f"Error verificando token: {e}")
                 return None
 
+    async def get_system_prompt(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Obtener instrucciones del sistema (system prompt)."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/instructions",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo instrucciones: {e}")
+                return None
+
+    async def set_system_prompt(
+        self,
+        user_id: str,
+        auth_token: str,
+        prompt: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Actualizar instrucciones del sistema."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.patch(
+                    f"/instructions",
+                    json={"user_id": user_id, "prompt": prompt},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error actualizando instrucciones: {e}")
+                return None
+
+    async def get_global_rules(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Obtener reglas globales."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/rules",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo reglas: {e}")
+                return None
+
+    async def set_global_rules(
+        self,
+        user_id: str,
+        auth_token: str,
+        rules: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Actualizar reglas globales."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.patch(
+                    f"/rules",
+                    json={"user_id": user_id, "rules": rules},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error actualizando reglas: {e}")
+                return None
+
 
 # Singleton instance
 orchestrator_client = OrchestratorClient()

@@ -248,14 +248,31 @@ async def delete_conversation(session_id: str, request: Request):
 @router.get("/usage-metrics", response_model=BedrockUsageMetricsResponse,
             summary="Token usage and estimated cost of the chat assistant")
 async def get_usage_metrics(
-    days: int = Query(30, ge=1, le=365, description="How many most-recent days to include"),
+    days: int = Query(30, ge=1, le=365, description="Cuántos días incluir"),
     request: Request = None,
 ):
-    """Get token usage metrics."""
-    # TODO FASE 4: Extract auth_token if request is provided
-    user_id = "usr-2"  # PLACEHOLDER
+    """Obtener métricas de uso de tokens."""
+    if request is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Autorización requerida")
 
-    # TODO FASE 4: Call orchestrator_client.get_usage_metrics(user_id, days)
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    metrics = await orchestrator_client.get_usage_metrics(user_id, auth_token)
+
+    if metrics:
+        return BedrockUsageMetricsResponse(
+            by_model=metrics.get("by_model", []),
+            by_day=metrics.get("by_day", []),
+            total_estimated_cost_usd=metrics.get("total_estimated_cost_usd", 0.0),
+            total_cache_read_tokens=metrics.get("total_cache_read_tokens", 0),
+            total_cache_savings_usd=metrics.get("total_cache_savings_usd", 0.0),
+            daily_budget_usd=metrics.get("daily_budget_usd", float(settings.BEDROCK_DAILY_BUDGET_USD)),
+            daily_spent_usd=metrics.get("daily_spent_usd", 0.0),
+            daily_remaining_usd=metrics.get("daily_remaining_usd", float(settings.BEDROCK_DAILY_BUDGET_USD)),
+        )
+
+    # Default response si no hay datos
     return BedrockUsageMetricsResponse(
         by_model=[],
         by_day=[],
@@ -271,12 +288,20 @@ async def get_usage_metrics(
 @router.get("/budget", response_model=BedrockBudgetStatusResponse,
             summary="Daily inference budget status")
 async def get_budget_status(request: Request):
-    """Get daily budget status."""
+    """Obtener estado del presupuesto diario."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_budget(user_id)
+    metrics = await orchestrator_client.get_usage_metrics(user_id, auth_token)
     daily_budget = float(settings.BEDROCK_DAILY_BUDGET_USD)
+
+    if metrics:
+        return BedrockBudgetStatusResponse(
+            daily_budget_usd=metrics.get("daily_budget_usd", daily_budget),
+            daily_spent_usd=metrics.get("daily_spent_usd", 0.0),
+            daily_remaining_usd=metrics.get("daily_remaining_usd", daily_budget),
+        )
+
     return BedrockBudgetStatusResponse(
         daily_budget_usd=daily_budget,
         daily_spent_usd=0.0,
@@ -320,11 +345,19 @@ async def get_catalog(request: Request):
 @router.get("/instructions", response_model=BedrockInstructionsResponse,
             summary="Get system prompt and global rules")
 async def get_instructions(request: Request):
-    """Get system prompt and global rules."""
+    """Obtener instrucciones del sistema (prompt) y reglas globales."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client to get these
+    data = await orchestrator_client.get_system_prompt(user_id, auth_token)
+    if data:
+        return BedrockInstructionsResponse(
+            system_prompt=data.get("prompt", "You are a helpful assistant."),
+            system_prompt_is_default=data.get("is_default", True),
+            global_rules=data.get("global_rules", ""),
+            global_rules_is_default=data.get("global_rules_is_default", True),
+        )
+
     return BedrockInstructionsResponse(
         system_prompt="You are a helpful assistant.",
         system_prompt_is_default=True,
@@ -339,26 +372,32 @@ async def update_instructions(
     payload: BedrockInstructionsUpdateRequest,
     request: Request,
 ):
-    """Update system prompt."""
+    """Actualizar instrucciones del sistema."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.set_system_prompt(user_id, payload.text)
+    result = await orchestrator_client.set_system_prompt(user_id, auth_token, payload.text)
     return BedrockInstructionsResponse(
         system_prompt=payload.text,
         system_prompt_is_default=False,
-        global_rules="",
+        global_rules=result.get("global_rules", "") if result else "",
         global_rules_is_default=True,
     )
 
 
 @router.get("/rules", summary="Get global rules")
 async def get_rules(request: Request):
-    """Get global rules."""
+    """Obtener reglas globales."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client
+    data = await orchestrator_client.get_global_rules(user_id, auth_token)
+    if data:
+        return {
+            "rules": data.get("rules", ""),
+            "is_default": data.get("is_default", True),
+        }
+
     return {
         "rules": "",
         "is_default": True,
@@ -370,11 +409,11 @@ async def update_rules(
     payload: BedrockGlobalRulesUpdateRequest,
     request: Request,
 ):
-    """Update global rules."""
+    """Actualizar reglas globales."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.set_global_rules(user_id, payload.text)
+    result = await orchestrator_client.set_global_rules(user_id, auth_token, payload.text)
     return {
         "rules": payload.text,
         "is_default": False,
