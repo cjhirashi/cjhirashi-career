@@ -1,7 +1,27 @@
 {
-    "active_task": "Ninguna",
-    "status": "IDLE",
-    "next_steps": [
-      "Definir la primera feature o tarea en este archivo."
-    ]
-  }
+  "active_task": "FASE 1: Fix bug JSONB/SQLite en modelos API",
+  "status": "IN_PROGRESS",
+  "completed_phases": [
+    "FASE 0: Consolidar harness agnóstico (commit a5f9d48)"
+  ],
+  "pending_phases": [
+    "FASE 1: Fix bug JSONB/SQLite (bloqueante)",
+    "FASE 2: Cerrar ADR-023",
+    "FASE 3: Completar MCP Server",
+    "FASE 4: Actualizar IMPLEMENTATION_PLAN.md"
+  ],
+  "current_phase_details": {
+    "name": "FASE 1: Fix bug JSONB/SQLite en modelos API",
+    "description": "Arreglar incompatibilidad JSONB/SQLite en modelos viejos",
+    "blocker": "Impide correr suite completa en local; cobertura no confiable",
+    "affected_models": [
+      "achievement.py",
+      "project.py",
+      "error_report.py",
+      "competencies.py",
+      "bedrock_agent_delegation.py (renombrado en d2d6afb)"
+    ],
+    "fix": "Aplicar JSON().with_variant(postgresql.JSONB, 'postgresql') (patrón ADR-023)"
+  },
+  "last_updated": "2026-09-01T00:15:00Z"
+}
