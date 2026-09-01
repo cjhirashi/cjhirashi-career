@@ -72,11 +72,37 @@
     "32f82f9 — FASE 3: IA Service base structure"
   ],
 
+  "fase_3_progress": {
+    "status": "70% COMPLETE (Modules Migrated, Imports Pending)",
+    "timestamp": "2026-09-01T06:00:00Z",
+    "completed": [
+      "✅ Copied 24 bedrock modules (services/bedrock/*)",
+      "✅ Copied bedrock routers (32 + 3 endpoints)",
+      "✅ Copied test suite (tests/unit/bedrock/)",
+      "✅ Created orchestrator_client.py (HTTP bridge)",
+      "✅ Registered routers in main.py"
+    ],
+    "pending": [
+      "🔜 Fix imports in bedrock.py (remove get_db, use orchestrator_client)",
+      "🔜 Fix imports in bedrock_tasks.py (task execution routing)",
+      "🔜 Handle LinkedIn tool (FASE 4 blocker, temp skip)",
+      "🔜 Fix usage_logger.py (use orchestrator_client.log_agent_usage)",
+      "🔜 Run pytest tests/unit/bedrock/",
+      "🔜 Smoke test SSE streaming"
+    ],
+    "blockers": [
+      "LinkedIn service moved to FASE 4 — tools.py needs fallback",
+      "Database access patterns need orchestrator_client refactor"
+    ],
+    "imports_guide": "See IMPORTS_MIGRATION.md for detailed fix list",
+    "estimated_completion": "2-3 hours (import fixes + testing)"
+  },
+
   "next_session": {
-    "entry_point": "FASE 3 Continuation",
-    "starting_commit": "32f82f9",
-    "first_task": "Copy services/bedrock/ from cjhirashi-career-api/src/services/bedrock to cjhirashi-career-ai/src/services/",
-    "reference": "See cjhirashi-career-ai/README.md for detailed steps"
+    "entry_point": "FASE 3 Continuation (Import Fixes)",
+    "starting_commit": "58d38bc",
+    "first_task": "Fix imports in bedrock.py — remove db dependency, use orchestrator_client",
+    "reference": "See cjhirashi-career-ai/IMPORTS_MIGRATION.md for priority order"
   },
 
   "session_summary": {
