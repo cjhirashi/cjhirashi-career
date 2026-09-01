@@ -1,37 +1,42 @@
 {
-  "active_task": "Ninguna — Sesión de trabajo completada",
-  "status": "IDLE",
+  "active_task": "FASE 0: Preparación (tests arreglados, listos para comenzar)",
+  "status": "READY_FOR_FASE_0",
   "completed_phases": [
     "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
     "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests: 13/13 ✅)",
     "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)",
     "FASE 3: DIFERIDA a post-QA FASE 3 (MCP Server, Q4 2026)"
   ],
-  "completed_fase_4": {
-    "description": "Actualizar documentación de planificación (IMPLEMENTATION_PLAN.md)",
-    "status": "✅ COMPLETADA",
-    "commit": "0e5785a",
-    "changes": "IMPLEMENTATION_PLAN.md: reflejar realidad observada (FASE 1-2 ✅, FASE 3 🟡, M4 diferido)"
+  "test_fixes": {
+    "description": "Arreglados 5 archivos de tests con imports rotos tras ADR-024/025",
+    "status": "✅ COMPLETADOS",
+    "commit": "99bec05",
+    "changes": [
+      "test_profile_catalog.py: bedrock_* → agent_system_* imports",
+      "test_profile_delegation.py: verificado, sin cambios necesarios",
+      "test_models.py: removido import Evidence (modelo no existe)",
+      "test_models_extended.py: removido imports Evidence y JobStrategy",
+      "test_task_scheduler.py: BedrockTask* → AgentSystemTask*",
+      "profile_delegation.py: agent_system_agent_delegation → agent_system_delegation"
+    ],
+    "results": "31/31 tests PASSED en bedrock + task_scheduler (errores pre-existentes de SQLite sin cambios)"
+  },
+  "next_phase": {
+    "phase": "FASE 0",
+    "status": "LISTO PARA INICIAR",
+    "tasks": [
+      "Añadir contenedor Redis a docker-compose.yml",
+      "Stack de logging mínimo (Grafana + Loki + Promtail)",
+      "Regenerar .env.example desde config.py",
+      "Correr suite completa de pytest para baseline"
+    ],
+    "estimated_duration": "2-3 horas"
   },
   "session_summary": {
-    "duration": "~1 sesión (2026-09-01)",
-    "commits_total": "8 commits",
-    "files_modified": "14 modelos + 3 docs + harness",
-    "status": "🟢 Todos los objetivos completados"
+    "duration": "~1.5 horas",
+    "commits_total": "1 nuevo (99bec05)",
+    "files_modified": "5 tests + 1 servicio",
+    "status": "✅ Tests arreglados, bloqueante de FASE 0 eliminado"
   },
-  "next_actions": [
-    "INMEDIATO (sem 1):",
-    "  - Code Review: diff completo FASE 3 (backend Bedrock + frontend ADR-023)",
-    "  - QA: validar cobertura ≥80% lote crítico",
-    "  - Resolver fixture JSONB/SQLite (pre-existente, lote separado)",
-    "",
-    "NEAR-TERM (sem 2-3):",
-    "  - Smoke tests: correr plataforma completa (Docker Compose)",
-    "  - Bedrock contextual: test agente en /career → agent_configuration",
-    "  - Deploy staging (si aplica)",
-    "",
-    "DIFERIDO (Q4 2026):",
-    "  - Módulo 4 (MCP Server): CRUD completo + tests ≥80%"
-  ],
-  "last_updated": "2026-09-01T01:00:00Z"
+  "last_updated": "2026-09-01T02:55:00Z"
 }
