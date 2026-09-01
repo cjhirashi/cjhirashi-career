@@ -1,27 +1,29 @@
 {
-  "active_task": "FASE 1: Fix bug JSONB/SQLite en modelos API",
+  "active_task": "FASE 2: Cerrar ADR-023 (jerarquía de secciones + vistas)",
   "status": "IN_PROGRESS",
   "completed_phases": [
-    "FASE 0: Consolidar harness agnóstico (commit a5f9d48)"
+    "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
+    "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests ADR-023 pass: 13/13)"
   ],
   "pending_phases": [
-    "FASE 1: Fix bug JSONB/SQLite (bloqueante)",
     "FASE 2: Cerrar ADR-023",
     "FASE 3: Completar MCP Server",
     "FASE 4: Actualizar IMPLEMENTATION_PLAN.md"
   ],
   "current_phase_details": {
-    "name": "FASE 1: Fix bug JSONB/SQLite en modelos API",
-    "description": "Arreglar incompatibilidad JSONB/SQLite en modelos viejos",
-    "blocker": "Impide correr suite completa en local; cobertura no confiable",
-    "affected_models": [
-      "achievement.py",
-      "project.py",
-      "error_report.py",
-      "competencies.py",
-      "bedrock_agent_delegation.py (renombrado en d2d6afb)"
-    ],
-    "fix": "Aplicar JSON().with_variant(postgresql.JSONB, 'postgresql') (patrón ADR-023)"
+    "name": "FASE 2: Cerrar ADR-023 (jerarquía de secciones + vistas)",
+    "description": "Reverificar e implementar lo faltante de ADR-023; actualizar 023-ESTADO.md",
+    "tasks": [
+      "Reverificar contra código actual qué falta de contrato §8: panel de edición Vistas + rename en AgentCatalogPage.tsx",
+      "Implementar lo faltante si no existe",
+      "Correr cobertura del lote ADR-023 (≥80% sobre archivos tocados)",
+      "Actualizar 023-ESTADO.md reflejando cierre verificado en esta sesión",
+      "Anotar follow-ups en ADR-023 §Seguimiento"
+    ]
   },
-  "last_updated": "2026-09-01T00:15:00Z"
+  "notes": {
+    "fase_1_completado": "Fix JSONB abstracto: aplicado JSON().with_variant(postgresql.JSONB, 'postgresql') a 13 modelos. Los 9 fallos restantes en test_database.py son pre-existentes (nextval/secuencias Postgres↔SQLite, fuera de alcance).",
+    "next_focus": "ADR-023 frontend + verificación"
+  },
+  "last_updated": "2026-09-01T00:25:00Z"
 }
