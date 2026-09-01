@@ -34,6 +34,9 @@ from schemas.bedrock import (
     BedrockInstructionsResponse,
     BedrockInstructionsUpdateRequest,
     BedrockGlobalRulesUpdateRequest,
+    BedrockAgentCustomToolResponse,
+    AgentSystemCustomToolCreateRequest,
+    BedrockAuditLogResponse,
 )
 from services import bedrock_service_wrapper as bedrock_service
 from services.errors import BedrockError
@@ -378,6 +381,61 @@ async def update_rules(
         "rules": payload.text,
         "is_default": False,
     }
+
+
+@router.get("/tools", response_model=list[BedrockAgentCustomToolResponse],
+            summary="List custom tools")
+async def list_tools(request: Request):
+    """List custom tools."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client.get_custom_tools(user_id)
+    return []
+
+
+@router.post("/tools", response_model=BedrockAgentCustomToolResponse,
+             summary="Create custom tool")
+async def create_tool(
+    payload: AgentSystemCustomToolCreateRequest,
+    request: Request,
+):
+    """Create custom tool."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client.create_custom_tool(user_id, payload)
+    return BedrockAgentCustomToolResponse(
+        id="tmp-1",
+        name=payload.name,
+        url=payload.url,
+        is_enabled=True,
+    )
+
+
+@router.get("/audit-log", response_model=list[BedrockAuditLogResponse],
+            summary="List audit log entries")
+async def get_audit_log(
+    limit: int = Query(100, ge=1, le=1000),
+    offset: int = Query(0, ge=0),
+    request: Request = None,
+):
+    """Get audit log."""
+    # TODO FASE 4: Extract auth if request provided
+    user_id = "usr-2"
+
+    # TODO FASE 4: Call orchestrator_client.get_audit_log(user_id, limit, offset)
+    return []
+
+
+@router.post("/audit-log/{audit_id}/restore", summary="Restore audit entry")
+async def restore_audit_entry(audit_id: str, request: Request):
+    """Restore from audit log."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client.restore_audit_entry(user_id, audit_id)
+    return {"restored": True, "audit_id": audit_id}
 
 
 # ==============================================================================
