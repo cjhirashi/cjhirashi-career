@@ -51,22 +51,54 @@
     "duration": "~54s",
     "note": "Errores por SQLAlchemy async (tests sin instancia real de PostgreSQL) — esperado. Baseline establecido para comparación en FASE 1."
   },
-  "next_phase": {
-    "phase": "FASE 1",
-    "status": "LISTO PARA INICIAR",
-    "blocker_risk": "ALTO — Desbloquea escalado horizontal",
-    "tasks": [
-      "Migrar linkedin_scheduler.py → worker-linkedin (Redis Streams)",
-      "Migrar task_scheduler.py → worker-tasks (Redis Streams)",
-      "Implementar idempotencia (verificar estado antes de ejecutar)",
-      "Smoke test: verificar publicación única de LinkedIn",
-      "Actualizar docker-compose.yml con workers"
+  "fase_1_completion": {
+    "description": "FASE 1 — Redis Streams + Workers (COMPLETA)",
+    "status": "✅ ESTRUCTURA LISTA",
+    "timestamp": "2026-09-01T03:45:00Z",
+    "tasks_completed": [
+      "✅ redis_client.py: singleton Redis connection (async/lazy init)",
+      "✅ worker-linkedin: consumer group para 'linkedin:scheduled-posts'",
+      "✅ worker-tasks: consumer group para 'bedrock:scheduled-tasks'",
+      "✅ docker-compose.yml: +worker-linkedin, +worker-tasks services",
+      "✅ app.py: disable scheduler loops (comentados, rollback-ready)",
+      "✅ requirements.txt: +redis>=5.0.0",
+      "✅ linkedin.py: XADD to Redis when post scheduled",
+      "✅ task_scheduler.py: XADD to Redis when task created/updated"
     ],
-    "estimated_duration": "4-6 horas",
-    "critical_files": [
-      "cjhirashi-career-api/src/services/linkedin_scheduler.py",
-      "cjhirashi-career-api/src/services/task_scheduler.py",
-      "cjhirashi-career-api/src/app.py (registro de asyncio.create_task)"
+    "commits": [
+      "6ac222e: Base structure (redis_client, workers)",
+      "9123a65: Enqueuing integration (routers → Redis)"
+    ],
+    "architecture_notes": {
+      "pattern": "Strangler fig — old schedulers disabled, not deleted",
+      "idempotence": "Both routers and workers verify DB state before acting",
+      "fallback": "Redis failures don't block; worker polls DB on next cycle",
+      "worker_scaling": "Horizontal scaling supported (multiple worker-linkedin/task instances)"
+    }
+  },
+  "next_phase": {
+    "phase": "FASE 1 — Testing & Verification",
+    "status": "LISTO PARA INICIAR",
+    "blocker_risk": "MEDIO — Validar comunicación Redis/Worker",
+    "tasks": [
+      "Start docker-compose up (redis, workers, postgres, api)",
+      "Smoke test: Create LinkedIn post with scheduled_at in past",
+      "Verify message appears in Redis stream 'linkedin:scheduled-posts'",
+      "Verify worker-linkedin consumes and publishes (check logs)",
+      "Verify post.status → PUBLISHED in DB",
+      "Create/update AgentSystemTask with scheduled_at",
+      "Verify message in 'bedrock:scheduled-tasks'",
+      "Verify worker-tasks executes (logs show harness invocation)",
+      "Manual 24h test in staging before prod cutover",
+      "Update CLAUDE.md with deployment notes"
+    ],
+    "estimated_duration": "2-4 horas (testing + debugging)",
+    "critical_commands": [
+      "docker compose up redis worker-linkedin worker-tasks postgres api qdrant minio",
+      "redis-cli XLEN linkedin:scheduled-posts",
+      "redis-cli XREAD COUNT 1 STREAMS linkedin:scheduled-posts 0",
+      "docker logs worker_linkedin",
+      "docker logs worker_tasks"
     ]
   },
   "session_summary": {
