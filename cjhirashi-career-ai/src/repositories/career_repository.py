@@ -1,4 +1,4 @@
-"""Repository stubs for IA service."""
+"""Career repository stub."""
 
 
 class CareerRepository:
@@ -8,6 +8,3 @@ class CareerRepository:
         self.model = model
         self.resource_key = resource_key
         self.vectorize = vectorize
-
-
-__all__ = ["CareerRepository"]
