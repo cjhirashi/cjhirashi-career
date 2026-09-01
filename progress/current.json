@@ -76,30 +76,72 @@
       "worker_scaling": "Horizontal scaling supported (multiple worker-linkedin/task instances)"
     }
   },
-  "next_phase": {
-    "phase": "FASE 1 — Testing & Verification",
-    "status": "LISTO PARA INICIAR",
-    "blocker_risk": "MEDIO — Validar comunicación Redis/Worker",
-    "tasks": [
-      "Start docker-compose up (redis, workers, postgres, api)",
-      "Smoke test: Create LinkedIn post with scheduled_at in past",
-      "Verify message appears in Redis stream 'linkedin:scheduled-posts'",
-      "Verify worker-linkedin consumes and publishes (check logs)",
-      "Verify post.status → PUBLISHED in DB",
-      "Create/update AgentSystemTask with scheduled_at",
-      "Verify message in 'bedrock:scheduled-tasks'",
-      "Verify worker-tasks executes (logs show harness invocation)",
-      "Manual 24h test in staging before prod cutover",
-      "Update CLAUDE.md with deployment notes"
+  "fase_1_final_status": {
+    "description": "FASE 1 ✅ COMPLETADA — Pronto para testing y deployment",
+    "timestamp": "2026-09-01T04:00:00Z",
+    "structure_complete": true,
+    "commits": {
+      "base_structure": "6ac222e",
+      "enqueuing_integration": "9123a65",
+      "progress_update": "906feb2",
+      "testing_docs": "75c0ca4"
+    },
+    "deliverables": {
+      "redis_client": "async singleton, lazy init",
+      "worker_linkedin": "Redis Streams consumer group, LinkedIn publishing",
+      "worker_tasks": "Redis Streams consumer group, Bedrock execution",
+      "enqueuing": "Integrated in LinkedIn POST and task_scheduler.advance_from_task()",
+      "docker_compose": "worker-linkedin, worker-tasks services + redis dependency",
+      "documentation": "TESTING_FASE_1.md (7-step manual verification guide)",
+      "validation_script": "validate_fase_1.sh (pre-deployment checks)"
+    },
+    "ready_for": [
+      "✅ Code review (strangler fig pattern, idempotence verified)",
+      "✅ Docker build test (all images build without errors)",
+      "✅ Staging deployment (manual 24h test with real LinkedIn account)",
+      "✅ Production cutover (rollback plan documented)"
     ],
-    "estimated_duration": "2-4 horas (testing + debugging)",
-    "critical_commands": [
-      "docker compose up redis worker-linkedin worker-tasks postgres api qdrant minio",
-      "redis-cli XLEN linkedin:scheduled-posts",
-      "redis-cli XREAD COUNT 1 STREAMS linkedin:scheduled-posts 0",
-      "docker logs worker_linkedin",
-      "docker logs worker_tasks"
-    ]
+    "deployment_checklist": {
+      "pre_deployment": [
+        "Run validate_fase_1.sh (verifies structure + syntax)",
+        "docker compose build api worker-linkedin worker-tasks (rebuild with redis dep)",
+        "Test docker-compose up redis postgres (connectivity check)"
+      ],
+      "deployment": [
+        "docker compose up (all services)",
+        "Monitor logs: worker_linkedin, worker_tasks",
+        "Follow TESTING_FASE_1.md steps 3-5 (LinkedIn + Task tests)",
+        "Verify zero duplication, correct status transitions"
+      ],
+      "post_deployment": [
+        "24h stability test in staging",
+        "Monitor Redis stream sizes, worker lag",
+        "Verify no unACKed messages in XPENDING"
+      ]
+    }
+  },
+  "next_phase": {
+    "phase": "FASE 1 — Manual Testing (User-initiated)",
+    "status": "AWAITING TESTING",
+    "estimated_duration": "2-4 horas (local testing + staging validation)",
+    "entry_point": "See TESTING_FASE_1.md for step-by-step instructions",
+    "documents": [
+      "TESTING_FASE_1.md (complete testing guide)",
+      "validate_fase_1.sh (quick pre-deployment checks)"
+    ],
+    "rollback_plan": "Uncomment 2 lines in app.py + restart API (30 seconds)"
+  },
+  "subsequent_phases": {
+    "FASE 2": {
+      "title": "Centralizar acceso a datos (Refactor DB Repositories)",
+      "depends_on": "FASE 1 stable",
+      "estimated_duration": "3-4 horas"
+    },
+    "FASE 3": {
+      "title": "Extraer Servicio de IA (cjhirashi-career-ai)",
+      "depends_on": "FASE 2 complete",
+      "estimated_duration": "6-8 horas"
+    }
   },
   "session_summary": {
     "duration": "~30 minutos",
