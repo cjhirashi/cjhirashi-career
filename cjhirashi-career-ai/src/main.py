@@ -1,5 +1,5 @@
 """
-FastAPI application for cjhirashi-career-ai microservice (FASE 3-5).
+FastAPI application for cjhirashi-career-ai microservice (FASE 3-6).
 
 Extracted from monolith:
 - services/bedrock/ (24 modules) — agent logic, Bedrock integration
@@ -11,6 +11,7 @@ Architecture:
 - Calls Orchestrator API for career CRUD (via HTTP internal)
 - Manages agent execution, usage tracking, delegation
 - FASE 5: Rate limiting middleware protects all endpoints
+- FASE 6: Structured logging + distributed tracing for observability
 """
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -20,15 +21,14 @@ import sys
 
 from config import settings
 from middleware.rate_limit import rate_limit_middleware
+from middleware.logging_config import setup_logging
+from middleware.request_logging import RequestLoggingMiddleware
 
 # ============================================================================
-# Logging Setup
+# Logging Setup (FASE 6 — Structured JSON Logging)
 # ============================================================================
-logging.basicConfig(
-    level=logging.INFO if not settings.DEBUG else logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
+# Setup structured JSON logging
+setup_logging(level="DEBUG" if settings.DEBUG else "INFO")
 logger = logging.getLogger(__name__)
 
 
@@ -60,8 +60,12 @@ app = FastAPI(
 )
 
 # ============================================================================
-# Middleware (FASE 5 - Rate Limiting)
+# Middleware (FASE 5-6 - Rate Limiting + Request Logging)
 # ============================================================================
+# Request logging middleware (innermost - logs everything)
+app.add_middleware(RequestLoggingMiddleware)
+
+# Rate limiting middleware
 app.middleware("http")(rate_limit_middleware)
 
 
