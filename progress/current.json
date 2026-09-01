@@ -1,29 +1,30 @@
 {
-  "active_task": "FASE 2: Cerrar ADR-023 (jerarquía de secciones + vistas)",
+  "active_task": "FASE 3: Completar MCP Server (Módulo 4)",
   "status": "IN_PROGRESS",
   "completed_phases": [
     "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
-    "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests ADR-023 pass: 13/13)"
+    "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests: 13/13 ✅)",
+    "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)"
   ],
   "pending_phases": [
-    "FASE 2: Cerrar ADR-023",
     "FASE 3: Completar MCP Server",
     "FASE 4: Actualizar IMPLEMENTATION_PLAN.md"
   ],
   "current_phase_details": {
-    "name": "FASE 2: Cerrar ADR-023 (jerarquía de secciones + vistas)",
-    "description": "Reverificar e implementar lo faltante de ADR-023; actualizar 023-ESTADO.md",
+    "name": "FASE 3: Completar MCP Server (Módulo 4)",
+    "description": "Implementar herramientas CRUD, autenticación, logging, tests (≥80%), documentación",
+    "current_state": "MCP Server tiene solo 2 tools (crear_cv_pdf, crear_cover_letter_pdf). Falta CRUD completo.",
     "tasks": [
-      "Reverificar contra código actual qué falta de contrato §8: panel de edición Vistas + rename en AgentCatalogPage.tsx",
-      "Implementar lo faltante si no existe",
-      "Correr cobertura del lote ADR-023 (≥80% sobre archivos tocados)",
-      "Actualizar 023-ESTADO.md reflejando cierre verificado en esta sesión",
-      "Anotar follow-ups en ADR-023 §Seguimiento"
+      "Definir alcance de herramientas CRUD contra 07-DEPLOYMENT-VIEW.md + endpoints API",
+      "Implementar autenticación/autorización en servidor MCP",
+      "Implementar logging de operaciones (reusar patrón error_reporting.py)",
+      "Tests + documentación de herramientas (actualizar mcp_tools_server.md)",
+      "Meta: 80%+ cobertura según Definition of Done"
     ]
   },
   "notes": {
-    "fase_1_completado": "Fix JSONB abstracto: aplicado JSON().with_variant(postgresql.JSONB, 'postgresql') a 13 modelos. Los 9 fallos restantes en test_database.py son pre-existentes (nextval/secuencias Postgres↔SQLite, fuera de alcance).",
-    "next_focus": "ADR-023 frontend + verificación"
+    "fase_2_adr023": "Backend Fases 1-5 completas; Frontend implementado (AdminViewsPage, useNavTree, Sidebar); tests 13/13 pasan. 023-ESTADO.md actualizado con reversificación de sesión 2026-09-01.",
+    "fase_1_jsonb": "Fix JSONB transparente: 13 modelos arreglados. 9 fallos en test_database.py son pre-existentes (nextval/secuencias)."
   },
-  "last_updated": "2026-09-01T00:25:00Z"
+  "last_updated": "2026-09-01T00:35:00Z"
 }
