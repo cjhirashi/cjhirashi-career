@@ -478,6 +478,46 @@ class OrchestratorClient:
                 logger.error(f"Error actualizando reglas: {e}")
                 return None
 
+    async def get_current_model(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[str]:
+        """Obtener modelo actual seleccionado."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/model",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("current_model_id") if isinstance(data, dict) else None
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo modelo actual: {e}")
+                return None
+
+    async def switch_model(
+        self,
+        user_id: str,
+        auth_token: str,
+        model_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Cambiar modelo actual."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.post(
+                    f"/model",
+                    json={"user_id": user_id, "model_id": model_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error cambiando modelo: {e}")
+                return None
+
 
 # Singleton instance
 orchestrator_client = OrchestratorClient()

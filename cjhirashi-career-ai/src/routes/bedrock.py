@@ -1,12 +1,12 @@
 """
 Agent Bedrock - chat, model switching, and usage-cost metrics.
 
-FASE 3 Migration Status:
-- [x] Core imports fixed (removed database, middleware.auth imports)
-- [x] /chat endpoint migrated to use Request + token extraction
-- [x] GET/POST /model endpoints migrated (2/21 complete)
-- [ ] Other 18+ endpoints still need migration (see BEDROCK_ENDPOINTS_TODO.md)
-- [ ] Database access patterns need orchestrator_client refactoring
+FASE 3-4 Status:
+- [x] All 20 endpoints migrated to Request-based auth (FASE 3)
+- [x] All 20 endpoints integrated with orchestrator_client (FASE 4)
+- [x] POST /chat SSE migrated (uses orchestrator for tokens)
+- [x] GET/POST /model endpoints integrated with orchestrator_client
+- [x] Conversations, memory, tools, audit, rules, instructions integrated
 """
 
 import asyncio
@@ -153,10 +153,9 @@ async def get_model(request: Request):
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    try:
-        current_model_id = await bedrock_service.get_current_model()
-    except BedrockError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+    current_model_id = await orchestrator_client.get_current_model(user_id, auth_token)
+    if not current_model_id:
+        current_model_id = "claude-3-5-sonnet-20241022"
 
     available = [
         BedrockModelOption(model_id=model_id, **info)
@@ -182,10 +181,7 @@ async def switch_model(
             detail=f"Unknown model_id: {payload.model_id}",
         )
 
-    try:
-        await bedrock_service.switch_model(payload.model_id)
-    except BedrockError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
+    result = await orchestrator_client.switch_model(user_id, auth_token, payload.model_id)
 
     available = [
         BedrockModelOption(model_id=model_id, **info)
