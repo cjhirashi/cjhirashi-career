@@ -281,6 +281,111 @@ services:
       start_period: 10s
 
   # =========================================================================
+  # Worker: LinkedIn Post Scheduler
+  # =========================================================================
+  # Consumes from Redis Stream `linkedin:scheduled-posts`
+  # Publishes due posts to LinkedIn API
+  # Can be scaled horizontally (multiple worker-linkedin instances)
+  worker-linkedin:
+    build:
+      context: ./cjhirashi-career-api
+      dockerfile: Dockerfile
+    container_name: worker_linkedin
+    restart: unless-stopped
+    networks:
+      - network-cjhirashi-srv
+    env_file: .env
+    environment:
+      # LinkedIn OAuth
+      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
+      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
+      LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI}
+      LINKEDIN_FRONTEND_URL: ${LINKEDIN_FRONTEND_URL}
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      # AWS/MinIO
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
+      # Logging
+      LOG_LEVEL: INFO
+    entrypoint: ["python", "workers/worker_linkedin.py"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "redis", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # =========================================================================
+  # Worker: Task Scheduler (Bedrock Agent Tasks)
+  # =========================================================================
+  # Consumes from Redis Stream `bedrock:scheduled-tasks`
+  # Executes due agent tasks via Bedrock
+  # Can be scaled horizontally (multiple worker-tasks instances)
+  worker-tasks:
+    build:
+      context: ./cjhirashi-career-api
+      dockerfile: Dockerfile
+    container_name: worker_tasks
+    restart: unless-stopped
+    networks:
+      - network-cjhirashi-srv
+    env_file: .env
+    environment:
+      # Database
+      DATABASE_URL: ${DATABASE_URL}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      # AWS Bedrock
+      BEDROCK_REGION: ${BEDROCK_REGION}
+      BEDROCK_DEFAULT_MODEL_ID: ${BEDROCK_DEFAULT_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
+      BEDROCK_ORCHESTRATOR_MODEL_ID: ${BEDROCK_ORCHESTRATOR_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
+      BEDROCK_MAX_ROUND_TRIPS: ${BEDROCK_MAX_ROUND_TRIPS:-6}
+      BEDROCK_HISTORY_WINDOW: ${BEDROCK_HISTORY_WINDOW:-20}
+      BEDROCK_EMBEDDING_MODEL_ID: ${BEDROCK_EMBEDDING_MODEL_ID}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # Qdrant
+      QDRANT_URL: ${QDRANT_URL}
+      QDRANT_COLLECTION: ${QDRANT_COLLECTION}
+      # MinIO
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
+      # Logging
+      LOG_LEVEL: INFO
+    entrypoint: ["python", "workers/worker_tasks.py"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "redis", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # =========================================================================
   # Loki — Agregador de logs (Backend de Grafana)
   # =========================================================================
   # Recibe logs vía Promtail (docker logging driver)

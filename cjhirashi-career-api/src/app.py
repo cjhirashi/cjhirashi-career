@@ -78,17 +78,25 @@ async def lifespan(app: FastAPI):
             e,
         )
 
-    linkedin_task = asyncio.create_task(linkedin_scheduler.scheduler_loop())
-    agent_task_loop = asyncio.create_task(task_scheduler.scheduler_loop())
-    logger.info("LinkedIn post scheduler started")
-    logger.info("Agent task scheduler started")
+    # FASE 1: Schedulers migrated to Redis Streams + standalone workers
+    # linkedin_scheduler.scheduler_loop() → worker-linkedin (independent process)
+    # task_scheduler.scheduler_loop() → worker-tasks (independent process)
+    # These are now disabled in the main API process to avoid duplication.
+    #
+    # If you need to run schedulers in the API (e.g., for dev/testing without workers),
+    # uncomment below. In production, use the worker-linkedin and worker-tasks services.
+    #
+    # linkedin_task = asyncio.create_task(linkedin_scheduler.scheduler_loop())
+    # agent_task_loop = asyncio.create_task(task_scheduler.scheduler_loop())
+    # logger.info("LinkedIn post scheduler started")
+    # logger.info("Agent task scheduler started")
 
     yield
 
     # Shutdown
     logger.info("Shutting down API server...")
-    linkedin_task.cancel()
-    agent_task_loop.cancel()
+    # linkedin_task.cancel()
+    # agent_task_loop.cancel()
     await close_db()
 
 

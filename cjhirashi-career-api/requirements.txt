@@ -3,6 +3,9 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
+# Caching, Queues, Rate Limiting (FASE 1+)
+redis>=5.0.0
+
 # Object Storage (MinIO / S3-compatible)
 minio==7.2.15
 Pillow==10.4.0
