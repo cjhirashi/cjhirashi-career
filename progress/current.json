@@ -1,116 +1,115 @@
 {
-  "session_status": "FASES 0/1/2/3-BASE COMPLETE",
-  "timestamp": "2026-09-01T05:00:00Z",
-  "progress": "50% de plan de 8 fases (3/8 completadas + base de FASE 3)",
+  "session_status": "FASE 3 CONTINUATION SESSION - Import Fixes Applied",
+  "timestamp": "2026-09-01T07:30:00Z",
+  "progress": "52% de plan de 8 fases (FASE 3 al 85%)",
 
   "completed_phases": {
     "FASE_0": {
-      "title": "Preparación — Observabilidad + Baseline",
       "status": "✅ COMPLETE",
-      "commit": "5a0e9f2",
-      "summary": "Redis, Grafana, Loki, Promtail agregados; .env.example regenerado desde config.py; pytest baseline: 373 passed"
+      "commit": "5a0e9f2"
     },
     "FASE_1": {
-      "title": "Redis Streams + Workers",
       "status": "✅ COMPLETE",
-      "commits": ["6ac222e", "9123a65", "906feb2", "75c0ca4", "8dc078c"],
-      "summary": "redis_client, worker-linkedin, worker-tasks implementados; enqueuing integrado en routers; testing guide + validation script creados"
+      "commits_count": 5
     },
     "FASE_2": {
-      "title": "Centralizar Acceso a Datos",
       "status": "✅ COMPLETE",
-      "commits": ["963b37f", "d6ae5cb"],
-      "summary": "NotificationRepository + LinkedInRepository creados; notifications.py y linkedin.py refactorizados (0 db.execute directo)"
+      "commits_count": 2
     },
     "FASE_3_BASE": {
-      "title": "Extraer Servicio de IA (Estructura Base)",
       "status": "✅ BASE COMPLETE",
-      "commit": "32f82f9",
-      "summary": "cjhirashi-career-ai project structure: Dockerfile, requirements.txt, config.py, main.py, README.md, .env.example"
+      "commit": "32f82f9"
     }
   },
 
-  "remaining_work": {
-    "FASE_3_CONTINUATION": {
-      "title": "Completar Extracción de Bedrock Service",
-      "estimated_time": "4-6 horas",
-      "tasks": [
-        "1. Copiar services/bedrock/ (24 módulos)",
-        "2. Copiar tests/unit/bedrock",
-        "3. Implementar routes/bedrock.py (32 endpoints)",
-        "4. Implementar routes/bedrock_tasks.py (3 endpoints)",
-        "5. Crear clients/orchestrator_client.py (HTTP calls)",
-        "6. Ajustar budget.py para persistencia Postgres/Redis",
-        "7. Migrar tests y ejecutar pytest",
-        "8. Smoke test SSE streaming"
-      ]
-    },
-    "FASES_4_TO_8": {
-      "FASE_4": "Integraciones Externas + Circuit Breaker (5-6 horas)",
-      "FASE_5": "Gateway + Rate-Limiting Centralizado (4-5 horas)",
-      "FASE_6": "Consolidar PDF (1 servicio, no 2)",
-      "FASE_7": "Observabilidad Completa + Secretos",
-      "FASE_8": "CI/CD Completo (por servicio)"
-    }
+  "current_session": {
+    "session_title": "FASE 3 Continuation - Import Migration",
+    "status": "IN PROGRESS",
+    "started": "2026-09-01T06:00:00Z",
+    "progress": "Import fixes applied, /chat endpoint migrated",
+    "latest_commit": "346c267",
+    "commit_message": "FASE 3: Fix core imports in bedrock routes + service modules"
   },
-
-  "architecture_snapshot": {
-    "current": "Monolito + Workers (FASE 1) + Repositories (FASE 2) + IA Service base (FASE 3)",
-    "after_fase_3": "Monolito (sin /api/bedrock) + IA Service + Workers + Repositories",
-    "after_fase_5": "Full microservices: Orchestrator + IA + Integrations + Gateway + Workers"
-  },
-
-  "commits_this_session": [
-    "5a0e9f2 — FASE 0: Preparación (Redis + Logging)",
-    "6ac222e — FASE 1: Workers base (redis_client, workers)",
-    "9123a65 — FASE 1: Enqueuing integration",
-    "906feb2 — FASE 1: Progress update",
-    "75c0ca4 — FASE 1: Testing docs",
-    "8dc078c — FASE 1: Final progress",
-    "963b37f — FASE 2: Repositories (Notification, LinkedIn)",
-    "d6ae5cb — FASE 2: Final progress",
-    "32f82f9 — FASE 3: IA Service base structure"
-  ],
 
   "fase_3_progress": {
-    "status": "70% COMPLETE (Modules Migrated, Imports Pending)",
-    "timestamp": "2026-09-01T06:00:00Z",
+    "status": "85% COMPLETE (Import Fixes + /chat Endpoint)",
+    "timestamp": "2026-09-01T07:30:00Z",
     "completed": [
-      "✅ Copied 24 bedrock modules (services/bedrock/*)",
-      "✅ Copied bedrock routers (32 + 3 endpoints)",
-      "✅ Copied test suite (tests/unit/bedrock/)",
-      "✅ Created orchestrator_client.py (HTTP bridge)",
-      "✅ Registered routers in main.py"
+      "✅ Fixed imports in bedrock.py (removed database, middleware.auth)",
+      "✅ Created orchestrator_client imports",
+      "✅ Added get_auth_token() and extract_user_id_from_token() helpers",
+      "✅ Migrated /chat endpoint to use Request + Bearer token",
+      "✅ Fixed imports in bedrock_tasks.py (commented for FASE 3 continuation)",
+      "✅ Fixed all services/bedrock.* import paths",
+      "✅ Created bedrock_service_wrapper.py for compatibility",
+      "✅ Added conftest.py for pytest configuration",
+      "✅ Core routes and services compile successfully"
     ],
     "pending": [
-      "🔜 Fix imports in bedrock.py (remove get_db, use orchestrator_client)",
-      "🔜 Fix imports in bedrock_tasks.py (task execution routing)",
-      "🔜 Handle LinkedIn tool (FASE 4 blocker, temp skip)",
-      "🔜 Fix usage_logger.py (use orchestrator_client.log_agent_usage)",
-      "🔜 Run pytest tests/unit/bedrock/",
-      "🔜 Smoke test SSE streaming"
+      "🔜 Migrate remaining 20+ endpoints (GET /model, PATCH /model, etc.)",
+      "🔜 Update task CRUD endpoints in bedrock_tasks.py",
+      "🔜 Complete database access refactoring (orchestrator_client calls)",
+      "🔜 Handle LinkedIn service imports (FASE 4 blocker)",
+      "🔜 Fix test imports for pytest collection",
+      "🔜 Run full pytest suite",
+      "🔜 Smoke test SSE streaming with /chat endpoint"
     ],
     "blockers": [
-      "LinkedIn service moved to FASE 4 — tools.py needs fallback",
-      "Database access patterns need orchestrator_client refactor"
+      "🚧 LinkedIn service moved to FASE 4 — tools.py needs conditional import",
+      "🚧 Test suite still has import errors (15 tests failing to collect)",
+      "🚧 storage_service commented out (FASE 4 dependency)"
     ],
-    "imports_guide": "See IMPORTS_MIGRATION.md for detailed fix list",
-    "estimated_completion": "2-3 hours (import fixes + testing)"
+    "migration_pattern": {
+      "template": "All remaining endpoints follow this pattern:",
+      "step_1": "Change param signature: (current_user, db) → (request: Request)",
+      "step_2": "Extract: auth_token = get_auth_token(request)",
+      "step_3": "Extract: user_id = extract_user_id_from_token(auth_token)",
+      "step_4": "Replace db operations with orchestrator_client calls"
+    },
+    "estimated_completion": "2-3 hours for full migration (remaining endpoints + testing)"
+  },
+
+  "endpoints_migration_status": {
+    "migrated": [
+      "✅ POST /chat (auth + streaming SSE)"
+    ],
+    "not_started": [
+      "GET /model (template for others)",
+      "PATCH /model",
+      "GET /catalog",
+      "GET /conversations",
+      "POST /task/*",
+      "Usage metrics endpoints (12)",
+      "Memory management endpoints (8)",
+      "Custom tools CRUD (4)",
+      "Audit log endpoints (2)"
+    ]
   },
 
   "next_session": {
-    "entry_point": "FASE 3 Continuation (Import Fixes)",
-    "starting_commit": "58d38bc",
-    "first_task": "Fix imports in bedrock.py — remove db dependency, use orchestrator_client",
-    "reference": "See cjhirashi-career-ai/IMPORTS_MIGRATION.md for priority order"
+    "entry_point": "FASE 3 Continuation (Endpoint Migration)",
+    "starting_commit": "346c267",
+    "priority_tasks": [
+      "1. Use GET /model as template for endpoint migration",
+      "2. Apply pattern to remaining 20+ endpoints",
+      "3. Fix test import errors",
+      "4. Run pytest tests/unit/bedrock/",
+      "5. Docker build + health check test"
+    ],
+    "reference": "See IMPORT_FIXES_DETAILED.md (lines 75-85) for endpoint priority order",
+    "estimated_effort": "2-3 hours"
   },
 
+  "commits_this_session": [
+    "346c267 — FASE 3: Fix core imports + /chat endpoint migration"
+  ],
+
   "session_summary": {
-    "duration": "~5 hours",
-    "fases_completed": "0 + 1 + 2 (complete) + 3-base",
-    "total_commits": 9,
-    "files_created": 20,
-    "files_modified": 12,
-    "status": "✅ Strong progress toward monolith → microservices migration"
+    "duration": "~1.5 hours",
+    "fases_completed": "0, 1, 2 (complete) + 3-base + 3-import-fixes",
+    "imports_fixed": 37,
+    "files_modified": 37,
+    "blockers_addressed": "LinkedIn service (temp skip), storage_service (FASE 4)",
+    "status": "✅ Core migration pathway established, routes compilable"
   }
 }
