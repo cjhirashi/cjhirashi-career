@@ -127,6 +127,18 @@ class Settings(BaseSettings):
     MINIO_PUBLIC_URL: str = ""
 
     # =========================================================================
+    # Rate Limiting (FASE 5)
+    # =========================================================================
+    RATE_LIMIT_GLOBAL_REQUESTS: int = 1000
+    RATE_LIMIT_GLOBAL_WINDOW_SECONDS: int = 60
+    RATE_LIMIT_CHAT_REQUESTS: int = 30
+    RATE_LIMIT_CHAT_WINDOW_SECONDS: int = 60
+    RATE_LIMIT_MODEL_REQUESTS: int = 10
+    RATE_LIMIT_MODEL_WINDOW_SECONDS: int = 60
+    RATE_LIMIT_TASK_REQUESTS: int = 50
+    RATE_LIMIT_TASK_WINDOW_SECONDS: int = 60
+
+    # =========================================================================
     # Pydantic Settings
     # =========================================================================
     class Config:

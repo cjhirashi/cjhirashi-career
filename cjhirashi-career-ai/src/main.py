@@ -1,5 +1,5 @@
 """
-FastAPI application for cjhirashi-career-ai microservice (FASE 3).
+FastAPI application for cjhirashi-career-ai microservice (FASE 3-5).
 
 Extracted from monolith:
 - services/bedrock/ (24 modules) — agent logic, Bedrock integration
@@ -7,9 +7,10 @@ Extracted from monolith:
 - routes/bedrock_tasks.py (3 endpoints) — task execution
 
 Architecture:
-- Receives SSE chat requests from Orchestrator (via Gateway in FASE 5)
+- Receives SSE chat requests from Orchestrator (via Gateway)
 - Calls Orchestrator API for career CRUD (via HTTP internal)
 - Manages agent execution, usage tracking, delegation
+- FASE 5: Rate limiting middleware protects all endpoints
 """
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -18,6 +19,7 @@ import logging
 import sys
 
 from config import settings
+from middleware.rate_limit import rate_limit_middleware
 
 # ============================================================================
 # Logging Setup
@@ -53,9 +55,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Bedrock Agent & IA service (extracted from monolith in FASE 3)",
+    description="Bedrock Agent & IA service (extracted from monolith in FASE 3-5)",
     lifespan=lifespan,
 )
+
+# ============================================================================
+# Middleware (FASE 5 - Rate Limiting)
+# ============================================================================
+app.middleware("http")(rate_limit_middleware)
 
 
 # ============================================================================
