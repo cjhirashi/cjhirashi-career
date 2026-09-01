@@ -131,16 +131,49 @@
     ],
     "rollback_plan": "Uncomment 2 lines in app.py + restart API (30 seconds)"
   },
+  "fase_2_completion": {
+    "description": "FASE 2 ✅ COMPLETADA (Parcial) — Centralizar acceso a datos",
+    "timestamp": "2026-09-01T04:30:00Z",
+    "status": "READY_FOR_FASE_3",
+    "repositories_created": [
+      "NotificationRepository (notification_repository.py): list, unread_count, mark_all_read, mark_read, create, delete",
+      "LinkedInRepository (linkedin_repository.py): connections, posts, profiles CRUD"
+    ],
+    "routers_refactored": [
+      "✅ notifications.py: 4 endpoints → NotificationRepository (0 db.execute)",
+      "✅ linkedin.py: 6 endpoints → LinkedInRepository (0 db.execute on models)"
+    ],
+    "remaining_work": [
+      "error_reports.py: already via error_report_service (not critical path)",
+      "admin_sections.py: already via section_catalog service",
+      "bedrock usage: via services/bedrock modules (deferred to FASE 3 refactor)"
+    ],
+    "commits": [
+      "963b37f: NotificationRepository + LinkedInRepository"
+    ],
+    "testing_impact": "All endpoints return same response shapes (no breaking changes)"
+  },
   "subsequent_phases": {
     "FASE 2": {
-      "title": "Centralizar acceso a datos (Refactor DB Repositories)",
-      "depends_on": "FASE 1 stable",
-      "estimated_duration": "3-4 horas"
+      "title": "✅ Centralizar acceso a datos (Refactor DB Repositories)",
+      "status": "COMPLETED",
+      "note": "Key paths (Notifications, LinkedIn) refactored; others use service layer"
     },
-    "FASE 3": {
+    "FASE_3_PREVIEW": {
+      "phase": "FASE 3",
       "title": "Extraer Servicio de IA (cjhirashi-career-ai)",
       "depends_on": "FASE 2 complete",
-      "estimated_duration": "6-8 horas"
+      "status": "QUEUED",
+      "estimated_duration": "6-8 horas",
+      "scope": [
+        "Move services/bedrock/ (24 modules) to cjhirashi-career-ai",
+        "Expose POST /ai/chat (SSE passthrough)",
+        "Endpoints: task administration, usage metrics, agent settings",
+        "API calls back to Orchestrator vía HTTP (read/write career data)",
+        "Move budget.py to Redis/Postgres if needed",
+        "Migrate tests/unit/bedrock to new service"
+      ],
+      "blocking_issues": "None — strangler fig pattern keeps old code as fallback"
     }
   },
   "session_summary": {
