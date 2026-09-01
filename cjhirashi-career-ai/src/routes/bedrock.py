@@ -31,6 +31,9 @@ from schemas.bedrock import (
     BedrockMemoryRecordResponse,
     BedrockMemoryEventResponse,
     BedrockAgentCatalogItem,
+    BedrockInstructionsResponse,
+    BedrockInstructionsUpdateRequest,
+    BedrockGlobalRulesUpdateRequest,
 )
 from services import bedrock_service_wrapper as bedrock_service
 from services.errors import BedrockError
@@ -311,6 +314,70 @@ async def get_catalog(request: Request):
 
     # TODO FASE 4: Call orchestrator_client.get_catalog(user_id)
     return []
+
+
+@router.get("/instructions", response_model=BedrockInstructionsResponse,
+            summary="Get system prompt and global rules")
+async def get_instructions(request: Request):
+    """Get system prompt and global rules."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client to get these
+    return BedrockInstructionsResponse(
+        system_prompt="You are a helpful assistant.",
+        system_prompt_is_default=True,
+        global_rules="",
+        global_rules_is_default=True,
+    )
+
+
+@router.patch("/instructions", response_model=BedrockInstructionsResponse,
+              summary="Update system prompt")
+async def update_instructions(
+    payload: BedrockInstructionsUpdateRequest,
+    request: Request,
+):
+    """Update system prompt."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client.set_system_prompt(user_id, payload.text)
+    return BedrockInstructionsResponse(
+        system_prompt=payload.text,
+        system_prompt_is_default=False,
+        global_rules="",
+        global_rules_is_default=True,
+    )
+
+
+@router.get("/rules", summary="Get global rules")
+async def get_rules(request: Request):
+    """Get global rules."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client
+    return {
+        "rules": "",
+        "is_default": True,
+    }
+
+
+@router.patch("/rules", summary="Update global rules")
+async def update_rules(
+    payload: BedrockGlobalRulesUpdateRequest,
+    request: Request,
+):
+    """Update global rules."""
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    # TODO FASE 4: Call orchestrator_client.set_global_rules(user_id, payload.text)
+    return {
+        "rules": payload.text,
+        "is_default": False,
+    }
 
 
 # ==============================================================================
