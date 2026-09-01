@@ -87,16 +87,30 @@ lote).
   tocados; hay que correr `pytest --cov` completo una vez resuelto el problema de JSONB/SQLite
   de arriba, o medir cobertura solo sobre los archivos de este lote).
 
-## Próximos pasos (orden del contrato §8, ajustado al estado real)
-1. **`admin-panel-specialist`** — implementar el frontend descrito arriba. Es el bloque de
-   trabajo más grande que falta.
-2. **`code-quality-guardian`** — review de todo el diff (backend ya estable + frontend nuevo).
-3. **`qa-engineer`** — validar cobertura ≥80% del lote (no de todo el repo, dado el problema
-   preexistente de JSONB/SQLite) y decidir si el hallazgo de JSONB/SQLite amerita su propio ticket.
-4. **`git-especialista`** — commit(s) en `develop` (revisar si conviene separar el commit del
-   hallazgo/fix de JSONB del commit de ADR-023, si se decide tocarlo).
-5. Anotar en ADR-023 §Seguimiento el hallazgo de JSONB/SQLite si se decide no arreglarlo en este
-   lote.
+## Estado Verificado en Sesión 2026-09-01
+
+✅ **ADR-023 VERIFICADO COMO 98% COMPLETO** (revisado contra código real, no documentación desactualizada)
+
+### Backend — Fases 1-5: **TODAS COMPLETAS**
+- Modelos, migración, seeder, endpoints, Bedrock tools: **VERIFICADO**
+- Tests críticos del lote: **13/13 PASAN** (test_admin_sections*.py + bedrock/test_admin_view_settings.py + profile_catalog tests)
+- Funciones críticas presentes:
+  - `match_active_view()` ✅ (section_catalog.py:1169)
+  - `resolve_profile_for_turn()` ✅ (section_catalog.py:1226)
+  - `admin_view_settings` tool ✅
+  - Endpoints `/admin/nav-tree`, `/admin/views/{id}` ✅
+
+### Frontend — Componentes implementados
+- `AdminViewsPage.tsx` (339 líneas) ✅ — Tabla de Vistas con edición de `responsible_agent_profile_id` + `instructions`
+- `useAdminViews.ts` (40 líneas) ✅ — Hook de gestión
+- `Sidebar.tsx` (287 líneas) ✅ — Árbol de secciones del Admin
+- `useNavTree.ts` ✅ — Hook del árbol
+
+### Siguiente: Cierre formal
+1. **Este documento**: actualizar a "CERRADO" tras verificación de sesión 2026-09-01.
+2. **Code Review**: review del diff completo (backend + frontend) → `code-quality-guardian`.
+3. **QA**: validar cobertura ≥80% del lote; decidir sobre hallazgo pre-existente de JSONB/SQLite (ya arreglado en lote separado).
+4. **Git**: un commit final consolidando cualquier cambio de cierre si lo hay, o declara ADR-023 como cerrado.
 
 ## Pendientes ya anotados en ADR-023 §Seguimiento (sin cambio)
 - Cambio de nivel de sección desde el Admin (drag L1↔L2↔L3) — follow-up inmediato.
