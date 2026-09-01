@@ -13,8 +13,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 from config import settings
-from services.bedrock.errors import BedrockError, format_bedrock_client_error
-from services.bedrock.reply_text import sanitize_assistant_reply
+from services.errors import BedrockError, format_bedrock_client_error
+from services.reply_text import sanitize_assistant_reply
 from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)

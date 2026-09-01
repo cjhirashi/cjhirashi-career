@@ -2,7 +2,7 @@
 import json
 
 from config import settings
-from services.bedrock.tool_results import truncate_tool_result
+from services.tool_results import truncate_tool_result
 
 
 def _len(obj) -> int:

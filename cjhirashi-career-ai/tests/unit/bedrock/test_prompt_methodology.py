@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AGENT_CV_WRITING,
     AGENT_METHODOLOGIES,
     AGENT_ORCHESTRATOR,
@@ -14,8 +14,8 @@ from services.bedrock.agent_profiles import (
     list_profiles,
     profile_can_search_knowledge,
 )
-from services.bedrock.prompt import methodology_assignment_block
-from services.bedrock.tools import converse_tool_specs
+from services.prompt import methodology_assignment_block
+from services.tools import converse_tool_specs
 from services.bedrock_service import default_system_prompt
 
 
@@ -113,7 +113,7 @@ def test_search_tool_description_scopes_to_caller():
 
 @pytest.mark.asyncio
 async def test_compose_injects_assigned_catalog(monkeypatch):
-    from services.bedrock import prompt
+    from services import prompt
 
     async def fake_override(_db):
         return None

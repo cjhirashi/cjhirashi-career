@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.file_upload import FileUpload
 from services import storage_service
-from services.bedrock.errors import BedrockError
+from services.errors import BedrockError
 
 logger = logging.getLogger(__name__)
 

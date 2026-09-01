@@ -8,7 +8,7 @@ Componentes principales:
 - history_manager / local_memory — historial PG + Qdrant
 """
 
-from services.bedrock.agent_loop import chat_stream
-from services.bedrock.errors import BedrockBudgetExceeded, BedrockError
+from services.agent_loop import chat_stream
+from services.errors import BedrockBudgetExceeded, BedrockError
 
 __all__ = ["chat_stream", "BedrockError", "BedrockBudgetExceeded"]

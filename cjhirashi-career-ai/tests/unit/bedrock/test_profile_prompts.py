@@ -1,7 +1,7 @@
 """Unit tests for per-agent profile prompt overrides."""
 import pytest
 
-from services.bedrock.agent_profiles import get_profile, list_profiles
+from services.agent_profiles import get_profile, list_profiles
 
 
 def test_all_profiles_have_default_suffix():

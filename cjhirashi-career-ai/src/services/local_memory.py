@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
 from services import qdrant_service
-from services.bedrock.embeddings import embed_text
-from services.bedrock.errors import BedrockError
+from services.embeddings import embed_text
+from services.errors import BedrockError
 
 
 # ============================================================================

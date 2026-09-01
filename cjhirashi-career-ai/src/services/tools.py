@@ -18,10 +18,11 @@ from models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from models.pdf_output_template import PdfOutputTemplate
 from models.pdf_template_style import PdfTemplateStyle
 from repositories.career_repository import CareerRepository
-from services import bedrock_service, storage_service
+from services import bedrock_service_wrapper as bedrock_service
+# from services import storage_service  # TODO: FASE 4 - External integrations
 from services.id_generator import normalize_prefixed_id
-from services.bedrock.errors import BedrockError
-from services.bedrock.tool_results import truncate_tool_result
+from services.errors import BedrockError
+from services.tool_results import truncate_tool_result
 
 _PDF_STYLE_REPO = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
 _PDF_STYLE_UPDATE_FIELDS = {"slug", "title", "description", "css_content", "style_guide", "is_active"}
@@ -354,10 +355,10 @@ def converse_tool_specs(
             continue
         description = t["description"]
         if t["name"] == "delegate_to_specialist" and caller_profile is not None:
-            from services.bedrock.agent_profiles import delegate_tool_description
+            from services.agent_profiles import delegate_tool_description
             description = delegate_tool_description(caller_profile, target_ids=delegate_ids)
         if t["name"] == "search_knowledge_base" and caller_profile is not None:
-            from services.bedrock.agent_profiles import AGENT_METHODOLOGIES
+            from services.agent_profiles import AGENT_METHODOLOGIES
             if caller_profile.id == AGENT_METHODOLOGIES:
                 description = (
                     "Búsqueda semántica Qdrant. Con type=methodology ves TODAS las metodologías "
@@ -674,8 +675,8 @@ async def _run_render_record_pdf(db, user_id: str, tool_input: Dict[str, Any]) -
 
 async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
     """Catálogo de agentes (L2 agent_configuration): prompt, delegación, metodologías."""
-    from services.bedrock import profile_catalog, profile_delegation, profile_prompts
-    from services.bedrock.agent_profiles import get_profile
+    from services import profile_catalog, profile_delegation, profile_prompts
+    from services.agent_profiles import get_profile
     from services.methodology_scope import set_agent_methodologies
 
     action = tool_input.get("action")
@@ -972,8 +973,8 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "generate_image":
         from models.file_upload import FileType, FileUpload
-        from services.bedrock import image_pipeline
-        from services.bedrock.image_client import generate_image_bytes
+        from services import image_pipeline
+        from services.image_client import generate_image_bytes
 
         spec = image_pipeline.resolve_purpose(tool_input["purpose"])
         gen_w, gen_h = image_pipeline.titan_generation_dims(spec)
@@ -999,7 +1000,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "store_uploaded_image":
         from models.file_upload import FileType, FileUpload
-        from services.bedrock import image_pipeline
+        from services import image_pipeline
 
         spec = image_pipeline.resolve_purpose(tool_input["purpose"])
         result = await db.execute(
@@ -1044,7 +1045,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
     if name == "attach_image_to_record":
         rk = tool_input["resource_key"]
         if rk == "agent-profile":
-            from services.bedrock import profile_photos
+            from services import profile_photos
 
             return await profile_photos.set_photo(db, tool_input["record_id"], tool_input["image_url"])
         if rk not in ("publications", "projects"):
@@ -1061,7 +1062,7 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
 
     if name == "list_generated_images":
         from models.file_upload import FileUpload
-        from services.bedrock.image_pipeline import IMAGE_PURPOSES
+        from services.image_pipeline import IMAGE_PURPOSES
 
         purpose = tool_input.get("purpose")
         categories = [IMAGE_PURPOSES[purpose].category] if purpose in IMAGE_PURPOSES else [

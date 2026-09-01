@@ -1,6 +1,6 @@
 """Invariantes del dedupe de lecturas dentro del turno (agent_loop)."""
-from services.bedrock import tools
-from services.bedrock.agent_loop import _DEDUP_READ_TOOLS
+from services import tools
+from services.agent_loop import _DEDUP_READ_TOOLS
 
 
 def test_dedup_tools_are_never_write_tools():

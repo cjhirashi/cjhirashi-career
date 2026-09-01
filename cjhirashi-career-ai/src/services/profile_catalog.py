@@ -5,8 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_conversations import AgentSystemConversation
-from services.bedrock import profile_delegation, profile_prompts, tools as bedrock_tools
-from services.bedrock.agent_profiles import (
+from services import profile_delegation, profile_prompts, tools as bedrock_tools
+from services.agent_profiles import (
     AgentProfile,
     agent_record_id,
     get_profile,
@@ -136,7 +136,7 @@ def _attach_delegation(item: Dict[str, Any], state: dict) -> None:
 
 
 async def list_catalog(db: AsyncSession, user_id: str) -> List[Dict[str, Any]]:
-    from services.bedrock import profile_photos
+    from services import profile_photos
 
     prompts = {item["profile_id"]: item for item in await profile_prompts.list_profile_prompts(db)}
     photos = await profile_photos.photos_map(db)
@@ -164,7 +164,7 @@ async def get_catalog_item(
     profile_id: str,
 ) -> Dict[str, Any]:
     profile = get_profile(profile_id)
-    from services.bedrock import profile_photos
+    from services import profile_photos
 
     prompt_meta = next(
         item for item in await profile_prompts.list_profile_prompts(db) if item["profile_id"] == profile.id

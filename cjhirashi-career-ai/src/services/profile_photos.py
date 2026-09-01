@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_profile_photos import AgentSystemProfilePhoto
-from services.bedrock.agent_profiles import get_profile
+from services.agent_profiles import get_profile
 
 
 async def photos_map(db: AsyncSession) -> Dict[str, str]:

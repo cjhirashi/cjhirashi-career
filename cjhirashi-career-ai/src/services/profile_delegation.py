@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_delegation import AgentSystemDelegation
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AgentProfile,
     can_delegate_to,
     delegation_targets,

@@ -7,8 +7,8 @@ import inspect
 
 import pytest
 
-from services.bedrock import budget
-from services.bedrock.budget import get_daily_spend_usd
+from services import budget
+from services.budget import get_daily_spend_usd
 
 
 class _FakeResult:

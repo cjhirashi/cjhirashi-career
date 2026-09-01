@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_settings import AgentSystemSettings
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AgentProfile,
     AGENT_METHODOLOGIES,
     AGENT_SEARCH_OPERATIONS,
@@ -17,7 +17,7 @@ from services.bedrock.agent_profiles import (
     get_profile,
     profile_can_search_knowledge,
 )
-from services.bedrock import profile_prompts
+from services import profile_prompts
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ async def compose_system_prompt(
     ]
     if user_id and profile.user_facing:
         try:
-            from services.bedrock.local_memory import list_agent_notes
+            from services.local_memory import list_agent_notes
 
             notes = await list_agent_notes(user_id, profile.id)
             parts.append(_agent_memory_block(notes))

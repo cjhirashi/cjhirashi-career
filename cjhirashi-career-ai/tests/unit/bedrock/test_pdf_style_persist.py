@@ -1,13 +1,13 @@
 """pdf_style update must persist top-level style_guide; chat text is not a write."""
-from services.bedrock.agent_loop import persist_nudge_text, should_nudge_pdf_persist, should_nudge_persist
-from services.bedrock.agent_profiles import (
+from services.agent_loop import persist_nudge_text, should_nudge_pdf_persist, should_nudge_persist
+from services.agent_profiles import (
     AGENT_METHODOLOGIES,
     AGENT_PDF_DESIGN,
     AGENT_PROFESSIONAL_IDENTITY,
     get_profile,
 )
-from services.bedrock.prompt import _L2_DOMAIN_RULE
-from services.bedrock.tools import _PDF_STYLE_UPDATE_FIELDS, converse_tool_specs, merge_writable_fields
+from services.prompt import _L2_DOMAIN_RULE
+from services.tools import _PDF_STYLE_UPDATE_FIELDS, converse_tool_specs, merge_writable_fields
 
 
 def test_merge_accepts_top_level_style_guide():

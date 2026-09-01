@@ -13,7 +13,7 @@ from models.agent_system_profile_prompts import AgentSystemProfilePrompt
 from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
 from services import section_catalog
 from services.admin_sections_seed import ensure_admin_group_and_section, sync_views
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AGENT_CONFIGURATION,
     AGENT_ORCHESTRATOR,
     AGENT_PDF_DESIGN,
@@ -22,8 +22,8 @@ from services.bedrock.agent_profiles import (
     get_profile,
     list_profiles,
 )
-from services.bedrock import profile_catalog
-from services.bedrock.profile_catalog import resolved_tool_names, _serialize_definition
+from services import profile_catalog
+from services.profile_catalog import resolved_tool_names, _serialize_definition
 
 # Tablas necesarias para ejercitar list_catalog/get_catalog_item contra BD real.
 # NO se incluyen agent_system_delegation ni operational_methodologies: usan
@@ -93,7 +93,7 @@ def _stub_jsonb_only_reads(monkeypatch):
 
 
 def test_get_profile_accepts_catalog_record_id():
-    from services.bedrock.agent_profiles import agent_record_id
+    from services.agent_profiles import agent_record_id
 
     assert get_profile("agent-1").id == AGENT_ORCHESTRATOR
     assert get_profile(AGENT_ORCHESTRATOR).id == AGENT_ORCHESTRATOR

@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_usage_logs import AgentSystemUsageLog
-from services.bedrock.errors import BedrockBudgetExceeded
+from services.errors import BedrockBudgetExceeded
 
 
 # ============================================================================

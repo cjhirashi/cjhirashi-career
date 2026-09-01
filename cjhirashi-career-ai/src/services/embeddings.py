@@ -11,7 +11,7 @@ from typing import List
 import boto3
 
 from config import settings
-from services.bedrock.errors import BedrockError
+from services.errors import BedrockError
 from services.error_reporting import report_error
 
 logger = logging.getLogger(__name__)

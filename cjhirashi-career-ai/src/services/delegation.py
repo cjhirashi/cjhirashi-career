@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from services.bedrock.agent_profiles import AgentProfile
+from services.agent_profiles import AgentProfile
 
 
 async def run_specialist_sub_turn(
@@ -29,7 +29,7 @@ async def run_specialist_sub_turn(
     No persiste mensajes en la conversación del usuario. L2 puede a su vez
     delegar a L3 (el loop valida nivel y profundidad).
     """
-    from services.bedrock.agent_loop import run_single_turn_sync
+    from services.agent_loop import run_single_turn_sync
 
     message = task
     if context:

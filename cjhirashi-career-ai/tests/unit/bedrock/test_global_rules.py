@@ -9,9 +9,9 @@ from unittest.mock import MagicMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from services.bedrock import prompt
-from services.bedrock.agent_profiles import AGENT_PDF_DESIGN, get_profile
-from services.bedrock.prompt import (
+from services import prompt
+from services.agent_profiles import AGENT_PDF_DESIGN, get_profile
+from services.prompt import (
     GROUNDING_RULE,
     _METHODOLOGY_ASSIGNMENT_RULE,
     default_global_rules,

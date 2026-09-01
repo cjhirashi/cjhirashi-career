@@ -1,5 +1,5 @@
 """Costo estimado con tokens de prompt caching de Bedrock."""
-from services.bedrock.usage_logger import (
+from services.usage_logger import (
     _cache_tokens,
     _estimate_cost,
     cache_read_savings_usd,

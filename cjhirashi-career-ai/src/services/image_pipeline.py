@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from PIL import Image, ImageOps
 
-from services.bedrock.errors import BedrockError
+from services.errors import BedrockError
 
 # ============================================================================
 # Especificación por propósito — única fuente de verdad de tamaño/carpeta

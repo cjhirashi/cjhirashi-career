@@ -1,5 +1,5 @@
 """Destinos de delegación: subset por nivel + override."""
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AGENT_CHANGELOG,
     AGENT_CV_WRITING,
     AGENT_ORCHESTRATOR,
@@ -10,7 +10,7 @@ from services.bedrock.agent_profiles import (
     delegation_error,
     get_profile,
 )
-from services.bedrock.profile_delegation import default_delegation_ids, filter_level_allowed
+from services.profile_delegation import default_delegation_ids, filter_level_allowed
 
 
 def test_filter_drops_same_level_and_unknown():

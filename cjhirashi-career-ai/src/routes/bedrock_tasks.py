@@ -1,59 +1,41 @@
 """
-Tablero de tareas (usuario o agente) — CRUD genérico + ejecución autónoma.
+Agent Tasks board - CRUD + autonomous execution.
 
-El resource_key `agent-tasks` se registra al importar este módulo para que
-las tools genéricas del harness operen el tablero. `POST /{id}/run` dispara
-el mismo runner que el scheduler (ADR-015): el agente trabaja sin sesión SPA.
+FASE 3 Migration Status:
+- [ ] Update run_task_now endpoint to use Request + token extraction
+- [ ] Replace task_scheduler with orchestrator_client calls
+- [ ] Migrate task CRUD to use orchestrator_client
+
+Status: Pending - see BEDROCK_TASKS_TODO.md
 """
-import asyncio
+
 import logging
-
-from fastapi import Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from database import get_db
-from middleware.auth import get_current_user
-from models.agent_system_tasks import AgentSystemTask
-from models.user import User
-from routes.career_common import build_crud_router
-from schemas.bedrock_task import AgentSystemTaskCreate, AgentSystemTaskResponse, AgentSystemTaskUpdate
-from services import task_scheduler
+from fastapi import APIRouter, HTTPException, Request, status
 
 logger = logging.getLogger(__name__)
 
-router = build_crud_router(
-    prefix="/agent-tasks",
-    tags=["Agent - Tasks"],
-    model=AgentSystemTask,
-    create_schema=AgentSystemTaskCreate,
-    update_schema=AgentSystemTaskUpdate,
-    response_schema=AgentSystemTaskResponse,
-    entity_name="tarea",
-    after_write=lambda obj: task_scheduler.enqueue_advance(getattr(obj, "id", None), getattr(obj, "parent_id", None)),
-)
+router = APIRouter(prefix="/agent-tasks", tags=["Agent - Tasks"])
 
 
-@router.post(
-    "/{item_id}/run",
-    response_model=AgentSystemTaskResponse,
-    summary="Ejecutar ahora una tarea asignada a un agente",
-)
-async def run_task_now(
-    item_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Reclama la tarea y lanza el harness en background. No espera a Bedrock."""
-    task = await task_scheduler.claim_task_for_user(db, current_user.id, item_id)
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                "La tarea no se puede ejecutar ahora: debe estar asignada a un "
-                "agente, en estado pendiente o fallida, y con un perfil válido."
-            ),
-        )
-    await db.commit()
-    asyncio.create_task(task_scheduler.execute_claimed_task(task.id))
-    logger.info("Task %s claimed for immediate agent execution", task.id)
-    return task
+# ============================================================================
+# Original endpoint - needs migration in FASE 3 continuation
+# ============================================================================
+# @router.post(
+#     "/{item_id}/run",
+#     response_model=AgentSystemTaskResponse,
+#     summary="Execute an agent task now",
+# )
+# async def run_task_now(
+#     item_id: str,
+#     request: Request,
+# ):
+#     """Claim task and launch harness in background."""
+#     # TODO FASE 3:
+#     # auth_token = get_auth_token(request)
+#     # user_id = extract_user_id_from_token(auth_token)
+#     # task = await orchestrator_client.claim_task_for_user(user_id, item_id)
+#     # if task is None:
+#     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="...")
+#     # await orchestrator_client.execute_task(task.id)
+#     # return task
+#     pass

@@ -2,7 +2,7 @@
 
 from botocore.exceptions import ClientError
 
-from services.bedrock.errors import format_bedrock_client_error
+from services.errors import format_bedrock_client_error
 
 
 def _client_error(code: str, message: str) -> ClientError:

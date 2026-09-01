@@ -1,14 +1,14 @@
 """Tool Bedrock ``admin_view_settings`` (reemplaza ``admin_section_settings``)."""
 import pytest
 
-from services.bedrock.tools import (
+from services.tools import (
     _RAW_TOOLS,
     _WRITE_TOOLS,
     invalidation_key,
     _run_admin_view_settings,
     all_tool_names,
 )
-from services.bedrock.agent_profiles import _CONFIGURATION_TOOL_NAMES
+from services.agent_profiles import _CONFIGURATION_TOOL_NAMES
 
 
 def test_tool_registered_and_old_one_gone():

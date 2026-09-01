@@ -1,5 +1,5 @@
-from services.bedrock.converse_client import parse_converse_response
-from services.bedrock.reply_text import sanitize_assistant_reply
+from services.converse_client import parse_converse_response
+from services.reply_text import sanitize_assistant_reply
 
 
 def test_strips_thinking_block_and_keeps_visible_answer():

@@ -12,16 +12,16 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
-from services.bedrock import agent_profiles, budget, converse_client, history_manager, prompt, section_profiles
-from services.bedrock import settings_loader, tools, usage_logger
-from services.bedrock.agent_profiles import (
+from services import agent_profiles, budget, converse_client, history_manager, prompt, section_profiles
+from services import settings_loader, tools, usage_logger
+from services.agent_profiles import (
     list_profiles,
     AGENT_PDF_DESIGN,
     AGENT_METHODOLOGIES,
 )
-from services.bedrock.delegation import run_specialist_sub_turn
-from services.bedrock.attachments import build_user_content_blocks
-from services.bedrock.errors import BedrockBudgetExceeded, BedrockError
+from services.delegation import run_specialist_sub_turn
+from services.attachments import build_user_content_blocks
+from services.errors import BedrockBudgetExceeded, BedrockError
 
 logger = logging.getLogger(__name__)
 
@@ -385,7 +385,7 @@ async def chat_stream(
             "message": "Los agentes de nivel 3 no tienen chat con el usuario. Delega desde L1 o L2.",
         }
         return
-    from services.bedrock import profile_delegation
+    from services import profile_delegation
 
     allowed_delegate_ids = await profile_delegation.get_effective_delegation_ids(db, profile)
     model_id = _effective_model(req, runtime, profile)

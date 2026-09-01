@@ -1,5 +1,5 @@
 """Tests unitarios Bedrock harness."""
-from services.bedrock.agent_profiles import (
+from services.agent_profiles import (
     AGENT_CHANGELOG,
     AGENT_DIGITAL_PRESENCE,
     AGENT_LINKEDIN_PUBLISHING,
@@ -25,7 +25,7 @@ from services.bedrock.agent_profiles import (
     resolve_agent_profile,
     tools_for_profile,
 )
-from services.bedrock.tools import converse_tool_specs, all_tool_names
+from services.tools import converse_tool_specs, all_tool_names
 
 
 def test_unknown_profile_raises_keyerror():
@@ -259,7 +259,7 @@ def test_agent_configuration_owns_config_tools():
 
 def test_history_manager_filters_by_agent_profile():
     import inspect
-    from services.bedrock.history_manager import get_or_create_conversation, list_conversations
+    from services.history_manager import get_or_create_conversation, list_conversations
 
     assert "agent_profile_id" in inspect.signature(get_or_create_conversation).parameters
     assert "agent_profile_id" in inspect.signature(list_conversations).parameters
@@ -337,7 +337,7 @@ def test_visual_design_is_l3():
 
 
 def test_pdf_capable_resources_cover_cv_and_cover_letter():
-    from services.bedrock.tools import PDF_CAPABLE_RESOURCES
+    from services.tools import PDF_CAPABLE_RESOURCES
 
     assert "cv-versions" in PDF_CAPABLE_RESOURCES
     assert PDF_CAPABLE_RESOURCES["cv-versions"]["content_attr"] == "content"

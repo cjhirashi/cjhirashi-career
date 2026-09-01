@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_profile_prompts import AgentSystemProfilePrompt
-from services.bedrock.agent_profiles import AgentProfile, get_profile, list_profiles
+from services.agent_profiles import AgentProfile, get_profile, list_profiles
 
 
 # ============================================================================

@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
-from services.bedrock.reply_text import sanitize_assistant_reply
+from services.reply_text import sanitize_assistant_reply
 
 
 # ============================================================================
