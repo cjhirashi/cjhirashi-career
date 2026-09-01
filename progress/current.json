@@ -1,30 +1,37 @@
 {
-  "active_task": "FASE 3: Completar MCP Server (Módulo 4)",
-  "status": "IN_PROGRESS",
+  "active_task": "Ninguna — Sesión de trabajo completada",
+  "status": "IDLE",
   "completed_phases": [
     "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
     "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests: 13/13 ✅)",
-    "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)"
+    "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)",
+    "FASE 3: DIFERIDA a post-QA FASE 3 (MCP Server, Q4 2026)"
   ],
-  "pending_phases": [
-    "FASE 3: Completar MCP Server",
-    "FASE 4: Actualizar IMPLEMENTATION_PLAN.md"
+  "completed_fase_4": {
+    "description": "Actualizar documentación de planificación (IMPLEMENTATION_PLAN.md)",
+    "status": "✅ COMPLETADA",
+    "commit": "0e5785a",
+    "changes": "IMPLEMENTATION_PLAN.md: reflejar realidad observada (FASE 1-2 ✅, FASE 3 🟡, M4 diferido)"
+  },
+  "session_summary": {
+    "duration": "~1 sesión (2026-09-01)",
+    "commits_total": "8 commits",
+    "files_modified": "14 modelos + 3 docs + harness",
+    "status": "🟢 Todos los objetivos completados"
+  },
+  "next_actions": [
+    "INMEDIATO (sem 1):",
+    "  - Code Review: diff completo FASE 3 (backend Bedrock + frontend ADR-023)",
+    "  - QA: validar cobertura ≥80% lote crítico",
+    "  - Resolver fixture JSONB/SQLite (pre-existente, lote separado)",
+    "",
+    "NEAR-TERM (sem 2-3):",
+    "  - Smoke tests: correr plataforma completa (Docker Compose)",
+    "  - Bedrock contextual: test agente en /career → agent_configuration",
+    "  - Deploy staging (si aplica)",
+    "",
+    "DIFERIDO (Q4 2026):",
+    "  - Módulo 4 (MCP Server): CRUD completo + tests ≥80%"
   ],
-  "current_phase_details": {
-    "name": "FASE 3: Completar MCP Server (Módulo 4)",
-    "description": "Implementar herramientas CRUD, autenticación, logging, tests (≥80%), documentación",
-    "current_state": "MCP Server tiene solo 2 tools (crear_cv_pdf, crear_cover_letter_pdf). Falta CRUD completo.",
-    "tasks": [
-      "Definir alcance de herramientas CRUD contra 07-DEPLOYMENT-VIEW.md + endpoints API",
-      "Implementar autenticación/autorización en servidor MCP",
-      "Implementar logging de operaciones (reusar patrón error_reporting.py)",
-      "Tests + documentación de herramientas (actualizar mcp_tools_server.md)",
-      "Meta: 80%+ cobertura según Definition of Done"
-    ]
-  },
-  "notes": {
-    "fase_2_adr023": "Backend Fases 1-5 completas; Frontend implementado (AdminViewsPage, useNavTree, Sidebar); tests 13/13 pasan. 023-ESTADO.md actualizado con reversificación de sesión 2026-09-01.",
-    "fase_1_jsonb": "Fix JSONB transparente: 13 modelos arreglados. 9 fallos en test_database.py son pre-existentes (nextval/secuencias)."
-  },
-  "last_updated": "2026-09-01T00:35:00Z"
+  "last_updated": "2026-09-01T01:00:00Z"
 }
