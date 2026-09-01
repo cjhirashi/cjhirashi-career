@@ -3,7 +3,7 @@ Unit tests para modelos SQLAlchemy: validación, relaciones, restricciones.
 """
 import pytest
 from datetime import date
-from models import User, Identity, Competency, Evidence
+from models import User, Identity, Competency
 
 
 class TestUserModel:
@@ -146,72 +146,6 @@ class TestCompetencyModel:
         assert comp.endorsement_count == 0
 
 
-class TestEvidenceModel:
-    """Tests para el modelo Evidence."""
-
-    @pytest.mark.asyncio
-    async def test_evidence_creation(self, db_session, test_evidence: Evidence):
-        """Verificar que se puede crear una evidencia."""
-        from models.evidence import EvidenceType
-        assert test_evidence.id is not None
-        assert test_evidence.title == "API REST con FastAPI"
-        assert test_evidence.evidence_type == EvidenceType.PROJECT
-        assert test_evidence.is_current is False
-
-    @pytest.mark.asyncio
-    async def test_evidence_star_method(self, db_session, test_evidence: Evidence):
-        """Verificar que los campos STAR se almacenan correctamente."""
-        assert test_evidence.situation is not None
-        assert test_evidence.task is not None
-        assert test_evidence.action is not None
-        assert test_evidence.result is not None
-
-    @pytest.mark.asyncio
-    async def test_evidence_user_relationship(self, db_session, test_evidence: Evidence):
-        """Verificar que la relación con User es correcta."""
-        await db_session.refresh(test_evidence, ["user"])
-        assert test_evidence.user is not None
-        assert test_evidence.user.username == "testuser"
-
-    @pytest.mark.asyncio
-    async def test_evidence_dates(self, db_session, test_user: User):
-        """Verificar que los dates se almacenan correctamente."""
-        from datetime import datetime, timezone
-        from models.evidence import EvidenceType
-        start_date = datetime(2023, 1, 1, tzinfo=timezone.utc)
-        end_date = datetime(2023, 12, 31, tzinfo=timezone.utc)
-
-        evidence = Evidence(
-            user_id=test_user.id,
-            evidence_type=EvidenceType.POSITION,
-            title="Software Engineer",
-            start_date=start_date,
-            end_date=end_date
-        )
-        db_session.add(evidence)
-        await db_session.flush()
-        await db_session.refresh(evidence)
-
-        # Compare just the date/time without timezone (SQLite may not preserve TZ info)
-        assert evidence.start_date.replace(tzinfo=None) == start_date.replace(tzinfo=None)
-        assert evidence.end_date.replace(tzinfo=None) == end_date.replace(tzinfo=None)
-
-    @pytest.mark.asyncio
-    async def test_evidence_default_values(self, db_session, test_user: User):
-        """Verificar que los valores por defecto se asignan correctamente."""
-        from models.evidence import EvidenceType
-        evidence = Evidence(
-            user_id=test_user.id,
-            evidence_type=EvidenceType.PROJECT,
-            title="Test Project"
-        )
-        db_session.add(evidence)
-        await db_session.flush()
-        await db_session.refresh(evidence)
-
-        assert evidence.is_featured is False
-
-
 class TestModelCascades:
     """Tests para cascadas de eliminación (ON DELETE CASCADE)."""
 
@@ -229,14 +163,3 @@ class TestModelCascades:
         # Nota: En tests con SQLite en memoria, CASCADE puede no funcionar igual
         # Este test es más relevante con PostgreSQL
 
-    @pytest.mark.asyncio
-    async def test_delete_user_deletes_evidence(self, db_session, test_user: User, test_evidence: Evidence):
-        """Verificar que eliminar un usuario elimina sus evidencias."""
-        user_id = test_user.id
-        evidence_id = test_evidence.id
-
-        # Eliminar usuario
-        await db_session.delete(test_user)
-        await db_session.flush()
-
-        # Verificar que la evidencia fue eliminada (en PostgreSQL)

@@ -8,9 +8,9 @@ from models.admin_section_l1 import AdminSectionL1
 from models.admin_section_l2 import AdminSectionL2
 from models.admin_section_l3 import AdminSectionL3
 from models.admin_view import AdminView
-from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
-from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
-from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+from models.agent_system_profile_photos import AgentSystemProfilePhoto
+from models.agent_system_profile_prompts import AgentSystemProfilePrompt
+from models.agent_system_conversations import AgentSystemConversation, AgentSystemConversationMessage
 from services import section_catalog
 from services.admin_sections_seed import ensure_admin_group_and_section, sync_views
 from services.bedrock.agent_profiles import (
@@ -26,7 +26,7 @@ from services.bedrock import profile_catalog
 from services.bedrock.profile_catalog import resolved_tool_names, _serialize_definition
 
 # Tablas necesarias para ejercitar list_catalog/get_catalog_item contra BD real.
-# NO se incluyen bedrock_agent_delegation ni operational_methodologies: usan
+# NO se incluyen agent_system_delegation ni operational_methodologies: usan
 # postgresql.JSONB puro (sin .with_variant) y no compilan en SQLite — problema
 # preexistente y no relacionado con este lote (ver tests/unit/conftest.py). Esas
 # dos lecturas se neutralizan con monkeypatch en el propio test.
@@ -36,10 +36,10 @@ _CATALOG_TABLES = [
     AdminSectionL2.__table__,
     AdminSectionL3.__table__,
     AdminView.__table__,
-    BedrockAgentProfilePrompt.__table__,
-    BedrockAgentProfilePhoto.__table__,
-    BedrockConversation.__table__,
-    BedrockConversationMessage.__table__,
+    AgentSystemProfilePrompt.__table__,
+    AgentSystemProfilePhoto.__table__,
+    AgentSystemConversation.__table__,
+    AgentSystemConversationMessage.__table__,
 ]
 
 

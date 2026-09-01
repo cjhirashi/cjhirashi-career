@@ -6,7 +6,7 @@ import pytest
 from datetime import date, datetime
 from sqlalchemy import select
 from models import (
-    Identity, Competency, Evidence, JobStrategy, Vacancy,
+    Identity, Competency, Vacancy,
     NetworkingContact, Interview, RefreshToken, FileUpload,
     Metrics, Event, AuditLog, UserSession
 )
@@ -83,85 +83,6 @@ class TestCompetencyExtended:
         )
         competencies = result.scalars().all()
         assert len(competencies) == 3
-
-
-class TestEvidenceExtended:
-    """Extended tests para Evidence model."""
-
-    @pytest.mark.asyncio
-    async def test_evidence_star_method_complete(self, db_session, test_user):
-        """Verificar que STAR method se guarda completamente."""
-        evidence = Evidence(
-            user_id=test_user.id,
-            type="achievement",
-            title="Redujo latencia 50%",
-            star_situation="API con performance pobres",
-            star_task="Optimizar queries y caché",
-            star_action="Implementé Redis + query optimization",
-            star_result="Latencia reducida de 2s a 1s"
-        )
-        db_session.add(evidence)
-        await db_session.flush()
-        await db_session.refresh(evidence)
-
-        assert evidence.star_situation is not None
-        assert evidence.star_action == "Implementé Redis + query optimization"
-
-    @pytest.mark.asyncio
-    async def test_evidence_dates_optional(self, db_session, test_user):
-        """Verificar que dates son opcionales."""
-        evidence = Evidence(
-            user_id=test_user.id,
-            type="project",
-            title="Project sin fechas",
-            start_date=None,
-            end_date=None
-        )
-        db_session.add(evidence)
-        await db_session.flush()
-        await db_session.refresh(evidence)
-
-        assert evidence.start_date is None
-        assert evidence.end_date is None
-
-
-class TestJobStrategyModel:
-    """Tests para JobStrategy model."""
-
-    @pytest.mark.asyncio
-    async def test_job_strategy_creation(self, db_session, test_user):
-        """Crear una estrategia de búsqueda de empleo."""
-        strategy = JobStrategy(
-            user_id=test_user.id,
-            target_role="Senior Backend Engineer",
-            target_industries="FinTech, SaaS",
-            target_companies="Google, Netflix, Stripe",
-            salary_expectations="$150k-$200k",
-            employment_type="full-time",
-            remote_preference="hybrid",
-            status="active"
-        )
-        db_session.add(strategy)
-        await db_session.flush()
-        await db_session.refresh(strategy)
-
-        assert strategy.target_role == "Senior Backend Engineer"
-        assert strategy.status == "active"
-
-    @pytest.mark.asyncio
-    async def test_job_strategy_status_values(self, db_session, test_user):
-        """Verificar que status puede ser different values."""
-        statuses = ["active", "passive", "completed", "paused"]
-
-        for status in statuses:
-            strategy = JobStrategy(
-                user_id=test_user.id,
-                target_role=f"Role_{status}",
-                status=status
-            )
-            db_session.add(strategy)
-
-        await db_session.flush()
 
 
 class TestVacancyModel:

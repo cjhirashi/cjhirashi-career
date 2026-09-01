@@ -5,8 +5,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from models.bedrock_task import BedrockTask
-from schemas.bedrock_task import BedrockTaskCreate, BedrockTaskUpdate, SubtaskInput
+from models.agent_system_tasks import AgentSystemTask
+from schemas.bedrock_task import AgentSystemTaskCreate, AgentSystemTaskUpdate, SubtaskInput
 from services import task_scheduler
 from services.admin_sections import list_section_specs, match_section
 from services.bedrock.agent_profiles import AGENT_VACANCY_SEARCH
@@ -26,7 +26,7 @@ def test_tasks_section_is_top_level():
 
 
 def test_create_user_task_clears_agent_profile():
-    payload = BedrockTaskCreate(
+    payload = AgentSystemTaskCreate(
         title="Revisar CV",
         assignee_type="user",
         agent_profile_id=AGENT_VACANCY_SEARCH,
@@ -39,12 +39,12 @@ def test_create_user_task_clears_agent_profile():
 
 def test_create_agent_task_requires_profile():
     with pytest.raises(ValidationError):
-        BedrockTaskCreate(title="Buscar vacantes", assignee_type="agent")
+        AgentSystemTaskCreate(title="Buscar vacantes", assignee_type="agent")
 
 
 def test_create_agent_task_rejects_unknown_profile():
     with pytest.raises(ValidationError):
-        BedrockTaskCreate(
+        AgentSystemTaskCreate(
             title="X",
             assignee_type="agent",
             agent_profile_id="agent_does_not_exist",
@@ -52,7 +52,7 @@ def test_create_agent_task_rejects_unknown_profile():
 
 
 def test_create_agent_task_accepts_catalog_profile():
-    payload = BedrockTaskCreate(
+    payload = AgentSystemTaskCreate(
         title="Buscar vacantes",
         assignee_type="agent",
         agent_profile_id=AGENT_VACANCY_SEARCH,
@@ -64,7 +64,7 @@ def test_create_agent_task_accepts_catalog_profile():
 def test_due_at_cannot_precede_scheduled_at():
     start = datetime(2026, 8, 27, 15, 0, tzinfo=timezone.utc)
     with pytest.raises(ValidationError):
-        BedrockTaskCreate(
+        AgentSystemTaskCreate(
             title="X",
             scheduled_at=start,
             due_at=start - timedelta(hours=1),
@@ -72,13 +72,13 @@ def test_due_at_cannot_precede_scheduled_at():
 
 
 def test_partial_update_status_does_not_require_assignee():
-    payload = BedrockTaskUpdate(status="done")
+    payload = AgentSystemTaskUpdate(status="done")
     assert payload.status == "done"
     assert payload.assignee_type is None
 
 
 def test_nested_subtasks_on_create():
-    payload = BedrockTaskCreate(
+    payload = AgentSystemTaskCreate(
         title="Plan de trabajo",
         assignee_type="user",
         subtasks=[
@@ -100,7 +100,7 @@ def test_nested_subtasks_on_create():
 
 
 def test_build_execution_prompt_includes_title():
-    task = BedrockTask(
+    task = AgentSystemTask(
         id="btk-1",
         user_id="usr-1",
         title="Publicar en LinkedIn",
@@ -116,7 +116,7 @@ def test_build_execution_prompt_includes_title():
     assert "no está en sesión" in prompt
 
 
-def _execute_result(task: BedrockTask | None):
+def _execute_result(task: AgentSystemTask | None):
     result = MagicMock()
     result.scalar_one_or_none.return_value = task
     return result
@@ -124,7 +124,7 @@ def _execute_result(task: BedrockTask | None):
 
 @pytest.mark.asyncio
 async def test_claim_task_for_user_only_runnable_agents():
-    user_task = BedrockTask(
+    user_task = AgentSystemTask(
         id="btk-user",
         user_id="usr-1",
         title="Manual",
@@ -135,7 +135,7 @@ async def test_claim_task_for_user_only_runnable_agents():
     db.execute = AsyncMock(return_value=_execute_result(user_task))
     assert await task_scheduler.claim_task_for_user(db, "usr-1", "btk-user") is None
 
-    agent_task = BedrockTask(
+    agent_task = AgentSystemTask(
         id="btk-agent",
         user_id="usr-1",
         title="Agente",
@@ -155,7 +155,7 @@ async def test_claim_task_for_user_only_runnable_agents():
 @pytest.mark.asyncio
 async def test_claim_due_task_ids_skips_future_and_user_tasks(monkeypatch):
     now = datetime(2026, 8, 26, 12, 0, tzinfo=timezone.utc)
-    due = BedrockTask(
+    due = AgentSystemTask(
         id="btk-due",
         user_id="usr-1",
         title="Vencida",
@@ -187,7 +187,7 @@ async def test_claim_due_task_ids_skips_future_and_user_tasks(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_execute_claimed_task_marks_done(monkeypatch):
-    task = BedrockTask(
+    task = AgentSystemTask(
         id="btk-run",
         user_id="usr-1",
         title="Buscar",
@@ -223,7 +223,7 @@ async def test_execute_claimed_task_marks_done(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_execute_claimed_task_marks_failed_on_bedrock_error(monkeypatch):
-    task = BedrockTask(
+    task = AgentSystemTask(
         id="btk-fail",
         user_id="usr-1",
         title="Buscar",
@@ -258,7 +258,7 @@ async def test_execute_claimed_task_marks_failed_on_bedrock_error(monkeypatch):
 
 
 def test_blocking_sibling_gates_later_subtask():
-    first = BedrockTask(
+    first = AgentSystemTask(
         id="btk-a",
         user_id="usr-1",
         title="A",
@@ -267,7 +267,7 @@ def test_blocking_sibling_gates_later_subtask():
         sort_order=0,
         is_blocking=True,
     )
-    second = BedrockTask(
+    second = AgentSystemTask(
         id="btk-b",
         user_id="usr-1",
         title="B",
@@ -284,7 +284,7 @@ def test_blocking_sibling_gates_later_subtask():
 
 
 def test_non_blocking_sibling_does_not_gate():
-    first = BedrockTask(
+    first = AgentSystemTask(
         id="btk-a",
         user_id="usr-1",
         title="A",
@@ -293,7 +293,7 @@ def test_non_blocking_sibling_does_not_gate():
         sort_order=0,
         is_blocking=False,
     )
-    second = BedrockTask(
+    second = AgentSystemTask(
         id="btk-b",
         user_id="usr-1",
         title="B",
@@ -307,7 +307,7 @@ def test_non_blocking_sibling_does_not_gate():
 
 def test_agent_ready_on_turn_without_schedule():
     now = datetime(2026, 8, 26, 12, 0, tzinfo=timezone.utc)
-    task = BedrockTask(
+    task = AgentSystemTask(
         id="btk-t",
         user_id="usr-1",
         title="Al turno",
@@ -324,7 +324,7 @@ def test_agent_ready_on_turn_without_schedule():
 
 
 def test_user_turn_when_unblocked():
-    task = BedrockTask(
+    task = AgentSystemTask(
         id="btk-u",
         user_id="usr-1",
         title="Manual",
@@ -337,10 +337,10 @@ def test_user_turn_when_unblocked():
 
 
 def test_parent_rollup_completes_when_children_done():
-    parent = BedrockTask(id="btk-plan", user_id="usr-1", title="Plan", status="in_progress")
+    parent = AgentSystemTask(id="btk-plan", user_id="usr-1", title="Plan", status="in_progress")
     children = [
-        BedrockTask(id="btk-a", user_id="usr-1", title="A", status="done", parent_id="btk-plan"),
-        BedrockTask(id="btk-b", user_id="usr-1", title="B", status="cancelled", parent_id="btk-plan"),
+        AgentSystemTask(id="btk-a", user_id="usr-1", title="A", status="done", parent_id="btk-plan"),
+        AgentSystemTask(id="btk-b", user_id="usr-1", title="B", status="cancelled", parent_id="btk-plan"),
     ]
     task_scheduler.rollup_parent_status(parent, children)
     assert parent.status == "done"
