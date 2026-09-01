@@ -94,11 +94,12 @@ async def root():
 # ============================================================================
 # Import routers and register them
 try:
-    from routes import bedrock, bedrock_tasks, metrics
+    from routes import bedrock, bedrock_tasks, metrics, prometheus
     app.include_router(bedrock.router, prefix="/api")
     app.include_router(bedrock_tasks.router, prefix="/api")
     app.include_router(metrics.router, prefix="/api")
-    logger.info("Bedrock, tasks, and metrics routers registered successfully")
+    app.include_router(prometheus.router, prefix="/api")
+    logger.info("Bedrock, tasks, metrics, and prometheus routers registered successfully")
 except ImportError as e:
     logger.warning(f"Failed to import routers: {e}. Continue without them.")
 
