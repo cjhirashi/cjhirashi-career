@@ -1,475 +1,67 @@
-# ============================================================================
-# cjhirashi-career — Docker Compose Orchestration
-# ============================================================================
-#
-# Arquitectura: 4 módulos (admin, portfolio, api, mcp) + infra
-# Carpetas: cjhirashi-career-admin, cjhirashi-career-portfolio,
-#           cjhirashi-career-api, cjhirashi-career-mcp
-# Network: network-cjhirashi-srv (externa, compartida con cjhirashi-srv)
-# Volúmenes: /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/
-#
-# Servicios Expuestos (via reverse proxy Caddy):
-#   - Admin:    cjhirashi-career-admin:8000  (host 8002)
-#   - Portal:   cjhirashi-career-portfolio:8000  (host 8003)
-#   - MCP:      cjhirashi-career-mcp:8000  (host 8004)
-#
-# Servicios Internos (red Docker):
-#   - API:      cjhirashi-career-api:8001  (Bedrock + PDF WeasyPrint)
-#   - Qdrant (6333), PostgreSQL (5432), MinIO (9000)
-
+# Docker Compose for development (FASE 7)
 version: '3.9'
 
 services:
-  # =========================================================================
-  # Admin Panel — Interface Privada para Carlos Jiménez Hirashi
-  # =========================================================================
-  # Responsabilidad: Gestión manual de identidad, competencias, evidencia
-  #                  Asistencia IA (Bedrock)
-  #                  Generación de documentos (PDF)
-  #
-  # ESTADO: ✅ Implementado (React SPA con Vite)
-  admin:
-    build:
-      context: ./cjhirashi-career-admin
-      dockerfile: Dockerfile
-    container_name: cjhirashi-career-admin
-    restart: unless-stopped
-    ports:
-      - "8002:8000"
-    networks:
-      - network-cjhirashi-srv
-    environment:
-      - VITE_API_BASE_URL=/api
-    depends_on:
-      - api
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # =========================================================================
-  # Portal Público — Portafolio (About, Proyectos, Blog, Contacto)
-  # =========================================================================
-  # Responsabilidad: Lectura de datos públicos
-  #
-  # ESTADO: ✅ Implementado (React SPA con Vite)
-  portfolio:
-    build:
-      context: ./cjhirashi-career-portfolio
-      dockerfile: Dockerfile
-    container_name: cjhirashi-career-portfolio
-    restart: unless-stopped
-    ports:
-      - "8003:8000"
-    networks:
-      - network-cjhirashi-srv
-    environment:
-      - VITE_API_URL=/api
-      - VITE_TRACKING_ENABLED=true
-    depends_on:
-      - api
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # =========================================================================
-  # MCP Server — cjhirashi-career-mcp (FastMCP, puerto 8004)
-  # =========================================================================
-  # Caddy: mcp.cjhirashi.com → cjhirashi-career-mcp:8000 (SSE, flush_interval -1)
-  mcp:
-    build:
-      context: ./cjhirashi-career-mcp
-      dockerfile: Dockerfile
-    container_name: cjhirashi-career-mcp
-    restart: unless-stopped
-    ports:
-      - "8004:8000"
-    networks:
-      - network-cjhirashi-srv
-    healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1', 8000), 2); s.close()"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # =========================================================================
-  # API REST — Orquestación Central
-  # =========================================================================
-  # Responsabilidad: CRUD de datos
-  #                  Autenticación y autorización
-  #                  Validación de negocio
-  #                  Único escritor en PostgreSQL
-  #
-  # INTERNO: No expuesto (accesible solo desde red Docker)
-  api:
-    build:
-      context: ./cjhirashi-career-api
-      dockerfile: Dockerfile
-    container_name: cjhirashi-career-api
-    restart: unless-stopped
-    networks:
-      - network-cjhirashi-srv
-    volumes:
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/uploads:/app/uploads:rw
-    env_file: .env
-    environment:
-      # Base de datos
-      DATABASE_URL: ${DATABASE_URL}
-      # Autenticación
-      SECRET_KEY: ${SECRET_KEY}
-      ALGORITHM: ${ALGORITHM}
-      ACCESS_TOKEN_EXPIRE_DAYS: ${ACCESS_TOKEN_EXPIRE_DAYS}
-      # CORS
-      CORS_ORIGINS: ${CORS_ORIGINS}
-      # Aplicación
-      APP_NAME: ${APP_NAME}
-      APP_VERSION: ${APP_VERSION}
-      DEBUG: ${DEBUG}
-      UPLOADS_DIR: ${UPLOADS_DIR}
-      # AWS Bedrock — Converse API. Ver docs/BEDROCK-SYSTEM.md
-      BEDROCK_REGION: ${BEDROCK_REGION}
-      BEDROCK_DEFAULT_MODEL_ID: ${BEDROCK_DEFAULT_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_ORCHESTRATOR_MODEL_ID: ${BEDROCK_ORCHESTRATOR_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_IMAGE_MODEL_ID: ${BEDROCK_IMAGE_MODEL_ID:-amazon.titan-image-generator-v2:0}
-      BEDROCK_MAX_IMAGES_PER_DAY: ${BEDROCK_MAX_IMAGES_PER_DAY:-20}
-      BEDROCK_DAILY_BUDGET_USD: ${BEDROCK_DAILY_BUDGET_USD:-5.0}
-      BEDROCK_MAX_ROUND_TRIPS: ${BEDROCK_MAX_ROUND_TRIPS:-6}
-      BEDROCK_HISTORY_WINDOW: ${BEDROCK_HISTORY_WINDOW:-20}
-      BEDROCK_EMBEDDING_MODEL_ID: ${BEDROCK_EMBEDDING_MODEL_ID}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      # Qdrant (base de conocimiento local de Agent Bedrock)
-      QDRANT_URL: ${QDRANT_URL}
-      QDRANT_COLLECTION: ${QDRANT_COLLECTION}
-      # MinIO (bucket de archivos). Hostname MUST be the Compose service
-      # name (`minio`), not localhost and not interpolated from host .env:
-      # a developer MINIO_ENDPOINT=localhost:9000 (pytest on the host)
-      # leaking into this container makes ensure_bucket() fail, uvicorn
-      # exits, and Cloudflare returns 520 on every /api request.
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
-      # LinkedIn OAuth (Share on LinkedIn + Sign In with LinkedIn OIDC)
-      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
-      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
-      LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI}
-      LINKEDIN_FRONTEND_URL: ${LINKEDIN_FRONTEND_URL}
-      ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
-      ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
-      ADZUNA_COUNTRY: ${ADZUNA_COUNTRY:-mx}
-      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
-      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
-      # Public portal (unauthenticated /public/* routes)
-      PUBLIC_PORTAL_USER_ID: ${PUBLIC_PORTAL_USER_ID}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
-      interval: 30s
-      timeout: 10s
-      start_period: 40s
-      retries: 3
-
-  # =========================================================================
-  # Qdrant — Base de Conocimiento Vectorial de Agent Bedrock
-  # =========================================================================
-  # Responsabilidad: búsqueda semántica sobre las metodologías operativas y
-  #   los registros de las ~30 tablas de carrera (ver services/qdrant_service.py
-  #   y repositories/career_repository.py, que la mantiene sincronizada).
-  #   Instancia privada de este proyecto (no compartida con otros proyectos
-  #   de Charlie, ej. Synapse, que corre su propio Qdrant aislado).
-  #
-  # INTERNO: No expuesto (accesible solo desde red Docker)
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    restart: unless-stopped
-    networks:
-      - network-cjhirashi-srv
-    volumes:
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/qdrant:/qdrant/storage:rw
-
-  # =========================================================================
-  # PostgreSQL — Base de Datos Centralizada (única fuente de verdad)
-  # =========================================================================
-  # Responsabilidad: Persistencia de todos los datos del sistema
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: postgres_db
-    restart: unless-stopped
-    env_file: .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: cjhirashi
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev-password}
+      POSTGRES_DB: career_db
+    ports:
+      - "5432:5432"
     volumes:
-      # Script de inicialización
-      - ./cjhirashi-career-api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      # Persistencia de datos
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/postgres:/var/lib/postgresql/data:rw
-    networks:
-      - network-cjhirashi-srv
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U cjhirashi"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
-  # =========================================================================
-  # MinIO — Almacenamiento de objetos (bucket S3-compatible)
-  # =========================================================================
-  # Responsabilidad: Archivos subidos desde Admin Panel (imágenes, documentos)
-  #   con links públicos para referenciar en campos Markdown. Expuesto
-  #   públicamente vía Caddy (ver servicios-externos/cjhirashi-career.md)
-  #   solo el puerto de la API S3 (9000) - la consola de administración
-  #   (9001) se queda interna, sin exponer.
-  minio:
-    image: minio/minio:latest
-    container_name: minio_storage
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    env_file: .env
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      # Misma raíz de disco que Postgres, en su propia carpeta.
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/minio:/data:rw
-    networks:
-      - network-cjhirashi-srv
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  # =========================================================================
-  # Redis — Colas (Streams) y Caché
-  # =========================================================================
-  # Fase 1 (FASE 1): Reemplazará los 2 schedulers asyncio in-process
-  #   - Prefijo `queue:*` para colas (linkedin:scheduled-posts, bedrock:scheduled-tasks)
-  #   - Prefijo `cache:*` para caché compartida
-  # Fase 5 (FASE 5): Rate limiting centralizado vía token bucket
-  #
-  # INTERNO: No expuesto
+  # Redis for rate limiting
   redis:
     image: redis:7-alpine
-    container_name: redis_cache
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    networks:
-      - network-cjhirashi-srv
+    ports:
+      - "6379:6379"
     volumes:
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/redis:/data:rw
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
-  # =========================================================================
-  # Worker: LinkedIn Post Scheduler
-  # =========================================================================
-  # Consumes from Redis Stream `linkedin:scheduled-posts`
-  # Publishes due posts to LinkedIn API
-  # Can be scaled horizontally (multiple worker-linkedin instances)
-  worker-linkedin:
+  # IA Service (Bedrock)
+  ia-service:
     build:
-      context: ./cjhirashi-career-api
+      context: ./cjhirashi-career-ai
       dockerfile: Dockerfile
-    container_name: worker_linkedin
-    restart: unless-stopped
-    networks:
-      - network-cjhirashi-srv
-    env_file: .env
     environment:
-      # LinkedIn OAuth
-      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
-      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
-      LINKEDIN_REDIRECT_URI: ${LINKEDIN_REDIRECT_URI}
-      LINKEDIN_FRONTEND_URL: ${LINKEDIN_FRONTEND_URL}
-      # Database
-      DATABASE_URL: ${DATABASE_URL}
-      # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_DB: 0
-      # AWS/MinIO
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
-      # Logging
-      LOG_LEVEL: INFO
-    entrypoint: ["python", "workers/worker_linkedin.py"]
+      DATABASE_URL: postgresql://cjhirashi:dev-password@postgres:5432/career_db
+      REDIS_URL: redis://redis:6379/0
+      ORCHESTRATOR_API_BASE_URL: http://api:8001
+      DEBUG: "true"
+    ports:
+      - "8010:8010"
     depends_on:
-      redis:
-        condition: service_healthy
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "redis-cli", "-h", "redis", "ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # =========================================================================
-  # Worker: Task Scheduler (Bedrock Agent Tasks)
-  # =========================================================================
-  # Consumes from Redis Stream `bedrock:scheduled-tasks`
-  # Executes due agent tasks via Bedrock
-  # Can be scaled horizontally (multiple worker-tasks instances)
-  worker-tasks:
-    build:
-      context: ./cjhirashi-career-api
-      dockerfile: Dockerfile
-    container_name: worker_tasks
-    restart: unless-stopped
-    networks:
-      - network-cjhirashi-srv
-    env_file: .env
-    environment:
-      # Database
-      DATABASE_URL: ${DATABASE_URL}
-      # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_DB: 0
-      # AWS Bedrock
-      BEDROCK_REGION: ${BEDROCK_REGION}
-      BEDROCK_DEFAULT_MODEL_ID: ${BEDROCK_DEFAULT_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_ORCHESTRATOR_MODEL_ID: ${BEDROCK_ORCHESTRATOR_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_MAX_ROUND_TRIPS: ${BEDROCK_MAX_ROUND_TRIPS:-6}
-      BEDROCK_HISTORY_WINDOW: ${BEDROCK_HISTORY_WINDOW:-20}
-      BEDROCK_EMBEDDING_MODEL_ID: ${BEDROCK_EMBEDDING_MODEL_ID}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      # Qdrant
-      QDRANT_URL: ${QDRANT_URL}
-      QDRANT_COLLECTION: ${QDRANT_COLLECTION}
-      # MinIO
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
-      # Logging
-      LOG_LEVEL: INFO
-    entrypoint: ["python", "workers/worker_tasks.py"]
-    depends_on:
       redis:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
-      qdrant:
-        condition: service_started
-    healthcheck:
-      test: ["CMD", "redis-cli", "-h", "redis", "ping"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+    volumes:
+      - ./cjhirashi-career-ai/src:/app/src
 
-  # =========================================================================
-  # Loki — Agregador de logs (Backend de Grafana)
-  # =========================================================================
-  # Recibe logs vía Promtail (docker logging driver)
-  loki:
-    image: grafana/loki:latest
-    container_name: loki_logs
-    restart: unless-stopped
+  # Optional: Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
     ports:
-      - "3100:3100"
-    networks:
-      - network-cjhirashi-srv
-    command: -config.file=/etc/loki/local-config.yaml
+      - "9090:9090"
     volumes:
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/loki:/loki:rw
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
 
-  # =========================================================================
-  # Promtail — Scraper de logs (envía a Loki vía stdout de contenedores)
-  # =========================================================================
-  # Docker logging driver: json-file (default). Promtail parsea stdout/stderr
-  # de cada contenedor y lo envía a Loki con labels automáticos
-  # (container_name, container_id, image_name, etc.)
-  promtail:
-    image: grafana/promtail:latest
-    container_name: promtail_scraper
-    restart: unless-stopped
-    networks:
-      - network-cjhirashi-srv
-    command: -config.file=/etc/promtail/config.yaml
-    volumes:
-      # Acceso a docker socket para leer logs de contenedores
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Acceso a /var/lib/docker/containers para parsear metadatos
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # Archivo de config mínimo (inline via config.file)
-    depends_on:
-      - loki
-
-  # =========================================================================
-  # Grafana — Dashboards, alertas, visualización de Loki/Prometheus
-  # =========================================================================
-  # Usuario default: admin / admin (cambiar en producción)
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana_dash
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    networks:
-      - network-cjhirashi-srv
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      GF_USERS_ALLOW_SIGN_UP: "false"
-    volumes:
-      # Persistencia de dashboards y datasources
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/grafana:/var/lib/grafana:rw
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-# ============================================================================
-# Volúmenes
-# ============================================================================
-# Nota: Volúmenes de base de datos y uploads están en ruta absoluta
-#       por coherencia con cjhirashi-srv y para persistencia en disco compartido
-
-volumes: {}
-
-# ============================================================================
-# Redes
-# ============================================================================
-# network-cjhirashi-srv: Red Docker bridge EXTERNA
-#   - Compartida con cjhirashi-srv (Caddy + Cloudflare)
-#   - Permite acceso desde reverse proxy
-#   - Aislada de internet directa (solo via Caddy)
-
-networks:
-  network-cjhirashi-srv:
-    external: true
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:

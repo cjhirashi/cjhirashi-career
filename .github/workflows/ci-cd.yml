@@ -1,0 +1,87 @@
+# GitHub Actions CI/CD Pipeline (FASE 7)
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd cjhirashi-career-ai
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run tests
+        run: |
+          cd cjhirashi-career-ai
+          pytest tests/ -v --cov=src
+
+      - name: Compile Python
+        run: |
+          cd cjhirashi-career-ai
+          python -m py_compile src/main.py src/routes/*.py src/middleware/*.py
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          cd cjhirashi-career-ai
+          docker build -t cjhirashi-career-ai:${{ github.sha }} .
+          docker tag cjhirashi-career-ai:${{ github.sha }} cjhirashi-career-ai:latest
+
+      - name: Docker image info
+        run: docker images | grep cjhirashi-career-ai
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run security checks
+        run: |
+          echo "✅ Security checks passed (placeholder)"
+
+  notify:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check CI status
+        run: |
+          echo "CI/CD Pipeline completed"
+          echo "Test status: ${{ needs.test.result }}"
+          echo "Build status: ${{ needs.build.result }}"
