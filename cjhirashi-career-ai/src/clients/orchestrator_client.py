@@ -163,8 +163,242 @@ class OrchestratorClient:
                 logger.error(f"Failed to log usage: {e}")
                 return None
 
-    # Add more methods as needed for other CRUD operations
-    # (create identity, update profile, etc.)
+    async def get_conversations(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener conversaciones del usuario."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/conversations",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo conversaciones: {e}")
+                return None
+
+    async def get_conversation_messages(
+        self,
+        user_id: str,
+        auth_token: str,
+        session_id: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener mensajes de una conversación."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/conversations/{session_id}/messages",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo mensajes: {e}")
+                return None
+
+    async def rename_conversation(
+        self,
+        user_id: str,
+        auth_token: str,
+        session_id: str,
+        title: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Renombrar conversación."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.patch(
+                    f"/conversations/{session_id}",
+                    json={"title": title, "user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error renombrando conversación: {e}")
+                return None
+
+    async def delete_conversation(
+        self,
+        user_id: str,
+        auth_token: str,
+        session_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Eliminar conversación."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.delete(
+                    f"/conversations/{session_id}",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error eliminando conversación: {e}")
+                return None
+
+    async def get_memory(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener registros de memoria."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/memory",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo memoria: {e}")
+                return None
+
+    async def get_memory_events(
+        self,
+        user_id: str,
+        auth_token: str,
+        session_id: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener eventos de memoria para una conversación."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/memory/events/{session_id}",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo eventos de memoria: {e}")
+                return None
+
+    async def get_catalog(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener catálogo de perfiles de agente."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/catalog",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo catálogo: {e}")
+                return None
+
+    async def get_custom_tools(
+        self,
+        user_id: str,
+        auth_token: str,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener herramientas personalizadas."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/custom-tools",
+                    params={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo herramientas personalizadas: {e}")
+                return None
+
+    async def create_custom_tool(
+        self,
+        user_id: str,
+        auth_token: str,
+        name: str,
+        url: str,
+        headers: Dict = None,
+    ) -> Optional[Dict[str, Any]]:
+        """Crear herramienta personalizada."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.post(
+                    f"/custom-tools",
+                    json={"user_id": user_id, "name": name, "url": url, "headers": headers or {}},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error creando herramienta: {e}")
+                return None
+
+    async def execute_task(
+        self,
+        user_id: str,
+        auth_token: str,
+        task_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Ejecutar tarea."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.post(
+                    f"/tasks/{task_id}/run",
+                    json={"user_id": user_id},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error ejecutando tarea: {e}")
+                return None
+
+    async def get_audit_log(
+        self,
+        user_id: str,
+        auth_token: str,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Optional[List[Dict[str, Any]]]:
+        """Obtener registro de auditoría."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.get(
+                    f"/audit-log",
+                    params={"user_id": user_id, "limit": limit, "offset": offset},
+                    headers={"Authorization": f"Bearer {auth_token}"},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error obteniendo registro de auditoría: {e}")
+                return None
+
+    async def verify_token(
+        self,
+        auth_token: str,
+    ) -> Optional[Dict[str, Any]]:
+        """Verificar token JWT con el Orchestrator."""
+        async with await self._get_client() as client:
+            try:
+                response = await client.post(
+                    f"/auth/verify",
+                    json={"token": auth_token},
+                )
+                response.raise_for_status()
+                return response.json()
+            except httpx.HTTPError as e:
+                logger.error(f"Error verificando token: {e}")
+                return None
 
 
 # Singleton instance

@@ -1,14 +1,15 @@
 """
-Wrapper for bedrock_service - provides compatibility layer.
+Wrapper for bedrock_service - proporciona capa de compatibilidad.
 
-In FASE 3, this routes to local services.
-In FASE 4+, this will route to orchestrator_client for cross-service calls.
+FASE 3: Enruta a servicios locales
+FASE 4: Enruta a orchestrator_client para llamadas entre servicios
 """
 
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from clients.orchestrator_client import orchestrator_client
 
 # Local service imports
 from services import (
@@ -115,10 +116,17 @@ async def delete_custom_tool(db: AsyncSession, tool_id: str) -> bool:
     return True
 
 
-async def get_conversation_messages(db: AsyncSession, user_id: str, session_id: str) -> List[Dict]:
-    """Get conversation messages."""
-    # TODO: Call orchestrator_client
-    return await history_manager.list_messages(db, session_id)
+async def get_conversation_messages(
+    db: AsyncSession,
+    user_id: str,
+    session_id: str,
+    auth_token: str = None,
+) -> List[Dict]:
+    """Obtener mensajes de conversación."""
+    # FASE 4: Usar orchestrator_client.get_conversation_messages(user_id, auth_token, session_id)
+    if db and session_id:
+        return await history_manager.list_messages(db, session_id)
+    return []
 
 
 async def rename_conversation(db: AsyncSession, user_id: str, session_id: str, title: str) -> bool:
