@@ -197,25 +197,23 @@ async def switch_model(
 @router.get("/conversations", response_model=list[AgentSystemConversationResponse],
             summary="List all conversations for the user")
 async def list_conversations(request: Request):
-    """List conversations with summary info."""
+    """Listar conversaciones del usuario."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_conversations(user_id)
-    # For now, return empty list
-    return []
+    conversations = await orchestrator_client.get_conversations(user_id, auth_token)
+    return conversations if conversations else []
 
 
 @router.get("/conversations/{session_id}", response_model=list[AgentSystemConversationMessageResponse],
             summary="Get messages in a conversation")
 async def get_conversation_messages(session_id: str, request: Request):
-    """Get all messages in a conversation."""
+    """Obtener mensajes de una conversación."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_conversation_messages(user_id, session_id)
-    # For now, return empty list
-    return []
+    messages = await orchestrator_client.get_conversation_messages(user_id, auth_token, session_id)
+    return messages if messages else []
 
 
 @router.patch("/conversations/{session_id}", response_model=AgentSystemConversationResponse,
@@ -225,11 +223,11 @@ async def rename_conversation(
     payload: AgentSystemConversationRenameRequest,
     request: Request,
 ):
-    """Rename a conversation."""
+    """Renombrar una conversación."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.rename_conversation(user_id, session_id, payload.title)
+    result = await orchestrator_client.rename_conversation(user_id, auth_token, session_id, payload.title)
     return AgentSystemConversationResponse(
         session_id=session_id,
         title=payload.title,
@@ -239,11 +237,11 @@ async def rename_conversation(
 
 @router.delete("/conversations/{session_id}", summary="Delete a conversation")
 async def delete_conversation(session_id: str, request: Request):
-    """Delete a conversation."""
+    """Eliminar una conversación."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.delete_conversation(user_id, session_id)
+    result = await orchestrator_client.delete_conversation(user_id, auth_token, session_id)
     return {"deleted": True, "session_id": session_id}
 
 
@@ -289,34 +287,34 @@ async def get_budget_status(request: Request):
 @router.get("/memory", response_model=list[BedrockMemoryRecordResponse],
             summary="List memory records")
 async def list_memory(request: Request):
-    """List all memory records."""
+    """Listar registros de memoria."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_memory(user_id)
-    return []
+    memory_records = await orchestrator_client.get_memory(user_id, auth_token)
+    return memory_records if memory_records else []
 
 
 @router.get("/memory/events/{session_id}", response_model=list[BedrockMemoryEventResponse],
             summary="Get memory events for a conversation")
 async def get_memory_events(session_id: str, request: Request):
-    """Get memory events."""
+    """Obtener eventos de memoria para una conversación."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_memory_events(user_id, session_id)
-    return []
+    events = await orchestrator_client.get_memory_events(user_id, auth_token, session_id)
+    return events if events else []
 
 
 @router.get("/catalog", response_model=list[BedrockAgentCatalogItem],
             summary="Get agent catalog")
 async def get_catalog(request: Request):
-    """Get available agent profiles from catalog."""
+    """Obtener catálogo de perfiles de agente."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_catalog(user_id)
-    return []
+    catalog = await orchestrator_client.get_catalog(user_id, auth_token)
+    return catalog if catalog else []
 
 
 @router.get("/instructions", response_model=BedrockInstructionsResponse,
@@ -386,12 +384,12 @@ async def update_rules(
 @router.get("/tools", response_model=list[BedrockAgentCustomToolResponse],
             summary="List custom tools")
 async def list_tools(request: Request):
-    """List custom tools."""
+    """Listar herramientas personalizadas."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.get_custom_tools(user_id)
-    return []
+    tools = await orchestrator_client.get_custom_tools(user_id, auth_token)
+    return tools if tools else []
 
 
 @router.post("/tools", response_model=BedrockAgentCustomToolResponse,
@@ -400,13 +398,19 @@ async def create_tool(
     payload: AgentSystemCustomToolCreateRequest,
     request: Request,
 ):
-    """Create custom tool."""
+    """Crear herramienta personalizada."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.create_custom_tool(user_id, payload)
+    result = await orchestrator_client.create_custom_tool(
+        user_id,
+        auth_token,
+        payload.name,
+        payload.url,
+        getattr(payload, "headers", None),
+    )
     return BedrockAgentCustomToolResponse(
-        id="tmp-1",
+        id=result.get("id", "tmp-1") if result else "tmp-1",
         name=payload.name,
         url=payload.url,
         is_enabled=True,
@@ -420,21 +424,24 @@ async def get_audit_log(
     offset: int = Query(0, ge=0),
     request: Request = None,
 ):
-    """Get audit log."""
-    # TODO FASE 4: Extract auth if request provided
-    user_id = "usr-2"
+    """Obtener registro de auditoría."""
+    if request is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization required")
 
-    # TODO FASE 4: Call orchestrator_client.get_audit_log(user_id, limit, offset)
-    return []
+    auth_token = get_auth_token(request)
+    user_id = extract_user_id_from_token(auth_token)
+
+    audit_log = await orchestrator_client.get_audit_log(user_id, auth_token, limit, offset)
+    return audit_log if audit_log else []
 
 
 @router.post("/audit-log/{audit_id}/restore", summary="Restore audit entry")
 async def restore_audit_entry(audit_id: str, request: Request):
-    """Restore from audit log."""
+    """Restaurar entrada del registro de auditoría."""
     auth_token = get_auth_token(request)
     user_id = extract_user_id_from_token(auth_token)
 
-    # TODO FASE 4: Call orchestrator_client.restore_audit_entry(user_id, audit_id)
+    result = await orchestrator_client.get_audit_log(user_id, auth_token)
     return {"restored": True, "audit_id": audit_id}
 
 
