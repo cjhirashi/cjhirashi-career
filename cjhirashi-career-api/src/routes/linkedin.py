@@ -31,6 +31,7 @@ from schemas.linkedin import (
 )
 from services import linkedin_service, storage_service
 from services.linkedin_service import LinkedInError
+from services.redis_client import get_redis
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -209,6 +210,20 @@ async def create_post(
         db.add(post)
         await db.commit()
         await db.refresh(post)
+
+        # FASE 1: Enqueue to Redis Streams for worker-linkedin to consume
+        try:
+            redis_client = await get_redis()
+            await redis_client.xadd(
+                "linkedin:scheduled-posts",
+                {"post_id": post.id, "scheduled_at": scheduled_dt.isoformat()},
+            )
+            logger.info(f"Enqueued LinkedIn post {post.id} to Redis stream")
+        except Exception as e:
+            logger.error(f"Failed to enqueue post {post.id} to Redis: {e}")
+            # Post is already in DB; worker will pick it up on next poll.
+            # Not a hard failure for the user.
+
         return post
 
     try:

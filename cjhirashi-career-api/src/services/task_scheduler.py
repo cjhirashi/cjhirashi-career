@@ -237,16 +237,41 @@ async def _rollup_parents(tasks: list[AgentSystemTask]) -> None:
         rollup_parent_status(parent, children)
 
 
+async def _enqueue_task_to_redis(task: AgentSystemTask) -> None:
+    """FASE 1: Enqueue scheduled task to Redis Streams."""
+    if not task.scheduled_at or task.status not in _RUNNABLE_STATUSES:
+        return
+    try:
+        from services.redis_client import get_redis
+        redis_client = await get_redis()
+        await redis_client.xadd(
+            "bedrock:scheduled-tasks",
+            {"task_id": task.id, "scheduled_at": task.scheduled_at.isoformat()},
+        )
+        logger.debug(f"Enqueued task {task.id} to Redis stream")
+    except Exception as e:
+        logger.error(f"Failed to enqueue task {task.id} to Redis: {e}")
+        # Task is already in DB; worker will pick it up on next poll.
+
+
 async def advance_from_task(task_id: str) -> None:
-    """Tras un cambio: notifica turnos de usuario, resume padres y reclama agentes listos."""
+    """Tras un cambio: notifica turnos de usuario, resume padres, reclama agentes listos, y enqueue a Redis."""
     async with AsyncSessionLocal() as db:
         tasks = await _load_tasks(db)
-        if not any(item.id == task_id for item in tasks):
+        task_map = {t.id: t for t in tasks}
+        if task_id not in task_map:
             await db.commit()
             return
+
+        task = task_map[task_id]
+
         await _notify_user_turns(db, tasks)
         await _rollup_parents(tasks)
         await db.commit()
+
+        # FASE 1: Enqueue to Redis if task is newly programmed/updated
+        await _enqueue_task_to_redis(task)
+
     ids = await claim_due_task_ids()
     for claimed_id in ids:
         if claimed_id == task_id:
