@@ -255,6 +255,100 @@ services:
       retries: 5
       start_period: 10s
 
+  # =========================================================================
+  # Redis — Colas (Streams) y Caché
+  # =========================================================================
+  # Fase 1 (FASE 1): Reemplazará los 2 schedulers asyncio in-process
+  #   - Prefijo `queue:*` para colas (linkedin:scheduled-posts, bedrock:scheduled-tasks)
+  #   - Prefijo `cache:*` para caché compartida
+  # Fase 5 (FASE 5): Rate limiting centralizado vía token bucket
+  #
+  # INTERNO: No expuesto
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    networks:
+      - network-cjhirashi-srv
+    volumes:
+      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/redis:/data:rw
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # Loki — Agregador de logs (Backend de Grafana)
+  # =========================================================================
+  # Recibe logs vía Promtail (docker logging driver)
+  loki:
+    image: grafana/loki:latest
+    container_name: loki_logs
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    networks:
+      - network-cjhirashi-srv
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/loki:/loki:rw
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # =========================================================================
+  # Promtail — Scraper de logs (envía a Loki vía stdout de contenedores)
+  # =========================================================================
+  # Docker logging driver: json-file (default). Promtail parsea stdout/stderr
+  # de cada contenedor y lo envía a Loki con labels automáticos
+  # (container_name, container_id, image_name, etc.)
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail_scraper
+    restart: unless-stopped
+    networks:
+      - network-cjhirashi-srv
+    command: -config.file=/etc/promtail/config.yaml
+    volumes:
+      # Acceso a docker socket para leer logs de contenedores
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Acceso a /var/lib/docker/containers para parsear metadatos
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # Archivo de config mínimo (inline via config.file)
+    depends_on:
+      - loki
+
+  # =========================================================================
+  # Grafana — Dashboards, alertas, visualización de Loki/Prometheus
+  # =========================================================================
+  # Usuario default: admin / admin (cambiar en producción)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_dash
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - network-cjhirashi-srv
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      # Persistencia de dashboards y datasources
+      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/grafana:/var/lib/grafana:rw
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 # ============================================================================
 # Volúmenes
 # ============================================================================

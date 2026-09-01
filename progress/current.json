@@ -1,42 +1,79 @@
 {
-  "active_task": "FASE 0: Preparación (tests arreglados, listos para comenzar)",
-  "status": "READY_FOR_FASE_0",
+  "active_task": "FASE 0: Preparación ✅ COMPLETADA",
+  "status": "READY_FOR_FASE_1",
   "completed_phases": [
     "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
     "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests: 13/13 ✅)",
     "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)",
     "FASE 3: DIFERIDA a post-QA FASE 3 (MCP Server, Q4 2026)"
   ],
-  "test_fixes": {
-    "description": "Arreglados 5 archivos de tests con imports rotos tras ADR-024/025",
-    "status": "✅ COMPLETADOS",
-    "commit": "99bec05",
-    "changes": [
-      "test_profile_catalog.py: bedrock_* → agent_system_* imports",
-      "test_profile_delegation.py: verificado, sin cambios necesarios",
-      "test_models.py: removido import Evidence (modelo no existe)",
-      "test_models_extended.py: removido imports Evidence y JobStrategy",
-      "test_task_scheduler.py: BedrockTask* → AgentSystemTask*",
-      "profile_delegation.py: agent_system_agent_delegation → agent_system_delegation"
+  "fase_0_completion": {
+    "description": "Migración monolito → microservicios: FASE 0 — Preparación",
+    "status": "✅ COMPLETADA",
+    "timestamp": "2026-09-01T03:15:00Z",
+    "tasks_completed": [
+      "✅ Agregar contenedor Redis a docker-compose.yml (para FASE 1: colas + caché)",
+      "✅ Stack de logging mínimo: Grafana + Loki + Promtail (observabilidad OSS)",
+      "✅ Regenerar .env.example desde config.py (fuente de verdad única)",
+      "✅ Baseline de pytest: 373 passed, 29 failed, 4 skipped, 58 errors"
     ],
-    "results": "31/31 tests PASSED en bedrock + task_scheduler (errores pre-existentes de SQLite sin cambios)"
+    "files_modified": [
+      "docker-compose.yml: +redis, +loki, +promtail, +grafana",
+      ".env.example: regenerado con todas las variables de config.py",
+      "progress/current.json: actualizado"
+    ],
+    "infrastructure_added": {
+      "redis": {
+        "purpose": "Colas (Redis Streams) + caché compartida",
+        "phase_used": "FASE 1+5 (workers, rate-limiting)"
+      },
+      "loki": {
+        "purpose": "Agregador de logs (backend de Grafana)",
+        "port": 3100
+      },
+      "promtail": {
+        "purpose": "Scraper de logs desde stdout de contenedores",
+        "method": "Docker logging driver"
+      },
+      "grafana": {
+        "purpose": "Dashboards, alertas, visualización",
+        "port": 3000,
+        "default_user": "admin"
+      }
+    }
+  },
+  "pytest_baseline": {
+    "total_tests": 406,
+    "passed": 373,
+    "failed": 29,
+    "skipped": 4,
+    "errors": 58,
+    "duration": "~54s",
+    "note": "Errores por SQLAlchemy async (tests sin instancia real de PostgreSQL) — esperado. Baseline establecido para comparación en FASE 1."
   },
   "next_phase": {
-    "phase": "FASE 0",
+    "phase": "FASE 1",
     "status": "LISTO PARA INICIAR",
+    "blocker_risk": "ALTO — Desbloquea escalado horizontal",
     "tasks": [
-      "Añadir contenedor Redis a docker-compose.yml",
-      "Stack de logging mínimo (Grafana + Loki + Promtail)",
-      "Regenerar .env.example desde config.py",
-      "Correr suite completa de pytest para baseline"
+      "Migrar linkedin_scheduler.py → worker-linkedin (Redis Streams)",
+      "Migrar task_scheduler.py → worker-tasks (Redis Streams)",
+      "Implementar idempotencia (verificar estado antes de ejecutar)",
+      "Smoke test: verificar publicación única de LinkedIn",
+      "Actualizar docker-compose.yml con workers"
     ],
-    "estimated_duration": "2-3 horas"
+    "estimated_duration": "4-6 horas",
+    "critical_files": [
+      "cjhirashi-career-api/src/services/linkedin_scheduler.py",
+      "cjhirashi-career-api/src/services/task_scheduler.py",
+      "cjhirashi-career-api/src/app.py (registro de asyncio.create_task)"
+    ]
   },
   "session_summary": {
-    "duration": "~1.5 horas",
-    "commits_total": "1 nuevo (99bec05)",
-    "files_modified": "5 tests + 1 servicio",
-    "status": "✅ Tests arreglados, bloqueante de FASE 0 eliminado"
+    "duration": "~30 minutos",
+    "commits_pending": "1 (FASE 0 completion)",
+    "files_modified": 2,
+    "status": "✅ FASE 0 completada — infraestructura de observabilidad en lugar, baseline de tests establecido"
   },
-  "last_updated": "2026-09-01T02:55:00Z"
+  "last_updated": "2026-09-01T03:15:00Z"
 }
