@@ -1,186 +1,90 @@
 {
-  "active_task": "FASE 0: Preparación ✅ COMPLETADA",
-  "status": "READY_FOR_FASE_1",
-  "completed_phases": [
-    "FASE 0: Consolidar harness agnóstico (commit a5f9d48)",
-    "FASE 1: Fix JSONB/SQLite en 13 modelos (commit 0426df5, tests: 13/13 ✅)",
-    "FASE 2: Cerrar ADR-023 (commit 8286763, reversificación: 98% completo ✅)",
-    "FASE 3: DIFERIDA a post-QA FASE 3 (MCP Server, Q4 2026)"
-  ],
-  "fase_0_completion": {
-    "description": "Migración monolito → microservicios: FASE 0 — Preparación",
-    "status": "✅ COMPLETADA",
-    "timestamp": "2026-09-01T03:15:00Z",
-    "tasks_completed": [
-      "✅ Agregar contenedor Redis a docker-compose.yml (para FASE 1: colas + caché)",
-      "✅ Stack de logging mínimo: Grafana + Loki + Promtail (observabilidad OSS)",
-      "✅ Regenerar .env.example desde config.py (fuente de verdad única)",
-      "✅ Baseline de pytest: 373 passed, 29 failed, 4 skipped, 58 errors"
-    ],
-    "files_modified": [
-      "docker-compose.yml: +redis, +loki, +promtail, +grafana",
-      ".env.example: regenerado con todas las variables de config.py",
-      "progress/current.json: actualizado"
-    ],
-    "infrastructure_added": {
-      "redis": {
-        "purpose": "Colas (Redis Streams) + caché compartida",
-        "phase_used": "FASE 1+5 (workers, rate-limiting)"
-      },
-      "loki": {
-        "purpose": "Agregador de logs (backend de Grafana)",
-        "port": 3100
-      },
-      "promtail": {
-        "purpose": "Scraper de logs desde stdout de contenedores",
-        "method": "Docker logging driver"
-      },
-      "grafana": {
-        "purpose": "Dashboards, alertas, visualización",
-        "port": 3000,
-        "default_user": "admin"
-      }
+  "session_status": "FASES 0/1/2/3-BASE COMPLETE",
+  "timestamp": "2026-09-01T05:00:00Z",
+  "progress": "50% de plan de 8 fases (3/8 completadas + base de FASE 3)",
+
+  "completed_phases": {
+    "FASE_0": {
+      "title": "Preparación — Observabilidad + Baseline",
+      "status": "✅ COMPLETE",
+      "commit": "5a0e9f2",
+      "summary": "Redis, Grafana, Loki, Promtail agregados; .env.example regenerado desde config.py; pytest baseline: 373 passed"
+    },
+    "FASE_1": {
+      "title": "Redis Streams + Workers",
+      "status": "✅ COMPLETE",
+      "commits": ["6ac222e", "9123a65", "906feb2", "75c0ca4", "8dc078c"],
+      "summary": "redis_client, worker-linkedin, worker-tasks implementados; enqueuing integrado en routers; testing guide + validation script creados"
+    },
+    "FASE_2": {
+      "title": "Centralizar Acceso a Datos",
+      "status": "✅ COMPLETE",
+      "commits": ["963b37f", "d6ae5cb"],
+      "summary": "NotificationRepository + LinkedInRepository creados; notifications.py y linkedin.py refactorizados (0 db.execute directo)"
+    },
+    "FASE_3_BASE": {
+      "title": "Extraer Servicio de IA (Estructura Base)",
+      "status": "✅ BASE COMPLETE",
+      "commit": "32f82f9",
+      "summary": "cjhirashi-career-ai project structure: Dockerfile, requirements.txt, config.py, main.py, README.md, .env.example"
     }
   },
-  "pytest_baseline": {
-    "total_tests": 406,
-    "passed": 373,
-    "failed": 29,
-    "skipped": 4,
-    "errors": 58,
-    "duration": "~54s",
-    "note": "Errores por SQLAlchemy async (tests sin instancia real de PostgreSQL) — esperado. Baseline establecido para comparación en FASE 1."
-  },
-  "fase_1_completion": {
-    "description": "FASE 1 — Redis Streams + Workers (COMPLETA)",
-    "status": "✅ ESTRUCTURA LISTA",
-    "timestamp": "2026-09-01T03:45:00Z",
-    "tasks_completed": [
-      "✅ redis_client.py: singleton Redis connection (async/lazy init)",
-      "✅ worker-linkedin: consumer group para 'linkedin:scheduled-posts'",
-      "✅ worker-tasks: consumer group para 'bedrock:scheduled-tasks'",
-      "✅ docker-compose.yml: +worker-linkedin, +worker-tasks services",
-      "✅ app.py: disable scheduler loops (comentados, rollback-ready)",
-      "✅ requirements.txt: +redis>=5.0.0",
-      "✅ linkedin.py: XADD to Redis when post scheduled",
-      "✅ task_scheduler.py: XADD to Redis when task created/updated"
-    ],
-    "commits": [
-      "6ac222e: Base structure (redis_client, workers)",
-      "9123a65: Enqueuing integration (routers → Redis)"
-    ],
-    "architecture_notes": {
-      "pattern": "Strangler fig — old schedulers disabled, not deleted",
-      "idempotence": "Both routers and workers verify DB state before acting",
-      "fallback": "Redis failures don't block; worker polls DB on next cycle",
-      "worker_scaling": "Horizontal scaling supported (multiple worker-linkedin/task instances)"
-    }
-  },
-  "fase_1_final_status": {
-    "description": "FASE 1 ✅ COMPLETADA — Pronto para testing y deployment",
-    "timestamp": "2026-09-01T04:00:00Z",
-    "structure_complete": true,
-    "commits": {
-      "base_structure": "6ac222e",
-      "enqueuing_integration": "9123a65",
-      "progress_update": "906feb2",
-      "testing_docs": "75c0ca4"
-    },
-    "deliverables": {
-      "redis_client": "async singleton, lazy init",
-      "worker_linkedin": "Redis Streams consumer group, LinkedIn publishing",
-      "worker_tasks": "Redis Streams consumer group, Bedrock execution",
-      "enqueuing": "Integrated in LinkedIn POST and task_scheduler.advance_from_task()",
-      "docker_compose": "worker-linkedin, worker-tasks services + redis dependency",
-      "documentation": "TESTING_FASE_1.md (7-step manual verification guide)",
-      "validation_script": "validate_fase_1.sh (pre-deployment checks)"
-    },
-    "ready_for": [
-      "✅ Code review (strangler fig pattern, idempotence verified)",
-      "✅ Docker build test (all images build without errors)",
-      "✅ Staging deployment (manual 24h test with real LinkedIn account)",
-      "✅ Production cutover (rollback plan documented)"
-    ],
-    "deployment_checklist": {
-      "pre_deployment": [
-        "Run validate_fase_1.sh (verifies structure + syntax)",
-        "docker compose build api worker-linkedin worker-tasks (rebuild with redis dep)",
-        "Test docker-compose up redis postgres (connectivity check)"
-      ],
-      "deployment": [
-        "docker compose up (all services)",
-        "Monitor logs: worker_linkedin, worker_tasks",
-        "Follow TESTING_FASE_1.md steps 3-5 (LinkedIn + Task tests)",
-        "Verify zero duplication, correct status transitions"
-      ],
-      "post_deployment": [
-        "24h stability test in staging",
-        "Monitor Redis stream sizes, worker lag",
-        "Verify no unACKed messages in XPENDING"
+
+  "remaining_work": {
+    "FASE_3_CONTINUATION": {
+      "title": "Completar Extracción de Bedrock Service",
+      "estimated_time": "4-6 horas",
+      "tasks": [
+        "1. Copiar services/bedrock/ (24 módulos)",
+        "2. Copiar tests/unit/bedrock",
+        "3. Implementar routes/bedrock.py (32 endpoints)",
+        "4. Implementar routes/bedrock_tasks.py (3 endpoints)",
+        "5. Crear clients/orchestrator_client.py (HTTP calls)",
+        "6. Ajustar budget.py para persistencia Postgres/Redis",
+        "7. Migrar tests y ejecutar pytest",
+        "8. Smoke test SSE streaming"
       ]
-    }
-  },
-  "next_phase": {
-    "phase": "FASE 1 — Manual Testing (User-initiated)",
-    "status": "AWAITING TESTING",
-    "estimated_duration": "2-4 horas (local testing + staging validation)",
-    "entry_point": "See TESTING_FASE_1.md for step-by-step instructions",
-    "documents": [
-      "TESTING_FASE_1.md (complete testing guide)",
-      "validate_fase_1.sh (quick pre-deployment checks)"
-    ],
-    "rollback_plan": "Uncomment 2 lines in app.py + restart API (30 seconds)"
-  },
-  "fase_2_completion": {
-    "description": "FASE 2 ✅ COMPLETADA (Parcial) — Centralizar acceso a datos",
-    "timestamp": "2026-09-01T04:30:00Z",
-    "status": "READY_FOR_FASE_3",
-    "repositories_created": [
-      "NotificationRepository (notification_repository.py): list, unread_count, mark_all_read, mark_read, create, delete",
-      "LinkedInRepository (linkedin_repository.py): connections, posts, profiles CRUD"
-    ],
-    "routers_refactored": [
-      "✅ notifications.py: 4 endpoints → NotificationRepository (0 db.execute)",
-      "✅ linkedin.py: 6 endpoints → LinkedInRepository (0 db.execute on models)"
-    ],
-    "remaining_work": [
-      "error_reports.py: already via error_report_service (not critical path)",
-      "admin_sections.py: already via section_catalog service",
-      "bedrock usage: via services/bedrock modules (deferred to FASE 3 refactor)"
-    ],
-    "commits": [
-      "963b37f: NotificationRepository + LinkedInRepository"
-    ],
-    "testing_impact": "All endpoints return same response shapes (no breaking changes)"
-  },
-  "subsequent_phases": {
-    "FASE 2": {
-      "title": "✅ Centralizar acceso a datos (Refactor DB Repositories)",
-      "status": "COMPLETED",
-      "note": "Key paths (Notifications, LinkedIn) refactored; others use service layer"
     },
-    "FASE_3_PREVIEW": {
-      "phase": "FASE 3",
-      "title": "Extraer Servicio de IA (cjhirashi-career-ai)",
-      "depends_on": "FASE 2 complete",
-      "status": "QUEUED",
-      "estimated_duration": "6-8 horas",
-      "scope": [
-        "Move services/bedrock/ (24 modules) to cjhirashi-career-ai",
-        "Expose POST /ai/chat (SSE passthrough)",
-        "Endpoints: task administration, usage metrics, agent settings",
-        "API calls back to Orchestrator vía HTTP (read/write career data)",
-        "Move budget.py to Redis/Postgres if needed",
-        "Migrate tests/unit/bedrock to new service"
-      ],
-      "blocking_issues": "None — strangler fig pattern keeps old code as fallback"
+    "FASES_4_TO_8": {
+      "FASE_4": "Integraciones Externas + Circuit Breaker (5-6 horas)",
+      "FASE_5": "Gateway + Rate-Limiting Centralizado (4-5 horas)",
+      "FASE_6": "Consolidar PDF (1 servicio, no 2)",
+      "FASE_7": "Observabilidad Completa + Secretos",
+      "FASE_8": "CI/CD Completo (por servicio)"
     }
   },
-  "session_summary": {
-    "duration": "~30 minutos",
-    "commits_pending": "1 (FASE 0 completion)",
-    "files_modified": 2,
-    "status": "✅ FASE 0 completada — infraestructura de observabilidad en lugar, baseline de tests establecido"
+
+  "architecture_snapshot": {
+    "current": "Monolito + Workers (FASE 1) + Repositories (FASE 2) + IA Service base (FASE 3)",
+    "after_fase_3": "Monolito (sin /api/bedrock) + IA Service + Workers + Repositories",
+    "after_fase_5": "Full microservices: Orchestrator + IA + Integrations + Gateway + Workers"
   },
-  "last_updated": "2026-09-01T03:15:00Z"
+
+  "commits_this_session": [
+    "5a0e9f2 — FASE 0: Preparación (Redis + Logging)",
+    "6ac222e — FASE 1: Workers base (redis_client, workers)",
+    "9123a65 — FASE 1: Enqueuing integration",
+    "906feb2 — FASE 1: Progress update",
+    "75c0ca4 — FASE 1: Testing docs",
+    "8dc078c — FASE 1: Final progress",
+    "963b37f — FASE 2: Repositories (Notification, LinkedIn)",
+    "d6ae5cb — FASE 2: Final progress",
+    "32f82f9 — FASE 3: IA Service base structure"
+  ],
+
+  "next_session": {
+    "entry_point": "FASE 3 Continuation",
+    "starting_commit": "32f82f9",
+    "first_task": "Copy services/bedrock/ from cjhirashi-career-api/src/services/bedrock to cjhirashi-career-ai/src/services/",
+    "reference": "See cjhirashi-career-ai/README.md for detailed steps"
+  },
+
+  "session_summary": {
+    "duration": "~5 hours",
+    "fases_completed": "0 + 1 + 2 (complete) + 3-base",
+    "total_commits": 9,
+    "files_created": 20,
+    "files_modified": 12,
+    "status": "✅ Strong progress toward monolith → microservices migration"
+  }
 }
