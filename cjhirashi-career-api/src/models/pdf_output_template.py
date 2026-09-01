@@ -4,8 +4,8 @@ PdfOutputTemplate — plantillas HTML para salida PDF (WeasyPrint).
 Los estilos CSS viven en PdfTemplateStyle y se referencian con style_id.
 Agente agent_pdf_design las diseña; agent_search_operations y pdf_service (WeasyPrint) las consumen.
 """
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 
 from database import Base
@@ -24,7 +24,8 @@ class PdfOutputTemplate(Base):
     html_template = Column(Text, nullable=False)
     style_id = Column(String(20), ForeignKey("pdf_template_styles.id", ondelete="SET NULL"), nullable=True, index=True)
     variables = Column(Text, nullable=True)
-    variables_schema = Column(JSONB, nullable=True)
+    variables_schema = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     preview_notes = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_default = Column(Boolean, default=False, nullable=False, index=True)

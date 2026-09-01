@@ -2,8 +2,8 @@
 SearchPlan Model - Weekly/periodic job-search plans and targets.
 Career domain (v2) - Búsqueda.
 """
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey, CheckConstraint, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -29,7 +29,8 @@ class SearchPlan(Base):
 
     period_start = Column(Date, nullable=True)
     period_end = Column(Date, nullable=True)
-    weekly_targets = Column(JSONB, nullable=True)
+    weekly_targets = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     primary_channels = Column(Text, nullable=True)
     target_cvs_sent = Column(Integer, nullable=True)
     target_interviews = Column(Integer, nullable=True)

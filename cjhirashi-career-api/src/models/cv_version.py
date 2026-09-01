@@ -2,8 +2,8 @@
 CVVersion Model - Versioned CVs tailored to target roles/vacancies.
 Career domain (v2) - Búsqueda.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -39,7 +39,8 @@ class CVVersion(Base):
     # key_experience/featured_achievement fields (2026-08-21 migration) so the
     # content can be restructured freely instead of fitting 4 rigid slots.
     content = Column(Text, nullable=True)
-    target_vacancy_ids = Column(JSONB, nullable=True)
+    target_vacancy_ids = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     file_upload_id = Column(String(20), nullable=True)
 
     notes = Column(Text, nullable=True)

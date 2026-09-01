@@ -7,8 +7,8 @@ competencies - its purpose is to be a ready-to-copy reference when updating
 the real profile on linkedin.com.
 Career domain (v2) - Presencia Digital.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -30,9 +30,11 @@ class LinkedInProfile(Base):
     location = Column(String(255), nullable=True)
 
     # Each: [{company, title, location, start_date, end_date, description}, ...]
-    experience = Column(JSONB, nullable=True)
+    experience = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     # Each: [{institution, degree, field_of_study, start_date, end_date}, ...]
-    education = Column(JSONB, nullable=True)
+    education = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
 
     featured_skills = Column(Text, nullable=True)  # one per line -> rendered as Markdown list
     featured_certifications = Column(Text, nullable=True)

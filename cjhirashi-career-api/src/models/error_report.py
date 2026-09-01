@@ -11,8 +11,8 @@ mientras siguen pendientes: se incrementa ``occurrences`` y se actualiza
 ``services/error_reporting.py``; el de lectura/gestión en
 ``services/error_report_service.py``.
 """
-from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Column, DateTime, Index, Integer, String, Text, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 
 from database import Base
@@ -35,7 +35,8 @@ class ErrorReport(Base):
     source = Column(String(255), nullable=False, index=True)
     error_type = Column(String(120), nullable=True)
     stack_trace = Column(Text, nullable=True)
-    context = Column(JSONB, nullable=True)
+    context = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     severity = Column(String(20), nullable=False, default="error")
 
     # --- Estado de revisión (el atributo pedido) ---

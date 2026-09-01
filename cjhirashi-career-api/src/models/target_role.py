@@ -2,8 +2,8 @@
 TargetRole Model - Roles the user is targeting in their job search.
 Career domain (v2) - Identity.
 """
-from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, CheckConstraint, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -31,7 +31,8 @@ class TargetRole(Base):
     description = Column(Text, nullable=True)
     market_active_vacancies = Column(Integer, nullable=True)
     market_validated_at = Column(Date, nullable=True)
-    market_sources = Column(JSONB, nullable=True)
+    market_sources = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     current_accessibility = Column(String(100), nullable=True)
     key_requirements = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)

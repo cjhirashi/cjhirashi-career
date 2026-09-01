@@ -5,8 +5,8 @@ github_profile, not duplicated here - `footer_links` covers everything else
 (resume download, X/Twitter, a second email, etc.). One row per user.
 Career domain (v2) - Presencia Digital.
 """
-from sqlalchemy import Column, Integer, Text, String, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, Text, String, DateTime, ForeignKey, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -29,7 +29,8 @@ class PortalContact(Base):
     preferred_contact_method = Column(String(100), nullable=True)
     # [{label, url}, ...] - anything else that belongs in the portal's footer
     # beyond the LinkedIn/GitHub links (which come from their own tables).
-    footer_links = Column(JSONB, nullable=True)
+    footer_links = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
 
     notes = Column(Text, nullable=True)
 

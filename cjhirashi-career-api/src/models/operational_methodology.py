@@ -6,8 +6,8 @@ in Markdown, authored the same convention as every other long-text field in
 this app - see `content`. Not exposed on the public portal, admin-only.
 Career domain (v2) - Soporte operativo.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -32,7 +32,8 @@ class OperationalMethodology(Base):
     content = Column(Text, nullable=False)
     # IDs canónicos agent_* para quienes aplica esta metodología.
     # Vacío o null = todos los agentes. Lista = solo esos perfiles.
-    agent_profile_ids = Column(JSONB, nullable=True)
+    agent_profile_ids = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
 
     notes = Column(Text, nullable=True)
 

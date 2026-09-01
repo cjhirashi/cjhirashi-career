@@ -6,8 +6,8 @@ Classifies: technical, transferable, business.
 NOTE: This file replaces a previous legacy version whose columns did not
 match the real `competencies` table (collision risk fixed here).
 """
-from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, Numeric
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, Numeric, JSON
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import func
 from database import Base
 
@@ -33,11 +33,13 @@ class Competency(Base):
     level = Column(String(50), nullable=True)
     years_of_experience = Column(Numeric(4, 2), nullable=True)
     practice_start_date = Column(Date, nullable=True)
-    context_libraries = Column(JSONB, nullable=True)
+    context_libraries = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     depth_description = Column(Text, nullable=True)
     market_gaps = Column(Text, nullable=True)
     honesty_note = Column(Text, nullable=True)
-    aligned_differentiator_ids = Column(JSONB, nullable=True)
+    aligned_differentiator_ids = Column(
+        JSON().with_variant(postgresql.JSONB, "postgresql"), nullable=True)
     proficiency_score = Column(Integer, nullable=True)
     is_highlighted = Column(Boolean, default=False, nullable=True)
     # Drives the Home page's "Stack técnico" teaser - only categories with at
