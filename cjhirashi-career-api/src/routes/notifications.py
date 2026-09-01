@@ -1,15 +1,13 @@
-"""Bandeja de avisos in-app (ADR-016)."""
-from datetime import datetime, timezone
+"""Bandeja de avisos in-app (ADR-016). FASE 2: Centralized via NotificationRepository."""
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from middleware.auth import get_current_user
 from models.user import User
-from models.user_notification import UserNotification
+from repositories.notification_repository import NotificationRepository
 from schemas.user_notification import UnreadCountResponse, UserNotificationResponse
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
@@ -22,12 +20,8 @@ async def list_notifications(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(UserNotification).where(UserNotification.user_id == current_user.id)
-    if unread is True:
-        stmt = stmt.where(UserNotification.read_at.is_(None))
-    stmt = stmt.order_by(UserNotification.created_at.desc()).limit(limit)
-    result = await db.execute(stmt)
-    return list(result.scalars().all())
+    repo = NotificationRepository(db)
+    return await repo.list_for_user(current_user.id, unread_only=unread is True, limit=limit)
 
 
 @router.get("/unread-count", response_model=UnreadCountResponse)
@@ -35,13 +29,9 @@ async def unread_count(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = (
-        select(func.count())
-        .select_from(UserNotification)
-        .where(UserNotification.user_id == current_user.id, UserNotification.read_at.is_(None))
-    )
-    result = await db.execute(stmt)
-    return UnreadCountResponse(count=int(result.scalar() or 0))
+    repo = NotificationRepository(db)
+    count = await repo.unread_count(current_user.id)
+    return UnreadCountResponse(count=count)
 
 
 @router.post("/read-all", response_model=UnreadCountResponse)
@@ -49,14 +39,8 @@ async def mark_all_read(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(UserNotification).where(
-            UserNotification.user_id == current_user.id, UserNotification.read_at.is_(None)
-        )
-    )
-    now = datetime.now(timezone.utc)
-    for item in result.scalars().all():
-        item.read_at = now
+    repo = NotificationRepository(db)
+    await repo.mark_all_read(current_user.id)
     await db.commit()
     return UnreadCountResponse(count=0)
 
@@ -67,16 +51,9 @@ async def mark_read(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(UserNotification).where(
-            UserNotification.id == item_id, UserNotification.user_id == current_user.id
-        )
-    )
-    item = result.scalar_one_or_none()
+    repo = NotificationRepository(db)
+    item = await repo.mark_read(current_user.id, item_id)
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="aviso no encontrado")
-    if item.read_at is None:
-        item.read_at = datetime.now(timezone.utc)
-        await db.commit()
-        await db.refresh(item)
+    await db.commit()
     return item

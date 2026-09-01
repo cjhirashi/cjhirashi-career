@@ -16,13 +16,12 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import RedirectResponse
-from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
 from middleware.auth import get_current_user
 from models.linkedin_connection import LinkedInConnection
-from models.linkedin_post import LinkedInPost, LinkedInPostStatus
+from models.linkedin_post import LinkedInPostStatus
 from models.user import User
 from schemas.linkedin import (
     LinkedInConnectResponse,
@@ -32,6 +31,7 @@ from schemas.linkedin import (
 from services import linkedin_service, storage_service
 from services.linkedin_service import LinkedInError
 from services.redis_client import get_redis
+from repositories.linkedin_repository import LinkedInRepository
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -43,11 +43,11 @@ router = APIRouter(prefix="/linkedin", tags=["LinkedIn"])
 
 
 # ============================================================================
-# Helpers de conexión
+# Helpers de conexión (via repository)
 # ============================================================================
 async def _get_connection(db: AsyncSession, user_id: str) -> LinkedInConnection | None:
-    result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
-    return result.scalar_one_or_none()
+    repo = LinkedInRepository(db)
+    return await repo.get_connection(user_id)
 
 
 # ============================================================================
@@ -112,18 +112,16 @@ async def callback(
 
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
 
-    connection = await _get_connection(db, user_id)
-    if connection is None:
-        connection = LinkedInConnection(user_id=user_id)
-        db.add(connection)
-
-    connection.access_token = access_token
-    connection.member_sub = userinfo["sub"]
-    connection.member_name = userinfo.get("name")
-    connection.member_email = userinfo.get("email")
-    connection.profile_picture_url = userinfo.get("picture")
-    connection.expires_at = expires_at
-
+    repo = LinkedInRepository(db)
+    await repo.create_or_update_connection(
+        user_id=user_id,
+        access_token=access_token,
+        member_sub=userinfo["sub"],
+        member_name=userinfo.get("name"),
+        member_email=userinfo.get("email"),
+        profile_picture_url=userinfo.get("picture"),
+        expires_at=expires_at,
+    )
     await db.commit()
 
     return RedirectResponse(f"{frontend_url}?linkedin_connected=1")
@@ -134,10 +132,9 @@ async def disconnect(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    connection = await _get_connection(db, current_user.id)
-    if connection is not None:
-        await db.delete(connection)
-        await db.commit()
+    repo = LinkedInRepository(db)
+    await repo.delete_connection(current_user.id)
+    await db.commit()
 
 
 # ============================================================================
@@ -148,13 +145,8 @@ async def list_posts(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(LinkedInPost)
-        .where(LinkedInPost.user_id == current_user.id)
-        .order_by(desc(LinkedInPost.created_at))
-        .limit(20)
-    )
-    return result.scalars().all()
+    repo = LinkedInRepository(db)
+    return await repo.list_posts_for_user(current_user.id, limit=20)
 
 
 @router.post("/posts", response_model=LinkedInPostResponse, status_code=status.HTTP_201_CREATED)
@@ -200,16 +192,15 @@ async def create_post(
             scheduled_dt = scheduled_dt.replace(tzinfo=timezone.utc)
 
     if scheduled_dt and scheduled_dt > datetime.now(timezone.utc):
-        post = LinkedInPost(
+        repo = LinkedInRepository(db)
+        post = await repo.create_post(
             user_id=current_user.id,
             text=text,
-            image_url=image_url,
             status=LinkedInPostStatus.SCHEDULED,
+            image_url=image_url,
             scheduled_at=scheduled_dt,
         )
-        db.add(post)
         await db.commit()
-        await db.refresh(post)
 
         # FASE 1: Enqueue to Redis Streams for worker-linkedin to consume
         try:
@@ -222,7 +213,6 @@ async def create_post(
         except Exception as e:
             logger.error(f"Failed to enqueue post {post.id} to Redis: {e}")
             # Post is already in DB; worker will pick it up on next poll.
-            # Not a hard failure for the user.
 
         return post
 
@@ -258,10 +248,8 @@ async def cancel_scheduled_post(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(LinkedInPost).where(LinkedInPost.id == post_id, LinkedInPost.user_id == current_user.id)
-    )
-    post = result.scalar_one_or_none()
+    repo = LinkedInRepository(db)
+    post = await repo.get_post(current_user.id, post_id)
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     if post.status != LinkedInPostStatus.SCHEDULED:
@@ -269,5 +257,5 @@ async def cancel_scheduled_post(
             status_code=status.HTTP_409_CONFLICT,
             detail="Only a still-scheduled (not yet published) post can be canceled",
         )
-    await db.delete(post)
+    await repo.delete_post(current_user.id, post_id)
     await db.commit()
