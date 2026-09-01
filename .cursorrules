@@ -1,0 +1,1 @@
+Sigue estrictamente las directrices, restricciones y protocolos definidos en @AGENTS.md. No ejecutes tareas de código sin antes validar el entorno con ./init.sh.

@@ -1,8 +1,12 @@
 # Equipo de Agentes — cjhirashi-career
 
+⚠️ **NOTA DE OBSOLESCENCIA (2026-09-01):** Este documento mantiene valor histórico y como referencia de dominios/proveedores externos (agentes globales de C), pero el sistema de agentes locales (Tabla B) pasó a un harness minimalista: los roles se simplificaron a **Líder** (`agents/leader.md`), **Implementador** (`agents/implementer.md`) y **Revisor** (`agents/reviewer.md`). Los especialistas de módulo antiguos (`.claude/agents/`) han sido retirados. Consultar [`AGENTS.md`](../AGENTS.md) para el nuevo sistema de gobernanza.
+
+---
+
 Catálogo de a quién delegar cada tipo de tarea. Referenciado desde [`CLAUDE.md`](../CLAUDE.md) — **no se repite ahí** para no cargar este catálogo en cada turno de trabajo; se consulta solo cuando hay que decidir a quién delegar.
 
-> **Regla de delegación:** el Arquitecto de Soluciones (rol definido en `CLAUDE.md`) **no escribe código de módulo ni hace trabajo repetitivo**. Toda tarea especializada se delega al agente correspondiente de este catálogo mediante la herramienta `Agent`. Antes de decir "no tengo un agente para esto", revisar las tres tablas de abajo — casi siempre existe.
+> **Regla de delegación (HISTÓRICA):** el Arquitecto de Soluciones (rol definido en `CLAUDE.md`) **no escribe código de módulo ni hace trabajo repetitivo**. Hoy la delegación usa los 3 roles genéricos de `agents/`, no los especialistas viejos de la Tabla B abajo.
 
 ## A. Equipo núcleo de calidad (5 roles metodológicos)
 
