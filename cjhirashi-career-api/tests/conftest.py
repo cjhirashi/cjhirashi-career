@@ -152,16 +152,6 @@ async def test_competency(db_session: AsyncSession, test_user: User):
 
 
 # ============================================================================
-# EVIDENCE FIXTURES (legacy v1 — removed; kept as no-op stub for old tests)
-# ============================================================================
-
-@pytest.fixture
-async def test_evidence(db_session: AsyncSession, test_user: User):
-    """Stub — Evidence model replaced by Achievement/StarStory in v2."""
-    pytest.skip("Evidence model removed in career v2")
-
-
-# ============================================================================
 # AUTHENTICATION FIXTURES
 # ============================================================================
 
