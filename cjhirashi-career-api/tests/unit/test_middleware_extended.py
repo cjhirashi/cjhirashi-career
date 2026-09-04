@@ -182,9 +182,8 @@ class TestCORSHandling:
         allowed_origins = [
             "http://localhost:8002",  # Admin Panel
             "http://localhost:8003",  # Portal Público
-            "http://localhost:8004",  # MCP Server
         ]
-        assert len(allowed_origins) == 3
+        assert len(allowed_origins) == 2
 
     def test_preflight_requests(self):
         """OPTIONS requests should be handled"""

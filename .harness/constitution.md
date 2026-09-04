@@ -23,7 +23,8 @@ ver Artículo 2 y `.harness/decisions/ADR-001-adopcion-arnes-sdd-anchored.md`. T
 desarrollo es **conforme a ese patrón**; el gate verifica la conformidad. Cambiar de
 patrón exige un `ADR-` nuevo.
 
-- **Monorepo de microservicios** (5 servicios + infraestructura compartida).
+- **Monorepo de microservicios** (4 servicios + infraestructura compartida).
+  El MCP Server se retiró el 2026-09-04 — ver `docs/09-DECISIONS/023-retirar-mcp-server.md`.
 - **Patrón interno = por capas.** Servicios Python: `routes → services → repositories
   → models`. Frontends React: `pages/components → hooks → services (API tipada) →
   stores`. La lógica de negocio vive en `services/`, no en `routes/` ni en componentes.
@@ -40,12 +41,11 @@ servicios:
   cjhirashi-career-ai:        { stack: python/fastapi-async,  tipo: microservicio-IA (AWS Bedrock) }
   cjhirashi-career-admin:     { stack: react/vite (SPA),      tipo: panel de administración }
   cjhirashi-career-portfolio: { stack: react/vite (SPA),      tipo: portal público read-only }
-  cjhirashi-career-mcp:       { stack: python/mcp (stdio),    tipo: servidor MCP (PDF; CRUD diferido) }
+  # cjhirashi-career-mcp retirado 2026-09-04 — ADR-023
 infraestructura: [ postgres-compartida (Alembic en api), qdrant, minio ]
 topologia_agentes: multi-perfil-bedrock   # perfiles agent-N, delegación entre perfiles, niveles L1/L2/L3 (ADR 012/013)
 sustratos_integracion:
   - rest-http            # FastAPI en api/ai; consumido por los frontends
-  - mcp                  # cjhirashi-career-mcp expone tools/resources/prompts
   - bedrock-llm          # servicio ai contra AWS Bedrock Converse API
   - qdrant-vector        # búsqueda semántica
 capas_transversales: [ observabilidad (prometheus + logging/tracing), auth-jwt ]
@@ -88,7 +88,6 @@ rutas:
 - Errores de API con formato **Problem Details (RFC 9457)**.
 - **Contrato de red con `cjhirashi-srv`: `caddy.json` (raíz).** Editamos sólo el
   bloque `servicios`; el bloque `cjhirashi_srv` lo escribe `cjhirashi-srv` (no tocar).
-- MCP: cada *tool* con su JSON Schema de entrada/salida.
 
 ## Artículo 7 · Observabilidad
 
@@ -168,3 +167,4 @@ sincroniza (Fase 2 `plan.md §Impacto en documentación` → tareas `[doc]` → 
 | Fecha | Artículo | Cambio | ADR |
 |---|---|---|---|
 | 2026-09-04 | — | Constitución inicial (Génesis en modo alineación) | ADR-001 |
+| 2026-09-04 | 1, 2, 6 | Retiro del MCP Server: 5→4 servicios; fuera el sustrato `mcp` y la regla de JSON Schema por tool | ADR-023 |

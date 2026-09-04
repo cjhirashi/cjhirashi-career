@@ -13,6 +13,13 @@
 
 ---
 
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Los escenarios que lo nombran
+> (P3, P4, S4, y todo "tercer canal" / "MCP Server") quedan sin objeto o se
+> reinterpretan sobre dos canales. Es diseño previo pendiente de reescritura.
+
+---
+
 ## 📋 Tabla de Contenidos
 
 - [Cómo Leer Este Documento](#-cómo-leer-este-documento)

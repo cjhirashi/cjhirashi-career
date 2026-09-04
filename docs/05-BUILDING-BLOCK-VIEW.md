@@ -9,7 +9,13 @@
 ---
 
 **Última actualización**: 2026-08-16
-**Resumen rápido**: 7 módulos de nivel 1 (ya introducidos en `01-INTRODUCTION.md`) · descomposición interna detallada de Admin Panel, API REST y PostgreSQL · 12 tablas nuevas de dominio y observabilidad · interfaces y dependencias externas por módulo
+**Resumen rápido**: módulos de nivel 1 (ya introducidos en `01-INTRODUCTION.md`) · descomposición interna detallada de Admin Panel, API REST y PostgreSQL · 12 tablas nuevas de dominio y observabilidad · interfaces y dependencias externas por módulo
+
+---
+
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Las menciones a "MCP Server" /
+> "Canal 3" en este documento son diseño previo.
 
 ---
 

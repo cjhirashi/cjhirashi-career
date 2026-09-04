@@ -9,7 +9,15 @@
 ---
 
 **Última actualización**: 2026-08-16
-**Resumen rápido**: 4 módulos de aplicación + infra (Postgres, MinIO, Qdrant) · 3 puertos publicados al host (8002, 8003, 8004) · API interna (8001) con PDF WeasyPrint in-process · 1 red bridge externa compartida · Caddy + Cloudflare Tunnel como entrada externa
+**Resumen rápido**: 3 módulos de aplicación + infra (Postgres, MinIO, Qdrant) · 2 puertos publicados al host (8002, 8003) · API interna (8000) con PDF WeasyPrint in-process · 1 red bridge externa compartida · Caddy + Cloudflare Tunnel como entrada externa
+
+---
+
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Ya no existe el contenedor
+> `cjhirashi-career-mcp`, el puerto host 8004, ni el host `mcp.cjhirashi.com`. Las
+> tablas y diagramas de despliegue de abajo todavía lo listan — es diseño previo.
+> Nota: la API interna escucha en **:8000** (antes se documentó :8001).
 
 ---
 
@@ -92,10 +100,10 @@ Ver [protocolo de paleta de colores](../COLOR_PALETTE.md) — el color de cada n
 
 | Servicio (objetivo) | Nombre de contenedor sugerido | Puerto host | Puerto contenedor | Publicado al host |
 |---|---|---|---|---|
-| Portal Público | `portafolio_portal` | 8003 | 8000 | ✅ Sí |
-| Admin Panel | `portafolio_admin` | 8002 | 8000 | ✅ Sí |
-| MCP Server | `portafolio_mcp` | 8004 | 8000 | ✅ Sí |
-| API REST | `api_rest` | — | 8001 | ❌ No |
+| Portal Público | `cjhirashi-career-portfolio` | 8003 | 8000 | ✅ Sí |
+| Admin Panel | `cjhirashi-career-admin` | 8002 | 8000 | ✅ Sí |
+| ~~MCP Server~~ | ~~`cjhirashi-career-mcp`~~ | — | — | ❌ Retirado 2026-09-04 (ADR-023) |
+| API REST | `cjhirashi-career-api` | — | 8000 | ❌ No |
 | PostgreSQL | `postgres_db` | — | 5432 | ❌ No |
 | Agent Bedrock | — (servicio gestionado, sin contenedor) | — | — | ❌ No aplica |
 

@@ -26,15 +26,18 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 
 | Servicio | Stack | Rol | Puerto (compose) |
 |---|---|---|---|
-| `cjhirashi-career-api` | Python 3.14 · FastAPI · SQLAlchemy · Alembic | Sistema de registro (~187 endpoints, dueño del schema) | 8000/8001 |
+| `cjhirashi-career-api` | Python 3.14 · FastAPI · SQLAlchemy · Alembic | Sistema de registro (~187 endpoints, dueño del schema) | 8000 (interno, sin publicar) |
 | `cjhirashi-career-ai` | Python 3.14 · FastAPI **async** · asyncpg · boto3 | Microservicio IA (AWS Bedrock, perfiles de agente) | `ia-service` :8010 |
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
-| `cjhirashi-career-mcp` | Python 3.14 · `mcp` (stdio) · WeasyPrint · **Pipenv** | Servidor MCP (PDF; CRUD diferido a Q4 2026) | 8004 → 8000 |
 
 Infra: **Postgres compartida** (Alembic en `api`; `ai` la usa async), **Qdrant**
 (búsqueda vectorial), **MinIO** (objetos). Routing externo por **Caddy** vía
 `caddy.json` (contrato con el repo `cjhirashi-srv`).
+
+> El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el
+> 2026-09-04 — ver `docs/09-DECISIONS/023-retirar-mcp-server.md`. El arc42 aún lo
+> describe como "Canal 3"; ese texto es diseño previo.
 
 **Arquitectura interna: por capas.** Servicios Python: `routes → services →
 repositories → models`. Frontends: `components/pages → hooks → services (API tipada)
@@ -49,7 +52,6 @@ componentes. Detalle: `.harness/constitution.md` Art. 2 + `docs/05-BUILDING-BLOC
 | `ai` | `cd cjhirashi-career-ai && ./venv_test/bin/python -m pytest -q` | `python -m uvicorn main:app --app-dir src --port 8010` |
 | `admin` | `cd cjhirashi-career-admin && npx vitest run` · `npm run type-check` | `npm run dev` (:3000) |
 | `portfolio` | `cd cjhirashi-career-portfolio && npx vitest run` | `npm run dev` |
-| `mcp` | `cd cjhirashi-career-mcp && pipenv run pytest` | `python server.py` (stdio) |
 
 Vía compose: `docker compose up -d --build <servicio>` → `GET /health`.
 Los venv de test de `api`/`ai` pueden no existir en limpio — el gate hace `SKIP` con

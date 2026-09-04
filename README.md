@@ -3,16 +3,17 @@
 ![Python](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
 ![React](https://img.shields.io/badge/react-18-61DAFB.svg?logo=react&logoColor=white)
-![MCP](https://img.shields.io/badge/MCP-FastMCP-10b981.svg)
 ![Estado](https://img.shields.io/badge/estado-diseño%20en%20validación-yellow.svg)
 
 ---
 
-**cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público profesional, un panel de administración privado para gestión de carrera, y una interfaz MCP para agentes de IA externos — todo convergiendo en una única fuente de verdad centralizada.
+**cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público profesional y un panel de administración privado para gestión de carrera — todo convergiendo en una única fuente de verdad centralizada.
+
+> El **MCP Server** (Canal 3) se retiró el 2026-09-04 — ver [ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md). El arc42 todavía lo describe como diseño previo.
 
 ---
 
-## 🎯 Tres Canales de Acceso
+## 🎯 Dos Canales de Acceso
 
 ### 1️⃣ **Portal Público** (8003)
 Sitio de portafolio — About, Proyectos, Blog, Contacto. Visitantes públicos consultan en modo lectura.
@@ -20,16 +21,13 @@ Sitio de portafolio — About, Proyectos, Blog, Contacto. Visitantes públicos c
 ### 2️⃣ **Admin Panel** (8002)
 Dashboard privado de gestión de carrera para Carlos — identidad profesional, competencias, evidencia, métricas, chat con Bedrock.
 
-### 3️⃣ **MCP Server** (8004)
-Interfaz para agentes IA externos (Claude, etc.) — operan el sistema de forma autónoma vía protocolo MCP.
-
 ---
 
 ## 🏗️ Arquitectura
 
-- **4 módulos**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio`, `cjhirashi-career-api`, `cjhirashi-career-mcp` (Bedrock y PDF son capacidades de la API; Postgres/MinIO/Qdrant son infraestructura)
+- **3 módulos**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio`, `cjhirashi-career-api` (Bedrock y PDF son capacidades de la API; Postgres/MinIO/Qdrant son infraestructura)
 - **Stack**: React 18 + FastAPI + PostgreSQL + AWS Bedrock + WeasyPrint
-- **Docker**: 3 contenedores de app expuestos (Admin 8002, Portal 8003, MCP 8004) + internos (API con PDF WeasyPrint, Qdrant, Postgres, MinIO)
+- **Docker**: 2 contenedores de app expuestos (Admin 8002, Portal 8003) + internos (API con PDF WeasyPrint, Qdrant, Postgres, MinIO)
 - **Métricas**: Tracking de visitantes, actividad del agente, auditoría centralizada
 - **Real-time**: WebSocket/SSE para dashboards vivos
 
@@ -101,8 +99,7 @@ docker compose logs -f cjhirashi-career-api
 
 - **Portal Público**: http://localhost:8003
 - **Admin Panel**: http://localhost:8002 (credenciales: ver setup inicial)
-- **MCP Server**: http://localhost:8004 (SSE)
-- **API REST**: interna (Swagger en `http://localhost:8001/docs` solo si se publica el puerto en depuración)
+- **API REST**: interna (Swagger en `http://localhost:8000/docs` solo si se publica el puerto en depuración)
 
 ---
 
@@ -127,7 +124,7 @@ docker compose logs -f cjhirashi-career-api
 |-----------|--------|-------|
 | Portal Público | 🟡 En diseño | Réplica mejorada de cjhirashi.com |
 | Admin Panel SPA | 🟡 En diseño | Dashboard dinámico con métricas |
-| MCP Server | ✅ `cjhirashi-career-mcp/` | FastMCP; contenedor `cjhirashi-career-mcp` (8004) |
+| MCP Server | ❌ Retirado 2026-09-04 | Ver [ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md) |
 | API REST | ✅ Base heredada | Evolución para gestión carrera |
 | Agent Bedrock | ✅ En la API | Asistente IA interno (sin contenedor propio) |
 | PDF (WeasyPrint) | ✅ En la API | CV / plantillas HTML; no es un módulo ni un contenedor |
@@ -140,7 +137,7 @@ docker compose logs -f cjhirashi-career-api
 El proyecto está integrado con **cjhirashi-srv** (Caddy + Cloudflare Tunnel) para acceso público:
 
 - Documentación: `servicios-externos/cjhirashi-career.md`
-- 3 módulos de app expuestos: Admin Panel (8002), Portal Público (8003), MCP (8004)
+- 2 módulos de app expuestos: Admin Panel (8002), Portal Público (8003)
 - Proxy: Caddy reverse proxy + Cloudflare Tunnel
 - Dominio: Configurado en cjhirashi-srv
 

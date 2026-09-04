@@ -9,7 +9,15 @@
 ---
 
 **Última actualización**: 2026-08-16
-**Resumen rápido**: 3 canales de entrada totalmente independientes hacia la misma API central — Portal Público (8003, lectura), Admin Panel (8002, gestión humana manual o asistida por Bedrock) y MCP Server (8004, agentes de IA externos operando el sistema completo) · Stack: React · FastAPI · PostgreSQL · WeasyPrint
+**Resumen rápido**: 2 canales de entrada hacia la misma API central — Portal Público (8003, lectura) y Admin Panel (8002, gestión humana manual o asistida por Bedrock) · Stack: React · FastAPI · PostgreSQL · WeasyPrint
+
+---
+
+> ⚠️ **Estado (2026-09-04): el MCP Server (Canal 3 / Componente 5️⃣) se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Este documento todavía lo describe
+> como uno de los tres canales; ese texto es **diseño previo** y su reescritura sin el
+> Canal 3 está pendiente. Donde leas "tres canales" / "MCP Server", hoy son **dos
+> canales** (Portal Público, Admin Panel), más Agent Bedrock como capacidad interna.
 
 ---
 

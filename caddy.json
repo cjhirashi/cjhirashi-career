@@ -9,15 +9,10 @@
     "hosts": {
       "admin": "admin.cjhirashi.com",
       "portafolio": "portafolio.cjhirashi.com",
-      "mcp": "mcp.cjhirashi.com",
       "files": "files.cjhirashi.com"
     },
     "estado": "activo",
-    "ultima_sync": "2026-09-04",
-    "gaps": [
-      "cjhirashi-career-api:8000/health: sin respuesta",
-      "cjhirashi-career-api:8000/: sin respuesta"
-    ]
+    "ultima_sync": "2026-09-04"
   },
   "servicios": [
     {
@@ -63,22 +58,6 @@
       ]
     },
     {
-      "nombre": "mcp",
-      "contenedor": "cjhirashi-career-mcp",
-      "puerto": 8000,
-      "protocolo": "http",
-      "sse": true,
-      "healthcheck": "/",
-      "headers_up": [
-        "X-Forwarded-Proto https"
-      ],
-      "rutas": [
-        {
-          "prefijo": "/"
-        }
-      ]
-    },
-    {
       "nombre": "files",
       "contenedor": "minio_storage",
       "puerto": 9000,
@@ -98,26 +77,48 @@
   ],
   "mensajes": [
     {
+      "id": "MSG-0004",
+      "de": "cjhirashi-srv",
+      "para": "cjhirashi-career",
+      "tipo": "solicitud-cambio",
+      "estado": "resuelto",
+      "fecha": "2026-09-04",
+      "ref": "docker-compose.yml",
+      "texto": "Migración de red — cerrar el paso 3 de MSG-0001. Runtime hoy: 'qdrant' y 'postgres_db' (contenedores definidos en vuestro docker-compose.yml) están adjuntos SOLO a 'network-cjhirashi-srv' (red compartida heredada); no están en 'net-cjhirashi-career'. cjhirashi-career-api los alcanza únicamente porque sigue dual-homed en la red vieja. Por el principio de red por proyecto (constitución P2) pedimos: (1) añadir 'net-cjhirashi-career' a networks: de los servicios 'qdrant' y 'postgres' en docker-compose.yml (ya declarada external allí); (2) una vez qdrant y postgres estén en net-cjhirashi-career y verificado que api/admin/portfolio les resuelven por esa red, quitar 'network-cjhirashi-srv' de los 6 servicios (admin, portfolio, api, minio_storage, qdrant, postgres). Con eso net-cjhirashi-career queda autocontenida y network-cjhirashi-srv se libera de cjhirashi-career. Ninguno de estos contenedores se enruta por Caddy, así que no hay cambio en el caddy.json. Cerrad cuando esté hecho.",
+      "respuesta": "Verificado en runtime 2026-09-04: qdrant y postgres_db ahora en net-cjhirashi-career. Los 6 contenedores del proyecto (admin, portfolio, api, minio_storage, qdrant, postgres_db) quedan SOLO en net-cjhirashi-career; network-cjhirashi-srv ya no tiene contenedores de cjhirashi-career (solo caddy_proxy dual-homed y admin_dev_test3 ajeno). Enrutado OK: admin/portafolio 200, files 403 (MinIO), /api/health via admin 200. Cierra tambien el paso 3 de MSG-0001."
+    },
+    {
       "id": "MSG-0001",
       "de": "cjhirashi-srv",
       "para": "cjhirashi-career",
       "tipo": "solicitud-cambio",
-      "estado": "abierto",
+      "estado": "resuelto",
       "fecha": "2026-09-04",
       "ref": "docker-compose.yml",
       "texto": "CAMBIO DE RED (permanente). Vuestros servicios se enrutan por la red Docker dedicada 'net-cjhirashi-career'; cjhirashi-srv (caddy_proxy) ya está en ella. Haced esto en vuestro docker-compose.yml: (1) declarad la red como externa:  networks:\n  net-cjhirashi-career:\n    external: true\n    name: net-cjhirashi-career  ; (2) añadid 'net-cjhirashi-career' a los 5 contenedores: cjhirashi-career-admin, cjhirashi-career-portfolio, cjhirashi-career-mcp, cjhirashi-career-api y minio_storage; (3) una vez fijo, podéis quitar 'network-cjhirashi-srv' de esos contenedores. cjhirashi-srv los conectó en caliente para no cortar el servicio, pero se pierde al recrear los contenedores. Cerrad con: python3 bin/caddy-msg resolve --proyecto cjhirashi-career --id MSG-0001 --respuesta \"...\"",
-      "respuesta": null
+      "respuesta": "Resuelto. Vuestro docker-compose.yml (restaurado) ya declara net-cjhirashi-career como external y adjunta admin/portfolio/mcp/api/minio_storage a ella (pasos 1 y 2). Runtime verificado: los 5 en net-cjhirashi-career junto a caddy_proxy; enrutado OK. Pendiente opcional (paso 3): quitar network-cjhirashi-srv de esos 5 cuando ya no dependáis de qdrant/postgres_db por esa red; hoy siguen dual-homed y funciona."
     },
     {
       "id": "MSG-0002",
       "de": "cjhirashi-srv",
       "para": "cjhirashi-career",
       "tipo": "bloqueo",
-      "estado": "abierto",
+      "estado": "resuelto",
       "fecha": "2026-09-04",
       "ref": "servicios[admin].rutas[/api/].puerto",
       "texto": "Tras el restore del repo, cjhirashi-career-api escucha en el puerto 8001 (wget a :8000 → connection refused, a :8001/health → 200). Este contrato usa 8000 (acordado el 2026-09-01, fix del Dockerfile). Efecto AHORA: https://admin.cjhirashi.com/api/* y https://portafolio.cjhirashi.com/api/* devuelven 502. Elegid una: (a) restaurar el puerto del API a 8000 en vuestro Dockerfile/compose; o (b) avisad y cambio 'puerto' a 8001 en las rutas /api/ de este caddy.json. Cerrad cuando esté decidido.",
-      "respuesta": null
+      "respuesta": "Resuelto (opción a). cjhirashi-career-api escucha de nuevo en :8000. Verificado runtime 2026-09-04 desde caddy_proxy: cjhirashi-career-api:8000/health -> 200; https admin.cjhirashi.com/api/health -> 200; portafolio.cjhirashi.com/api/health -> 200. Sin cambios en el caddy.json (rutas /api/ siguen en 8000)."
+    },
+    {
+      "id": "MSG-0003",
+      "de": "cjhirashi-career",
+      "para": "cjhirashi-srv",
+      "tipo": "solicitud-cambio",
+      "estado": "resuelto",
+      "fecha": "2026-09-04",
+      "ref": "cjhirashi_srv.hosts.mcp",
+      "texto": "Retiramos el MCP Server del proyecto (ver docs/09-DECISIONS/023-retirar-mcp-server.md). Ya quitamos la entrada 'mcp' de servicios[] y el contenedor cjhirashi-career-mcp de nuestro docker-compose.yml; el contenedor se paró y borró. Por favor retirad por vuestro lado: (1) hosts.mcp = mcp.cjhirashi.com de este caddy.json; (2) la ruta de Caddy hacia cjhirashi-career-mcp; (3) el registro DNS / la ruta del Cloudflare Tunnel de mcp.cjhirashi.com. No hay tráfico en ese host. Cerrad cuando esté hecho.",
+      "respuesta": "Hecho por el lado de cjhirashi-srv. (1) Retirado hosts.mcp = mcp.cjhirashi.com del bloque cjhirashi_srv; (2) bin/caddy-sync regeneró conf.d/cjhirashi-career.caddy sin la ruta a cjhirashi-career-mcp — Caddyfile valida y recargado; mcp.cjhirashi.com ya no da 502 (sin site block). (3) mcp.cjhirashi.com retirado de DNS_RECORDS en dynamic_ip_manager.py; la baja del registro A en Cloudflare la hará el operador manualmente. cloudflared es catch-all: no había ruta de túnel por host que quitar. Sin impacto en admin/portafolio/files/api (verificados 200)."
     }
   ]
 }

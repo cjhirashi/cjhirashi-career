@@ -13,6 +13,14 @@
 
 ---
 
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Las reglas de este documento que
+> tratan al "MCP Server" como un canal expuesto (autenticación propia, CORS, rate
+> limiting, testing por herramienta MCP, mapeo de errores JSON-RPC) ya no aplican;
+> son diseño previo. Hoy los canales expuestos son dos: Portal Público y Admin Panel.
+
+---
+
 ## 📋 Tabla de Contenidos
 
 - [Cómo Leer Este Documento](#-cómo-leer-este-documento)

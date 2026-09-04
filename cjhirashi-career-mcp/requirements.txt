@@ -1,4 +1,0 @@
-mcp
-fastmcp
-jinja2
-weasyprint

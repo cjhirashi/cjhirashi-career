@@ -32,7 +32,7 @@ Punto de entrada de uvicorn (`uvicorn app:app`).
 | Responsabilidad | Detalle |
 |-----------------|---------|
 | Lifecycle | `lifespan`: `init_db()`, `storage_service.ensure_bucket()`, loops `linkedin_scheduler` y `task_scheduler` |
-| CORS | Orígenes de Admin (8002), Portal (8003) y MCP (8004) |
+| CORS | Orígenes de Admin (8002) y Portal (8003) |
 | Errores | `RequestValidationError` → 422; excepción no capturada → 500 |
 | Routers | 15 routers de dominio (auth, career, bedrock, files, linkedin, public, …) |
 | Sistema | `GET /health`, `GET /` |

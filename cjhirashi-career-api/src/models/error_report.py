@@ -2,7 +2,7 @@
 
 Cada fila es una falla detectada en cualquier parte del sistema (handler global
 de la API, bloque ``except`` del código, scheduler in-process, loop de Bedrock,
-MCP server o los SPA de Admin/Portfolio). El atributo ``resolved`` arranca en
+o los SPA de Admin/Portfolio). El atributo ``resolved`` arranca en
 ``False`` — pendiente de revisión — y pasa a ``True`` cuando la falla se corrige.
 
 Errores repetidos con la misma huella (``fingerprint``) no crean filas nuevas

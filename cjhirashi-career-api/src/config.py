@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     # CORS y metadatos de la aplicación
     # -------------------------------------------------------------------------
-    CORS_ORIGINS_STR: str = "http://localhost:8002,http://localhost:8003,http://localhost:8004"
+    CORS_ORIGINS_STR: str = "http://localhost:8002,http://localhost:8003"
 
     # Application
     APP_NAME: str = "cjhirashi-career API"

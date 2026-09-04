@@ -9,8 +9,7 @@ from pydantic import BaseModel, Field
 class ErrorReportIngest(BaseModel):
     """Cuerpo del endpoint público `POST /system/error-report`.
 
-    Lo usan los SPA (Admin, Portfolio) y el MCP server, que no tienen acceso a
-    la base de datos.
+    Lo usan los SPA (Admin, Portfolio), que no tienen acceso a la base de datos.
     """
 
     message: str = Field(min_length=1, max_length=8000)

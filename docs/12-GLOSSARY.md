@@ -9,7 +9,13 @@
 ---
 
 **Última actualización**: 2026-08-16
-**Resumen rápido**: 37 términos definidos, orden alfabético · cubre los tres canales, Agent Bedrock, el sistema de métricas y los conceptos transversales del nuevo alcance · cada entrada enlaza a la sección Arc42 donde se detalla en profundidad
+**Resumen rápido**: términos definidos en orden alfabético · cubre los canales de acceso, Agent Bedrock, el sistema de métricas y los conceptos transversales del nuevo alcance · cada entrada enlaza a la sección Arc42 donde se detalla en profundidad
+
+---
+
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Las entradas **MCP Server**,
+> **FastMCP** y las menciones a "tres canales" / "Canal 3" describen el diseño previo.
 
 ---
 

@@ -9,7 +9,15 @@
 ---
 
 **Última actualización**: 2026-08-16
-**Resumen rápido**: 6 decisiones de alto nivel · 7 módulos organizados en 3 canales convergentes sobre una API única · comparativa contra 3 alternativas descartadas · matriz de comunicación entre los 7 contenedores
+**Resumen rápido**: 6 decisiones de alto nivel · módulos organizados en canales convergentes sobre una API única · comparativa contra 3 alternativas descartadas · matriz de comunicación entre contenedores
+
+---
+
+> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
+> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). La **Decisión 6 ("MCP Server
+> expuesto para agentes externos") queda revertida**; la Decisión 1 ("tres canales")
+> pasa a **dos canales** (Portal Público, Admin Panel). Los diagramas y la matriz de
+> comunicación de este documento todavía incluyen el Canal 3 — es diseño previo.
 
 ---
 
@@ -72,7 +80,11 @@ Estas decisiones son de nivel estratégico, no de detalle de implementación —
 
 **Consecuencia arquitectónica**: Bedrock hereda siempre el contexto de autorización de la sesión del Admin Panel que lo invoca — nunca tiene un alcance de permisos propio y distinto (ver Modelo de Seguridad en `01-INTRODUCTION.md`).
 
-### 6. MCP Server expuesto para agentes externos
+### 6. MCP Server expuesto para agentes externos  ~~— REVERTIDA 2026-09-04 ([ADR-023](./09-DECISIONS/023-retirar-mcp-server.md))~~
+
+> **Revertida.** El MCP Server nunca implementó las herramientas de carrera (sólo el
+> stub de PDF heredado, ya cubierto in-process por la API) y no tuvo tráfico. Se
+> retiró el 2026-09-04. El texto siguiente queda como registro histórico.
 
 **Decisión**: el MCP Server se mantiene como un canal completo, expuesto e independiente (puerto 8004), retomando y confirmando el rol que ya tenía en la versión anterior del proyecto, en lugar de subordinarlo al Admin Panel o eliminarlo del nuevo alcance de portafolio.
 
