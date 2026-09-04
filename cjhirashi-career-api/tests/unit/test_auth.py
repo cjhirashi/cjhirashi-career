@@ -139,13 +139,19 @@ class TestExtractUserIdFromToken:
     """Tests para extraer user_id del token."""
 
     def test_extract_user_id_from_token(self):
-        """Verificar que se puede extraer user_id de un token válido."""
-        user_id = 42
-        data = {"sub": str(user_id)}
+        """Verificar que se puede extraer user_id de un token válido.
+
+        ``extract_user_id_from_token`` devuelve el ``sub`` como **string**
+        (ids prefijados tipo ``usr-1``); la aserción compara contra el mismo
+        string que se firmó.
+        """
+        user_id = "usr-42"
+        data = {"sub": user_id}
         token, _ = AuthService.create_access_token(data)
 
         extracted_id = AuthService.extract_user_id_from_token(token)
         assert extracted_id == user_id
+        assert isinstance(extracted_id, str)
 
     def test_extract_user_id_from_invalid_token(self):
         """Verificar que falla al extraer user_id de token inválido."""

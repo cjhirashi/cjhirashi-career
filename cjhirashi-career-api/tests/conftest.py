@@ -3,19 +3,69 @@ Configuración de pytest y fixtures compartidas para todos los tests.
 """
 import pytest
 import asyncio
+import os
 import sys
 from pathlib import Path
 
 # Agregar el directorio src al path para importaciones
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.compiler import compiles
 from httpx import AsyncClient, ASGITransport
 from database import Base, get_db
 from config import settings
 from models import User, Identity, Competency
 from services.auth_service import AuthService
 from app import app
+
+
+# Los modelos usan ``postgresql.JSONB`` (columna nativa de Postgres). El fixture
+# ``test_db`` puede levantar SQLite in-memory, cuyo compilador no sabe renderizar
+# JSONB y rompería ``Base.metadata.create_all`` para toda la suite. Este shim lo
+# mapea a ``JSON`` sólo en SQLite; en Postgres no aplica.
+@compiles(JSONB, "sqlite")
+def _compile_jsonb_as_json_on_sqlite(element, compiler, **kw):  # noqa: ANN001
+    return "JSON"
+
+
+# Si ``TEST_DATABASE_URL`` apunta a un Postgres (base de datos **desechable**,
+# nunca la de dev), ``test_db`` la usa: es la única forma de ejercitar los tests
+# que dependen de secuencias de IDs prefijados (``usr-1``, ``psp-1``…), que
+# SQLite no emula. Sin la variable, se usa SQLite in-memory (comportamiento
+# histórico) y esos tests se saltan (ver `pytestmark` en test_database/
+# test_middleware/test_repositories).
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
+USING_POSTGRES_TEST_DB = bool(TEST_DATABASE_URL)
+
+
+async def _create_prefix_sequences(conn):
+    """`create_all` no crea las secuencias de IDs prefijados — igual que `init_db`."""
+    from sqlalchemy import text
+    from services.id_generator import TABLE_PREFIXES
+
+    for prefix in TABLE_PREFIXES.values():
+        await conn.execute(text(f"CREATE SEQUENCE IF NOT EXISTS {prefix}_id_seq START 1"))
+
+
+# Fixtures que necesitan un backend real de Postgres (esquema + secuencias de
+# IDs prefijados). Sin ``TEST_DATABASE_URL`` el backend es SQLite y estos tests
+# no pueden pasar (no hay ``nextval``): se saltan con un motivo accionable en
+# vez de romper la compuerta.
+_PG_ONLY_FIXTURES = {"test_db", "db_session", "test_user", "test_identity", "test_competency"}
+
+
+def pytest_collection_modifyitems(config, items):
+    if USING_POSTGRES_TEST_DB:
+        return
+    skip_pg = pytest.mark.skip(
+        reason="necesita Postgres (esquema + secuencias de IDs prefijados). "
+        "Exporta TEST_DATABASE_URL=postgresql+asyncpg://…/<db_desechable> para correrlo."
+    )
+    for item in items:
+        if _PG_ONLY_FIXTURES & set(getattr(item, "fixturenames", ())):
+            item.add_marker(skip_pg)
 
 
 # ============================================================================
@@ -33,21 +83,19 @@ def event_loop():
 @pytest.fixture
 async def test_db():
     """
-    Fixture que crea una base de datos de prueba en memoria.
-    Retorna un engine y una session factory.
+    Base de datos de prueba. Postgres desechable si ``TEST_DATABASE_URL`` está
+    definida (ejercita secuencias de IDs prefijados); si no, SQLite in-memory.
+    Retorna una session factory. Crea el esquema al entrar y lo tira al salir.
     """
-    # Usar SQLite en memoria para tests
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        echo=False,
-        future=True
-    )
+    url = TEST_DATABASE_URL or "sqlite+aiosqlite:///:memory:"
+    engine = create_async_engine(url, echo=False, future=True)
 
-    # Crear todas las tablas
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+        if USING_POSTGRES_TEST_DB:
+            await _create_prefix_sequences(conn)
 
-    # Crear session factory
     TestingSessionLocal = async_sessionmaker(
         engine,
         class_=AsyncSession,
@@ -56,7 +104,6 @@ async def test_db():
 
     yield TestingSessionLocal
 
-    # Limpiar
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
