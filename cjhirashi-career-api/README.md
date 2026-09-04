@@ -2,8 +2,8 @@
 
 API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (LinkedIn, GitHub, MinIO) y endpoints públicos para el Portal.
 
-**URL base (Docker interno):** `http://cjhirashi-career-api:8001`  
-**URL base (local):** `http://localhost:8001`  
+**URL base (Docker interno):** `http://cjhirashi-career-api:8000`  
+**URL base (local):** `http://localhost:8000`  
 **OpenAPI interactivo:** `/docs`  
 **Health check:** `/health`
 
@@ -14,10 +14,9 @@ flowchart TB
     subgraph Clientes["Clientes — network-cjhirashi-srv"]
         Admin[Admin Panel :8002]
         Portal[Portal Público :8003]
-        MCP[MCP Server :8004]
     end
 
-    subgraph API["api_rest :8001"]
+    subgraph API["api_rest :8000"]
         Routes[routes/]
         Services[services/]
         Repos[repositories/]
@@ -31,7 +30,6 @@ flowchart TB
     AWS[AWS Bedrock]
 
     Admin -->|JWT| Routes
-    MCP -->|JWT| Routes
     Portal -->|/public sin auth| Routes
     Models --> PG
     Services --> MinIO
@@ -47,7 +45,6 @@ flowchart TB
 |---------|--------|---------------|
 | Admin Panel | Lectura/escritura | JWT Bearer |
 | Portal Público | Solo lectura vía `/public/*` | Ninguna |
-| MCP Server | Lectura/escritura | JWT Bearer |
 
 La API **no se expone directamente a Internet**. Solo es accesible desde la red Docker `network-cjhirashi-srv`.
 
@@ -86,7 +83,7 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 cd src/
-uvicorn app:app --reload --host 0.0.0.0 --port 8001
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Ver [docs/SETUP.md](docs/SETUP.md) para Docker, migraciones Alembic y variables de entorno.
