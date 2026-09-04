@@ -1,7 +1,7 @@
 ---
 titulo: Plan — Sidebar contextual configurable por sección del Admin
 tipo: plan
-estado: implemented
+estado: verified
 fecha: 2026-09-04
 feature_id: "001"
 spec: ./spec.md

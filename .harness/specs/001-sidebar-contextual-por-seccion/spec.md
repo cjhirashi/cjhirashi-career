@@ -1,7 +1,7 @@
 ---
 titulo: Sidebar contextual configurable por sección del Admin
 tipo: spec
-estado: implemented
+estado: verified
 fecha: 2026-09-04
 feature_id: "001"
 covers:
@@ -35,7 +35,7 @@ covers:
   - docs/09-DECISIONS/021-admin-sections-synthetic-pk.md
   - docs/BEDROCK-SYSTEM.md
   - cjhirashi-career-api/src/services/bedrock/README.md
-anchor_commit: c42afb78f4c1ce4d25534395476f9266fd07e449
+anchor_commit: 6d948f7
 anchor_mode: advisory
 ---
 

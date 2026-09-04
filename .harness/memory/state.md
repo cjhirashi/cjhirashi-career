@@ -40,16 +40,17 @@ actualizado: 2026-09-04
 
 - **Génesis en modo alineación completada** (2026-09-04): arquitectura detectada y
   registrada en `constitution.md` Art. 2 + `ADR-001`.
-- **[2026-09-04] Feature `001-sidebar-contextual-por-seccion` — `implemented`**
-  (`verified` bloqueado por la mitad admin de la compuerta; ver Obstáculos).
+- **[2026-09-04] Feature `001-sidebar-contextual-por-seccion` — `verified`**
+  (rama `001-sidebar-contextual-por-seccion`, commits `ffac40a` reparación gate api ·
+  `6d948f7` feature · `4ec56f8` saneo tests admin/portfolio; `anchor_commit` = `6d948f7`).
   `agent_profile_id` de una sección del Admin = agente **L2** del chat contextual del
   sidebar derecho (selector sólo L2, `NULL` = sin chat); se retiran
   `chat_agent_id()`/`_L3_CHAT_FALLBACK`; `resolve_profile_for_turn` contextual sale del
   catálogo con fallback al orquestador. `sidebar_body` por vista → Markdown. Se elimina
   la columna/override `description` (migración `c4d5e6f7a8b9` — **no** corre en
   `init_db`; `alembic upgrade head` tras rebuild). Sidebar derecho condicional (sin
-  chat ni instrucciones → ni panel ni botón). ADR-024. **Pendiente para `verified`:**
-  compuerta admin verde + mover `anchor_commit` de la spec.
+  chat ni instrucciones → ni panel ni botón). ADR-024. **Pendiente:** merge del PR +
+  `alembic upgrade head` en el deploy.
 - **[2026-09-04] Mensajes de `caddy.json` resueltos en código** (pendiente de cerrarlos
   con `bin/caddy-msg` desde el repo `cjhirashi-srv`):
   - **MSG-0002 (bloqueo):** el API volvió a `:8001` tras el restore. Corregido a `:8000`
@@ -106,26 +107,31 @@ actualizado: 2026-09-04
   `pytest.mark.skip` de módulo en `test_auth_integration.py`. Resultado:
   `309 passed, 72 skipped, 0 failed, 0 errors`. Existe la BD `career_db_test` en el
   contenedor `postgres_db` para el camino `TEST_DATABASE_URL` (aislada de dev).
-- **[2026-09-04] Compuerta `admin` en ROJO — 14 tests pre-existentes.** El repo
-  `cjhirashi-career-admin` **no tiene lockfile** y `node_modules` no traía
-  `react-router-dom`; se corrió `npm install` (ahora `type-check` = 0 errores,
-  `vitest` ejecuta). Quedan **14 fallos pre-existentes** sin relación con 001: XHR
-  reales a `localhost:3000` sin mock (`FilesPage` ×4), aserciones de spacing
-  (`MetricsPage` ×2, `DashboardPage`), mocks de auth (`useAuth` ×2, `authStore`,
-  `LoginPage`), `client.test.ts`, `CareerResourceView` ×2, `MessageList`. Baseline
-  `HEAD` limpio (post-install) = **mismos 14**. Bloquea `verified` de 001.
+- **[2026-09-04] Compuerta `admin`/`portfolio` saneada** (commit `4ec56f8`). El repo
+  `cjhirashi-career-admin` **no versiona lockfile** (`.gitignore` lo excluye) y
+  `node_modules` no traía `react-router-dom`; `npm install` lo dejó ejecutable. Los
+  **14 tests pre-existentes** en rojo eran todos desalineación con el código actual
+  (IDs prefijados vs numéricos, `scrollIntoView` sin stub en jsdom, `tokenExpiresAt`
+  no fijado, auto-mock de axios, forma de error axios `response.data.detail`, `mb-8`
+  movido de `<h1>` a contenedor, breadcrumb por CSS, nombre accesible de opción de
+  `ThemedSelect`) — corregidos. `cjhirashi-career-admin` `435 passed`;
+  `cjhirashi-career-portfolio` `309 passed` (`cache:false` en su `vitest.config.ts`
+  para esquivar un `node_modules/.vite/vitest` con otro dueño).
+- **[2026-09-04] `--full` — `cjhirashi-career-ai` sale con código 5** ("no tests"): es
+  un directorio **git-ignored** (scaffold sin suite). `check.sh --full` lo lee como
+  fallo; el gate por defecto no lo corre. No se toca `check.sh`.
 - **[2026-09-04] `.harness/gate/check.sh` con cambio sin autoría en el working tree**
   (bloque opcional `source gate/project.sh`). No lo tocamos; confirmar con el humano.
   (Sigue sin commitear, junto con `AGENTS.md` y `.claude/`.)
 
 ## Próximo paso concreto
 
-- **Reabrir la compuerta `admin`:** commitear un `package-lock.json` de
-  `cjhirashi-career-admin` y sanear los 14 tests pre-existentes (empezar por el mock
-  de red — `FilesPage`/`useAuth` pegan a `localhost:3000`). Al verde: mover
-  `anchor_commit` de `.harness/specs/001-.../spec.md` al commit de cierre y pasar
-  `estado:` de spec/plan/tasks a `verified`.
-- Reescribir `cjhirashi-career-api/tests/integration/test_auth_integration.py` contra
-  el esquema de rutas actual (hoy `pytest.mark.skip`).
+- **Deploy de 001:** `alembic upgrade head` en `cjhirashi-career-api` tras el rebuild
+  (migración `c4d5e6f7a8b9` retira `admin_section_overrides.description`; no corre en
+  `init_db`).
+- Merge del PR de la rama `001-sidebar-contextual-por-seccion`.
+- Aparte de 001: reescribir `cjhirashi-career-api/tests/integration/test_auth_integration.py`
+  contra el esquema de rutas actual (hoy `pytest.mark.skip`); `cjhirashi-career-ai`
+  sigue sin suite de tests.
 - Reescritura narrativa del arc42 sin el Canal 3 (ADR-023 lo deja anotado).
 - Antes de tocar nada: correr `.harness/gate/check.sh`.

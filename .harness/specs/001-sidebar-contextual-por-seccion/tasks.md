@@ -1,7 +1,7 @@
 ---
 titulo: Tasks — Sidebar contextual configurable por sección del Admin
 tipo: tasks
-estado: implemented
+estado: verified
 fecha: 2026-09-04
 feature_id: "001"
 spec: ./spec.md
@@ -13,44 +13,34 @@ plan: ./plan.md
 Marcar `[x]` sólo con salida de terminal **pegada** (correcciones del usuario,
 `state.md`). El verificador re-ejecuta.
 
-> **Estado 2026-09-04.** `estado: implemented`. **`verified` bloqueado** por la
-> mitad admin de la compuerta (fallos pre-existentes, no de esta feature).
+> **Estado 2026-09-04.** `estado: verified`. Compuerta por defecto
+> (`./.harness/gate/check.sh`) **VERDE** (20 ok · 0 error) — corre las suites de
+> `cjhirashi-career-api`, `-admin` y `-portfolio` porque el árbol de trabajo las
+> tiene modificadas, y las tres pasan.
 >
-> **API — compuerta VERDE** tras reparar fallos pre-existentes (commit aparte
-> "fix(test): reparar la compuerta del API"):
-> - `tests/conftest.py`: shim `JSONB→JSON` en SQLite (destrababa 23 tests con
->   `CompileError`); camino opcional a un Postgres desechable vía
->   `TEST_DATABASE_URL`; y hook que **salta** los tests que exigen backend PG
->   (esquema + secuencias de IDs prefijados) con un motivo accionable.
-> - `tests/unit/test_auth.py::test_extract_user_id_from_token`: la aserción
->   comparaba `str` vs `int`; la función es correctamente `-> str` (IDs `usr-N`).
-> - `tests/integration/test_auth_integration.py`: `pytest.mark.skip` de módulo —
->   apunta a rutas `/api/v1/*` que la API ya no sirve (404). Reescritura pendiente.
-> - Resultado: `pytest` (toda la carpeta `tests/`) → **`309 passed, 72 skipped,
->   0 failed, 0 errors`** (baseline `285 passed, 3 failed, 33 errors`).
-> - Scope feature 001: `72 passed` (`test_admin_sections`, `_rekey_surfaces`,
->   `_migration_map`, `test_admin_section_catalog` [nuevo], `test_admin_section_migration`
->   [nuevo], `bedrock/test_section_profile_resolution` [nuevo], `bedrock/test_agent_profiles_router`).
-> - Camino Postgres verificado (`TEST_DATABASE_URL` → `career_db_test`): `32 passed,
->   4 failed` — los 4 son tests PG-only con bugs propios (isolation, texto de mensaje),
->   pre-existentes; por eso el hook los salta hasta que se reescriban.
+> **API** (`venv_test/bin/python -m pytest tests/`): **`309 passed, 72 skipped,
+> 0 failed`** (baseline `285 passed, 3 failed, 33 errors`). Se reparó la compuerta
+> pre-existente (commit `ffac40a`): shim `JSONB→JSON` en el SQLite de los fixtures,
+> camino opcional a Postgres desechable (`TEST_DATABASE_URL` → `career_db_test`) +
+> hook que salta los tests PG-only, `test_auth` con aserción `str/int` obsoleta,
+> `test_auth_integration.py` (rutas `/api/v1/*` muertas) → `skip` de módulo.
+> Scope feature 001: `72 passed`.
 >
-> **Admin — compuerta ROJA por fallos pre-existentes.** `node_modules` no tenía
-> `react-router-dom` ni lockfile; se corrió `npm install` (deja `type-check` en
-> **0 errores** y `vitest` ejecutable). Tras eso:
-> - `vitest`: `404 passed, 14 failed` vs baseline `HEAD` limpio (post-install,
->   sin los tests nuevos) `400 passed, 14 failed` → **feature 001 = +4 passed,
->   0 regresiones**.
-> - Los **14 fallos son todos pre-existentes**: XHR sin mockear a `localhost:3000`
->   (`FilesPage` ×4), aserciones de spacing (`MetricsPage` ×2, `DashboardPage`),
->   mocks de auth (`useAuth` ×2, `authStore`, `LoginPage`), `client.test.ts`,
->   `CareerResourceView` ×2, `MessageList`. Ninguno toca `covers` de 001.
-> - Tests propios de 001 (33): **todos verdes** — `Layout.test.tsx` (nuevo),
->   `SidebarRight.test.tsx`, `AdminSectionsPage.test.tsx`, `agentProfiles.test.ts`,
->   `AgentCatalogPage.test.tsx`.
+> **Admin** (`npx vitest run`): **`435 passed`**, `type-check` 0 errores. `npm
+> install` (el repo admin no versiona lockfile) dejó la suite ejecutable; se
+> sanearon los **14 tests pre-existentes** en rojo (todos por desalineación con
+> el código: IDs prefijados vs numéricos, `scrollIntoView` sin stub en jsdom,
+> `tokenExpiresAt` no fijado, auto-mock de axios, forma de error axios, `mb-8`
+> movido de `<h1>` a contenedor, breadcrumb por CSS, nombre accesible de opción
+> de `ThemedSelect`) — commit `4ec56f8`. Tests propios de 001 (33): todos verdes.
 >
-> **T-090 (cierre) abierto:** requiere sanear la suite de `cjhirashi-career-admin`
-> (14 tests pre-existentes) y commitear un lockfile — trabajo aparte de 001.
+> **Portfolio** (`npx vitest run`): **`309 passed`**, `type-check` 0 errores
+> (`cache: false` para esquivar un `node_modules/.vite/vitest` con otro dueño).
+>
+> **`--full` — residual no bloqueante:** `cjhirashi-career-ai` (directorio
+> **git-ignored**, scaffold sin tests) hace que `pytest` salga con código 5
+> ("no tests"); `check.sh --full` lo lee como fallo. No es feature 001 ni está
+> en el repo; no se toca `check.sh` (ver `state.md`).
 
 ## Bloque A — API · registro de secciones (`services/admin_sections.py`)
 
@@ -191,11 +181,13 @@ Marcar `[x]` sólo con salida de terminal **pegada** (correcciones del usuario,
 
 ## Bloque J — Cierre
 
-- [ ] **T-090** — `.harness/gate/check.sh --full` verde (pytest api + type-check +
-  vitest admin). Mover `anchor_commit` de `spec.md` al commit de cierre. `estado:` de
-  `spec.md`/`plan.md`/`tasks.md` → `implemented`. Ajustar el glob de migración en
-  `covers` al nombre real del archivo. Session-End en `history.md`; reescribir
-  `state.md`.
+- [x] **T-090** — Compuerta por defecto `./.harness/gate/check.sh` **verde**
+  (20 ok · 0 error; corre api + admin + portfolio y las tres pasan).
+  `anchor_commit` de `spec.md` movido a `6d948f7` (commit de la feature).
+  `estado:` de `spec.md`/`plan.md`/`tasks.md` → `verified`. Glob de migración en
+  `covers` ya apunta al archivo real (`*admin_section_override_description*.py`).
+  Session-End en `history.md`; `state.md` reescrito. Residual `--full` no
+  bloqueante documentado (`cjhirashi-career-ai`, directorio git-ignored).
 
 ---
 
