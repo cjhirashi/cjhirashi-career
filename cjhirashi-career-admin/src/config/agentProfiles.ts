@@ -78,6 +78,18 @@ export function allAgentSelectOptions(): { value: string; label: string }[] {
   }))
 }
 
+/**
+ * Sólo agentes de nivel 2 — el chat contextual del sidebar derecho de una
+ * sección lo atiende un L2 (feature 001). Usado por el selector de agente de
+ * la ficha de "Secciones del Admin".
+ */
+export function l2AgentSelectOptions(): { value: string; label: string }[] {
+  return AGENT_PROFILES.filter((p) => p.level === 2).map((p) => ({
+    value: p.id,
+    label: p.label,
+  }))
+}
+
 /** Mirror of `_ROUTE_TO_PROFILE` in agent_profiles.py */
 const ROUTE_TO_PROFILE: Record<string, string> = {
   '/linkedin': AGENT_DIGITAL_PRESENCE,

@@ -20,6 +20,7 @@ import {
   AGENT_CONFIGURATION,
   allAgentSelectOptions,
   getAgentProfileLabel,
+  l2AgentSelectOptions,
   resolveAgentProfileId,
 } from '@/config/agentProfiles'
 
@@ -192,5 +193,16 @@ describe('resolveAgentProfileId', () => {
     expect(ids).toContain(AGENT_GITHUB)
     expect(allAgentSelectOptions().some((o) => o.value === AGENT_PDF_DESIGN)).toBe(true)
     expect(AGENT_PROFILES.every((p) => p.level !== 3)).toBe(true)
+  })
+
+  it('l2AgentSelectOptions lists only L2 agents (RF-014)', () => {
+    const opts = l2AgentSelectOptions()
+    const values = opts.map((o) => o.value)
+    expect(values).toContain(AGENT_CONFIGURATION)
+    expect(values).toContain(AGENT_PDF_DESIGN)
+    expect(values).not.toContain(AGENT_ORCHESTRATOR) // L1
+    expect(values).not.toContain(AGENT_VACANCY_SEARCH) // L3
+    expect(values).not.toContain(AGENT_CHANGELOG) // L3
+    expect(opts).toHaveLength(AGENT_PROFILES.filter((p) => p.level === 2).length)
   })
 })

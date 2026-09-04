@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { MessageCircle, BookOpen, X } from 'lucide-react'
 import { CAREER_RESOURCES } from '@/config/careerResources'
 import { ChatWindow } from '@/components/bedrock/ChatWindow'
+import { MarkdownTable } from '@/components/MarkdownTable'
 import { useChatPageContext } from '@/hooks/useChatPageContext'
 import { useAdminSections } from '@/hooks/useAdminSections'
 import { matchAdminSection } from '@/types/adminSections'
@@ -134,6 +137,24 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
     : getPageInstructions(location.pathname)
   const pageContext = useChatPageContext()
 
+  // feature 001: el chat contextual sólo si la sección tiene un agente L2
+  // asignado; las instrucciones sólo si la vista tiene texto. Rutas que no
+  // hacen match con ninguna sección conservan el comportamiento anterior.
+  const hasChat = matched ? matched.section.agent_profile_id != null : true
+  const hasInstructions = matched ? Boolean(instructions.body?.trim()) : true
+  const effectiveTab: RightPanelTab =
+    activeTab === 'chat' && hasChat
+      ? 'chat'
+      : activeTab === 'instructions' && hasInstructions
+        ? 'instructions'
+        : hasInstructions
+          ? 'instructions'
+          : 'chat'
+
+  if (!hasChat && !hasInstructions) return null
+
+  const showTabSwitch = hasChat && hasInstructions
+
   return (
     <aside
       className={clsx(
@@ -146,27 +167,42 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
     >
       {/* Header: tab switch (chat / instrucciones) + hide button */}
       <div className="flex items-center justify-between gap-2 flex-shrink-0">
-        <div className="theme-pill" role="group" aria-label="Modo del panel">
-          <button
-            type="button"
-            className="theme-pill-btn"
-            aria-pressed={activeTab === 'chat'}
-            onClick={() => setActiveTab('chat')}
-            title="Chat del asistente"
-          >
-            <MessageCircle size={15} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="theme-pill-btn"
-            aria-pressed={activeTab === 'instructions'}
-            onClick={() => setActiveTab('instructions')}
-            title="Instrucciones de la pantalla"
-          >
-            <BookOpen size={15} aria-hidden="true" />
-          </button>
-          <span className="theme-pill-indicator" data-pos={activeTab === 'chat' ? '0' : '1'} aria-hidden="true" />
-        </div>
+        {showTabSwitch ? (
+          <div className="theme-pill" role="group" aria-label="Modo del panel">
+            <button
+              type="button"
+              className="theme-pill-btn"
+              aria-pressed={effectiveTab === 'chat'}
+              onClick={() => setActiveTab('chat')}
+              title="Chat del asistente"
+            >
+              <MessageCircle size={15} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="theme-pill-btn"
+              aria-pressed={effectiveTab === 'instructions'}
+              onClick={() => setActiveTab('instructions')}
+              title="Instrucciones de la pantalla"
+            >
+              <BookOpen size={15} aria-hidden="true" />
+            </button>
+            <span
+              className="theme-pill-indicator"
+              data-pos={effectiveTab === 'chat' ? '0' : '1'}
+              aria-hidden="true"
+            />
+          </div>
+        ) : (
+          <span className="flex items-center gap-2 text-text text-sm font-semibold">
+            {effectiveTab === 'chat' ? (
+              <MessageCircle size={15} aria-hidden="true" />
+            ) : (
+              <BookOpen size={15} aria-hidden="true" />
+            )}
+            {effectiveTab === 'chat' ? 'Chat del asistente' : 'Instrucciones'}
+          </span>
+        )}
 
         <button
           type="button"
@@ -180,7 +216,7 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
       </div>
 
       {/* Body */}
-      {activeTab === 'chat' ? (
+      {effectiveTab === 'chat' ? (
         <ChatWindow chatSurface="contextual" pageContext={pageContext} />
       ) : (
         <div className="card p-5 flex-1 overflow-y-auto">
@@ -188,7 +224,11 @@ export const SidebarRight: React.FC<SidebarRightProps> = ({ onClose }) => {
             <BookOpen size={16} className="text-primary flex-shrink-0" aria-hidden="true" />
             <h2 className="font-semibold text-text text-sm">{instructions.title}</h2>
           </div>
-          <p className="text-text-secondary text-sm leading-relaxed">{instructions.body}</p>
+          <div className="markdown-body text-text-secondary text-sm leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: MarkdownTable }}>
+              {instructions.body}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </aside>

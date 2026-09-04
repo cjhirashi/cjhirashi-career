@@ -474,7 +474,7 @@ async def update_agent_sections(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
     try:
         return await section_catalog.set_agent_sections(db, profile_id, payload.section_ids)
-    except KeyError as exc:
+    except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 

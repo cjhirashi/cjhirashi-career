@@ -219,18 +219,17 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
     {
         "name": "admin_section_settings",
         "description": (
-            "Secciones del Admin: qué agente domina cada pantalla y su descripción. "
-            "action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); mira action=list, "
-            "campo id. El campo system_name (dashboard, career-projects…) es solo el nombre legible. "
-            "section_id requerido salvo en list."
+            "Secciones del Admin: qué agente L2 atiende el chat contextual de cada "
+            "pantalla. action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); "
+            "mira action=list, campo id. El campo system_name (dashboard, career-projects…) "
+            "es solo el nombre legible. section_id requerido salvo en list."
         ),
         "schema": {
             "type": "object",
             "properties": {
                 "action": {"type": "string", "enum": ["list", "get", "update"]},
                 "section_id": {"type": "string", "description": "PK de la sección, p.ej. sec-1 (NO el system_name)"},
-                "agent_profile_id": {"type": "string", "description": "Agente con dominio de la sección; string vacío restaura el default del código"},
-                "description": {"type": "string", "description": "String vacío restaura el default del código"},
+                "agent_profile_id": {"type": "string", "description": "Agente L2 del chat contextual del sidebar; string vacío restaura el default del código; debe ser un agente de nivel 2"},
             },
             "required": ["action"],
         },
@@ -713,9 +712,9 @@ async def _run_agent_catalog_settings(db, user_id: str, tool_input: Dict[str, An
 
 
 async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[str, Any]:
-    """Secciones del Admin (L2 agent_configuration): agente dueño y descripción."""
+    """Secciones del Admin (L2 agent_configuration): agente L2 del chat contextual."""
     from services import section_catalog
-    from services.admin_sections import get_section_spec
+    from services.admin_sections import get_section_spec, is_l2
     from services.bedrock.agent_profiles import get_profile
 
     action = tool_input.get("action")
@@ -751,17 +750,16 @@ async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[st
                     get_profile(agent_id)
                 except KeyError:
                     return {"error": f"unknown agent profile: {agent_id}"}
-        description = tool_input.get("description")
+                if not is_l2(agent_id):
+                    return {"error": f"agent profile is not L2: {agent_id}"}
         try:
             item = await section_catalog.update_section(
                 db,
                 section_id,
                 agent_profile_id=agent_id,
                 clear_agent=clear_agent,
-                description=description,
-                clear_description=description == "",
             )
-        except KeyError as exc:
+        except (KeyError, ValueError) as exc:
             return {"error": str(exc)}
         return {"item": item}
 

@@ -12,6 +12,7 @@ export interface AdminSectionView {
   label: string
   description: string
   sidebar_title: string
+  /** Instrucciones del sidebar derecho (Markdown/GFM). '' = override vacío explícito. */
   sidebar_body: string
   is_default: boolean
 }
@@ -26,19 +27,18 @@ export interface AdminSection {
   resource_key: string | null
   related_tools: string[]
   default_agent_profile_id: string | null
+  /** Agente L2 del chat contextual del sidebar derecho, o null = sin chat. */
   agent_profile_id: string | null
   agent_label: string | null
-  chat_agent_profile_id: string | null
   agent_is_default: boolean
-  description: string
-  description_is_default: boolean
+  sidebar_has_chat: boolean
+  sidebar_has_instructions: boolean
   view_count: number
   views: AdminSectionView[]
 }
 
 export interface AdminSectionUpdate {
   agent_profile_id?: string | null
-  description?: string | null
   views?: Record<string, Partial<Pick<AdminSectionView, 'description' | 'sidebar_title' | 'sidebar_body'>>>
 }
 

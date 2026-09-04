@@ -24,21 +24,15 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from services.bedrock.agent_profiles import (
-    AGENT_CHANGELOG,
     AGENT_CONFIGURATION,
     AGENT_DIGITAL_PRESENCE,
-    AGENT_GITHUB,
-    AGENT_LINKEDIN_PUBLISHING,
     AGENT_METHODOLOGIES,
     AGENT_NETWORKING,
-    AGENT_ORCHESTRATOR,
     AGENT_PDF_DESIGN,
     AGENT_PROFESSIONAL_IDENTITY,
     AGENT_SEARCH_OPERATIONS,
     AGENT_SETTINGS,
     AGENT_SUPPORT,
-    AGENT_TASK_MANAGER,
-    AGENT_VACANCY_SEARCH,
     get_profile,
 )
 
@@ -53,16 +47,6 @@ SECTION_TYPE_LABELS = {
     SECTION_METRICS: "métricas",
     SECTION_BUCKET: "bucket",
 }
-
-# L3 no tiene chat: el contextual de esa sección habla con este L1/L2.
-_L3_CHAT_FALLBACK = {
-    AGENT_LINKEDIN_PUBLISHING: AGENT_DIGITAL_PRESENCE,
-    AGENT_VACANCY_SEARCH: AGENT_SEARCH_OPERATIONS,
-    AGENT_GITHUB: AGENT_DIGITAL_PRESENCE,
-    AGENT_TASK_MANAGER: AGENT_ORCHESTRATOR,
-    AGENT_CHANGELOG: AGENT_ORCHESTRATOR,
-}
-
 
 @dataclass(frozen=True)
 class AdminViewSpec:
@@ -89,14 +73,18 @@ class AdminSectionSpec:
     sort_order: int = 0
 
 
-def chat_agent_id(agent_profile_id: Optional[str]) -> Optional[str]:
-    """Agente user-facing para el chat contextual de una sección."""
+def is_l2(agent_profile_id: Optional[str]) -> bool:
+    """True sólo si ``agent_profile_id`` es un perfil de agente de nivel 2.
+
+    El chat contextual del sidebar derecho de una sección lo atiende un L2
+    (feature 001): un L1/L3 o un id desconocido no es asignable.
+    """
     if not agent_profile_id:
-        return AGENT_ORCHESTRATOR
-    profile = get_profile(agent_profile_id)
-    if profile.user_facing:
-        return profile.id
-    return _L3_CHAT_FALLBACK.get(profile.id, AGENT_ORCHESTRATOR)
+        return False
+    try:
+        return get_profile(agent_profile_id).level == 2
+    except KeyError:
+        return False
 
 
 def _view(
@@ -156,7 +144,7 @@ def _career(
     number: int,
     resource_key: str,
     label: str,
-    agent_id: str,
+    agent_id: Optional[str],
     group: str,
     sort_order: int,
     description: str,
@@ -184,7 +172,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Dashboard",
         path="/dashboard",
         section_type=SECTION_METRICS,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=None,
         description="Resumen de actividad de carrera: conteos y búsqueda semanal.",
         views=_main_view(
             "Dashboard",
@@ -201,7 +189,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Métricas",
         path="/metrics",
         section_type=SECTION_METRICS,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=None,
         description="Métricas del portafolio público y del panel.",
         views=_main_view(
             "Métricas",
@@ -235,7 +223,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Costo y Uso",
         path="/agent/metrics",
         section_type=SECTION_METRICS,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=None,
         description="Tokens, costo estimado y presupuesto diario de Bedrock.",
         views=_main_view(
             "Costo y Uso",
@@ -251,7 +239,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Archivos",
         path="/files",
         section_type=SECTION_BUCKET,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=None,
         description="Bucket MinIO: subida, links públicos y borrado permanente.",
         views=_main_view(
             "Archivos",
@@ -268,7 +256,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="LinkedIn · Publicar",
         path="/linkedin",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_LINKEDIN_PUBLISHING,
+        default_agent_profile_id=AGENT_DIGITAL_PRESENCE,
         description="Integración API de LinkedIn: OAuth, publicar y programar posts.",
         views=_main_view(
             "LinkedIn · Publicar",
@@ -291,7 +279,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Descubrir vacantes",
         path="/job-discovery",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_VACANCY_SEARCH,
+        default_agent_profile_id=AGENT_SEARCH_OPERATIONS,
         description="Búsqueda e importación de vacantes (Indeed, boards, URL).",
         views=_main_view(
             "Descubrir vacantes",
@@ -350,7 +338,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Tareas",
         path="/tasks",
         section_type=SECTION_TABLE,
-        default_agent_profile_id=AGENT_TASK_MANAGER,
+        default_agent_profile_id=None,
         description=(
             "Tablero de trabajo: tareas del usuario o de un agente. "
             "Las de agente se ejecutan a scheduled_at aunque el Admin esté cerrado."
@@ -412,7 +400,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Chat General",
         path="/agent/chat",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=None,
         description="Chat con el orquestador L1 (delega a especialistas).",
         views=_main_view(
             "Chat General",
@@ -428,7 +416,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Memoria",
         path="/agent/memory",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="Hechos de largo plazo y eventos de memoria del harness.",
         views=_main_view(
             "Memoria",
@@ -444,7 +432,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Instrucciones",
         path="/agent/instructions",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="Prompt global del harness (el suffix por agente vive en el catálogo).",
         views=_main_view(
             "Instrucciones",
@@ -460,7 +448,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         label="Herramientas",
         path="/agent/tools",
         section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_ORCHESTRATOR,
+        default_agent_profile_id=AGENT_CONFIGURATION,
         description="Servidores MCP registrados para el harness.",
         views=_main_view(
             "Herramientas",
@@ -619,6 +607,13 @@ _HIGH_WATER = 54
 _SECTION_NUMBERS = [int(s.id.split("-")[1]) for s in _SECTIONS]
 assert max(_SECTION_NUMBERS) <= _HIGH_WATER, "sec-N por encima de _HIGH_WATER: súbelo"
 assert len(_SECTION_NUMBERS) == len(set(_SECTION_NUMBERS)), "entero sec-N colisionado"
+
+# feature 001: el agente de dominio de una sección es el L2 que atiende su chat
+# contextual. Sólo L2 o None — nunca L1 ni L3.
+assert all(
+    s.default_agent_profile_id is None or is_l2(s.default_agent_profile_id)
+    for s in _SECTIONS
+), "una sección tiene default_agent_profile_id que no es L2"
 
 
 def list_section_specs() -> List[AdminSectionSpec]:

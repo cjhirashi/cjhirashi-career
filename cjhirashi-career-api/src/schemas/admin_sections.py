@@ -29,12 +29,12 @@ class AdminSectionItem(BaseModel):
     resource_key: Optional[str] = None
     related_tools: List[str] = []
     default_agent_profile_id: Optional[str] = None
+    # feature 001: agente L2 del chat contextual del sidebar derecho (o None).
     agent_profile_id: Optional[str] = None
     agent_label: Optional[str] = None
-    chat_agent_profile_id: Optional[str] = None
     agent_is_default: bool = True
-    description: str
-    description_is_default: bool = True
+    sidebar_has_chat: bool = False
+    sidebar_has_instructions: bool = False
     view_count: int
     views: List[AdminSectionView]
 
@@ -42,7 +42,9 @@ class AdminSectionItem(BaseModel):
 class AdminSectionUpdateRequest(BaseModel):
     agent_profile_id: Optional[str] = Field(
         default=None,
-        description="Agente con dominio. Omitir para no cambiar. String vacío restaura el default.",
+        description=(
+            "Agente L2 del chat contextual. Omitir para no cambiar. "
+            "String vacío restaura el default de código."
+        ),
     )
-    description: Optional[str] = None
     views: Optional[Dict[str, AdminSectionViewUpdate]] = None

@@ -8,35 +8,70 @@ from services.admin_sections import (
     SECTION_FUNCTIONAL,
     SECTION_METRICS,
     SECTION_TABLE,
-    chat_agent_id,
     get_section_by_system_name,
     get_section_spec,
+    is_l2,
     list_section_specs,
     match_section,
 )
 from services.section_catalog import _serialize
 from services.bedrock.agent_profiles import (
+    AGENT_CONFIGURATION,
     AGENT_DIGITAL_PRESENCE,
-    AGENT_LINKEDIN_PUBLISHING,
+    AGENT_ORCHESTRATOR,
     AGENT_PDF_DESIGN,
-    AGENT_VACANCY_SEARCH,
+    AGENT_SEARCH_OPERATIONS,
+    get_profile,
 )
 
 _SEC_RE = re.compile(r"^sec-[1-9]\d*$")
 
 
-def test_linkedin_is_functional_owned_by_publishing_agent():
+def test_linkedin_is_functional_owned_by_digital_presence():
     spec = get_section_by_system_name("linkedin-publish")
     assert spec.section_type == SECTION_FUNCTIONAL
-    assert spec.default_agent_profile_id == AGENT_LINKEDIN_PUBLISHING
+    # feature 001: el L3 agent_linkedin_publishing ya no es dueño de sección;
+    # el chat contextual de LinkedIn lo atiende el L2 de Presencia Digital.
+    assert spec.default_agent_profile_id == AGENT_DIGITAL_PRESENCE
     assert "get_linkedin_status" in spec.related_tools
-    assert chat_agent_id(spec.default_agent_profile_id) == AGENT_DIGITAL_PRESENCE
 
 
 def test_job_discovery_is_functional():
     spec = get_section_by_system_name("job-discovery")
     assert spec.section_type == SECTION_FUNCTIONAL
-    assert spec.default_agent_profile_id == AGENT_VACANCY_SEARCH
+    assert spec.default_agent_profile_id == AGENT_SEARCH_OPERATIONS
+
+
+def test_defaults_are_l2_or_none():
+    """RF-004: toda default_agent_profile_id es un agente L2 o None (nunca L1/L3)."""
+    for spec in list_section_specs():
+        pid = spec.default_agent_profile_id
+        if pid is None:
+            continue
+        assert get_profile(pid).level == 2, f"{spec.id} apunta a {pid} (no L2)"
+
+
+def test_l1_l3_sections_remapped():
+    """RF-004: re-mapeo de las 11 secciones que apuntaban a L1/L3."""
+    by_id = {s.id: s.default_agent_profile_id for s in list_section_specs()}
+    assert by_id["sec-1"] is None
+    assert by_id["sec-2"] is None
+    assert by_id["sec-4"] is None
+    assert by_id["sec-5"] is None
+    assert by_id["sec-10"] is None
+    assert by_id["sec-11"] is None
+    assert by_id["sec-6"] == AGENT_DIGITAL_PRESENCE
+    assert by_id["sec-7"] == AGENT_SEARCH_OPERATIONS
+    assert by_id["sec-12"] == AGENT_CONFIGURATION
+    assert by_id["sec-13"] == AGENT_CONFIGURATION
+    assert by_id["sec-14"] == AGENT_CONFIGURATION
+
+
+def test_is_l2_helper():
+    assert is_l2(AGENT_CONFIGURATION) is True
+    assert is_l2(AGENT_ORCHESTRATOR) is False  # L1
+    assert is_l2("agent_task_manager") is False  # L3
+    assert is_l2("does-not-exist") is False
 
 
 def test_files_is_bucket_and_dashboard_is_metrics():

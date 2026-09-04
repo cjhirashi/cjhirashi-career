@@ -66,8 +66,10 @@ export function useBedrockChat(options: UseBedrockChatOptions = {}) {
   const effectiveAgentProfileId = useMemo(() => {
     if (chatSurface === 'general') return AGENT_ORCHESTRATOR
     const match = matchAdminSection(pageContext?.route ?? '', adminSections ?? [])
-    if (match?.section.chat_agent_profile_id) {
-      return match.section.chat_agent_profile_id
+    // feature 001: el chat contextual de una sección lo atiende su agente L2
+    // asignado; si no tiene, el servidor degrada al orquestador.
+    if (match?.section.agent_profile_id) {
+      return match.section.agent_profile_id
     }
     return resolveAgentProfileId({ chatSurface, pageContext })
   }, [chatSurface, pageContext, adminSections])

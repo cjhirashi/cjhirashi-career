@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdminSectionItem",
+  "description": "Item del catálogo efectivo de secciones del Admin tras la feature 001.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "system_name",
+    "label",
+    "path",
+    "section_type",
+    "group",
+    "resource_key",
+    "related_tools",
+    "default_agent_profile_id",
+    "agent_profile_id",
+    "agent_label",
+    "agent_is_default",
+    "sidebar_has_chat",
+    "sidebar_has_instructions",
+    "view_count",
+    "views"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^sec-[1-9][0-9]*$" },
+    "system_name": { "type": "string" },
+    "label": { "type": "string" },
+    "path": { "type": "string" },
+    "section_type": { "enum": ["table", "functional", "metrics", "bucket"] },
+    "group": { "type": "string" },
+    "resource_key": { "type": ["string", "null"] },
+    "related_tools": { "type": "array", "items": { "type": "string" } },
+    "default_agent_profile_id": {
+      "type": ["string", "null"],
+      "description": "id de agente L2 o null (nunca L1/L3)"
+    },
+    "agent_profile_id": {
+      "type": ["string", "null"],
+      "description": "agente L2 del chat contextual, o null = sin chat"
+    },
+    "agent_label": { "type": ["string", "null"] },
+    "agent_is_default": { "type": "boolean" },
+    "sidebar_has_chat": {
+      "type": "boolean",
+      "description": "= agent_profile_id != null"
+    },
+    "sidebar_has_instructions": {
+      "type": "boolean",
+      "description": "= alguna vista con sidebar_body efectivo no vacío"
+    },
+    "view_count": { "type": "integer", "minimum": 1 },
+    "views": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "sidebar_title", "sidebar_body", "is_default"],
+        "properties": {
+          "key": { "type": "string" },
+          "label": { "type": "string" },
+          "description": { "type": "string", "description": "descripción de la VISTA (no de la sección); se conserva" },
+          "sidebar_title": { "type": "string" },
+          "sidebar_body": {
+            "type": "string",
+            "description": "texto efectivo; Markdown/GFM en el render; \"\" = override vacío explícito"
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "no hay override de sidebar_title ni de sidebar_body para esta vista"
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Campos retirados por la feature 001: chat_agent_profile_id, description, description_is_default (a nivel sección)."
+}

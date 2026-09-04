@@ -8,6 +8,18 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-09-04] 001 · Sidebar contextual configurable por sección — implemented (verified bloqueado por admin)
+
+- **Fase alcanzada:** implement (`verified` bloqueado: mitad admin de la compuerta en rojo por fallos pre-existentes).
+- **Rebotes del verificador:** 0 (verificación adversarial self-run; sin agente revisor separado esta sesión).
+- **Directiva de Pausa:** sí — GATE 1 fijó "la migración siembra la DB con las instrucciones"; al planear se vio que exigía congelar ~130 textos en el archivo de migración (que no puede importar app) y dejaba los defaults de código inertes → se cambió a "sin siembra + override de vista con 3 estados (heredar / texto / `""` vacío-explícito)" (spec D-6, aprobado por el humano).
+- **Drift / re-anchor:** advisory (esperado para `implemented`: `covers` + `spec.md` cambiaron juntos; mover `anchor_commit` al commit de cierre cuando la compuerta cierre verde).
+- **Anclas movidas:** ninguna (pendiente al pasar a `verified`).
+- **Gate:** API **verde** (`309 passed, 72 skipped`), tras commit aparte que repara fallos pre-existentes (shim `JSONB→JSON` en SQLite, camino Postgres opcional `TEST_DATABASE_URL` + hook de skip para tests PG-only, `test_auth` con aserción `str/int` obsoleta, `test_auth_integration` con rutas `/api/v1/*` muertas → skip de módulo). Admin **rojo** por **14 tests pre-existentes** (XHR sin mockear, spacing, mocks de auth) — 0 regresiones (`+4 passed` vs baseline); los 33 tests propios de 001 en verde y `type-check` 0 errores tras `npm install` (el repo admin no tenía `react-router-dom` ni lockfile).
+- **Docs actualizadas:** `docs/09-DECISIONS/024-sidebar-contextual-por-seccion.md` (nuevo), enmienda en `021-admin-sections-synthetic-pk.md`, `cjhirashi-career-api/src/services/bedrock/README.md` (escalera de resolución), `docs/BEDROCK-SYSTEM.md`.
+- **Decisiones de diseño / límites de integración:** `agent_profile_id` de sección = agente **L2** del chat contextual (selector sólo L2, `NULL`=sin chat); se retiran `chat_agent_id()`/`_L3_CHAT_FALLBACK`; `resolve_profile_for_turn` contextual sale del catálogo con fallback al orquestador (nunca 5xx). `sidebar_body` por vista → Markdown (sin `rehype-raw`). Se elimina la columna/override `description` (migración `c4d5e6f7a8b9`). Re-mapeo de 11 secciones L1/L3 → L2 o `None`. `set_agent_sections` también valida L2.
+- **Próximo paso:** (1) commitear un lockfile de `cjhirashi-career-admin` y sanear los 14 tests pre-existentes (XHR a `localhost:3000` sin mock, etc.) para reabrir la compuerta admin; (2) reescribir `tests/integration/test_auth_integration.py` contra el esquema de rutas actual; (3) al verde, mover `anchor_commit` de la spec 001 y pasar a `verified`.
+
 ## [2026-09-04] Sesión — cerrar migración de red (MSG-0004)
 
 - **Fase alcanzada:** mantenimiento de integración (sin ciclo de feature).

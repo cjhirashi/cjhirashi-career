@@ -8,50 +8,60 @@ from models.admin_section_override import AdminSectionOverride
 from services.admin_sections import (
     AdminSectionSpec,
     AdminViewSpec,
-    chat_agent_id,
     get_section_spec,
+    is_l2,
     known_section_ids,
     list_section_specs,
     match_section,
 )
-from services.bedrock.agent_profiles import (
-    AgentProfile,
-    get_profile,
-    resolve_agent_profile,
-)
+from services.bedrock.agent_profiles import AgentProfile, get_profile
+
+_ORCHESTRATOR = "agent_orchestrator"
 
 
-def _view_override(raw: Optional[dict], view: AdminViewSpec) -> Dict[str, str]:
+def _view_override(raw: Optional[dict], view: AdminViewSpec) -> Dict[str, Any]:
+    """Vista efectiva = registro de código + override PG (feature 001).
+
+    ``sidebar_title`` y ``sidebar_body`` tienen 3 estados por sub-campo:
+    - clave ausente en el override → se hereda el texto de código;
+    - clave con contenido → override de texto;
+    - clave con ``""`` → override vacío explícito (para ``sidebar_body``, oculta
+      la pestaña de instrucciones del sidebar).
+    Un override cuyo valor coincide con el de código se trata como herencia.
+    """
     data = raw.get(view.key) if isinstance(raw, dict) else None
     data = data if isinstance(data, dict) else {}
+
+    def _override(key: str) -> Optional[str]:
+        val = data.get(key)
+        return val if isinstance(val, str) else None
+
+    desc_ov = _override("description")
+    title_ov = _override("sidebar_title")
+    body_ov = _override("sidebar_body")
+
+    desc_differs = bool(desc_ov and desc_ov.strip()) and desc_ov.strip() != view.description
+    title_differs = title_ov is not None and title_ov != view.sidebar_title
+    body_differs = body_ov is not None and body_ov != view.sidebar_body
+
     return {
         "key": view.key,
         "label": view.label,
-        "description": (data.get("description") or view.description).strip() or view.description,
-        "sidebar_title": (data.get("sidebar_title") or view.sidebar_title).strip()
-        or view.sidebar_title,
-        "sidebar_body": (data.get("sidebar_body") or view.sidebar_body).strip() or view.sidebar_body,
-        "is_default": not bool(
-            (data.get("description") or "").strip()
-            or (data.get("sidebar_title") or "").strip()
-            or (data.get("sidebar_body") or "").strip()
-        ),
+        "description": desc_ov.strip() if desc_differs else view.description,
+        "sidebar_title": title_ov if title_ov is not None else view.sidebar_title,
+        "sidebar_body": body_ov if body_ov is not None else view.sidebar_body,
+        "is_default": not (desc_differs or title_differs or body_differs),
     }
 
 
 def _serialize(spec: AdminSectionSpec, row: Optional[AdminSectionOverride]) -> Dict[str, Any]:
     agent_id = spec.default_agent_profile_id
     agent_is_default = True
-    description = spec.description
-    description_is_default = True
     views_raw = None
     if row:
         if row.agent_profile_id is not None:
             agent_id = row.agent_profile_id or None
             agent_is_default = False
-        if row.description is not None and row.description.strip():
-            description = row.description.strip()
-            description_is_default = False
         views_raw = row.views
     views = [_view_override(views_raw, view) for view in spec.views]
     agent_label = None
@@ -70,12 +80,12 @@ def _serialize(spec: AdminSectionSpec, row: Optional[AdminSectionOverride]) -> D
         "resource_key": spec.resource_key,
         "related_tools": list(spec.related_tools),
         "default_agent_profile_id": spec.default_agent_profile_id,
-        "agent_profile_id": agent_id,
+        "agent_profile_id": agent_id,  # L2 del chat contextual, o None = sin chat
         "agent_label": agent_label,
-        "chat_agent_profile_id": chat_agent_id(agent_id),
         "agent_is_default": agent_is_default,
-        "description": description,
-        "description_is_default": description_is_default,
+        # Visibilidad del sidebar derecho (feature 001).
+        "sidebar_has_chat": agent_id is not None,
+        "sidebar_has_instructions": any((v["sidebar_body"] or "").strip() for v in views),
         "view_count": len(views),
         "views": views,
     }
@@ -116,11 +126,9 @@ async def _get_or_create_row(db: AsyncSession, section_id: str) -> AdminSectionO
 
 def _row_is_empty(row: AdminSectionOverride) -> bool:
     views = row.views if isinstance(row.views, dict) else {}
-    return (
-        row.agent_profile_id is None
-        and not (row.description or "").strip()
-        and not views
-    )
+    # Un override vacío explícito ({"main": {"sidebar_body": ""}}) NO es vacío:
+    # lleva intención del operador (ocultar la pestaña) — la fila se conserva.
+    return row.agent_profile_id is None and not views
 
 
 async def update_section(
@@ -129,34 +137,42 @@ async def update_section(
     *,
     agent_profile_id: Optional[str] = None,
     clear_agent: bool = False,
-    description: Optional[str] = None,
-    clear_description: bool = False,
     views: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
-    get_section_spec(section_id)
+    spec = get_section_spec(section_id)
     if agent_profile_id:
-        get_profile(agent_profile_id)
+        get_profile(agent_profile_id)  # KeyError → 400 "Unknown agent profile"
+        if not is_l2(agent_profile_id):
+            raise ValueError(f"Agent profile is not L2: {agent_profile_id}")
     row = await _get_or_create_row(db, section_id)
     if clear_agent:
         row.agent_profile_id = None
     elif agent_profile_id is not None:
         row.agent_profile_id = agent_profile_id
-    if clear_description:
-        row.description = None
-    elif description is not None:
-        row.description = description.strip() or None
     if views is not None:
         cleaned: Dict[str, Dict[str, str]] = {}
-        spec = get_section_spec(section_id)
-        allowed = {v.key for v in spec.views}
+        view_specs = {v.key: v for v in spec.views}
         for key, payload in views.items():
-            if key not in allowed or not isinstance(payload, dict):
-                continue
-            entry = {
-                field: (payload.get(field) or "").strip()
-                for field in ("description", "sidebar_title", "sidebar_body")
-                if (payload.get(field) or "").strip()
-            }
+            vspec = view_specs.get(key)
+            if vspec is None or not isinstance(payload, dict):
+                continue  # RF-017: clave de vista desconocida se ignora
+            entry: Dict[str, str] = {}
+            for field, code_val in (
+                ("description", vspec.description),
+                ("sidebar_title", vspec.sidebar_title),
+                ("sidebar_body", vspec.sidebar_body),
+            ):
+                if field not in payload or not isinstance(payload[field], str):
+                    continue  # RF-007b: sub-campo ausente → se hereda de código
+                val = payload[field]
+                if field == "description":
+                    val = val.strip()
+                    if not val or val == code_val.strip():
+                        continue
+                elif val == code_val:
+                    continue  # no-op: igual al código, no se persiste
+                # sidebar_title/sidebar_body: "" persiste (override vacío explícito)
+                entry[field] = val
             if entry:
                 cleaned[key] = entry
         row.views = cleaned or None
@@ -172,6 +188,9 @@ async def set_agent_sections(
     section_ids: Sequence[str],
 ) -> List[Dict[str, Any]]:
     profile_id = get_profile(profile_id).id
+    if not is_l2(profile_id):
+        # feature 001: el agente de una sección (su chat contextual) es L2-only.
+        raise ValueError(f"Agent profile is not L2: {profile_id}")
     wanted = []
     for sid in section_ids:
         if sid not in known_section_ids():
@@ -209,9 +228,16 @@ async def resolve_profile_for_turn(
     agent_profile_id: Optional[str],
     page_context: Optional[dict],
 ) -> AgentProfile:
-    """Resuelve el perfil de chat usando el catálogo de secciones (con fallback de código)."""
+    """Perfil del turno de chat (feature 001).
+
+    - ``general`` → orquestador L1.
+    - ``contextual`` → override explícito de la request si viene; si no, el
+      ``agent_profile_id`` (L2) de la sección de la ruta; si la sección no tiene
+      agente o la ruta no hace match con ninguna sección → orquestador L1.
+    Nunca lanza por "sección sin agente": degrada al orquestador.
+    """
     if chat_surface == "general":
-        return get_profile(chat_agent_id(None) or "agent_orchestrator")
+        return get_profile(_ORCHESTRATOR)
     if agent_profile_id:
         return get_profile(agent_profile_id)
     route = (page_context or {}).get("route") or ""
@@ -219,11 +245,7 @@ async def resolve_profile_for_turn(
     if matched:
         spec, _view_key = matched
         item = await get_section(db, spec.id)
-        chat_id = item.get("chat_agent_profile_id")
-        if chat_id:
-            return get_profile(chat_id)
-    return resolve_agent_profile(
-        chat_surface=chat_surface,
-        agent_profile_id=agent_profile_id,
-        page_context=page_context,
-    )
+        pid = item.get("agent_profile_id")
+        if pid:
+            return get_profile(pid)
+    return get_profile(_ORCHESTRATOR)

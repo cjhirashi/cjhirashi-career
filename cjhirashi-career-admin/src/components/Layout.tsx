@@ -5,6 +5,8 @@ import { PanelRight } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
 import { SidebarRight } from './SidebarRight'
+import { useAdminSections } from '@/hooks/useAdminSections'
+import { matchAdminSection } from '@/types/adminSections'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -38,11 +40,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const hideContextualChat = isContextualChatHidden(pathname)
+  const { data: adminSections } = useAdminSections()
+
+  // feature 001: el sidebar derecho sólo existe si la sección de la ruta activa
+  // tiene chat contextual (agente L2) o instrucciones. Rutas que no hacen match
+  // con ninguna sección conservan el comportamiento anterior (sidebar presente).
+  const sectionMatch = matchAdminSection(pathname, adminSections ?? [])
+  const sectionHasSidebar = sectionMatch
+    ? sectionMatch.section.sidebar_has_chat || sectionMatch.section.sidebar_has_instructions
+    : true
+  const rightSidebarAvailable = !isContextualChatHidden(pathname) && sectionHasSidebar
 
   useEffect(() => {
-    if (hideContextualChat) setRightPanelOpen(false)
-  }, [hideContextualChat])
+    if (!rightSidebarAvailable) setRightPanelOpen(false)
+  }, [rightSidebarAvailable])
 
   useEffect(() => {
     let wasDesktop = isDesktopViewport()
@@ -58,7 +69,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
 
       const isXl = isXlViewport()
-      if (isXl !== wasXl && !hideContextualChat) {
+      if (isXl !== wasXl && rightSidebarAvailable) {
         setRightPanelOpen(isXl)
         wasXl = isXl
       }
@@ -66,7 +77,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [hideContextualChat])
+  }, [rightSidebarAvailable])
 
   const handleLogout = async () => {
     await logout()
@@ -87,8 +98,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Navbar
         onLogout={handleLogout}
         onMenuToggle={() => setSidebarOpen((open) => !open)}
-        onRightPanelToggle={hideContextualChat ? undefined : () => setRightPanelOpen((open) => !open)}
-        rightPanelOpen={hideContextualChat ? false : rightPanelOpen}
+        onRightPanelToggle={rightSidebarAvailable ? () => setRightPanelOpen((open) => !open) : undefined}
+        rightPanelOpen={rightSidebarAvailable ? rightPanelOpen : false}
       />
 
       {/* `dash-body`: sidebar-left | main-content | sidebar-right */}
@@ -118,7 +129,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             click, same idea as the left sidebar's mobile backdrop above.
             Not needed at `xl:` and up, where the panel lives in normal flow
             instead of floating over the content. */}
-        {rightPanelOpen && !hideContextualChat && (
+        {rightPanelOpen && rightSidebarAvailable && (
           <div
             className="fixed inset-0 z-40 bg-slate-900/50 xl:hidden"
             aria-hidden="true"
@@ -126,7 +137,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           />
         )}
 
-        {!hideContextualChat &&
+        {rightSidebarAvailable &&
           (rightPanelOpen ? (
             <SidebarRight onClose={() => setRightPanelOpen(false)} />
           ) : (

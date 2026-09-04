@@ -8,6 +8,15 @@ Complementa a [ADR-017](./017-l2-agent-settings.md) (L2 `agent_settings`, dueño
 "Secciones del Admin") y a [ADR-020](./020-admin-section-templates.md) (plantilla compartida de
 las vistas de tabla). No cambia ninguna regla de esos ADR — solo re-identifica las secciones.
 
+> **Enmienda 2026-09-04 (feature `001-sidebar-contextual-por-seccion`, [ADR-024](./024-sidebar-contextual-por-seccion.md)).**
+> El override editable de una sección cambia: se **elimina la columna
+> `admin_section_overrides.description`** (migración `c4d5e6f7a8b9`); `sidebar_body` de
+> cada vista pasa a **renderizarse como Markdown**; y `agent_profile_id` deja de ser
+> "agente con dominio con derivación" para ser **directamente el agente L2 del chat
+> contextual** de esa sección (`NULL` = sin chat). Ya no existe el campo derivado
+> `chat_agent_profile_id` en `AdminSectionItem`; en su lugar hay `sidebar_has_chat` y
+> `sidebar_has_instructions`.
+
 ## Contexto
 
 "Secciones del Admin" **no es una tabla**: es un registro en código

@@ -6,10 +6,13 @@ import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { SelectCapsule, SelectCapsuleGroup } from '@/components/SelectCapsule'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { getErrorMessage } from '@/utils/errors'
 import { ColumnConfig, SelectOption } from '@/config/careerResources'
 import { ADMIN_SECTION_TYPE_LABEL, AdminSection, AdminSectionView } from '@/types/adminSections'
-import { allAgentSelectOptions } from '@/config/agentProfiles'
+import { l2AgentSelectOptions } from '@/config/agentProfiles'
+import { MarkdownTable } from '@/components/MarkdownTable'
 import {
   DetailSectionTemplate,
   SectionRecordView,
@@ -21,9 +24,17 @@ const SECTION_TITLE = 'Secciones del Admin'
 const LIST_PATH = '/settings/sections'
 
 const agentOptions = [
-  { value: '', label: '— Sin agente (orquestador para chat) —' },
-  ...allAgentSelectOptions(),
+  { value: '', label: '— Sin agente (sin chat contextual) —' },
+  ...l2AgentSelectOptions(),
 ]
+
+const SidebarMarkdown: React.FC<{ children: string }> = ({ children }) => (
+  <div className="markdown-body">
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ table: MarkdownTable }}>
+      {children}
+    </ReactMarkdown>
+  </div>
+)
 
 const SECTION_TABS = [
   { key: 'list', label: 'Lista' },
@@ -40,7 +51,6 @@ const SECTION_COLUMNS: ColumnConfig[] = [
   { key: 'view_count', label: 'Vistas', format: 'number' },
   { key: 'path', label: 'Ruta' },
   { key: 'group', label: 'Grupo' },
-  { key: 'description', label: 'Descripción', format: 'truncate' },
 ]
 
 const TYPE_OPTIONS: SelectOption[] = Object.entries(ADMIN_SECTION_TYPE_LABEL).map(([value, label]) => ({
@@ -90,7 +100,6 @@ export const AdminSectionsPage: React.FC = () => {
           row.path,
           row.group,
           row.agent_label,
-          row.description,
           row.section_type,
         ]
           .filter(Boolean)
@@ -215,7 +224,14 @@ const recordGroups = (data: AdminSection) => [
         ),
       },
       { label: 'Vistas', value: data.view_count },
-      { label: 'Descripción', wide: true, value: data.description || '—' },
+      {
+        label: 'Chat contextual',
+        value: data.agent_profile_id ? (
+          <SelectCapsule code={data.agent_profile_id} label={data.agent_label ?? data.agent_profile_id} />
+        ) : (
+          'Desactivado (sin agente L2)'
+        ),
+      },
     ],
   },
   ...data.views.map((view) => ({
@@ -227,7 +243,11 @@ const recordGroups = (data: AdminSection) => [
       {
         label: 'Instrucciones del sidebar',
         wide: true,
-        value: <p className="whitespace-pre-wrap">{view.sidebar_body || '—'}</p>,
+        value: view.sidebar_body ? (
+          <SidebarMarkdown>{view.sidebar_body}</SidebarMarkdown>
+        ) : (
+          <span className="text-text-muted">Sin instrucciones (pestaña oculta)</span>
+        ),
       },
     ],
   })),
@@ -239,14 +259,12 @@ export const AdminSectionDetailPage: React.FC = () => {
   const update = useAdminSectionUpdate()
   const [viewState, setViewState] = useState<'view' | 'edit'>('view')
   const [agentId, setAgentId] = useState('')
-  const [description, setDescription] = useState('')
   const [views, setViews] = useState<AdminSectionView[]>([])
   const formOpenGuardAt = useRef(0)
 
   useEffect(() => {
     if (!data) return
     setAgentId(data.agent_profile_id ?? '')
-    setDescription(data.description)
     setViews(data.views)
   }, [data])
 
@@ -272,7 +290,6 @@ export const AdminSectionDetailPage: React.FC = () => {
         sectionId: data.id,
         payload: {
           agent_profile_id: agentId,
-          description,
           views: Object.fromEntries(
             views.map((view) => [
               view.key,
@@ -294,9 +311,8 @@ export const AdminSectionDetailPage: React.FC = () => {
   if (!data) return <p className="text-text-secondary">Sección no encontrada.</p>
 
   const agentDirty = (agentId || '') !== (data.agent_profile_id ?? '')
-  const descriptionDirty = description !== data.description
   const viewsDirty = JSON.stringify(views) !== JSON.stringify(data.views)
-  const dirty = agentDirty || descriptionDirty || viewsDirty
+  const dirty = agentDirty || viewsDirty
   const isSaving = update.isPending
 
   const actions =
@@ -358,30 +374,21 @@ export const AdminSectionDetailPage: React.FC = () => {
         <div className="space-y-6">
           <div>
             <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
-              Dominio y descripción
+              Agente del chat contextual
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               <ThemedSelect
-                aria-label="Agente con dominio"
+                aria-label="Agente del chat contextual"
                 value={agentId}
                 onChange={setAgentId}
                 options={agentOptions}
-                placeholder="— Agente —"
+                placeholder="— Agente L2 —"
                 allowEmpty
               />
               <p className="text-xs text-text-muted">
-                Chat contextual: {data.chat_agent_profile_id ?? 'agent_orchestrator'}
-                {data.agent_profile_id && data.chat_agent_profile_id !== data.agent_profile_id
-                  ? ' (L3 sin chat; se usa el L2 de respaldo)'
-                  : ''}
+                Agente L2 que atiende el chat del sidebar derecho de esta sección. Sin
+                agente, la pestaña de chat no se muestra.
               </p>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="input-field text-sm"
-                aria-label="Descripción de la sección"
-              />
             </div>
           </div>
 
@@ -422,7 +429,7 @@ export const AdminSectionDetailPage: React.FC = () => {
                   />
                 </label>
                 <label className="block text-sm text-text-secondary">
-                  Instrucciones del sidebar derecho
+                  Instrucciones del sidebar derecho (Markdown)
                   <textarea
                     value={view.sidebar_body}
                     onChange={(e) =>
@@ -432,9 +439,12 @@ export const AdminSectionDetailPage: React.FC = () => {
                         ),
                       )
                     }
-                    rows={5}
-                    className="input-field text-sm mt-1"
+                    rows={6}
+                    className="input-field text-sm mt-1 font-mono"
                   />
+                  <span className="text-xs text-text-muted">
+                    Se renderiza como Markdown. Vacío = la pestaña de instrucciones se oculta.
+                  </span>
                 </label>
               </div>
             </div>
@@ -444,13 +454,12 @@ export const AdminSectionDetailPage: React.FC = () => {
             type="button"
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-text-secondary hover:bg-glass hover:text-text transition-colors disabled:opacity-50"
             disabled={
-              (data.agent_is_default && data.description_is_default && views.every((v) => v.is_default)) ||
-              isSaving
+              (data.agent_is_default && views.every((v) => v.is_default)) || isSaving
             }
             onClick={() =>
               update.mutate({
                 sectionId: data.id,
-                payload: { agent_profile_id: '', description: '', views: {} },
+                payload: { agent_profile_id: '', views: {} },
               })
             }
           >

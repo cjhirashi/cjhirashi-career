@@ -119,13 +119,12 @@ describe('AgentCatalogPage', () => {
         group: 'Settings',
         resource_key: null,
         related_tools: [],
-        default_agent_profile_id: 'agent_orchestrator',
-        agent_profile_id: 'agent_orchestrator',
-        agent_label: 'Orquestador',
-        chat_agent_profile_id: 'agent_orchestrator',
+        default_agent_profile_id: 'agent_configuration',
+        agent_profile_id: 'agent_configuration',
+        agent_label: 'Configuración',
         agent_is_default: true,
-        description: 'Definición de agentes',
-        description_is_default: true,
+        sidebar_has_chat: true,
+        sidebar_has_instructions: true,
         view_count: 3,
         views: [
           {

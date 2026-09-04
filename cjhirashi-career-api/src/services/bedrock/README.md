@@ -222,7 +222,13 @@ flowchart TB
 Orden de un turno:
 
 1. `budget.assert_budget_available`
-2. `agent_profiles.resolve_agent_profile`
+2. `section_catalog.resolve_profile_for_turn` — `general` → orquestador; `contextual` →
+   el agente **L2** asignado a la sección de la ruta en el catálogo de Secciones del
+   Admin (`admin_section_overrides` / registro de código), y si la sección no tiene
+   agente o la ruta no hace match con ninguna sección, degrada al orquestador. Un
+   `agent_profile_id` explícito en la request gana. (feature 001: se retiró la
+   derivación `chat_agent_id()` / `_L3_CHAT_FALLBACK`; `resolve_agent_profile` sigue
+   como router de biblioteca para `general` y usos internos.)
 3. `settings_loader` + `section_profiles` (modelo)
 4. `prompt.compose_system_prompt`
 5. `history_manager.load_converse_messages`
@@ -1089,6 +1095,11 @@ Router de especialista.
 `chat_surface="general"` ignora la página y el `agent_profile_id`.  
 Contextual con `route="/linkedin"` → `agent_digital_presence`.  
 Contextual con `resource_key="achievements"` → `agent_professional_identity`.
+
+> feature 001: el turno de chat **contextual** ya no pasa por aquí. Lo resuelve
+> `section_catalog.resolve_profile_for_turn` desde el catálogo de Secciones del Admin
+> (agente L2 de la sección; fallback orquestador). `resolve_agent_profile` queda para
+> `general` y como utilidad de biblioteca.
 
 ### Flujo
 

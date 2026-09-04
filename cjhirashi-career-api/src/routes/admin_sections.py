@@ -7,7 +7,7 @@ from middleware.auth import get_current_user
 from models.user import User
 from schemas.admin_sections import AdminSectionItem, AdminSectionUpdateRequest
 from services import section_catalog
-from services.admin_sections import get_section_spec
+from services.admin_sections import get_section_spec, is_l2
 from services.bedrock.agent_profiles import get_profile
 
 router = APIRouter(prefix="/admin", tags=["Admin Sections"])
@@ -58,6 +58,11 @@ async def update_admin_section(
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown agent profile"
                 )
+            if not is_l2(agent_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Agent profile is not L2",
+                )
     views = None
     if payload.views is not None:
         views = {
@@ -69,9 +74,7 @@ async def update_admin_section(
             section_id,
             agent_profile_id=agent_id,
             clear_agent=clear_agent,
-            description=payload.description,
-            clear_description=payload.description == "",
             views=views,
         )
-    except KeyError as exc:
+    except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))

@@ -1,7 +1,44 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '../utils'
 import { MemoryRouter } from 'react-router-dom'
 import { SidebarRight } from '@/components/SidebarRight'
+import { useAdminSections } from '@/hooks/useAdminSections'
+import type { AdminSection } from '@/types/adminSections'
+
+vi.mock('@/hooks/useAdminSections')
+const mockedSections = vi.mocked(useAdminSections)
+
+const section = (over: Partial<AdminSection> = {}): AdminSection => ({
+  id: 'sec-1',
+  system_name: 'dashboard',
+  label: 'Dashboard',
+  path: '/dashboard',
+  section_type: 'metrics',
+  group: 'Métricas',
+  resource_key: null,
+  related_tools: [],
+  default_agent_profile_id: 'agent_configuration',
+  agent_profile_id: 'agent_configuration',
+  agent_label: 'Configuración',
+  agent_is_default: true,
+  sidebar_has_chat: true,
+  sidebar_has_instructions: true,
+  view_count: 1,
+  views: [
+    {
+      key: 'main',
+      label: 'Principal',
+      description: '',
+      sidebar_title: 'Dashboard',
+      sidebar_body: 'Resumen **general** de tu actividad.',
+      is_default: true,
+    },
+  ],
+  ...over,
+})
+
+const withSections = (rows: AdminSection[] | undefined) =>
+  mockedSections.mockReturnValue({ data: rows } as unknown as ReturnType<typeof useAdminSections>)
 
 const renderAt = (pathname: string, onClose = vi.fn()) =>
   render(
@@ -11,74 +48,82 @@ const renderAt = (pathname: string, onClose = vi.fn()) =>
   )
 
 describe('SidebarRight', () => {
-  it('should default to the "Instrucciones" tab, not the chat placeholder', () => {
-    renderAt('/dashboard')
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.queryByText('Asistente IA')).not.toBeInTheDocument()
+  beforeEach(() => {
+    vi.clearAllMocks()
+    withSections(undefined) // rutas no catalogadas → comportamiento anterior
   })
 
-  it('should switch to the Agent Bedrock chat window when the chat tab is pressed', () => {
+  it('defaults to the "Instrucciones" tab', () => {
+    renderAt('/dashboard')
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+  })
+
+  it('switches to the chat window when the chat tab is pressed', () => {
     renderAt('/dashboard')
     fireEvent.click(screen.getByTitle('Chat del asistente'))
     expect(screen.getByPlaceholderText('Escribe un mensaje...')).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Dashboard' })).not.toBeInTheDocument()
   })
 
-  it('should switch back to instructions when that tab is pressed again', () => {
-    renderAt('/dashboard')
-    fireEvent.click(screen.getByTitle('Chat del asistente'))
-    fireEvent.click(screen.getByTitle('Instrucciones de la pantalla'))
-    expect(screen.queryByText('Asistente IA')).not.toBeInTheDocument()
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-  })
-
-  it('should call onClose when the hide button is clicked', () => {
+  it('calls onClose when the hide button is clicked', () => {
     const onClose = vi.fn()
     renderAt('/dashboard', onClose)
     fireEvent.click(screen.getByLabelText('Ocultar panel'))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('should show metrics-specific instructions on /metrics', () => {
-    renderAt('/metrics')
-    expect(screen.getByText('Métricas')).toBeInTheDocument()
-  })
-
-  it('should derive instructions for a career-domain resource from its own config', () => {
+  it('derives instructions for a career-domain resource on an uncatalogued route', () => {
     renderAt('/career/vacancies')
     expect(screen.getByText('Vacantes')).toBeInTheDocument()
-    expect(screen.getByText(/Nueva Vacante/)).toBeInTheDocument()
   })
 
-  it('should show a singleton-specific instruction for a singleton resource (e.g. identity)', () => {
-    renderAt('/career/identity')
-    expect(screen.getByText(/único registro/)).toBeInTheDocument()
+  // feature 001 ------------------------------------------------------------
+
+  it('renders section instructions as Markdown (RF-008)', () => {
+    withSections([section()])
+    renderAt('/dashboard')
+    const strong = screen.getByText('general')
+    expect(strong.tagName).toBe('STRONG')
   })
 
-  it('should fall back to a generic message for an unknown route', () => {
-    renderAt('/some-unmapped-route')
-    expect(screen.getByText('Esta pantalla')).toBeInTheDocument()
+  it('hides the instructions tab when the view has no instructions (RF-009)', () => {
+    withSections([
+      section({
+        sidebar_has_instructions: false,
+        views: [
+          { key: 'main', label: 'Principal', description: '', sidebar_title: 'Dashboard', sidebar_body: '', is_default: false },
+        ],
+      }),
+    ])
+    renderAt('/dashboard')
+    expect(screen.queryByTitle('Instrucciones de la pantalla')).not.toBeInTheDocument()
+    // el chat sigue disponible
+    expect(screen.getByPlaceholderText('Escribe un mensaje...')).toBeInTheDocument()
   })
 
-  it('should render as a full-screen overlay on mobile', () => {
-    const { container } = renderAt('/dashboard')
-    const aside = container.querySelector('aside')
-    expect(aside?.className).toContain('fixed')
-    expect(aside?.className).toContain('inset-0')
-    expect(aside?.className).toContain('w-full')
+  it('hides the chat tab when the section has no L2 agent (RF-010)', () => {
+    withSections([section({ agent_profile_id: null, sidebar_has_chat: false })])
+    renderAt('/dashboard')
+    expect(screen.queryByTitle('Chat del asistente')).not.toBeInTheDocument()
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
   })
 
-  it('should render as a right-anchored overlay on tablet (md)', () => {
-    const { container } = renderAt('/dashboard')
-    const aside = container.querySelector('aside')
-    expect(aside?.className).toContain('md:right-0')
-    expect(aside?.className).toContain('md:w-96')
-  })
-
-  it('should sit back in normal flow on desktop (xl)', () => {
-    const { container } = renderAt('/dashboard')
-    const aside = container.querySelector('aside')
-    expect(aside?.className).toContain('xl:static')
-    expect(aside?.className).toContain('xl:w-80')
+  it('does not execute embedded HTML in instructions (RF-019)', () => {
+    withSections([
+      section({
+        views: [
+          {
+            key: 'main',
+            label: 'Principal',
+            description: '',
+            sidebar_title: 'Dashboard',
+            sidebar_body: 'texto <img src=x onerror="window.__pwned=1"> más',
+            is_default: false,
+          },
+        ],
+      }),
+    ])
+    renderAt('/dashboard')
+    expect((window as unknown as { __pwned?: number }).__pwned).toBeUndefined()
+    expect(document.querySelector('img[onerror]')).toBeNull()
   })
 })

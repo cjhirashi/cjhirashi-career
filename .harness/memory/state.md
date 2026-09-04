@@ -40,7 +40,16 @@ actualizado: 2026-09-04
 
 - **Génesis en modo alineación completada** (2026-09-04): arquitectura detectada y
   registrada en `constitution.md` Art. 2 + `ADR-001`.
-- `specs/` **vacío**. No hay features en curso.
+- **[2026-09-04] Feature `001-sidebar-contextual-por-seccion` — `implemented`**
+  (`verified` bloqueado por la mitad admin de la compuerta; ver Obstáculos).
+  `agent_profile_id` de una sección del Admin = agente **L2** del chat contextual del
+  sidebar derecho (selector sólo L2, `NULL` = sin chat); se retiran
+  `chat_agent_id()`/`_L3_CHAT_FALLBACK`; `resolve_profile_for_turn` contextual sale del
+  catálogo con fallback al orquestador. `sidebar_body` por vista → Markdown. Se elimina
+  la columna/override `description` (migración `c4d5e6f7a8b9` — **no** corre en
+  `init_db`; `alembic upgrade head` tras rebuild). Sidebar derecho condicional (sin
+  chat ni instrucciones → ni panel ni botón). ADR-024. **Pendiente para `verified`:**
+  compuerta admin verde + mover `anchor_commit` de la spec.
 - **[2026-09-04] Mensajes de `caddy.json` resueltos en código** (pendiente de cerrarlos
   con `bin/caddy-msg` desde el repo `cjhirashi-srv`):
   - **MSG-0002 (bloqueo):** el API volvió a `:8001` tras el restore. Corregido a `:8000`
@@ -85,24 +94,38 @@ actualizado: 2026-09-04
 
 ## Obstáculos y resolución
 
-- **[2026-09-04] Gate en ROJO por fallo pre-existente en `cjhirashi-career-api`**
-  (no causado por el fix de caddy): `ImportError: cannot import name 'Evidence'
-  from 'models'` al colectar `tests/unit/test_models.py` y `test_models_extended.py`.
-  Reproducido en `HEAD` limpio (a52ff41) con los cambios en stash. **Confirmado
-  2026-09-04:** NO existe modelo `Evidence` — el dominio se dividió en `Achievement`,
-  `StarStory`, `Project`, `WorkHistory`, etc. Los dos tests están podridos tras ese
-  refactor; hay que reescribirlos contra el set de modelos actual (no es one-liner).
-  Bloquea marcar `verified` cualquier cosa que toque `api/` hasta arreglarlo.
+- **[2026-09-04] Compuerta `api` reparada** (fallos pre-existentes, no de la feature
+  001). Los tests `Evidence`/`JobStrategy` ya se habían retirado (commit ff72127);
+  quedaban: (a) `33 errors` por `JSONB` sin compilar en el SQLite de los fixtures;
+  (b) `test_auth::test_extract_user_id_from_token` con aserción `str` vs `int`
+  obsoleta; (c) `tests/integration/test_auth_integration.py` contra rutas `/api/v1/*`
+  muertas (404). **Resuelto en commit aparte:** shim `@compiles(JSONB,"sqlite")` en
+  `tests/conftest.py`; camino a Postgres desechable vía `TEST_DATABASE_URL`
+  (+ `pytest_collection_modifyitems` que salta los tests con fixtures PG-only:
+  `test_db`/`db_session`/`test_user`/…); aserción de `test_auth` corregida a `str`;
+  `pytest.mark.skip` de módulo en `test_auth_integration.py`. Resultado:
+  `309 passed, 72 skipped, 0 failed, 0 errors`. Existe la BD `career_db_test` en el
+  contenedor `postgres_db` para el camino `TEST_DATABASE_URL` (aislada de dev).
+- **[2026-09-04] Compuerta `admin` en ROJO — 14 tests pre-existentes.** El repo
+  `cjhirashi-career-admin` **no tiene lockfile** y `node_modules` no traía
+  `react-router-dom`; se corrió `npm install` (ahora `type-check` = 0 errores,
+  `vitest` ejecuta). Quedan **14 fallos pre-existentes** sin relación con 001: XHR
+  reales a `localhost:3000` sin mock (`FilesPage` ×4), aserciones de spacing
+  (`MetricsPage` ×2, `DashboardPage`), mocks de auth (`useAuth` ×2, `authStore`,
+  `LoginPage`), `client.test.ts`, `CareerResourceView` ×2, `MessageList`. Baseline
+  `HEAD` limpio (post-install) = **mismos 14**. Bloquea `verified` de 001.
 - **[2026-09-04] `.harness/gate/check.sh` con cambio sin autoría en el working tree**
-  (mtime durante la sesión): añade un bloque opcional que hace `source` de
-  `gate/project.sh` si existe (no existe → no-op). No lo tocamos; confirmar con el humano.
+  (bloque opcional `source gate/project.sh`). No lo tocamos; confirmar con el humano.
+  (Sigue sin commitear, junto con `AGENTS.md` y `.claude/`.)
 
 ## Próximo paso concreto
 
-- (Contrato `caddy.json` limpio: MSG-0001/0002/0003/0004 todos `resuelto`.)
+- **Reabrir la compuerta `admin`:** commitear un `package-lock.json` de
+  `cjhirashi-career-admin` y sanear los 14 tests pre-existentes (empezar por el mock
+  de red — `FilesPage`/`useAuth` pegan a `localhost:3000`). Al verde: mover
+  `anchor_commit` de `.harness/specs/001-.../spec.md` al commit de cierre y pasar
+  `estado:` de spec/plan/tasks a `verified`.
+- Reescribir `cjhirashi-career-api/tests/integration/test_auth_integration.py` contra
+  el esquema de rutas actual (hoy `pytest.mark.skip`).
 - Reescritura narrativa del arc42 sin el Canal 3 (ADR-023 lo deja anotado).
-- Reescribir `api/tests/unit/test_models.py` y `test_models_extended.py` contra los
-  modelos actuales (ya no hay `Evidence`) para reabrir el gate.
-- El humano define la primera feature. Para arrancarla: aplicar la rúbrica
-  (`method.md §2`); si entra al carril SDD, Fase 1 = elicitación interactiva.
 - Antes de tocar nada: correr `.harness/gate/check.sh`.

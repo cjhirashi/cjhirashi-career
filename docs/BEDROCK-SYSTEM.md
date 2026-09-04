@@ -17,6 +17,10 @@ Documento índice del Harness Converse (ADR-008, ADR-012).
 
 L1 no hace CRUD. L3 no tiene `POST /bedrock/chat` como agente principal.
 
+El L2 que atiende el sidebar contextual de cada sección se asigna en **Settings →
+Secciones del Admin** (ADR-024); sin agente asignado, esa sección no tiene chat
+contextual y el turno degrada al orquestador.
+
 ## 3. Perfiles
 
 **L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`

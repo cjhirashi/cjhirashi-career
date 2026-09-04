@@ -18,13 +18,12 @@ const sample: AdminSection = {
   group: 'Presencia Digital',
   resource_key: null,
   related_tools: ['get_linkedin_status'],
-  default_agent_profile_id: 'agent_linkedin_publishing',
-  agent_profile_id: 'agent_linkedin_publishing',
-  agent_label: 'Control de publicación LinkedIn',
-  chat_agent_profile_id: 'agent_digital_presence',
+  default_agent_profile_id: 'agent_digital_presence',
+  agent_profile_id: 'agent_digital_presence',
+  agent_label: 'Presencia Digital',
   agent_is_default: true,
-  description: 'Integración API de LinkedIn.',
-  description_is_default: true,
+  sidebar_has_chat: true,
+  sidebar_has_instructions: true,
   view_count: 1,
   views: [
     {
@@ -32,7 +31,7 @@ const sample: AdminSection = {
       label: 'Principal',
       description: 'Publicación vía API.',
       sidebar_title: 'LinkedIn · Publicar',
-      sidebar_body: 'Conecta OAuth y publica.',
+      sidebar_body: 'Conecta **OAuth** y publica.',
       is_default: true,
     },
   ],
@@ -59,34 +58,55 @@ describe('AdminSectionsPage', () => {
     renderAt('/settings/sections')
     await waitFor(() => expect(screen.getByText('LinkedIn · Publicar')).toBeInTheDocument())
     expect(screen.getByText('funcional')).toBeInTheDocument()
-    expect(screen.getByText('Control de publicación LinkedIn')).toBeInTheDocument()
+    expect(screen.getByText('Presencia Digital', { selector: 'span' })).toBeTruthy()
     expect(screen.getByText('sec-6')).toBeInTheDocument()
     expect(screen.getByText('linkedin-publish')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/buscar en secciones/i)).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('edits owner and sidebar instructions', async () => {
-    mockedApi.update.mockResolvedValue({
-      ...sample,
-      description: 'Nueva descripción',
-      description_is_default: false,
-    })
+  it('renders sidebar instructions as Markdown in the record view (RF-008)', async () => {
     renderAt('/settings/sections/sec-6')
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Secciones del Admin')
     )
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('sec-6')
+    const strong = screen.getByText('OAuth')
+    expect(strong.tagName).toBe('STRONG')
+  })
+
+  it('has no section-level "Descripción" field in edit mode (RF-013)', async () => {
+    renderAt('/settings/sections/sec-6')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument())
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
-    fireEvent.change(screen.getByLabelText('Descripción de la sección'), {
-      target: { value: 'Nueva descripción' },
+    expect(screen.queryByLabelText('Descripción de la sección')).not.toBeInTheDocument()
+  })
+
+  it('shows the contextual-chat agent selector, not the old "dominio" field (RF-014)', async () => {
+    renderAt('/settings/sections/sec-6')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    expect(screen.getByLabelText('Agente del chat contextual')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Agente con dominio')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Chat contextual:/)).not.toBeInTheDocument()
+  })
+
+  it('saves the sidebar_body override per view', async () => {
+    mockedApi.update.mockResolvedValue(sample)
+    renderAt('/settings/sections/sec-6')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    fireEvent.change(screen.getByLabelText(/Instrucciones del sidebar derecho/i), {
+      target: { value: '## Nuevas instrucciones' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Actualizar' }))
     await waitFor(() =>
       expect(mockedApi.update).toHaveBeenCalledWith(
         'sec-6',
-        expect.objectContaining({ description: 'Nueva descripción' })
+        expect.objectContaining({
+          views: expect.objectContaining({
+            main: expect.objectContaining({ sidebar_body: '## Nuevas instrucciones' }),
+          }),
+        })
       )
     )
+    expect(mockedApi.update.mock.calls[0][1]).not.toHaveProperty('description')
   })
 })
