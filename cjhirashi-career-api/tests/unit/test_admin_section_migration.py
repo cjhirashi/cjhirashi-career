@@ -1,6 +1,6 @@
 """feature 001 · RF-021 — la migración que retira ``admin_section_overrides.description``
-es DDL mínimo: sólo drop/add de esa columna, sin tocar ``views`` ni
-``agent_profile_id``, y encadena de forma lineal (no abre una rama nueva).
+es DDL mínimo e idempotente (``DROP/ADD COLUMN IF [NOT] EXISTS`` sobre esa única
+columna), sin tocar ``views`` ni ``agent_profile_id``, y encadena de forma lineal.
 """
 import importlib.util
 from pathlib import Path
@@ -32,14 +32,18 @@ def test_revision_chains_linearly():
 
 
 @pytest.mark.requisito("RF-021")
-def test_upgrade_only_drops_description():
+def test_upgrade_drops_only_description_idempotently():
     mod = _load()
     with patch.object(mod, "op") as op:
         mod.upgrade()
-    op.drop_column.assert_called_once_with("admin_section_overrides", "description")
+    op.execute.assert_called_once()
+    sql = op.execute.call_args.args[0].upper()
+    assert "DROP COLUMN IF EXISTS DESCRIPTION" in sql
+    assert "ADMIN_SECTION_OVERRIDES" in sql
+    assert "VIEWS" not in sql and "AGENT_PROFILE_ID" not in sql
+    op.drop_column.assert_not_called()
     op.add_column.assert_not_called()
     op.alter_column.assert_not_called()
-    op.execute.assert_not_called()
 
 
 @pytest.mark.requisito("RF-021")
@@ -47,9 +51,8 @@ def test_downgrade_readds_description_nullable():
     mod = _load()
     with patch.object(mod, "op") as op:
         mod.downgrade()
-    assert op.add_column.call_count == 1
-    table, column = op.add_column.call_args.args
-    assert table == "admin_section_overrides"
-    assert column.name == "description"
-    assert column.nullable is True
+    op.execute.assert_called_once()
+    sql = op.execute.call_args.args[0].upper()
+    assert "ADD COLUMN IF NOT EXISTS DESCRIPTION TEXT" in sql
+    assert "ADMIN_SECTION_OVERRIDES" in sql
     op.drop_column.assert_not_called()

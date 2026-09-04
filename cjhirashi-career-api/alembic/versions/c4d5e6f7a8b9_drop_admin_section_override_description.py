@@ -5,11 +5,14 @@ cubren ahora las instrucciones del sidebar derecho (``views[view].sidebar_body``
 renderizadas como Markdown). El registro de código sigue teniendo la descripción
 de cada sección para el catálogo; sólo desaparece la columna de override en PG.
 
-La migración es DDL puro: `drop_column` en ``upgrade`` y su inversa en
-``downgrade``. NO toca ``views`` ni ``agent_profile_id`` de ninguna fila.
+La migración es DDL puro e **idempotente** (``DROP COLUMN IF EXISTS`` /
+``ADD COLUMN IF NOT EXISTS``, mismo patrón que d1e2f3a4b5c6): en un entorno nuevo
+``init_db`` corre ``create_all`` con los modelos actuales — que ya NO tienen
+``description`` — así que la columna puede no existir cuando se ejecute esto.
+NO toca ``views`` ni ``agent_profile_id`` de ninguna fila.
 
-Nota de deploy (igual que b1c2d3e4f5a6 / ADR-019): esto NO corre en ``init_db``
-(que usa ``create_all``). Tras el rebuild hay que ejecutar ``alembic upgrade head``.
+Nota de deploy: esto NO corre en ``init_db``. Tras el rebuild hay que ejecutar
+``alembic upgrade head``.
 
 Revision ID: c4d5e6f7a8b9
 Revises: b2c3d4e5f6a7
@@ -17,7 +20,6 @@ Create Date: 2026-09-04
 """
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
 
 revision: str = "c4d5e6f7a8b9"
@@ -30,8 +32,8 @@ _COLUMN = "description"
 
 
 def upgrade() -> None:
-    op.drop_column(_TABLE, _COLUMN)
+    op.execute(f'ALTER TABLE {_TABLE} DROP COLUMN IF EXISTS {_COLUMN}')
 
 
 def downgrade() -> None:
-    op.add_column(_TABLE, sa.Column(_COLUMN, sa.Text(), nullable=True))
+    op.execute(f'ALTER TABLE {_TABLE} ADD COLUMN IF NOT EXISTS {_COLUMN} TEXT')
