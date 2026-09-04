@@ -55,9 +55,10 @@ describe('LoginPage', () => {
   })
 
   it('displays error message on login failure', async () => {
-    vi.mocked(authApi.login).mockRejectedValue(
-      new Error('Invalid credentials')
-    )
+    // useAuth extrae `err.response.data.detail` (forma de error de axios / RFC 9457)
+    vi.mocked(authApi.login).mockRejectedValue({
+      response: { data: { detail: 'Invalid credentials' } },
+    })
 
     render(
       <BrowserRouter>

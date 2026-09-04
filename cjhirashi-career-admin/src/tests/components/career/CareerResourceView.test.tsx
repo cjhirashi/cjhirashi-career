@@ -85,7 +85,10 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'true')
     fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
     await waitFor(() => expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true'))
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Competencias · 1 · Liderazgo Técnico')
+    const h2 = screen.getByRole('heading', { level: 2 })
+    // el breadcrumb usa separadores por CSS, no texto literal
+    expect(h2).toHaveTextContent('Competencias')
+    expect(h2).toHaveTextContent('Liderazgo Técnico')
   })
 
   it('shows the total record count next to the title, independent of the page size', async () => {
@@ -323,7 +326,8 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     const form = screen.getByRole('form')
     fireEvent.change(within(form).getByLabelText(/^nombre/i), { target: { value: 'Pensamiento Sistémico' } })
     fireEvent.click(within(form).getByRole('button', { name: /^tipo/i }))
-    fireEvent.click(within(form).getByRole('option', { name: /^técnica/i }))
+    // el nombre accesible de la opción incluye el código: "technical Técnica"
+    fireEvent.click(within(form).getByRole('option', { name: /técnica/i }))
     fireEvent.click(screen.getByRole('button', { name: /crear/i }))
 
     await waitFor(() => expect(screen.getAllByText('Pensamiento Sistémico').length).toBeGreaterThan(0))

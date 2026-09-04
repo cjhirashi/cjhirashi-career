@@ -36,7 +36,8 @@ describe('MetricsPage', () => {
 
     it('should display metric values as 0', () => {
       render(<MetricsPage />)
-      const zeroValues = screen.getAllByText('0')
+      // 3 tarjetas muestran "0" y una "0%".
+      const zeroValues = screen.getAllByText(/^0%?$/)
       expect(zeroValues.length).toBeGreaterThanOrEqual(4)
     })
 
@@ -71,8 +72,9 @@ describe('MetricsPage', () => {
 
     it('should have proper spacing between sections', () => {
       const { container } = render(<MetricsPage />)
+      // el encabezado va en un contenedor con `mb-8`
       const title = container.querySelector('h1')
-      expect(title?.classList.contains('mb-8')).toBe(true)
+      expect(title?.closest('.mb-8')).not.toBeNull()
     })
   })
 

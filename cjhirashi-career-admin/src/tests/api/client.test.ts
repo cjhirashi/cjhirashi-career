@@ -1,11 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
-import { apiClient, axiosInstance } from '@/api/client'
 import { useAuthStore } from '@/stores/authStore'
 import { mockLoginResponse, mockUser } from '../fixtures/mockData'
 
-vi.mock('axios')
-const mockedAxios = axios as any
+// `@/api/client` instancia `axios.create()` en el módulo (crea interceptores),
+// así que el mock necesita devolver una instancia con la forma real. El
+// auto-mock de vitest devuelve `undefined` desde `axios.create()`.
+vi.mock('axios', () => {
+  const instance = {
+    interceptors: {
+      request: { use: vi.fn(), eject: vi.fn() },
+      response: { use: vi.fn(), eject: vi.fn() },
+    },
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    request: vi.fn(),
+    defaults: { headers: { common: {} } },
+  }
+  const axios = Object.assign(vi.fn(), instance, {
+    create: vi.fn(() => instance),
+    isAxiosError: vi.fn(() => false),
+  })
+  return { default: axios }
+})
+
+const { apiClient, axiosInstance } = await import('@/api/client')
 
 describe('API Client', () => {
   beforeEach(() => {

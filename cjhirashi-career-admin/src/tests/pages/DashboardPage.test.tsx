@@ -151,8 +151,9 @@ describe('DashboardPage', () => {
 
     it('should have proper spacing', () => {
       const { container } = render(<DashboardPage />)
-      const mainDiv = container.firstChild
-      expect(mainDiv).toHaveClass('mb-8')
+      // el bloque de encabezado (título + saludo) lleva `mb-8`
+      const header = container.querySelector('h1')?.closest('.mb-8')
+      expect(header).not.toBeNull()
     })
   })
 

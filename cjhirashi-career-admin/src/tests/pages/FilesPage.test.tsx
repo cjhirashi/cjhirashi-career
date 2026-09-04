@@ -86,7 +86,7 @@ describe('FilesPage', () => {
     expect(screen.queryByRole('button', { name: /copiar link/i })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^ver$/i }))
 
-    await waitFor(() => expect(mockedFilesApi.getDownloadUrl).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(mockedFilesApi.getDownloadUrl).toHaveBeenCalledWith(sampleFile.id))
     await waitFor(() => expect(screen.getByRole('dialog', { name: 'diagrama.png' })).toBeInTheDocument())
   })
 
@@ -119,7 +119,7 @@ describe('FilesPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /descargar/i }))
 
-    await waitFor(() => expect(mockedFilesApi.downloadBlob).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(mockedFilesApi.downloadBlob).toHaveBeenCalledWith(sampleFile.id))
     await waitFor(() => expect(clickSpy).toHaveBeenCalled())
     expect(createObjectURL).toHaveBeenCalledWith(blob)
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
@@ -201,7 +201,7 @@ describe('FilesPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /hacer privado/i }))
 
-    await waitFor(() => expect(mockedFilesApi.setVisibility).toHaveBeenCalledWith(1, false))
+    await waitFor(() => expect(mockedFilesApi.setVisibility).toHaveBeenCalledWith(sampleFile.id, false))
   })
 
   it('asks for confirmation and deletes a file', async () => {
@@ -213,7 +213,7 @@ describe('FilesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /eliminar/i }))
 
     expect(confirmSpy).toHaveBeenCalled()
-    await waitFor(() => expect(mockedFilesApi.remove).toHaveBeenCalledWith(1))
+    await waitFor(() => expect(mockedFilesApi.remove).toHaveBeenCalledWith(sampleFile.id))
     confirmSpy.mockRestore()
   })
 })

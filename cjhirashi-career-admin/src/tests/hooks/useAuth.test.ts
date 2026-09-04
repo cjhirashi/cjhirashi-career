@@ -16,6 +16,7 @@ describe('useAuth', () => {
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      tokenExpiresAt: null,
     })
     vi.clearAllMocks()
   })
@@ -34,6 +35,9 @@ describe('useAuth', () => {
         user: mockUser,
         isAuthenticated: true,
         accessToken: 'token123',
+        // sin expiry, el efecto "check token expiration on mount" de useAuth
+        // trata el token como expirado y cierra sesión.
+        tokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
       })
 
       const { result } = renderHook(() => useAuth())
@@ -115,6 +119,7 @@ describe('useAuth', () => {
         user: mockUser,
         accessToken: 'token123',
         isAuthenticated: true,
+        tokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
       })
 
       vi.mocked(authApi.logout).mockResolvedValue(undefined)
@@ -209,6 +214,7 @@ describe('useAuth', () => {
         user: mockUser,
         isAuthenticated: true,
         error: 'Some error',
+        tokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
       })
 
       const { result } = renderHook(() => useAuth())

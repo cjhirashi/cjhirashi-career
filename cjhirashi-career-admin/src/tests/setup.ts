@@ -42,3 +42,9 @@ class ResizeObserverMock {
   disconnect() {}
 }
 global.ResizeObserver = ResizeObserverMock
+
+// jsdom no implementa scrollIntoView - lo usan los componentes que hacen
+// auto-scroll al final (p.ej. MessageList del chat Bedrock).
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn()
+}

@@ -255,11 +255,11 @@ describe('authStore', () => {
       const { setUser } = useAuthStore.getState()
 
       setUser(mockUser)
-      expect(useAuthStore.getState().user?.id).toBe(1)
+      expect(useAuthStore.getState().user?.id).toBe(mockUser.id)
 
       setUser(mockUser2)
-      expect(useAuthStore.getState().user?.id).toBe(2)
-      expect(useAuthStore.getState().user?.username).toBe('testuser')
+      expect(useAuthStore.getState().user?.id).toBe(mockUser2.id)
+      expect(useAuthStore.getState().user?.username).toBe(mockUser2.username)
     })
   })
 })

@@ -8,6 +8,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
+    // El cache de resultados (node_modules/.vite/vitest) sólo reordena archivos
+    // por duración; desactivarlo evita fallos de escritura cuando ese directorio
+    // quedó con otro dueño (p. ej. creado por un build en contenedor).
+    cache: false,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
