@@ -40,9 +40,13 @@ actualizado: 2026-09-04
 
 - **Génesis en modo alineación completada** (2026-09-04): arquitectura detectada y
   registrada en `constitution.md` Art. 2 + `ADR-001`.
-- **[2026-09-04] Feature `001-sidebar-contextual-por-seccion` — `verified`**
-  (rama `001-sidebar-contextual-por-seccion`, commits `ffac40a` reparación gate api ·
-  `6d948f7` feature · `4ec56f8` saneo tests admin/portfolio; `anchor_commit` = `6d948f7`).
+- **[2026-09-04] Feature `001-sidebar-contextual-por-seccion` — `verified` + DESPLEGADA**
+  a `main` (`ea94840` la punta; commits `ffac40a` gate api · `6d948f7` feature ·
+  `4ec56f8` tests admin/portfolio · `cba8f98d` .claude+gate · `ea94840` migración
+  idempotente; `anchor_commit` = `6d948f7`). `main` == `origin/main`. Stack recreado
+  (`docker compose build/up` api+admin); `career_db.admin_section_overrides` sin la
+  columna `description` (`alembic_version` = `c4d5e6f7a8b9`). Verificado en vivo por
+  Caddy: `admin.cjhirashi.com/api/health` 200, `/admin/sections` con el shape nuevo.
   `agent_profile_id` de una sección del Admin = agente **L2** del chat contextual del
   sidebar derecho (selector sólo L2, `NULL` = sin chat); se retiran
   `chat_agent_id()`/`_L3_CHAT_FALLBACK`; `resolve_profile_for_turn` contextual sale del
@@ -127,10 +131,15 @@ actualizado: 2026-09-04
 
 ## Próximo paso concreto
 
-- **Deploy de 001:** `alembic upgrade head` en `cjhirashi-career-api` tras el rebuild
-  (migración `c4d5e6f7a8b9` retira `admin_section_overrides.description`; no corre en
-  `init_db`).
-- Merge del PR de la rama `001-sidebar-contextual-por-seccion`.
+- **001 cerrada y desplegada.** No queda nada de 001.
+- **Hazard nuevo:** `career_db.alembic_version` = `c4d5e6f7a8b9` viene en parte de
+  trabajo abandonado en otra rama (commits `babd50f0`/`61783017` traían una migración
+  con esa misma ID que añadía `visibility_level`/`is_superuser`/jerarquía de
+  secciones). Si esas columnas/tablas existen en `career_db` son leftovers inertes;
+  quien retome ese trabajo debe usar DDL con `IF [NOT] EXISTS`.
+- **Cuidado al desplegar:** `docker compose up -d` puede recrear `api` con un
+  `DATABASE_URL` obsoleto — usar `up -d --force-recreate --no-deps api` y verificar
+  `docker inspect ... .Config.Env`.
 - Aparte de 001: reescribir `cjhirashi-career-api/tests/integration/test_auth_integration.py`
   contra el esquema de rutas actual (hoy `pytest.mark.skip`); `cjhirashi-career-ai`
   sigue sin suite de tests.

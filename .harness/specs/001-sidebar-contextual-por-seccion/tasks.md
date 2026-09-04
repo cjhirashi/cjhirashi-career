@@ -220,7 +220,7 @@ los de `cjhirashi-career-api` con `venv_test/bin/python -m pytest` (scope 001: 7
 | RF-018 | T-013, T-014 | test_admin_section_catalog::test_row_is_empty | Pass |
 | RF-019 | T-071 | SidebarRight::"does not execute embedded HTML in instructions" | Pass |
 | RF-020 | T-040, T-041 | test_section_profile_resolution::test_contextual_no_agent_never_raises | Pass |
-| RF-021 | T-030, T-031 | test_admin_section_migration::test_upgrade_only_drops_description · ::test_downgrade_readds_description_nullable · ::test_revision_chains_linearly | Pass |
+| RF-021 | T-030, T-031 | test_admin_section_migration::test_upgrade_drops_only_description_idempotently · ::test_downgrade_readds_description_nullable · ::test_revision_chains_linearly | Pass |
 | RF-022 | T-040, T-041 | test_section_profile_resolution::test_contextual_no_agent_falls_back_to_orchestrator · ::test_contextual_unmatched_route_falls_back_to_orchestrator | Pass |
 | RNF-001 | T-071 | revisión: `cjhirashi-career-admin/package.json` sin diff (react-markdown + remark-gfm ya presentes) | Pass |
 | RNF-002 | T-012 | `_overrides_map` sigue en un único `select`; `_serialize` sin I/O | Pass |
