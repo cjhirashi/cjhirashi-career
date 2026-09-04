@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//mnt/disco2/cjhirashi-data/proyectos/fabrica-agentes-transversales/agents/documentacion-especialista/protocols/**)"
-    ]
-  }
-}

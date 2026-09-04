@@ -1,0 +1,123 @@
+{
+  "formato": 1,
+  "_lee": "Contrato con cjhirashi-srv (proxy Caddy + Cloudflare Tunnel). cjhirashi-srv escribe 'cjhirashi_srv' (NO editar). Tu harness rellena 'servicios'. 'mensajes' con: python3 bin/caddy-msg (desde el repo de cjhirashi-srv). Validar: python3 bin/caddy-sync cjhirashi-career",
+  "proyecto": "cjhirashi-career",
+  "cjhirashi_srv": {
+    "red": "net-cjhirashi-career",
+    "conecta_tus_contenedores_a_esta_red": true,
+    "declarala_external_en_tu_compose": true,
+    "hosts": {
+      "admin": "admin.cjhirashi.com",
+      "portafolio": "portafolio.cjhirashi.com",
+      "mcp": "mcp.cjhirashi.com",
+      "files": "files.cjhirashi.com"
+    },
+    "estado": "activo",
+    "ultima_sync": "2026-09-04",
+    "gaps": [
+      "cjhirashi-career-api:8000/health: sin respuesta",
+      "cjhirashi-career-api:8000/: sin respuesta"
+    ]
+  },
+  "servicios": [
+    {
+      "nombre": "admin",
+      "contenedor": "cjhirashi-career-admin",
+      "puerto": 8000,
+      "protocolo": "http",
+      "sse": false,
+      "healthcheck": "/health",
+      "headers_up": [
+        "X-Forwarded-Proto https",
+        "X-Forwarded-Scheme https"
+      ],
+      "rutas": [
+        {
+          "prefijo": "/api/",
+          "contenedor": "cjhirashi-career-api",
+          "puerto": 8000,
+          "quitar_prefijo": true
+        },
+        {
+          "prefijo": "/"
+        }
+      ]
+    },
+    {
+      "nombre": "portafolio",
+      "contenedor": "cjhirashi-career-portfolio",
+      "puerto": 8000,
+      "protocolo": "http",
+      "sse": false,
+      "healthcheck": "/",
+      "rutas": [
+        {
+          "prefijo": "/api/",
+          "contenedor": "cjhirashi-career-api",
+          "puerto": 8000,
+          "quitar_prefijo": true
+        },
+        {
+          "prefijo": "/"
+        }
+      ]
+    },
+    {
+      "nombre": "mcp",
+      "contenedor": "cjhirashi-career-mcp",
+      "puerto": 8000,
+      "protocolo": "http",
+      "sse": true,
+      "healthcheck": "/",
+      "headers_up": [
+        "X-Forwarded-Proto https"
+      ],
+      "rutas": [
+        {
+          "prefijo": "/"
+        }
+      ]
+    },
+    {
+      "nombre": "files",
+      "contenedor": "minio_storage",
+      "puerto": 9000,
+      "protocolo": "http",
+      "sse": false,
+      "healthcheck": "/",
+      "headers_up": [
+        "X-Forwarded-Proto https",
+        "X-Forwarded-Scheme https"
+      ],
+      "rutas": [
+        {
+          "prefijo": "/"
+        }
+      ]
+    }
+  ],
+  "mensajes": [
+    {
+      "id": "MSG-0001",
+      "de": "cjhirashi-srv",
+      "para": "cjhirashi-career",
+      "tipo": "solicitud-cambio",
+      "estado": "abierto",
+      "fecha": "2026-09-04",
+      "ref": "docker-compose.yml",
+      "texto": "CAMBIO DE RED (permanente). Vuestros servicios se enrutan por la red Docker dedicada 'net-cjhirashi-career'; cjhirashi-srv (caddy_proxy) ya está en ella. Haced esto en vuestro docker-compose.yml: (1) declarad la red como externa:  networks:\n  net-cjhirashi-career:\n    external: true\n    name: net-cjhirashi-career  ; (2) añadid 'net-cjhirashi-career' a los 5 contenedores: cjhirashi-career-admin, cjhirashi-career-portfolio, cjhirashi-career-mcp, cjhirashi-career-api y minio_storage; (3) una vez fijo, podéis quitar 'network-cjhirashi-srv' de esos contenedores. cjhirashi-srv los conectó en caliente para no cortar el servicio, pero se pierde al recrear los contenedores. Cerrad con: python3 bin/caddy-msg resolve --proyecto cjhirashi-career --id MSG-0001 --respuesta \"...\"",
+      "respuesta": null
+    },
+    {
+      "id": "MSG-0002",
+      "de": "cjhirashi-srv",
+      "para": "cjhirashi-career",
+      "tipo": "bloqueo",
+      "estado": "abierto",
+      "fecha": "2026-09-04",
+      "ref": "servicios[admin].rutas[/api/].puerto",
+      "texto": "Tras el restore del repo, cjhirashi-career-api escucha en el puerto 8001 (wget a :8000 → connection refused, a :8001/health → 200). Este contrato usa 8000 (acordado el 2026-09-01, fix del Dockerfile). Efecto AHORA: https://admin.cjhirashi.com/api/* y https://portafolio.cjhirashi.com/api/* devuelven 502. Elegid una: (a) restaurar el puerto del API a 8000 en vuestro Dockerfile/compose; o (b) avisad y cambio 'puerto' a 8001 en las rutas /api/ de este caddy.json. Cerrad cuando esté decidido.",
+      "respuesta": null
+    }
+  ]
+}
