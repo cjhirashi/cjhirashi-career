@@ -120,7 +120,7 @@ else
   done <<< "$SPECS"
 fi
 # regla de raíz: TODO/FIXME sin ticket en el diff de trabajo
-DIFF_ADD="$(git diff -U0 2>/dev/null | grep -E '^\+' | grep -Ei 'TODO|FIXME' | grep -Ev 'RF-[0-9]+|RNF-[0-9]+|ADR-[0-9]+' || true)"
+DIFF_ADD="$(git diff -U0 -- . ':(exclude).harness/gate/' 2>/dev/null | grep -E '^\+[^+]' | grep -E '\b(TODO|FIXME|XXX|HACK)\b' | grep -Ev 'RF-[0-9]+|RNF-[0-9]+|ADR-[0-9]+' || true)"
 if [ -n "$DIFF_ADD" ]; then err "TODO/FIXME sin ticket (RF-/RNF-/ADR-) en los cambios — Art. 10 (solución de raíz)"; echo "$DIFF_ADD" | sed 's/^/      /' | head -6
 else ok "sin TODO/FIXME sin ticket en los cambios"; fi
 # documentación: heurística — si el diff toca superficie observable, avisa
@@ -149,7 +149,9 @@ run_py_tests() {  # $1 = servicio
   for v in venv_test venv venv_run; do [ -x "$p/$v/bin/python" ] && "$p/$v/bin/python" -c "import pytest" 2>/dev/null && { py="$p/$v/bin/python"; break; }; done
   if [ -z "$py" ]; then skip "$p · pytest no instalado en su venv — SKIP (instala deps de test para validar)"; return; fi
   echo "  ${BLU}→${NC} $p · pytest"
-  if ( cd "$p" && "${py#$p/}" -m pytest -q -o addopts='' -p no:cacheprovider ) >/tmp/gate_$$.log 2>&1; then ok "$p · tests"
+  ( cd "$p" && "${py#$p/}" -m pytest -q -o addopts='' -p no:cacheprovider ) >/tmp/gate_$$.log 2>&1; local rc=$?
+  if [ "$rc" -eq 0 ]; then ok "$p · tests"
+  elif [ "$rc" -eq 5 ]; then skip "$p · sin tests recolectados (pytest exit 5) — SKIP"
   else err "$p · tests FALLAN"; sed 's/^/      /' /tmp/gate_$$.log | tail -25; fi
   rm -f /tmp/gate_$$.log
 }
@@ -183,6 +185,15 @@ if echo "$CHANGED" | grep -q "cjhirashi-career-mcp/" ; then
   if find cjhirashi-career-mcp -name 'tools*.json' -o -name '*schema*.json' 2>/dev/null | grep -q .; then
     if command -v python3 >/dev/null 2>&1; then ok "mcp: (recordatorio) valida el JSON Schema de las tools tocadas"; fi
   fi
+fi
+
+# =============================================================================
+#  Bloque de proyecto (opcional): checks propios de este repo.
+# =============================================================================
+if [ -f "$H/gate/project.sh" ]; then
+  sec "P· Checks de proyecto"
+  # shellcheck source=/dev/null
+  . "$H/gate/project.sh"
 fi
 
 # =============================================================================

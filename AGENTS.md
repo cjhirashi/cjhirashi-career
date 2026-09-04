@@ -78,7 +78,15 @@ Tabla completa (con "se actualiza cuando cambia…"): `.harness/constitution.md`
 no imports. La dev DB no trackea Alembic del todo. Lista completa: fin de
 `.harness/constitution.md`.
 
-## Bindings de herramienta
+## Bindings de herramienta — `.claude/agents/`
 
-`.claude/agents/` (si existe) es el binding de Claude Code — opcional. El núcleo del
-arnés vive en `.harness/` y no depende de él.
+Binding de Claude Code, **opcional** (el núcleo del arnés vive en `.harness/`). El
+manual de cada rol está en `.harness/method.md §8`; estos archivos son stubs.
+
+- **Base:** `orquestador` · `autor-de-spec` · `arquitecto` · `implementador` ·
+  `revisor` · `explorador`.
+- Sin especialistas por stack: el patrón por capas + los 5 base cubren. Si un
+  subproyecto (`api`/`ai`/`admin`/`portfolio`/`mcp`) entra en desarrollo intenso y
+  justifica su propio especialista, se añade **vía un `ADR-`**.
+
+Ver `.claude/agents/README.md`.

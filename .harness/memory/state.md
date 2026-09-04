@@ -117,12 +117,13 @@ actualizado: 2026-09-04
   `ThemedSelect`) — corregidos. `cjhirashi-career-admin` `435 passed`;
   `cjhirashi-career-portfolio` `309 passed` (`cache:false` en su `vitest.config.ts`
   para esquivar un `node_modules/.vite/vitest` con otro dueño).
-- **[2026-09-04] `--full` — `cjhirashi-career-ai` sale con código 5** ("no tests"): es
-  un directorio **git-ignored** (scaffold sin suite). `check.sh --full` lo lee como
-  fallo; el gate por defecto no lo corre. No se toca `check.sh`.
-- **[2026-09-04] `.harness/gate/check.sh` con cambio sin autoría en el working tree**
-  (bloque opcional `source gate/project.sh`). No lo tocamos; confirmar con el humano.
-  (Sigue sin commitear, junto con `AGENTS.md` y `.claude/`.)
+- **[2026-09-04] `check.sh` — cambios sin autoría + robustez, ahora commiteados**
+  (commit `a8891b6f`, con confirmación del humano): bloque opcional
+  `source gate/project.sh`, exclusión de `.harness/gate/` en la regla de TODO, y
+  `run_py_tests` trata `pytest` exit 5 ("sin tests") como SKIP — así
+  `cjhirashi-career-ai` (directorio **git-ignored**, scaffold sin suite) ya no
+  cierra la compuerta en `--full`. `AGENTS.md` + `.claude/agents/` también
+  commiteados en ese chore. `./.harness/gate/check.sh --full` → **22 ok · 0 error**.
 
 ## Próximo paso concreto
 
