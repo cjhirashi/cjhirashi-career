@@ -2,19 +2,20 @@
 # cjhirashi-career — Docker Compose Orchestration
 # ============================================================================
 #
-# Arquitectura: 4 módulos (admin, portfolio, api, mcp) + infra
+# Arquitectura: 3 módulos (admin, portfolio, api) + infra
 # Carpetas: cjhirashi-career-admin, cjhirashi-career-portfolio,
-#           cjhirashi-career-api, cjhirashi-career-mcp
-# Network: network-cjhirashi-srv (externa, compartida con cjhirashi-srv)
+#           cjhirashi-career-api
+# Network: net-cjhirashi-career (externa, dedicada; gestionada por cjhirashi-srv)
 # Volúmenes: /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/
+#
+# El MCP Server se retiró el 2026-09-04 — ver docs/09-DECISIONS/023-retirar-mcp-server.md
 #
 # Servicios Expuestos (via reverse proxy Caddy):
 #   - Admin:    cjhirashi-career-admin:8000  (host 8002)
 #   - Portal:   cjhirashi-career-portfolio:8000  (host 8003)
-#   - MCP:      cjhirashi-career-mcp:8000  (host 8004)
 #
 # Servicios Internos (red Docker):
-#   - API:      cjhirashi-career-api:8001  (Bedrock + PDF WeasyPrint)
+#   - API:      cjhirashi-career-api:8000  (Bedrock + PDF WeasyPrint)
 #   - Qdrant (6333), PostgreSQL (5432), MinIO (9000)
 
 version: '3.9'
@@ -37,7 +38,7 @@ services:
     ports:
       - "8002:8000"
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     environment:
       - VITE_API_BASE_URL=/api
     depends_on:
@@ -63,7 +64,7 @@ services:
     ports:
       - "8003:8000"
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     environment:
       - VITE_API_URL=/api
       - VITE_TRACKING_ENABLED=true
@@ -71,26 +72,6 @@ services:
       - api
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8000/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # =========================================================================
-  # MCP Server — cjhirashi-career-mcp (FastMCP, puerto 8004)
-  # =========================================================================
-  # Caddy: mcp.cjhirashi.com → cjhirashi-career-mcp:8000 (SSE, flush_interval -1)
-  mcp:
-    build:
-      context: ./cjhirashi-career-mcp
-      dockerfile: Dockerfile
-    container_name: cjhirashi-career-mcp
-    restart: unless-stopped
-    ports:
-      - "8004:8000"
-    networks:
-      - network-cjhirashi-srv
-    healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1', 8000), 2); s.close()"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -111,7 +92,7 @@ services:
     container_name: cjhirashi-career-api
     restart: unless-stopped
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     volumes:
       - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/uploads:/app/uploads:rw
     env_file: .env
@@ -174,7 +155,7 @@ services:
       qdrant:
         condition: service_started
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       start_period: 40s
@@ -195,7 +176,7 @@ services:
     container_name: qdrant
     restart: unless-stopped
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     volumes:
       - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/qdrant:/qdrant/storage:rw
 
@@ -218,7 +199,7 @@ services:
       # Persistencia de datos
       - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/postgres:/var/lib/postgresql/data:rw
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -247,7 +228,7 @@ services:
       # Misma raíz de disco que Postgres, en su propia carpeta.
       - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/minio:/data:rw
     networks:
-      - network-cjhirashi-srv
+      - net-cjhirashi-career
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -266,11 +247,12 @@ volumes: {}
 # ============================================================================
 # Redes
 # ============================================================================
-# network-cjhirashi-srv: Red Docker bridge EXTERNA
-#   - Compartida con cjhirashi-srv (Caddy + Cloudflare)
-#   - Permite acceso desde reverse proxy
-#   - Aislada de internet directa (solo via Caddy)
+# net-cjhirashi-career: red Docker bridge EXTERNA, dedicada a este proyecto,
+#   gestionada por cjhirashi-srv (caddy_proxy ya está dentro). Contrato:
+#   caddy.json → cjhirashi_srv.red. Migración completada en MSG-0004
+#   (antes se compartía network-cjhirashi-srv con cjhirashi-srv).
 
 networks:
-  network-cjhirashi-srv:
+  net-cjhirashi-career:
     external: true
+    name: net-cjhirashi-career

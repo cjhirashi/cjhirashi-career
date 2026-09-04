@@ -49,11 +49,12 @@ RUN useradd -m -u 1000 apiuser && \
 USER apiuser
 
 # Exponer puerto
-EXPOSE 8001
+# Puerto de contrato con cjhirashi-srv / Caddy (caddy.json → cjhirashi-career-api:8000).
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Comando de inicio
-CMD ["uvicorn", "app:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
+CMD ["uvicorn", "app:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
