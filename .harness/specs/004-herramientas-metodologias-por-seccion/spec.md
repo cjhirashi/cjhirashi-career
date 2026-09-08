@@ -41,7 +41,7 @@ covers:
   - docs/09-DECISIONS/026-configuracion-agentes-app.md
   - cjhirashi-career-api/src/services/README.md
   - .harness/specs/004-herramientas-metodologias-por-seccion/contracts/sections.md
-anchor_commit: 02110918
+anchor_commit: 92ec40ed
 anchor_mode: strict
 ---
 
