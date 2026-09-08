@@ -13,6 +13,7 @@ from services.admin_sections import (
     known_section_ids,
     list_section_specs,
     match_section,
+    tools_for_section,
 )
 from services.bedrock.agent_profiles import AgentProfile, get_profile
 
@@ -109,6 +110,75 @@ async def get_section(db: AsyncSession, section_id: str) -> Dict[str, Any]:
 
 async def sections_for_agent(db: AsyncSession, profile_id: str) -> List[Dict[str, Any]]:
     return [item for item in await list_sections(db) if item["agent_profile_id"] == profile_id]
+
+
+async def derived_tools_for_agent(db: AsyncSession, profile_id: str) -> set[str]:
+    """Unión de las herramientas derivadas de TODAS las secciones que este
+    agente L2 posee (spec 004, RF-002). Set disponible; el agente usa sólo lo
+    que la tarea requiere. Vacío si el agente no posee ninguna sección."""
+    tools: set[str] = set()
+    for item in await sections_for_agent(db, profile_id):
+        try:
+            tools |= tools_for_section(get_section_spec(item["id"]))
+        except KeyError:
+            continue
+    return tools
+
+
+async def section_methodology_ids(db: AsyncSession, user_id: str, section_id: str) -> List[str]:
+    """IDs de las metodologías del usuario ligadas a esta sección (spec 004)."""
+    from models.operational_methodology import OperationalMethodology
+
+    result = await db.execute(
+        select(OperationalMethodology.id, OperationalMethodology.section_ids).where(
+            OperationalMethodology.user_id == user_id
+        )
+    )
+    return sorted(
+        row.id
+        for row in result.all()
+        if isinstance(row.section_ids, list) and section_id in row.section_ids
+    )
+
+
+async def set_section_methodologies(
+    db: AsyncSession, user_id: str, section_id: str, methodology_ids: Sequence[str]
+) -> List[str]:
+    """Liga a `section_id` exactamente las metodologías de `methodology_ids`
+    (spec 004, RF-005/006). `section_id` desconocido o `methodology_id`
+    inexistente → `ValueError`/`KeyError` sin persistir nada."""
+    from models.operational_methodology import OperationalMethodology
+    from repositories.career_repository import CareerRepository
+
+    if section_id not in known_section_ids():
+        raise KeyError(f"Unknown admin section: {section_id}")
+
+    result = await db.execute(
+        select(OperationalMethodology).where(OperationalMethodology.user_id == user_id)
+    )
+    rows = list(result.scalars().all())
+    by_id = {row.id: row for row in rows}
+    wanted = set(methodology_ids)
+    unknown = sorted(wanted - by_id.keys())
+    if unknown:
+        raise ValueError(f"Unknown methodology ids: {unknown}")
+
+    repo = CareerRepository(
+        OperationalMethodology, resource_key="operational-methodologies", vectorize=True
+    )
+    touched: List[str] = []
+    for row in rows:
+        current = list(row.section_ids) if isinstance(row.section_ids, list) else []
+        should = row.id in wanted
+        has = section_id in current
+        if should == has:
+            continue
+        nxt = sorted(set(current) | {section_id}) if should else [s for s in current if s != section_id]
+        await repo.update_for_user(db, user_id, row.id, {"section_ids": nxt})
+        touched.append(row.id)
+    if touched:
+        await repo.reindex_for_user(db, user_id)
+    return await section_methodology_ids(db, user_id, section_id)
 
 
 async def _get_or_create_row(db: AsyncSession, section_id: str) -> AdminSectionOverride:

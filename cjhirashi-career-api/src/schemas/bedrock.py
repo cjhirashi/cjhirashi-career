@@ -241,16 +241,25 @@ class BedrockAgentToolsUpdateRequest(BaseModel):
     tool_names: Optional[List[str]] = None
 
 
+class BedrockAgentToolsBySection(BaseModel):
+    section_id: str
+    label: str
+    tools: List[str]
+
+
 class BedrockAgentToolsState(BaseModel):
     profile_id: str
     default_tools: List[str]
     override_tools: Optional[List[str]] = None
     effective_tools: List[str]
+    # spec 004: presente sólo para agentes L2 (herramientas por sección, lectura).
+    by_section: Optional[List[BedrockAgentToolsBySection]] = None
 
 
 class BedrockToolCatalogItem(BaseModel):
     name: str
     description: str
+    scope: str = "both"  # spec 004: section | agent | both
 
 
 class BedrockAgentNote(BaseModel):
@@ -298,6 +307,30 @@ class BedrockKnowledgeBaseReindexResult(BaseModel):
     reindexed: Dict[str, int]
     purged_orphans: int
     users: int
+
+
+class BedrockSectionMethodology(BaseModel):
+    id: str
+    title: str
+    section: Optional[str] = None
+
+
+class BedrockSectionDetail(BaseModel):
+    """Estado de una sección del Admin de cara a los agentes (spec 004)."""
+
+    section_id: str
+    system_name: str
+    label: str
+    section_type: str
+    resource_key: Optional[str] = None
+    agent_profile_id: Optional[str] = None
+    derived_tools: List[str]
+    methodology_ids: List[str]
+    methodologies: List[BedrockSectionMethodology]
+
+
+class BedrockSectionMethodologiesUpdateRequest(BaseModel):
+    methodology_ids: List[str]
 
 
 # ============================================================================

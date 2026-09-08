@@ -633,6 +633,9 @@ const AgentCatalogEditors: React.FC<{
       : (data?.override_tools ?? []).filter((t) => t !== 'delegate_to_specialist')
   const toolsInitial = (toolsEditableOverride ?? toolsEditableDefault).slice().sort().join(',')
   const toolsDirty = selectedToolNames.slice().sort().join(',') !== toolsInitial
+  // spec 004 (ADR-027): un L2 recibe herramientas y metodologías de sus secciones;
+  // en el catálogo se muestran en lectura, con la procedencia por sección.
+  const isL2 = data?.level === 2
 
   if (!data && isLoading) {
     return <LoadingSpinner fullScreen={false} message="Cargando agente..." />
@@ -689,6 +692,33 @@ const AgentCatalogEditors: React.FC<{
         )}
       </EditorBlock>
 
+      {isL2 ? (
+        <EditorBlock title="Herramientas (por sección)">
+          <p className="text-sm text-text-secondary">
+            Un agente L2 recibe sus herramientas de las secciones que gestiona (derivadas del tipo
+            de sección; no se editan aquí). El agente usa sólo lo que la tarea necesita.
+          </p>
+          {(data.sections ?? []).length === 0 ? (
+            <p className="text-sm text-text-secondary">
+              No gestiona ninguna sección todavía. Asígnale secciones arriba.
+            </p>
+          ) : (
+            <ul className="text-sm space-y-1">
+              {(data.sections ?? []).map((s) => (
+                <li key={s.id}>
+                  <Link to={`/settings/sections/${s.id}`} className="text-primary hover:underline">
+                    {s.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-xs text-text-secondary mt-2">Herramientas efectivas:</p>
+          <p className="text-xs font-mono text-text-secondary break-words">
+            {(data.effective_tools ?? []).join(', ') || '—'}
+          </p>
+        </EditorBlock>
+      ) : (
       <EditorBlock
         title="Herramientas"
         editable
@@ -729,6 +759,7 @@ const AgentCatalogEditors: React.FC<{
           <p className="text-red-600 dark:text-red-400 text-xs">{getErrorMessage(toolsUpdate.error)}</p>
         )}
       </EditorBlock>
+      )}
 
       {data.can_delegate && (
         <EditorBlock
@@ -827,6 +858,32 @@ const AgentCatalogEditors: React.FC<{
         )}
       </EditorBlock>
 
+      {isL2 ? (
+        <EditorBlock title="Metodologías (por sección)">
+          <p className="text-sm text-text-secondary">
+            Un agente L2 recibe las metodologías ligadas a sus secciones. Se ligan/desligan en cada
+            sección, no aquí.
+          </p>
+          <ul className="text-sm space-y-1">
+            {(data.assigned_methodologies ?? []).map((m) => (
+              <li key={m.id}>
+                {m.id}: {m.title}
+                {m.shared ? <span className="text-text-secondary"> (compartida)</span> : null}
+              </li>
+            ))}
+            {(data.assigned_methodologies ?? []).length === 0 && (
+              <li className="text-text-secondary">Sin metodologías para sus secciones todavía.</li>
+            )}
+          </ul>
+          <p className="text-xs text-text-secondary mt-2">
+            Edita en{' '}
+            <Link to="/settings/sections" className="text-primary hover:underline">
+              Settings → Secciones
+            </Link>
+            .
+          </p>
+        </EditorBlock>
+      ) : (
       <EditorBlock
         title="Metodologías asignadas"
         editable
@@ -871,6 +928,7 @@ const AgentCatalogEditors: React.FC<{
           </p>
         )}
       </EditorBlock>
+      )}
 
       <MemoryEditor
         agent={data}

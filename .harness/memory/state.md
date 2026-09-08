@@ -99,49 +99,21 @@ actualizado: 2026-09-04
 - **Retirar el MCP Server** del alcance activo (`ADR-023`): coste de mantener > valor;
   nunca implementó tools de carrera, PDF ya está in-process en la API, sin tráfico.
 
-## Obstáculos y resolución
-
-- **[2026-09-04] Compuerta `api`/`admin`/`portfolio` reparada** (fallos
-  pre-existentes, no de la feature 001): shim JSONB→SQLite en fixtures, camino
-  `TEST_DATABASE_URL` a Postgres desechable, aserción `test_auth` obsoleta,
-  lockfile/`react-router-dom` faltantes en `admin`. `api` `309 passed`; `admin`
-  `435 passed`; `portfolio` `309 passed`.
-- **[2026-09-04] `check.sh` — robustez, commiteado** (`a8891b6f`): `run_py_tests`
-  trata `pytest` exit 5 como SKIP (no cierra la compuerta por `cjhirashi-career-ai`
-  sin suite); `source gate/project.sh` opcional; `.harness/gate/` excluido de la
-  regla de comentarios pendientes sin ticket.
-
 ## Próximo paso concreto
 
 - **001 cerrada y desplegada.** No queda nada de 001.
-- **[2026-09-04] Hazard investigado y CERRADO (no hubo pérdida de datos):** el usuario
-  reportó tablas vacías en `career_db` (alarma de "se perdió información"). Se auditó
-  fila por fila (65 tablas). Conclusión: `admin_sections_l1` (54 filas),
-  `admin_sections_l2` (0), `admin_sections_l3` (0) y `admin_views` (123 filas) son
-  **restos físicos de `origin/develop`** (`babd50f0`/`61783017`, jerarquía L1/L2/L3 +
-  vistas, ADR-023 versión abandonada) — esa rama **nunca se fusionó a `main`**
-  (`git merge-base --is-ancestor` = false) y reutilizó por colisión el revision ID
-  `c4d5e6f7a8b9` que luego también usó el trabajo real de 001
-  (`c4d5e6f7a8b9_drop_admin_section_override_description.py`). El código de `main`
-  **no referencia estas 4 tablas en ningún punto** (`grep` de `AdminSectionL1/L2/L3`,
-  `AdminView` sobre `src/` → cero resultados); el catálogo de secciones vigente vive
-  en código (`services/admin_sections.py`) + `admin_section_overrides` (JSONB). Son
-  leftovers inertes de un experimento no fusionado, no datos de producto perdidos.
-  Resto de tablas en 0 (`applications`, `interviews`, `events`, `metrics`,
-  `search_plans`, `linkedin_posts`, `application_interactions`, `bedrock_custom_tools`,
-  `bedrock_agent_delegation`, `bedrock_agent_profile_photos`, `refresh_tokens`,
-  `user_sessions`) son features de dominio aún sin uso, no regresiones.
-  **Decisión del humano (2026-09-04): dejar las tablas huérfanas tal cual, solo
-  documentar** — no se borran por ahora. Si se retoma la jerarquía L1/L2/L3 desde
-  `develop`, esa migración debe cambiar de revision ID (ya no puede ser
-  `c4d5e6f7a8b9`) y usar DDL con `IF [NOT] EXISTS`.
+- **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
+  + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
+  fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.
+  Decisión del humano: dejarlas tal cual, sólo documentar. Si se retoma la jerarquía
+  L1/L2/L3, esa migración debe cambiar de revision ID (no `c4d5e6f7a8b9`) y usar
+  `IF [NOT] EXISTS`. **Regla general de migraciones: id nuevo garantizado único** —
+  el 2026-09-08 la de 004 chocó con `a1b2c3d4e5f6` ya usado.
 - **Cuidado al desplegar:** `docker compose up -d` puede recrear `api` con un
   `DATABASE_URL` obsoleto — usar `up -d --force-recreate --no-deps api` y verificar
   `docker inspect ... .Config.Env`.
-- Aparte de 001: reescribir `cjhirashi-career-api/tests/integration/test_auth_integration.py`
-  contra el esquema de rutas actual (hoy `pytest.mark.skip`); `cjhirashi-career-ai`
-  sigue sin suite de tests.
-- Reescritura narrativa del arc42 sin el Canal 3 (ADR-023 lo deja anotado).
+- Deuda: `test_auth_integration.py` (hoy `skip`) contra el esquema de rutas actual;
+  `cjhirashi-career-ai` sin suite; reescritura narrativa del arc42 sin el Canal 3 (ADR-023).
 - **[2026-09-04] Feature `002-generacion-imagenes-agente-visual` — CERRADA
   (`verified`).** Commits `a3c322a6` (ADR-002 arnés) · `dc9aab10` (feature, 12
   `RF-`) · `e78904bd` (anchor + verified). Gate `--full`: 24 ok · 0 warn · 0 error.
@@ -181,9 +153,25 @@ actualizado: 2026-09-04
   8000) → la metodología entra entera; el system prompt guía "buscar→leer, una por
   trabajo". API `403 passed`. **Verificado en vivo:** search devuelve extractos sin `text`;
   `get_career_record opm-61` → 15.611 chars sin truncar. 18 RF, cobertura completa.
-- **[2026-09-07] Pendiente de 003:** commit de cierre en `main` (abarca Bloques I y J) +
-  mover `anchor_commit` de 003 a ese commit + `git push`. El código nuevo YA está
-  desplegado en `cjhirashi-career-api` (imagen reconstruida esta sesión) pero SIN commitear.
+- **[2026-09-08] Feature `004` — herramientas y metodologías por sección (L2) — `verified`.**
+  ADR-027 (revisa parcialmente ADR-026, **sólo L2**). L2: herramientas **derivadas** de
+  sus secciones (`admin_sections.tools_for_section`), metodologías **ligadas**
+  (`operational_methodologies.section_ids`, `PUT /bedrock/sections/{id}/methodologies`);
+  set del L2 = unión de todas sus secciones, resuelto 1×/turno en `agent_loop`
+  (`profile_tools.resolve_effective_tools`). L1/L3 sin cambio (asignación directa).
+  `PUT /agent-profiles/{L2}/tools|methodologies` → **409**. `scope` en el catálogo de
+  tools; `admin_section_settings action=update` gana `views`. `applies_to_caller`
+  reemplaza a `applies_to_agent`. Migración **`b3d4e5f6a7c8`** (id previo `a1b2c3d4e5f6`
+  colisionaba) — aplicada en `career_db`: `section_ids` + limpieza de ids L2. API `441
+  passed`, admin `437 passed`. Verificado en vivo (api+admin redeployados). Detalle en
+  `.harness/specs/004-...` y `history.md`.
+- **[2026-09-08] Acción pendiente del OPERADOR:** re-ligar las metodologías a sus
+  secciones desde `/settings/sections/:id`. La migración quitó los vínculos a agentes L2;
+  las que estaban asignadas a un L2 quedaron **compartidas** hasta que se re-liguen.
+- **[2026-09-08] Pendiente de git:** commits de cierre de **003 (Bloques I+J)** y **004**
+  siguen SIN `git push`. Mover `anchor_commit` de 003 y 004 a sus commits de cierre.
+  El código de ambas features YA está desplegado (imágenes reconstruidas esta sesión) y
+  la migración `b3d4e5f6a7c8` aplicada en prod.
 - **Operativa nueva:** tras cualquier migración que toque ids o `user_id`, correr
   `POST /bedrock/knowledge-base/reindex` y `scripts/check_kb_consistency.py` (ADR-026 §Reapertura).
 - Antes de tocar nada: correr `.harness/gate/check.sh`.

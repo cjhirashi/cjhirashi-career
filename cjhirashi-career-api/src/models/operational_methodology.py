@@ -30,9 +30,14 @@ class OperationalMethodology(Base):
     subsection = Column(String(150), nullable=True)
     description = Column(Text, nullable=True)
     content = Column(Text, nullable=False)
-    # IDs canónicos agent_* para quienes aplica esta metodología.
-    # Vacío o null = todos los agentes. Lista = solo esos perfiles.
+    # IDs canónicos agent_* para quienes aplica esta metodología — SÓLO L1/L3
+    # desde spec 004 (los L2 la reciben vía sección). Vacío/null + section_ids
+    # vacío/null = compartida (todos). Lista = sólo esos perfiles L1/L3.
     agent_profile_ids = Column(JSONB, nullable=True)
+    # IDs sec-N de las secciones del Admin a las que está ligada esta
+    # metodología (spec 004). Un agente L2 ligado a alguna de esas secciones la
+    # recibe. Vacío/null = no ligada a ninguna sección.
+    section_ids = Column(JSONB, nullable=True)
 
     notes = Column(Text, nullable=True)
 

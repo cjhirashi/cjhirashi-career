@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Check, Pencil, RotateCcw, X } from 'lucide-react'
 import { useAdminSection, useAdminSections, useAdminSectionUpdate } from '@/hooks/useAdminSections'
+import { useBedrockSection, useSectionMethodologiesUpdate } from '@/hooks/useBedrockChat'
+import { useCareerList } from '@/hooks/useCareerResource'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedMultiSelect } from '@/components/ThemedMultiSelect'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -253,6 +255,63 @@ const recordGroups = (data: AdminSection) => [
   })),
 ]
 
+/** spec 004 (ADR-027): metodologías ligadas a esta sección. Un agente L2 ligado
+ *  a la sección las recibe. Las herramientas de la sección son derivadas (lectura). */
+const SectionMethodologiesEditor: React.FC<{ sectionId: string }> = ({ sectionId }) => {
+  const { data: section } = useBedrockSection(sectionId)
+  const { data: allMethodologies = [] } = useCareerList<{ id: string; title: string }>(
+    'operational-methodologies',
+    { limit: 200 },
+  )
+  const updateMethodologies = useSectionMethodologiesUpdate()
+  const [selected, setSelected] = useState<string[]>([])
+
+  useEffect(() => {
+    if (section) setSelected(section.methodology_ids)
+  }, [section])
+
+  if (!section) return null
+
+  const options = allMethodologies.map((m) => ({ value: m.id, label: m.title }))
+  const dirty = selected.slice().sort().join(',') !== section.methodology_ids.slice().sort().join(',')
+
+  return (
+    <div className="mt-8 border-t border-glass pt-6 space-y-3">
+      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
+        Metodologías de esta sección (agentes L2)
+      </h3>
+      <p className="text-sm text-text-secondary">
+        El agente L2 que gestiona esta sección recibe estas metodologías. Sus herramientas se
+        derivan del tipo de sección y no se editan.
+      </p>
+      <p className="text-xs font-mono text-text-secondary break-words">
+        Herramientas derivadas: {section.derived_tools.join(', ') || '—'}
+      </p>
+      <ThemedMultiSelect
+        aria-label="Metodologías de esta sección"
+        value={selected}
+        onChange={setSelected}
+        options={options}
+        placeholder="— Selecciona metodologías —"
+      />
+      <button
+        type="button"
+        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-text-secondary hover:bg-glass hover:text-text transition-colors disabled:opacity-50"
+        disabled={!dirty || updateMethodologies.isPending}
+        onClick={() => updateMethodologies.mutate({ sectionId, methodologyIds: selected })}
+      >
+        <Check size={15} aria-hidden="true" />
+        Guardar metodologías
+      </button>
+      {updateMethodologies.isError && (
+        <p className="text-red-600 dark:text-red-400 text-xs">
+          {getErrorMessage(updateMethodologies.error)}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export const AdminSectionDetailPage: React.FC = () => {
   const { sectionId = '' } = useParams<{ sectionId: string }>()
   const { data, isLoading, isError, error } = useAdminSection(sectionId)
@@ -368,7 +427,12 @@ export const AdminSectionDetailPage: React.FC = () => {
         <p className="text-red-600 dark:text-red-400 text-sm mb-4">{getErrorMessage(update.error)}</p>
       )}
 
-      {viewState === 'view' && <SectionRecordView groups={recordGroups(data)} />}
+      {viewState === 'view' && (
+        <>
+          <SectionRecordView groups={recordGroups(data)} />
+          <SectionMethodologiesEditor sectionId={data.id} />
+        </>
+      )}
 
       {viewState === 'edit' && (
         <div className="space-y-6">

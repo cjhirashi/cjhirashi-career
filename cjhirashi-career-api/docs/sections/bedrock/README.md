@@ -132,9 +132,12 @@ Bloqueo: si gasto UTC del día ≥ `BEDROCK_DAILY_BUDGET_USD`, el chat retorna e
 | `GET` | `/bedrock/agent-profiles/catalog` | Catálogo: definición de código + metodologías/memoria |
 | `GET` | `/bedrock/agent-profiles/{profile_id}/catalog` | Detalle de un agente |
 | `PUT` | `/bedrock/agent-profiles/{profile_id}/methodologies` | Asigna metodologías que el agente consulta |
-| `GET` | `/bedrock/agent-profiles/{profile_id}/tools` | Estado de herramientas (default/override/efectivo) |
-| `PUT` | `/bedrock/agent-profiles/{profile_id}/tools` | Configura las herramientas que el agente puede usar |
-| `GET` | `/bedrock/tools/catalog` | Catálogo read-only de herramientas (integradas + MCP) |
+| `GET` | `/bedrock/agent-profiles/{profile_id}/tools` | Estado de herramientas (default/override/efectivo). **L2** (spec 004): `override_tools=null` + `by_section` |
+| `PUT` | `/bedrock/agent-profiles/{profile_id}/tools` | Configura herramientas. **L2 → 409** (se derivan de sus secciones); L1/L3 igual que antes |
+| `PUT` | `/bedrock/agent-profiles/{profile_id}/methodologies` | Asigna metodologías. **L2 → 409** (se ligan a la sección); L1/L3 igual |
+| `GET` | `/bedrock/sections/{section_id}` | spec 004: herramientas derivadas + metodologías ligadas de una sección |
+| `PUT` | `/bedrock/sections/{section_id}/methodologies` | spec 004: liga metodologías a una sección (`operational_methodologies.section_ids`) |
+| `GET` | `/bedrock/tools/catalog` | Catálogo read-only (integradas + MCP). Cada integrada trae `scope ∈ {section,agent,both}` (spec 004) |
 | `GET` | `/bedrock/agent-profiles/{profile_id}/memory` | Memoria propia L1/L2 (notas + conteo de chats) |
 | `POST` | `/bedrock/agent-profiles/{profile_id}/memory/notes` | Añade nota de memoria propia |
 | `DELETE` | `/bedrock/agent-profiles/{profile_id}/memory/notes/{note_id}` | Elimina una nota |

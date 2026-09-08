@@ -31,6 +31,30 @@ def _normalize_agent_profile_ids(value: Optional[List[str]]) -> Optional[List[st
     return cleaned
 
 
+def _normalize_section_ids(value: Optional[List[str]]) -> Optional[List[str]]:
+    """Valida `sec-N` contra el catálogo de secciones del Admin (spec 004)."""
+    if value is None:
+        return None
+    from services.admin_sections import known_section_ids
+
+    cleaned: List[str] = []
+    seen = set()
+    unknown: List[str] = []
+    known = known_section_ids()
+    for item in value:
+        sid = (item or "").strip()
+        if not sid or sid in seen:
+            continue
+        if sid not in known:
+            unknown.append(sid)
+            continue
+        seen.add(sid)
+        cleaned.append(sid)
+    if unknown:
+        raise ValueError(f"section_ids desconocidos: {unknown}")
+    return cleaned
+
+
 # ============================================================================
 # Metodologías operativas — esquemas CRUD
 # ============================================================================
@@ -43,7 +67,11 @@ class OperationalMethodologyBase(BaseModel):
     content: str
     agent_profile_ids: Optional[List[str]] = Field(
         None,
-        description="IDs agent_* destinatarios. Vacío o omitido = todos los agentes.",
+        description="IDs agent_* destinatarios (sólo L1/L3 desde spec 004). Vacío + section_ids vacío = compartida.",
+    )
+    section_ids: Optional[List[str]] = Field(
+        None,
+        description="IDs sec-N de secciones del Admin a las que está ligada (spec 004). Un L2 ligado a alguna la recibe.",
     )
     notes: Optional[str] = None
 
@@ -54,6 +82,11 @@ class OperationalMethodologyCreate(OperationalMethodologyBase):
     def validate_agent_profile_ids(cls, value: Optional[List[str]]) -> Optional[List[str]]:
         return _normalize_agent_profile_ids(value)
 
+    @field_validator("section_ids")
+    @classmethod
+    def validate_section_ids(cls, value: Optional[List[str]]) -> Optional[List[str]]:
+        return _normalize_section_ids(value)
+
 
 class OperationalMethodologyUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
@@ -62,12 +95,18 @@ class OperationalMethodologyUpdate(BaseModel):
     description: Optional[str] = None
     content: Optional[str] = None
     agent_profile_ids: Optional[List[str]] = None
+    section_ids: Optional[List[str]] = None
     notes: Optional[str] = None
 
     @field_validator("agent_profile_ids")
     @classmethod
     def validate_agent_profile_ids(cls, value: Optional[List[str]]) -> Optional[List[str]]:
         return _normalize_agent_profile_ids(value)
+
+    @field_validator("section_ids")
+    @classmethod
+    def validate_section_ids(cls, value: Optional[List[str]]) -> Optional[List[str]]:
+        return _normalize_section_ids(value)
 
 
 class OperationalMethodologyResponse(OperationalMethodologyBase):

@@ -620,6 +620,35 @@ def list_section_specs() -> List[AdminSectionSpec]:
     return sorted(_SECTIONS, key=lambda s: (s.sort_order, s.label))
 
 
+# Herramientas CRUD genéricas que operan cualquier tabla de carrera; el
+# `resource_key` lo acota el propio tool-input en cada llamada (spec 004, D-3).
+_TABLE_SECTION_TOOLS: Tuple[str, ...] = (
+    "list_career_record",
+    "get_career_record",
+    "create_career_record",
+    "update_career_record",
+    "delete_career_record",
+    "bulk_update_career_record",
+    "count_career_records",
+    "describe_resource_schema",
+    "search_knowledge_base",
+)
+
+
+def tools_for_section(spec: AdminSectionSpec) -> set[str]:
+    """Conjunto de herramientas que **controlan** esta sección (spec 004, RF-001).
+
+    Derivado en código, no editable por el operador: una sección tabla expone
+    el CRUD genérico de su `resource_key`; una funcional / métricas / bucket
+    expone las `related_tools` que declara. Se unen siempre las `related_tools`
+    (una sección tabla puede declarar extras, p.ej. `list_recent_changes`).
+    """
+    names = set(spec.related_tools)
+    if spec.section_type == SECTION_TABLE and spec.resource_key:
+        names |= set(_TABLE_SECTION_TOOLS)
+    return names
+
+
 def get_section_spec(section_id: str) -> AdminSectionSpec:
     """Busca por PK (``sec-N``)."""
     if section_id not in _BY_ID:

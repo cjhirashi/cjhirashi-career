@@ -206,7 +206,9 @@ describe('AgentCatalogPage', () => {
       expect(screen.getByLabelText('Prompt del especialista')).toHaveValue('Eres PDF Maker')
     )
     expect(screen.getByRole('button', { name: /guardar prompt/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /guardar metodologías/i })).toBeInTheDocument()
+    // spec 004: agent_pdf_design es L2 → metodologías/herramientas en lectura por sección
+    expect(screen.getByText('Metodologías (por sección)')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /guardar metodologías/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /guardar secciones/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /guardar delegación/i })).toBeInTheDocument()
     expect(screen.getByText('Usar paleta cyan')).toBeInTheDocument()
@@ -250,6 +252,31 @@ describe('AgentCatalogPage', () => {
     await waitFor(() =>
       expect(mockedApi.updateAgentProfilePrompt).toHaveBeenCalledWith('agent_pdf_design', 'Custom')
     )
+  })
+
+  it('spec 004: L2 shows tools/methodologies as read-only (by section)', async () => {
+    renderAt('/settings/agents/agent-8')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    await waitFor(() =>
+      expect(screen.getByText('Herramientas (por sección)')).toBeInTheDocument()
+    )
+    expect(screen.getByText('Metodologías (por sección)')).toBeInTheDocument()
+    // sin editores directos para un L2
+    expect(screen.queryByRole('button', { name: /guardar herramientas/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /guardar metodologías/i })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Herramientas de este agente')).not.toBeInTheDocument()
+  })
+
+  it('spec 004: L3 keeps the direct tools editor', async () => {
+    mockedApi.getAgentCatalogItem.mockResolvedValue(l3Agent)
+    renderAt('/settings/agents/agent-9')
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar' })).toBeInTheDocument())
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /guardar herramientas/i })).toBeInTheDocument()
+    )
+    expect(screen.queryByText('Herramientas (por sección)')).not.toBeInTheDocument()
   })
 
   it('filters the list from the search box', async () => {

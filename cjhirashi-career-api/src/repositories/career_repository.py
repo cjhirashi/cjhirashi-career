@@ -531,6 +531,7 @@ class CareerRepository(Generic[ModelType]):
                 # arma extractos sin re-parsear el markdown (spec 003 RF-016).
                 extra_payload = {
                     "agent_profile_ids": getattr(obj, "agent_profile_ids", None) or [],
+                    "section_ids": getattr(obj, "section_ids", None) or [],
                     "title": getattr(obj, "title", None),
                     "section": getattr(obj, "section", None),
                 }

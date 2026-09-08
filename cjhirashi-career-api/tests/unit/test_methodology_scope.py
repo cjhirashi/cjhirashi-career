@@ -134,3 +134,49 @@ async def test_set_agent_methodologies_forces_reindex_without_net_change():
     update_spy.assert_not_awaited()          # ninguna asignación cambió
     reindex_spy.assert_awaited_once()        # ...pero igual se reindexó
     assert reindex_spy.await_args.args[1:] == ("usr-2",)
+
+
+# ============================================================================
+# Spec 004 — resolución por sección (L2) / directa (L1/L3)
+# ============================================================================
+
+
+def test_applies_to_caller_shared_when_both_empty():
+    from services.methodology_scope import applies_to_caller
+
+    assert applies_to_caller(None, None, AGENT_PDF_DESIGN, ["sec-1"])
+    assert applies_to_caller([], [], AGENT_PDF_DESIGN, [])
+
+
+def test_applies_to_caller_l2_by_section_intersection():
+    from services.methodology_scope import applies_to_caller
+
+    # metodología ligada a sec-5; caller L2 posee sec-5
+    assert applies_to_caller([], ["sec-5"], "agent_professional_identity", ["sec-3", "sec-5"])
+    # caller L2 sin esa sección → no la ve
+    assert not applies_to_caller([], ["sec-5"], "agent_professional_identity", ["sec-3"])
+
+
+def test_applies_to_caller_l1_l3_by_agent_ids():
+    from services.methodology_scope import applies_to_caller
+
+    assert applies_to_caller(["agent_visual_design"], [], "agent_visual_design", [])
+    assert not applies_to_caller(["agent_visual_design"], [], "agent_pdf_render", [])
+    # una metodología de sección NO la ve un L3 aunque comparta nombre de sección
+    assert not applies_to_caller([], ["sec-5"], "agent_visual_design", None)
+
+
+def test_applies_to_caller_guardian_sees_all():
+    from services.methodology_scope import applies_to_caller
+
+    assert applies_to_caller(["agent_pdf_design"], ["sec-9"], AGENT_METHODOLOGIES, [])
+
+
+def test_strip_l2_from_agent_ids():
+    from services.methodology_scope import strip_l2_from_agent_ids
+
+    mixed = ["agent_professional_identity", "agent_visual_design", "agent_orchestrator"]
+    # professional_identity = L2 (se va); visual_design = L3, orchestrator = L1 (quedan)
+    assert strip_l2_from_agent_ids(mixed) == ["agent_visual_design", "agent_orchestrator"]
+    assert strip_l2_from_agent_ids(None) == []
+    assert strip_l2_from_agent_ids(["desconocido"]) == ["desconocido"]

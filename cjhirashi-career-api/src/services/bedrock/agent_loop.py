@@ -481,16 +481,21 @@ async def chat_stream(
 
     allowed_delegate_ids = await profile_delegation.get_effective_delegation_ids(db, profile)
     model_id = _effective_model(req, runtime, profile)
-    system_prompt = await prompt.compose_system_prompt(
-        db, profile, req.page_context, user_id=user_id, delegate_ids=allowed_delegate_ids
-    )
 
-    # 3. Determinar herramientas permitidas para el perfil (override Admin si existe),
-    #    y construir especificaciones de herramientas — una sola resolución por turno.
+    # 3. Resolver, UNA vez por turno (spec 004, RNF-001): herramientas efectivas +
+    #    ids de sección del caller. L2 → vía sus secciones; L1/L3 → override directo.
     from services.bedrock import profile_tools
 
-    tool_override = await profile_tools.get_tool_override(db, profile.id)
-    allowed = profile_tools.effective_tool_names(profile, tool_override)
+    allowed, caller_section_ids = await profile_tools.resolve_effective_tools(db, profile)
+
+    system_prompt = await prompt.compose_system_prompt(
+        db,
+        profile,
+        req.page_context,
+        user_id=user_id,
+        delegate_ids=allowed_delegate_ids,
+        caller_section_ids=caller_section_ids,
+    )
     tool_specs = tools.converse_tool_specs(
         allowed, caller_profile=profile, delegate_ids=allowed_delegate_ids
     )
@@ -743,7 +748,9 @@ async def chat_stream(
                         status = "success"
                     else:
                         tool_result = await tools.execute_tool(
-                            db, user_id, name, t["input"], req.session_id, caller_profile_id=profile.id
+                            db, user_id, name, t["input"], req.session_id,
+                            caller_profile_id=profile.id,
+                            caller_section_ids=caller_section_ids,
                         )
                         status = "success"
                         if dedup_key is not None:

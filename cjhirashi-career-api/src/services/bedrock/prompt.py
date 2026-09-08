@@ -91,6 +91,39 @@ _METHODOLOGY_ASSIGNMENT_RULE = (
 )
 
 
+def _methodologies_grouped_by_section(assigned: List[Dict[str, Any]]) -> List[str]:
+    """Agrupa el catálogo de un L2 por sección de procedencia (spec 004, RF-008),
+    para que el agente elija la de la sección en la que va a trabajar."""
+    from services.admin_sections import get_section_spec
+
+    by_section: Dict[str, List[Dict[str, Any]]] = {}
+    shared: List[Dict[str, Any]] = []
+    for row in assigned:
+        sids = row.get("section_ids") or []
+        if not sids and not row.get("shared"):
+            # metodología directa a este L2 (legacy no migrado): trátala como propia
+            shared.append(row)
+        elif not sids:
+            shared.append(row)
+        else:
+            for sid in sids:
+                by_section.setdefault(sid, []).append(row)
+    out: List[str] = []
+    for sid in sorted(by_section, key=lambda s: (int(s.split("-")[1]) if "-" in s and s.split("-")[1].isdigit() else 0)):
+        try:
+            label = get_section_spec(sid).label
+        except KeyError:
+            label = sid
+        out.append(f"  Sección {sid} · {label}:")
+        for row in by_section[sid]:
+            out.append(f"    - {row['id']}: {row['title']}")
+    if shared:
+        out.append("  Compartidas (todas las secciones):")
+        for row in shared:
+            out.append(f"    - {row['id']}: {row['title']}")
+    return out
+
+
 def methodology_assignment_block(
     profile: AgentProfile,
     assigned: Optional[List[Dict[str, Any]]] = None,
@@ -105,10 +138,13 @@ def methodology_assignment_block(
         )
     if assigned:
         lines.append("Metodologías vigentes que te corresponden (catálogo actualizado cada turno):")
-        for row in assigned:
-            section = f" [{row['section']}]" if row.get("section") else ""
-            shared = " (compartida)" if row.get("shared") else ""
-            lines.append(f"- {row['id']}: {row['title']}{section}{shared}")
+        if profile.level == 2:
+            lines.extend(_methodologies_grouped_by_section(assigned))
+        else:
+            for row in assigned:
+                section = f" [{row['section']}]" if row.get("section") else ""
+                shared = " (compartida)" if row.get("shared") else ""
+                lines.append(f"- {row['id']}: {row['title']}{section}{shared}")
     else:
         lines.append(
             "En este momento no hay metodologías listadas para ti. "
@@ -204,6 +240,7 @@ async def compose_system_prompt(
     page_context: Optional[dict],
     user_id: Optional[str] = None,
     delegate_ids: Optional[List[str]] = None,
+    caller_section_ids: Optional[List[str]] = None,
 ) -> str:
     base = await get_system_prompt_override(db) or default_system_prompt()
     global_rules = await get_global_rules_override(db) or default_global_rules()
@@ -213,7 +250,9 @@ async def compose_system_prompt(
         try:
             from services.methodology_scope import list_assigned_methodologies
 
-            assigned = await list_assigned_methodologies(db, user_id, profile.id)
+            assigned = await list_assigned_methodologies(
+                db, user_id, profile.id, caller_section_ids=caller_section_ids
+            )
         except Exception:
             logger.warning(
                 "No se pudo cargar el catálogo de metodologías para %s",

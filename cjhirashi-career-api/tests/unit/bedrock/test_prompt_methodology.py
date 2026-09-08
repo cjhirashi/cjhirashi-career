@@ -40,10 +40,12 @@ def test_assignment_block_lists_assigned_titles_not_hardcoded_section():
     )
     # La regla "solo las asignadas a ti" ahora vive en default_global_rules()
     # (ver test_global_rules.py), no en el bloque de catálogo en sí.
+    # spec 004: para un L2 el catálogo se agrupa por sección de procedencia;
+    # sin section_ids, las metodologías caen en el grupo "Compartidas".
     assert "`agent_pdf_design`" in block
     assert "opm-99: Nueva convención de márgenes" in block
     assert "opm-1: Protocolo compartido" in block
-    assert "(compartida)" in block
+    assert "Compartidas" in block
     assert "search_knowledge_base" in block
 
 
@@ -124,13 +126,14 @@ async def test_compose_injects_assigned_catalog(monkeypatch):
     async def fake_suffix(_db, profile):
         return profile.system_prompt_suffix
 
-    async def fake_list(_db, _user_id, caller_id):
+    async def fake_list(_db, _user_id, caller_id, caller_section_ids=None):
         assert caller_id == AGENT_PDF_DESIGN
         return [
             {
                 "id": "opm-88",
                 "title": "Metodología recién asignada",
                 "section": "Calidad",
+                "section_ids": ["sec-58"],
                 "shared": False,
             }
         ]
@@ -156,7 +159,8 @@ async def test_compose_injects_assigned_catalog(monkeypatch):
         None,
         user_id="usr-1",
     )
-    assert "opm-88: Metodología recién asignada [Calidad]" in composed
+    assert "opm-88: Metodología recién asignada" in composed
+    assert "Sección sec-58" in composed  # spec 004: agrupado por sección para L2
     assert "solo las asignadas a ti" in composed
     assert "SOLO las metodologías operativas asignadas a tu perfil" in composed
     assert "Prefiere tono directo" in composed
@@ -186,3 +190,31 @@ def test_block_without_search_tool_unchanged_guidance():
     assert not profile_can_search_knowledge(profile)
     block = methodology_assignment_block(profile, [])
     assert "No tienes search_knowledge_base" in block
+
+
+@pytest.mark.requisito("RF-008")
+def test_l2_block_groups_methodologies_by_section():
+    from services.bedrock.prompt import methodology_assignment_block
+
+    profile = get_profile(AGENT_PROFESSIONAL_IDENTITY)  # L2
+    assigned = [
+        {"id": "opm-1", "title": "Proceso Portafolio", "section": "Identidad", "section_ids": ["sec-32"], "shared": False},
+        {"id": "opm-2", "title": "Proceso Competencias", "section": "Identidad", "section_ids": ["sec-32"], "shared": False},
+        {"id": "opm-9", "title": "Mapa de tablas", "section": "Bóveda", "section_ids": [], "shared": True},
+    ]
+    block = methodology_assignment_block(profile, assigned)
+    assert "Sección sec-32" in block
+    assert "opm-1: Proceso Portafolio" in block
+    assert "opm-2: Proceso Competencias" in block
+    assert "Compartidas" in block and "opm-9: Mapa de tablas" in block
+
+
+@pytest.mark.requisito("RF-008")
+def test_l3_block_stays_flat():
+    from services.bedrock.prompt import methodology_assignment_block
+
+    profile = get_profile(AGENT_PDF_RENDER)  # L3
+    assigned = [{"id": "opm-5", "title": "Weasy", "section": "Infra", "section_ids": [], "shared": False}]
+    block = methodology_assignment_block(profile, assigned)
+    assert "Sección sec-" not in block
+    assert "opm-5: Weasy" in block

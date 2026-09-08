@@ -33,11 +33,20 @@ contextual y el turno degrada al orquestador.
 
 Definidos en `cjhirashi-career-api/src/services/bedrock/agent_profiles.py`.
 
-**Configuración desde la App:** prompt, memoria, metodologías, delegación, secciones, foto
-y — desde ADR-026 — **herramientas** son editables en el Catálogo de Agentes
-(`/settings/agents`) como overrides en Postgres. Las herramientas usan
-`bedrock_agent_profile_tools` (override que reemplaza el set de código); el catálogo
-read-only de tools está en `GET /bedrock/tools/catalog`.
+**Configuración desde la App:** prompt, memoria, delegación, secciones, foto son editables
+en el Catálogo de Agentes (`/settings/agents`) como overrides en Postgres.
+
+**Herramientas y metodologías (ADR-026 → ADR-027):**
+- **L1 / L3:** asignación **directa** — `bedrock_agent_profile_tools` (override que
+  reemplaza el set de código) + `operational_methodologies.agent_profile_ids`. Editables
+  en el catálogo de agentes.
+- **L2 (desde ADR-027):** se **derivan de sus secciones**. Las herramientas de una
+  sección salen de su tipo + `resource_key` (código, no editables); las metodologías se
+  **ligan** a la sección (`operational_methodologies.section_ids`) desde
+  `/settings/sections/:id`. El set del L2 = unión de todas sus secciones, resuelto una
+  vez por turno. `PUT /bedrock/agent-profiles/{L2}/tools|methodologies` → `409`.
+- Catálogo read-only de tools: `GET /bedrock/tools/catalog` (cada tool trae `scope`).
+- Endpoints de sección: `GET /bedrock/sections/{id}`, `PUT /bedrock/sections/{id}/methodologies`.
 
 ## 4. Knowledge base: reindexado y consistencia
 

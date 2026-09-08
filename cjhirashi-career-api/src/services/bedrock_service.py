@@ -316,11 +316,12 @@ async def _execute_tool(
     tool_input: Dict[str, Any],
     session_id: str,
     caller_profile_id: Optional[str] = None,
+    caller_section_ids: Optional[list] = None,
 ) -> Dict[str, Any]:
     """Run one tool call, scoped to `user_id` throughout - same isolation
     guarantee as every other authenticated route in this API."""
     if name == "search_knowledge_base":
-        from services.methodology_scope import applies_to_agent
+        from services.methodology_scope import applies_to_caller
 
         vector = await embed_text(tool_input["query"])
         resource_type = tool_input.get("type")
@@ -336,7 +337,12 @@ async def _execute_tool(
             results = [
                 row
                 for row in results
-                if applies_to_agent(row.get("agent_profile_ids"), caller_profile_id)
+                if applies_to_caller(
+                    row.get("agent_profile_ids"),
+                    row.get("section_ids"),
+                    caller_profile_id,
+                    caller_section_ids,
+                )
             ][:top_k]
             # El agente sólo aplica UNA metodología por trabajo. Devolver el
             # texto completo de cada acierto (una metodología ≈ varios KB)

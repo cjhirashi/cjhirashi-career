@@ -8,6 +8,45 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-09-08] 004 — herramientas y metodologías por sección (L2) — verified
+
+- **Fase alcanzada:** verified. SDD completo (Fase 1 elicitación en 2 tandas → GATE 1 →
+  plan+tasks → GATE 2 → Fase 4). 14 RF + 3 RNF.
+- **Rebotes del verificador:** 1 — la migración chocó con un revision id ya usado
+  (`a1b2c3d4e5f6_bedrock_local_harness`); renombrada a `b3d4e5f6a7c8` (detectado al
+  correr `alembic upgrade` en vivo, no en tests).
+- **Directiva de Pausa:** no.
+- **Drift / re-anchor:** feature nueva; ADR-027 revisa parcialmente ADR-026 D-1/modelo de
+  metodologías **sólo para L2**.
+- **Anclas movidas:** ninguna todavía (pendiente el commit de cierre).
+- **Gate:** verde (`.harness/gate/check.sh` → 25 ok · 1 warn (anchor TBD) · 0 error).
+  API `441 passed`; admin `437 passed` + type-check 0.
+- **Verificación en vivo (Art. 3, api+admin reconstruidos, `alembic upgrade head` →
+  `b3d4e5f6a7c8`):** columna `section_ids` creada; 0 metodologías con id L2 restante
+  (opm-29/33 pasaron de `['agent_professional_identity']` a `[]`; los ids L3 se
+  conservan). `PUT /agent-profiles/{L2}/tools|methodologies` → **409**;
+  `PUT /bedrock/sections/sec-32/methodologies ['opm-29','opm-33']` → 200 con
+  `derived_tools` = CRUD de projects; `GET /bedrock/sections/sec-32` → las 2 metodologías;
+  `GET /agent-profiles/agent_professional_identity/tools` → `override_tools:null` +
+  `by_section` (13 secciones). `resolve_effective_tools(agent_professional_identity)` →
+  set CRUD derivado + `delegate_to_specialist`, `section_ids` incluye sec-32.
+  `search_knowledge_base type=methodology`: el L2 dueño de sec-32 ve opm-29; `agent_support`
+  (sin sec-32) **no** la ve.
+- **Docs actualizadas:** `docs/09-DECISIONS/027-*.md` (nuevo), `026-*.md` (nota
+  "parcialmente superado"), índice; `docs/BEDROCK-SYSTEM.md`;
+  `cjhirashi-career-api/docs/sections/bedrock/README.md`; `src/services/README.md`;
+  `.harness/specs/004/contracts/sections.md`.
+- **Decisiones de diseño:** L2 → tools **derivadas** de sus secciones (tipo + `resource_key`),
+  metodologías **ligadas** (`operational_methodologies.section_ids`); set del L2 = unión
+  de todas sus secciones, resuelto 1×/turno. L1/L3 conservan asignación directa
+  (`bedrock_agent_profile_tools` + `agent_profile_ids`). `scope` (`section|agent|both`)
+  en el catálogo de tools; `set_tool_override` rechaza L2 y tools `scope=section`.
+  `admin_section_settings action=update` gana `views`. `applies_to_caller` reemplaza a
+  `applies_to_agent`. Migración limpia los ids L2 (D-6: el operador re-liga).
+- **Próximo paso:** commit de cierre en `main` (004) + mover `anchor_commit` + `git push`.
+  **El operador debe re-ligar las metodologías a secciones desde `/settings/sections/:id`**
+  (la migración las dejó sin sección; las ex-L2-asignadas quedaron compartidas).
+
 ## [2026-09-07] 003 (Bloque J) — lectura selectiva de metodologías — verified
 
 - **Fase alcanzada:** verified (mismo hilo, tras Bloque I). RF-016/017/018 + RNF-005.

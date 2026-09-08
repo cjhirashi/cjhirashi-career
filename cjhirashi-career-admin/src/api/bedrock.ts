@@ -14,6 +14,7 @@ import {
   BedrockAgentNote,
   BedrockAgentToolsState,
   BedrockToolCatalog,
+  BedrockSectionDetail,
   BedrockMemoryEvent,
   BedrockMemoryRecord,
   BedrockModelStatus,
@@ -301,6 +302,28 @@ export const bedrockApi = {
     const response = await axiosInstance.get<BedrockToolCatalog>('/bedrock/tools/catalog', {
       timeout: CONTROL_PLANE_TIMEOUT_MS,
     })
+    return response.data
+  },
+
+  // --- spec 004: herramientas/metodologías por sección (agentes L2) ---
+
+  getBedrockSection: async (sectionId: string): Promise<BedrockSectionDetail> => {
+    const response = await axiosInstance.get<BedrockSectionDetail>(
+      `/bedrock/sections/${sectionId}`,
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
+    return response.data
+  },
+
+  setSectionMethodologies: async (
+    sectionId: string,
+    methodologyIds: string[]
+  ): Promise<BedrockSectionDetail> => {
+    const response = await axiosInstance.put<BedrockSectionDetail>(
+      `/bedrock/sections/${sectionId}/methodologies`,
+      { methodology_ids: methodologyIds },
+      { timeout: CONTROL_PLANE_TIMEOUT_MS }
+    )
     return response.data
   },
 

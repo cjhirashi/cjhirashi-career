@@ -107,6 +107,12 @@ Sustitución `{{variable}}` en HTML de plantillas antes de WeasyPrint.
 
 `set_agent_methodologies(db, user_id, profile_id, ids)`: asigna desde el catálogo de agentes (Admin). Vacío = compartida; al quitar el último dueño se aparca en `agent_methodologies`. Tras persistir, **fuerza el reindex** de todas las metodologías del usuario en Qdrant (awaited) aunque `agent_profile_ids` no cambie — el catálogo del prompt ya sale de PG, pero `search_knowledge_base` lee del índice y este puede haber driftado (spec 003, RF-014). Ver `bedrock/knowledge_base.py`.
 
+**spec 004 (ADR-027) — L2 por sección:** `applies_to_caller(agent_profile_ids, section_ids, caller_id, caller_section_ids)` reemplaza a `applies_to_agent`: un **L2** ve una metodología si alguna de sus secciones está en `section_ids`; un **L1/L3** si su id está en `agent_profile_ids`; compartida si ambos vacíos. `applies_to_agent` queda como shim. `strip_l2_from_agent_ids` lo usa la migración `b3d4e5f6a7c8`.
+
+### `section_catalog.py` (spec 004)
+
+`derived_tools_for_agent(db, profile_id)`: unión de `admin_sections.tools_for_section` sobre `sections_for_agent` — el set de herramientas de un L2 (derivado, no editable). `section_methodology_ids` / `set_section_methodologies(db, user_id, section_id, ids)`: liga/desliga metodologías a una sección (`operational_methodologies.section_ids`) + reindex best-effort. `update_section(..., views=...)` ya persistía los textos de sidebar por vista; la tool `admin_section_settings` los expone desde spec 004.
+
 ### `github_service.py`
 
 Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`) para el Admin. Con `GITHUB_TOKEN`, el L3 `agent_github` lee repos (incl. privados), archivos y `search/code`. `GitHubError` en 404, 401 o rate limit. No escribe (issues/PRs/push).

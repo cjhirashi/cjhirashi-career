@@ -98,7 +98,7 @@ async def test_search_career_record_still_returns_raw_rows():
 async def test_get_methodology_not_truncated_under_budget():
     from services.bedrock import tools
 
-    async def fake_exec(db, uid, name, ti, sid, caller_profile_id=None):
+    async def fake_exec(db, uid, name, ti, sid, caller_profile_id=None, caller_section_ids=None):
         return {"item": {"id": ti["record_id"], "content": _BIG_CONTENT, "title": "T", "section": "S"}}
 
     with patch.object(tools.bedrock_service, "_execute_tool", new=fake_exec):
@@ -124,3 +124,54 @@ def test_methodology_budget_covers_largest_and_beats_global():
         settings.BEDROCK_MAX_METHODOLOGY_RESULT_CHARS
         > settings.BEDROCK_MAX_TOOL_RESULT_CHARS
     )
+
+
+@pytest.mark.asyncio
+@pytest.mark.requisito("RF-007")
+async def test_search_methodology_filtered_by_caller_sections_for_l2():
+    """spec 004: un L2 recibe sólo metodologías ligadas a alguna de SUS secciones
+    (+ compartidas), nunca las de otra sección."""
+    from services import bedrock_service
+
+    hits = [
+        {"score": 0.9, "user_id": "usr-2", "type": "methodology", "resource_key": "operational-methodologies",
+         "record_id": "opm-A", "text": "content: A", "section_ids": ["sec-5"], "agent_profile_ids": []},
+        {"score": 0.8, "user_id": "usr-2", "type": "methodology", "resource_key": "operational-methodologies",
+         "record_id": "opm-B", "text": "content: B", "section_ids": ["sec-9"], "agent_profile_ids": []},
+        {"score": 0.7, "user_id": "usr-2", "type": "methodology", "resource_key": "operational-methodologies",
+         "record_id": "opm-C", "text": "content: C", "section_ids": [], "agent_profile_ids": []},  # compartida
+    ]
+    with patch.object(bedrock_service, "embed_text", new=AsyncMock(return_value=[0.1])), patch(
+        "services.qdrant_service.search", new=AsyncMock(return_value=hits)
+    ):
+        res = await bedrock_service._execute_tool(
+            None, "usr-2", "search_knowledge_base",
+            {"query": "x", "type": "methodology", "top_k": 10}, "s",
+            caller_profile_id="agent_professional_identity",
+            caller_section_ids=["sec-5", "sec-3"],
+        )
+    ids = {r["record_id"] for r in res["results"]}
+    assert ids == {"opm-A", "opm-C"}  # su sección + la compartida, no opm-B (sec-9)
+
+
+@pytest.mark.asyncio
+@pytest.mark.requisito("RF-009")
+async def test_search_methodology_l3_uses_agent_profile_ids():
+    from services import bedrock_service
+
+    hits = [
+        {"score": 0.9, "user_id": "usr-2", "type": "methodology", "resource_key": "operational-methodologies",
+         "record_id": "opm-X", "text": "content: X", "section_ids": ["sec-5"], "agent_profile_ids": ["agent_visual_design"]},
+        {"score": 0.8, "user_id": "usr-2", "type": "methodology", "resource_key": "operational-methodologies",
+         "record_id": "opm-Y", "text": "content: Y", "section_ids": [], "agent_profile_ids": []},
+    ]
+    with patch.object(bedrock_service, "embed_text", new=AsyncMock(return_value=[0.1])), patch(
+        "services.qdrant_service.search", new=AsyncMock(return_value=hits)
+    ):
+        res = await bedrock_service._execute_tool(
+            None, "usr-2", "search_knowledge_base",
+            {"query": "x", "type": "methodology", "top_k": 10}, "s",
+            caller_profile_id="agent_visual_design", caller_section_ids=None,
+        )
+    ids = {r["record_id"] for r in res["results"]}
+    assert ids == {"opm-X", "opm-Y"}  # opm-X por agent_profile_ids, opm-Y compartida

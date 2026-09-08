@@ -46,6 +46,8 @@ from schemas.bedrock import (
     BedrockInstructionsUpdateRequest,
     BedrockKnowledgeBaseReindexResult,
     BedrockManualMemoryRequest,
+    BedrockSectionDetail,
+    BedrockSectionMethodologiesUpdateRequest,
     BedrockMemoryEventResponse,
     BedrockMemoryRecordResponse,
     BedrockModelOption,
@@ -496,9 +498,17 @@ async def update_agent_methodologies(
     from services.methodology_scope import set_agent_methodologies
 
     try:
-        get_profile(profile_id)
+        profile = get_profile(profile_id)
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    if profile.level == 2:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Un agente L2 recibe sus metodologías de las secciones que posee. "
+                "Edítalas en /settings/sections/:id (PUT /bedrock/sections/{id}/methodologies)."
+            ),
+        )
     return await set_agent_methodologies(
         db, current_user.id, profile_id, payload.methodology_ids
     )
@@ -537,13 +547,101 @@ async def update_agent_tools(
     from services.bedrock import profile_tools
 
     try:
-        get_profile(profile_id)
+        profile = get_profile(profile_id)
     except KeyError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
+    if profile.level == 2:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Un agente L2 recibe sus herramientas de las secciones que posee "
+                "(derivadas, no editables). Gestiona las secciones en /settings/sections/:id."
+            ),
+        )
     try:
         return await profile_tools.set_tool_override(db, profile_id, payload.tool_names)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+# ============================================================================
+# Secciones del Admin — herramientas derivadas + metodologías ligadas (spec 004)
+# ============================================================================
+
+async def _section_detail(db: AsyncSession, user_id: str, section_id: str) -> dict:
+    from services import section_catalog
+    from services.admin_sections import get_section_spec, tools_for_section
+    from models.operational_methodology import OperationalMethodology
+    from sqlalchemy import select
+
+    try:
+        spec = get_section_spec(section_id)
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown admin section")
+    item = await section_catalog.get_section(db, section_id)
+    method_ids = await section_catalog.section_methodology_ids(db, user_id, section_id)
+    rows = (
+        await db.execute(
+            select(
+                OperationalMethodology.id,
+                OperationalMethodology.title,
+                OperationalMethodology.section,
+            ).where(
+                OperationalMethodology.user_id == user_id,
+                OperationalMethodology.id.in_(method_ids or ["__none__"]),
+            )
+        )
+    ).all()
+    return {
+        "section_id": spec.id,
+        "system_name": spec.system_name,
+        "label": spec.label,
+        "section_type": spec.section_type,
+        "resource_key": spec.resource_key,
+        "agent_profile_id": item.get("agent_profile_id"),
+        "derived_tools": sorted(tools_for_section(spec)),
+        "methodology_ids": method_ids,
+        "methodologies": [
+            {"id": r.id, "title": r.title, "section": r.section} for r in rows
+        ],
+    }
+
+
+@router.get(
+    "/sections/{section_id}",
+    response_model=BedrockSectionDetail,
+    summary="Herramientas derivadas y metodologías ligadas de una sección",
+)
+async def get_bedrock_section(
+    section_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await _section_detail(db, current_user.id, section_id)
+
+
+@router.put(
+    "/sections/{section_id}/methodologies",
+    response_model=BedrockSectionDetail,
+    summary="Liga metodologías a una sección (spec 004)",
+)
+async def update_bedrock_section_methodologies(
+    section_id: str,
+    payload: BedrockSectionMethodologiesUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from services import section_catalog
+
+    try:
+        await section_catalog.set_section_methodologies(
+            db, current_user.id, section_id, payload.methodology_ids
+        )
+    except KeyError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown admin section")
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    return await _section_detail(db, current_user.id, section_id)
 
 
 @router.get(

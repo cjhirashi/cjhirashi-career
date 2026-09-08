@@ -252,9 +252,12 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
         "name": "admin_section_settings",
         "description": (
             "Secciones del Admin: qué agente L2 atiende el chat contextual de cada "
-            "pantalla. action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); "
+            "pantalla Y los textos de instrucción del sidebar por vista. "
+            "action=list|get|update. section_id es el PK sec-N (p.ej. sec-1); "
             "mira action=list, campo id. El campo system_name (dashboard, career-projects…) "
-            "es solo el nombre legible. section_id requerido salvo en list."
+            "es solo el nombre legible. section_id requerido salvo en list. En update, "
+            "`views` escribe sidebar_title/sidebar_body por clave de vista (main/list/view/edit); "
+            "null o \"\" en un subcampo restaura el texto de código."
         ),
         "schema": {
             "type": "object",
@@ -262,6 +265,20 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
                 "action": {"type": "string", "enum": ["list", "get", "update"]},
                 "section_id": {"type": "string", "description": "PK de la sección, p.ej. sec-1 (NO el system_name)"},
                 "agent_profile_id": {"type": "string", "description": "Agente L2 del chat contextual del sidebar; string vacío restaura el default del código; debe ser un agente de nivel 2"},
+                "views": {
+                    "type": "object",
+                    "description": (
+                        "update: { <view_key>: { sidebar_title?, sidebar_body? } }. "
+                        "view_key ∈ main|list|view|edit según la sección. null/\"\" restaura código."
+                    ),
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "sidebar_title": {"type": ["string", "null"]},
+                            "sidebar_body": {"type": ["string", "null"]},
+                        },
+                    },
+                },
             },
             "required": ["action"],
         },
@@ -370,6 +387,29 @@ _LEGACY = {
 
 def all_tool_names() -> Set[str]:
     return {t["name"] for t in _RAW_TOOLS}
+
+
+# spec 004 · RF-010/011 — clasificación de cada tool:
+#   "section" → opera los datos de una sección; sólo llega a un agente vía la
+#              sección (no asignable directo a L1/L3).
+#   "agent"   → gestionada por nivel / general del agente (delegación).
+#   "both"    → útil por sección y directa (default).
+_TOOL_SCOPES: Dict[str, str] = {
+    "list_career_record": "section",
+    "get_career_record": "section",
+    "create_career_record": "section",
+    "update_career_record": "section",
+    "delete_career_record": "section",
+    "bulk_update_career_record": "section",
+    "count_career_records": "section",
+    "describe_resource_schema": "section",
+    "delegate_to_specialist": "agent",
+}
+
+
+def tool_scope(name: str) -> str:
+    """`section` | `agent` | `both` (default) para una tool integrada."""
+    return _TOOL_SCOPES.get(name, "both")
 
 
 def converse_tool_specs(
@@ -785,12 +825,16 @@ async def _run_admin_section_settings(db, tool_input: Dict[str, Any]) -> Dict[st
                     return {"error": f"unknown agent profile: {agent_id}"}
                 if not is_l2(agent_id):
                     return {"error": f"agent profile is not L2: {agent_id}"}
+        views = tool_input.get("views")
+        if views is not None and not isinstance(views, dict):
+            return {"error": "views debe ser un objeto { view_key: { sidebar_title?, sidebar_body? } }"}
         try:
             item = await section_catalog.update_section(
                 db,
                 section_id,
                 agent_profile_id=agent_id,
                 clear_agent=clear_agent,
+                views=views,
             )
         except (KeyError, ValueError) as exc:
             return {"error": str(exc)}
@@ -1309,11 +1353,14 @@ async def execute_tool(
     tool_input: Dict[str, Any],
     session_id: str,
     caller_profile_id: Optional[str] = None,
+    caller_section_ids: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """Ejecuta una tool y trunca el resultado."""
     if name in _LEGACY:
         result = await bedrock_service._execute_tool(
-            db, user_id, name, tool_input, session_id, caller_profile_id=caller_profile_id
+            db, user_id, name, tool_input, session_id,
+            caller_profile_id=caller_profile_id,
+            caller_section_ids=caller_section_ids,
         )
     else:
         result = await _execute_extended(db, user_id, name, tool_input, session_id)

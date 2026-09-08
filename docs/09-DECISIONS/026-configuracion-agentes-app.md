@@ -2,7 +2,9 @@
 
 ## Estado
 
-Aceptado — 2026-09-06
+Aceptado — 2026-09-06. **Parcialmente superado por [ADR-027](./027-herramientas-metodologias-por-seccion.md)
+(2026-09-08) para los agentes L2:** sus herramientas y metodologías pasan a derivarse /
+ligarse por **sección**, no por perfil. Este ADR sigue vigente para L1/L3.
 
 ## Contexto
 

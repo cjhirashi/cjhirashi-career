@@ -248,16 +248,43 @@ export interface BedrockCustomTool {
   created_at: string
 }
 
+export interface BedrockAgentToolsBySection {
+  section_id: string
+  label: string
+  tools: string[]
+}
+
 export interface BedrockAgentToolsState {
   profile_id: string
   default_tools: string[]
   override_tools: string[] | null
   effective_tools: string[]
+  // spec 004: presente sólo para agentes L2 (herramientas por sección, lectura).
+  by_section?: BedrockAgentToolsBySection[] | null
 }
 
 export interface BedrockToolCatalogItem {
   name: string
   description: string
+  scope?: 'section' | 'agent' | 'both'
+}
+
+export interface BedrockSectionMethodology {
+  id: string
+  title: string
+  section: string | null
+}
+
+export interface BedrockSectionDetail {
+  section_id: string
+  system_name: string
+  label: string
+  section_type: string
+  resource_key: string | null
+  agent_profile_id: string | null
+  derived_tools: string[]
+  methodology_ids: string[]
+  methodologies: BedrockSectionMethodology[]
 }
 
 export interface BedrockToolCatalog {

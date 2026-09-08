@@ -392,6 +392,26 @@ export function useBedrockToolsCatalog() {
   })
 }
 
+// spec 004: metodologías ligadas a una sección
+export function useBedrockSection(sectionId: string) {
+  return useQuery({
+    queryKey: ['bedrock', 'section', sectionId],
+    queryFn: () => bedrockApi.getBedrockSection(sectionId),
+    enabled: Boolean(sectionId),
+  })
+}
+
+export function useSectionMethodologiesUpdate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sectionId, methodologyIds }: { sectionId: string; methodologyIds: string[] }) =>
+      bedrockApi.setSectionMethodologies(sectionId, methodologyIds),
+    onSuccess: (_data, { sectionId }) => {
+      queryClient.invalidateQueries({ queryKey: ['bedrock', 'section', sectionId] })
+    },
+  })
+}
+
 export function useAgentDelegationUpdate() {
   const queryClient = useQueryClient()
   return useMutation({

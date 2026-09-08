@@ -7,17 +7,54 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from services.bedrock.agent_profiles import AGENT_METHODOLOGIES
 
 
-def applies_to_agent(agent_profile_ids: Optional[Any], caller_profile_id: Optional[str]) -> bool:
-    """True si la metodología es visible para el agente caller.
+def applies_to_caller(
+    agent_profile_ids: Optional[Any],
+    section_ids: Optional[Any],
+    caller_profile_id: Optional[str],
+    caller_section_ids: Optional[Any],
+) -> bool:
+    """True si la metodología es visible para el caller (spec 004).
 
-    Lista vacía o null = todos. El guardián L2 `agent_methodologies` ve todas.
+    - compartida (`agent_profile_ids` y `section_ids` ambos vacíos/null) → todos.
+    - guardián `agent_methodologies` → todas.
+    - L1/L3 → si su id está en `agent_profile_ids`.
+    - L2 → si alguna de sus secciones (`caller_section_ids`) está en `section_ids`.
     """
     if not caller_profile_id or caller_profile_id == AGENT_METHODOLOGIES:
         return True
-    ids = agent_profile_ids or []
-    if not isinstance(ids, list) or not ids:
+    a_ids = agent_profile_ids if isinstance(agent_profile_ids, list) else []
+    s_ids = section_ids if isinstance(section_ids, list) else []
+    if not a_ids and not s_ids:
         return True
-    return caller_profile_id in ids
+    if caller_profile_id in a_ids:
+        return True
+    caller_secs = caller_section_ids if isinstance(caller_section_ids, list) else []
+    return bool(set(s_ids) & set(caller_secs))
+
+
+def applies_to_agent(agent_profile_ids: Optional[Any], caller_profile_id: Optional[str]) -> bool:
+    """Compat (feature 003): visibilidad por `agent_profile_ids` solamente.
+
+    Equivale a `applies_to_caller(agent_profile_ids, None, caller, None)`.
+    Los call sites con contexto de sección usan `applies_to_caller` directamente.
+    """
+    return applies_to_caller(agent_profile_ids, None, caller_profile_id, None)
+
+
+def strip_l2_from_agent_ids(ids: Optional[Any]) -> List[str]:
+    """Quita los ids de agentes L2 de una lista `agent_profile_ids` (spec 004:
+    los L2 reciben metodologías vía sección). Ids desconocidos se conservan."""
+    from services.bedrock.agent_profiles import get_profile
+
+    out: List[str] = []
+    for x in ids or []:
+        try:
+            if get_profile(x).level == 2:
+                continue
+        except KeyError:
+            pass
+        out.append(x)
+    return out
 
 
 def is_shared_methodology(agent_profile_ids: Optional[Any]) -> bool:
@@ -137,11 +174,13 @@ async def list_assigned_methodologies(
     db: AsyncSession,
     user_id: str,
     caller_profile_id: str,
+    caller_section_ids: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """Catálogo de metodologías que el caller debe consultar.
 
-    Fuente de verdad: `agent_profile_ids` en Admin Panel, no secciones hardcoded.
-    Una metodología nueva asignada al agente aparece aquí en el siguiente turno.
+    L2: por las secciones que posee (`caller_section_ids`). L1/L3: por
+    `agent_profile_ids`. Más las compartidas. Cada item trae su `section_ids`
+    de procedencia para poder agruparlo en el prompt (spec 004, RF-008).
     """
     from models.operational_methodology import OperationalMethodology
 
@@ -151,19 +190,25 @@ async def list_assigned_methodologies(
             OperationalMethodology.title,
             OperationalMethodology.section,
             OperationalMethodology.agent_profile_ids,
+            OperationalMethodology.section_ids,
         )
         .where(OperationalMethodology.user_id == user_id)
         .order_by(OperationalMethodology.title.asc())
     )
     assigned: List[Dict[str, Any]] = []
     for row in result.all():
-        if applies_to_agent(row.agent_profile_ids, caller_profile_id):
+        if applies_to_caller(
+            row.agent_profile_ids, row.section_ids, caller_profile_id, caller_section_ids
+        ):
+            a_ids = row.agent_profile_ids if isinstance(row.agent_profile_ids, list) else []
+            s_ids = row.section_ids if isinstance(row.section_ids, list) else []
             assigned.append(
                 {
                     "id": row.id,
                     "title": row.title,
                     "section": row.section,
-                    "shared": is_shared_methodology(row.agent_profile_ids),
+                    "section_ids": s_ids,
+                    "shared": not a_ids and not s_ids,
                 }
             )
     return assigned
