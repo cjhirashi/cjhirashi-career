@@ -261,7 +261,7 @@ const SectionMethodologiesEditor: React.FC<{ sectionId: string }> = ({ sectionId
   const { data: section } = useBedrockSection(sectionId)
   const { data: allMethodologies = [] } = useCareerList<{ id: string; title: string }>(
     'operational-methodologies',
-    { limit: 200 },
+    { limit: 100 },
   )
   const updateMethodologies = useSectionMethodologiesUpdate()
   const [selected, setSelected] = useState<string[]>([])
@@ -427,15 +427,11 @@ export const AdminSectionDetailPage: React.FC = () => {
         <p className="text-red-600 dark:text-red-400 text-sm mb-4">{getErrorMessage(update.error)}</p>
       )}
 
-      {viewState === 'view' && (
-        <>
-          <SectionRecordView groups={recordGroups(data)} />
-          <SectionMethodologiesEditor sectionId={data.id} />
-        </>
-      )}
+      {viewState === 'view' && <SectionRecordView groups={recordGroups(data)} />}
 
       {viewState === 'edit' && (
         <div className="space-y-6">
+          <SectionMethodologiesEditor sectionId={data.id} />
           <div>
             <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
               Agente del chat contextual

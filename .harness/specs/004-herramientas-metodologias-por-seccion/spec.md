@@ -130,14 +130,21 @@ ambas.
 
 ### 3.1 Herramientas de sección — derivadas en código
 - `admin_sections.tools_for_section(spec) -> set[str]`:
-  - `SECTION_TABLE` con `resource_key = R` → `{list_career_record, get_career_record,
-    create_career_record, update_career_record, delete_career_record,
-    bulk_update_career_record, count_career_records, describe_resource_schema,
-    search_knowledge_base}` (acotadas a `R` por el propio tool-input; ver D-3).
-  - `SECTION_FUNCTIONAL` / `SECTION_METRICS` / `SECTION_BUCKET` → conjunto declarado por
-    ese `AdminSectionSpec` en código (p.ej. LinkedIn API → tools LinkedIn).
-  - Toda sección incluye `admin_section_settings` para su agente responsable si aplica
-    (`_ROUTE_TO_PROFILE`).
+  - **Baseline universal (toda sección):** `search_knowledge_base` — es una tool de
+    **consulta**, no operativa: el agente debe poder consultar la metodología de su
+    sección en cualquier caso. Ninguna sección queda sin tools (corrección
+    2026-09-08, Directiva de Pausa — ver §6 D-11).
+  - `SECTION_TABLE` con `resource_key = R` → + el CRUD genérico
+    (`list/get/create/update/delete/bulk_update/count_career_record`,
+    `describe_resource_schema`) — acotado a `R` por el propio tool-input (D-3).
+  - Sección **funcional operativa** → + las `related_tools` que declara en código
+    (meta-tools: `agent_catalog_settings` para el catálogo de agentes,
+    `admin_section_settings` para las secciones, `bedrock_global_settings` para los
+    prompts globales, `error_report_settings`, tools de LinkedIn / job-discovery / PDF…).
+  - Sección de **monitoreo** (`SECTION_METRICS`, visor de chat, bucket sin operación)
+    → sólo el baseline; **es correcto** que no tenga tools operativas.
+  - Gap conocido: `agent-memory` (sec-12) y `agent-tools`/MCP (sec-14) son operativas
+    pero el código no tiene tool dedicada; quedan con sólo el baseline (backlog).
 - No hay tabla ni endpoint de escritura para esto.
 
 ### 3.2 Metodologías — `section_ids` + `agent_profile_ids`
@@ -271,6 +278,7 @@ ambas.
 | D-8 | Extender `admin_section_settings` (no tool nueva) para escribir `views` | La tool ya existe y su owner es `agent_configuration`; sólo le falta el campo | Tool nueva `admin_section_views` (más entradas en el catálogo) |
 | D-9 | `PUT .../agent-profiles/{L2}/tools|methodologies` → `409`, no se elimina el endpoint | El endpoint sigue siendo válido para L1/L3; 409 comunica "editálo en la sección" sin romper clientes | Borrar los endpoints; devolver 404 |
 | D-10 | ADR-027 nuevo que revisa D-1/D-5 de ADR-026; feature 003 no se reabre | Es un rediseño deliberado del modelo, no un fix de 003 | 3ª reapertura de 003 |
+| D-11 | **Directiva de Pausa (2026-09-08):** `search_knowledge_base` es baseline de TODA sección; las funcionales operativas declaran `related_tools`; monitoreo sólo baseline | El supuesto D-2 ("funcional → `related_tools`") era falso para 12 de 54 secciones (métricas, config, bucket): quedaban sin ninguna tool y su agente no podía ni consultar la base de conocimiento. El operador: "las operativas deben tener herramientas; `search_knowledge_base` es de consulta, activa en todas" | Dejar 12 secciones sin tools; crear tools nuevas para métricas/bucket/MCP ahora (alcance mayor, backlog) |
 
 ## 7 · Requisitos no funcionales
 

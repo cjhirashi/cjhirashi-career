@@ -439,6 +439,7 @@ _SECTIONS: List[AdminSectionSpec] = [
             "Prompt global del sistema.",
             "Prompt global. Los suffix por especialista se editan en Settings → Catálogo de Agentes.",
         ),
+        related_tools=("bedrock_global_settings",),
         group="Agente IA",
         sort_order=53,
     ),
@@ -491,6 +492,7 @@ _SECTIONS: List[AdminSectionSpec] = [
             False,
             allow_create=False,
         ),
+        related_tools=("agent_catalog_settings",),
         group="Settings",
         sort_order=90,
     ),
@@ -508,6 +510,7 @@ _SECTIONS: List[AdminSectionSpec] = [
             "Cada fila es una pantalla o área. Tipo tabla/funcional/métricas/bucket, "
             "agente con dominio, instrucciones del sidebar y descripción de vistas.",
         ),
+        related_tools=("admin_section_settings",),
         group="Settings",
         sort_order=91,
     ),
@@ -525,6 +528,7 @@ _SECTIONS: List[AdminSectionSpec] = [
             "System prompt global y reglas de grounding/asignación de metodologías. "
             "Los cambios aplican desde el siguiente mensaje de cualquier agente.",
         ),
+        related_tools=("bedrock_global_settings",),
         group="Settings",
         sort_order=92,
     ),
@@ -638,12 +642,17 @@ _TABLE_SECTION_TOOLS: Tuple[str, ...] = (
 def tools_for_section(spec: AdminSectionSpec) -> set[str]:
     """Conjunto de herramientas que **controlan** esta sección (spec 004, RF-001).
 
-    Derivado en código, no editable por el operador: una sección tabla expone
-    el CRUD genérico de su `resource_key`; una funcional / métricas / bucket
-    expone las `related_tools` que declara. Se unen siempre las `related_tools`
-    (una sección tabla puede declarar extras, p.ej. `list_recent_changes`).
+    Derivado en código, no editable por el operador:
+    - `search_knowledge_base` SIEMPRE (baseline de **consulta**, no operativo: el
+      agente debe poder consultar la metodología de su sección en cualquier caso).
+    - Sección tabla con `resource_key` → el CRUD genérico (operativo).
+    - Sección funcional operativa → las `related_tools` que declara (meta-tools:
+      `agent_catalog_settings`, `admin_section_settings`, `bedrock_global_settings`,
+      `error_report_settings`, …).
+    - Sección de **monitoreo** (métricas, visor de chat, bucket sin operación) →
+      sólo el baseline; es correcto que no tenga tools operativas.
     """
-    names = set(spec.related_tools)
+    names = {"search_knowledge_base"} | set(spec.related_tools)
     if spec.section_type == SECTION_TABLE and spec.resource_key:
         names |= set(_TABLE_SECTION_TOOLS)
     return names
