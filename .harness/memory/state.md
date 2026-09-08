@@ -168,10 +168,10 @@ actualizado: 2026-09-04
 - **[2026-09-08] Acción pendiente del OPERADOR:** re-ligar las metodologías a sus
   secciones desde `/settings/sections/:id`. La migración quitó los vínculos a agentes L2;
   las que estaban asignadas a un L2 quedaron **compartidas** hasta que se re-liguen.
-- **[2026-09-08] Pendiente de git:** commits de cierre de **003 (Bloques I+J)** y **004**
-  siguen SIN `git push`. Mover `anchor_commit` de 003 y 004 a sus commits de cierre.
-  El código de ambas features YA está desplegado (imágenes reconstruidas esta sesión) y
-  la migración `b3d4e5f6a7c8` aplicada en prod.
+- **[2026-09-08] Pendiente de git:** 2 commits de **004** sin `git push` (`02110918`
+  feature + `603b98b3` anchor). 003 (Bloques I+J) ya está en `origin/main` (`07cae9ff`).
+  Código de 003 y 004 YA desplegado (api+admin reconstruidos esta sesión); migración
+  `b3d4e5f6a7c8` aplicada en `career_db` prod.
 - **Operativa nueva:** tras cualquier migración que toque ids o `user_id`, correr
   `POST /bedrock/knowledge-base/reindex` y `scripts/check_kb_consistency.py` (ADR-026 §Reapertura).
 - Antes de tocar nada: correr `.harness/gate/check.sh`.
