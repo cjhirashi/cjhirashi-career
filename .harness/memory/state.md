@@ -168,10 +168,16 @@ actualizado: 2026-09-04
 - **[2026-09-08] Acción pendiente del OPERADOR:** re-ligar las metodologías a sus
   secciones desde `/settings/sections/:id`. La migración quitó los vínculos a agentes L2;
   las que estaban asignadas a un L2 quedaron **compartidas** hasta que se re-liguen.
-- **[2026-09-08] Pendiente de git:** 2 commits de **004** sin `git push` (`02110918`
-  feature + `603b98b3` anchor). 003 (Bloques I+J) ya está en `origin/main` (`07cae9ff`).
-  Código de 003 y 004 YA desplegado (api+admin reconstruidos esta sesión); migración
+- **[2026-09-08] Pendiente de git:** **5 commits de 004** sin `git push`
+  (`02110918` feature · `603b98b3`+`448d2c2b` anchor/state · `92ec40ed` fix baseline de
+  tools por sección (Directiva de Pausa) · commit de anchor→`92ec40ed`). 003 ya en
+  `origin/main` (`07cae9ff`). Código de 003 y 004 (incl. el fix) YA desplegado; migración
   `b3d4e5f6a7c8` aplicada en `career_db` prod.
+- **[2026-09-08] 004 D-11 (Directiva de Pausa):** `search_knowledge_base` es baseline de
+  TODA sección; las funcionales operativas de config declaran su meta-tool
+  (`agent_catalog_settings`/`admin_section_settings`/`bedrock_global_settings`); métricas
+  y visores quedan sólo con baseline (monitoreo, correcto). **Backlog:** `agent-memory`
+  (sec-12) y `agent-tools`/MCP (sec-14) son operativas sin tool dedicada.
 - **Operativa nueva:** tras cualquier migración que toque ids o `user_id`, correr
   `POST /bedrock/knowledge-base/reindex` y `scripts/check_kb_consistency.py` (ADR-026 §Reapertura).
 - Antes de tocar nada: correr `.harness/gate/check.sh`.
