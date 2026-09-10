@@ -8,6 +8,18 @@ actualizado: 2026-09-04
 
 ## ⚠️ Correcciones del usuario (leer SIEMPRE — no borrar)
 
+### [2026-09-10] Toda feature de frontend pasa por el especialista `experto-ux-ui`
+- **Qué pasó:** el usuario quiere que los frontends (`admin`, `portfolio`) estén
+  siempre bien diseñados, profesionales y con buena UX — no dependiente del criterio
+  del `implementador` de turno.
+- **Corrección:** especialista `experto-ux-ui` añadido (`ADR-003`). Interviene en
+  Fase 1/2 (flujos, estados por vista, componentes a reutilizar, `RF-` de UX) y en
+  Fase 4 (revisa la UI contra estándar: contraste WCAG AA, consistencia, accesibilidad,
+  responsive, microcopy) antes de que cierre el `revisor`. Constitución Art. 8.
+- **Cómo aplicar:** ante una feature que toque interfaz, delega en `experto-ux-ui`;
+  la spec no está lista para el Gate 1 sin su sección de UX. No escribe código de
+  producción — diseña y revisa.
+
 ### [2026-09-04] El arnés no estaba forzando la Fase 1 al pedir "corrige esta falla"
 - **Qué pasó:** el usuario reportó que, al pedir corregir fallas, el flujo saltaba
   directo a "arreglar/rediseñar" sin pasar por Specify. Evidencia en este mismo

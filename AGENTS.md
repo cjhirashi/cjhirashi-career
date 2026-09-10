@@ -85,8 +85,11 @@ manual de cada rol está en `.harness/method.md §8`; estos archivos son stubs.
 
 - **Base:** `orquestador` · `autor-de-spec` · `arquitecto` · `implementador` ·
   `revisor` · `explorador`.
-- Sin especialistas por stack: el patrón por capas + los 5 base cubren. Si un
-  subproyecto (`api`/`ai`/`admin`/`portfolio`/`mcp`) entra en desarrollo intenso y
+- **Especialista:** `experto-ux-ui` (`ADR-003`) — diseña y revisa la UX/UI de los
+  frontends (`admin`, `portfolio`). Toda feature de interfaz pasa por él antes de
+  `verified` (Constitución Art. 8).
+- Sin especialistas por stack: el patrón por capas + los base cubren. Si un
+  subproyecto (`api`/`ai`/`admin`/`portfolio`) entra en desarrollo intenso y
   justifica su propio especialista, se añade **vía un `ADR-`**.
 
 Ver `.claude/agents/README.md`.

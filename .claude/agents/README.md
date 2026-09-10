@@ -20,9 +20,11 @@ Estos archivos son el **binding del arnés a Claude Code**: subagentes que el
 `revisor` nunca es más débil que `implementador` (lección: implementador en haiku
 fabricó evidencia).
 
-## Especialistas de dominio (opcionales, por proyecto)
+## Especialistas de dominio (opcionales)
 
-Añádelos solo si el dominio es estrecho y profundo (p. ej. infra de red). Son
-**destinos de delegación acotada** del `orquestador`/`implementador`: una task de un
-plan aprobado, no diseñan la solución. Si un subproyecto de una app entra en
-desarrollo intenso y justifica su propio especialista, se añade **vía un `ADR-`**.
+**Destinos de delegación acotada** del `orquestador`/`autor-de-spec`/`arquitecto`. Se
+añaden **vía un `ADR-`**.
+
+| Especialista | Qué hace | ADR | model |
+|---|---|---|---|
+| `experto-ux-ui` | Diseña y revisa la UX/UI de los frontends (`admin`, `portfolio`). Aporta flujos y estados en Fase 1/2; revisa la UI contra un estándar profesional (contraste WCAG AA, consistencia de componentes, accesibilidad, responsive, microcopy) en Fase 4, antes de que cierre el `revisor`. **No escribe código de producción.** | `ADR-003` | sonnet |

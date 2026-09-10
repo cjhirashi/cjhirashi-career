@@ -8,6 +8,20 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-09-10] Especialista `experto-ux-ui` añadido al arnés — ADR-003
+
+- **Fase alcanzada:** (mantenimiento del arnés — no aplica ciclo de feature)
+- **Gate:** verde
+- **Docs actualizadas:** `.claude/agents/experto-ux-ui.md` (nuevo),
+  `.claude/agents/README.md`, `AGENTS.md`, `.harness/constitution.md` Art. 8 + historial,
+  `.harness/decisions/ADR-003-especialista-ux-ui.md` (nuevo)
+- **Decisiones de diseño:** el usuario quiere UX/UI profesional y consistente en los
+  frontends. Especialista `experto-ux-ui` (sonnet): diseña y revisa, no implementa;
+  interviene en Fase 1/2 y Fase 4; revisión de UX/UI obligatoria antes de `verified`
+  para features de interfaz. Propagado también a `hira` y al `reference/` (opcional,
+  solo proyectos con frontend). `cjhirashi-srv` no lo lleva (sin frontend).
+- **Próximo paso:** ninguno; aplica desde ahora en features de `admin`/`portfolio`.
+
 ## [2026-09-08] 004 — herramientas y metodologías por sección (L2) — verified
 
 - **Fase alcanzada:** verified. SDD completo (Fase 1 elicitación en 2 tandas → GATE 1 →

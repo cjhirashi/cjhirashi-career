@@ -98,6 +98,11 @@ rutas:
 - **Value Captain** y **Tech Lead**: el humano del proyecto (ambos roles). La **IA no
   autoaprueba** PRs ni marca `verified`.
 - 2 puntos de aprobación humana: tras **Specify** (Fase 1) y tras **Plan** (Fase 2).
+- **Toda feature que toque interfaz de un frontend** (`admin` o `portfolio`) pasa por
+  una **revisión de UX/UI** antes de `verified` — delegable al especialista
+  `experto-ux-ui` (`ADR-003`). La spec de una feature de frontend incluye su sección
+  de UX (flujos, estados por vista, componentes a reutilizar) o no está lista para el
+  Gate 1.
 
 ## Artículo 9 · Convenciones
 
@@ -168,3 +173,4 @@ sincroniza (Fase 2 `plan.md §Impacto en documentación` → tareas `[doc]` → 
 |---|---|---|---|
 | 2026-09-04 | — | Constitución inicial (Génesis en modo alineación) | ADR-001 |
 | 2026-09-04 | 1, 2, 6 | Retiro del MCP Server: 5→4 servicios; fuera el sustrato `mcp` y la regla de JSON Schema por tool | ADR-023 |
+| 2026-09-10 | 8 | Especialista `experto-ux-ui`: revisión de UX/UI obligatoria en features de frontend antes de `verified` | ADR-003 |
