@@ -4,7 +4,7 @@ Middleware y dependencias de autenticación JWT.
 - `get_current_user` — obligatorio; lanza 401 si el token es inválido
 - `get_optional_current_user` — opcional; retorna None sin token
 """
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -12,6 +12,7 @@ from typing import Optional
 from models.user import User
 from services.auth_service import AuthService
 from database import get_db
+from config import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ security = HTTPBearer()
 # Dependencias de autenticación
 # ============================================================================
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: AsyncSession = Depends(get_db)
 ) -> User:
@@ -78,10 +80,38 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"}
         )
 
+    # Dedicated agents must never become general-purpose API users. Their
+    # approved surface is career data, Bedrock chat, and the unauthenticated
+    # /public portal (the latter is handled without this dependency).
+    if user.access_role == "agent":
+        career_path = request.url.path.startswith("/career/")
+        bedrock_chat = request.url.path == "/bedrock/chat" and request.method == "POST"
+        if not career_path and not bedrock_chat:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Agent token is not authorized for this endpoint",
+            )
+
+        # Agents operate on the portfolio owner's records. An explicit owner_id
+        # in the JWT takes precedence; otherwise fall back to the configured
+        # portfolio owner so tokens without the claim remain valid.
+        owner_id = payload.get("owner_id") or settings.PUBLIC_PORTAL_USER_ID
+        owner_result = await db.execute(
+            select(User).where(User.id == str(owner_id))
+        )
+        owner = owner_result.scalar_one_or_none()
+        if owner is None or not owner.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Assigned owner not found or inactive",
+            )
+        return owner
+
     return user
 
 
 async def get_optional_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
     db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
@@ -100,6 +130,6 @@ async def get_optional_current_user(
         return None
 
     try:
-        return await get_current_user(credentials, db)
+        return await get_current_user(request, credentials, db)
     except HTTPException:
         return None
