@@ -141,7 +141,7 @@ class SearchPlanBase(BaseModel):
     target_interviews: Optional[int] = None
     target_offers: Optional[int] = None
     plan_status: PlanStatusLiteral = "not_started"
-    completion_percentage: int = Field(default=0, ge=0, le=100)
+    completion_percentage: Optional[int] = Field(default=0, ge=0, le=100)
     lessons_learned: Optional[str] = None
 
 
