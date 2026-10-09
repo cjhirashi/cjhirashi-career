@@ -39,6 +39,9 @@ class User(Base):
     # --- Estado de cuenta ---
     is_active = Column(Boolean, default=True, nullable=False, index=True)
     is_verified = Column(Boolean, default=False, nullable=False)
+    # Authorization class. Regular accounts remain "user"; dedicated agent
+    # accounts are restricted by middleware to their approved API surface.
+    access_role = Column(String(32), default="user", nullable=False, index=True)
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
