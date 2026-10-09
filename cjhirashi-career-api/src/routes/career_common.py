@@ -16,6 +16,7 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import Base, get_db
@@ -193,6 +194,12 @@ def build_crud_router(
             obj = await repository.create_for_user(db, current_user.id, payload.model_dump())
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        except IntegrityError as exc:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{entity_name} already exists (duplicate unique value)",
+            ) from exc
         if after_write:
             after_write(obj)
         return obj
@@ -211,6 +218,12 @@ def build_crud_router(
             obj = await repository.update_for_user(db, current_user.id, item_id, data)
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        except IntegrityError as exc:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{entity_name} already exists (duplicate unique value)",
+            ) from exc
         if obj is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"{entity_name} not found"
