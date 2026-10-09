@@ -83,6 +83,7 @@ _L3_TASK_RULE = (
 _METHODOLOGY_ASSIGNMENT_RULE = (
     "METODOLOGÍAS OPERATIVAS — solo las asignadas a ti. "
     "Cada metodología tiene `agent_profile_ids` (Admin Panel → Metodologías Operativas → Agentes). "
+    "También puede tener `section_ids`, las Secciones del Admin a las que aplica. "
     "Las tuyas son las que incluyen tu perfil, más las compartidas (lista vacía = todos los agentes). "
     "No consultes ni apliques metodologías asignadas solo a otros agentes. "
     "Si Carlos crea una metodología nueva y te la asigna, es tuya de inmediato: consúltala y síguela. "
@@ -141,8 +142,16 @@ def methodology_assignment_block(
         if profile.level == 2:
             lines.extend(_methodologies_grouped_by_section(assigned))
         else:
+            from services.admin_sections import get_section_spec
+
             for row in assigned:
-                section = f" [{row['section']}]" if row.get("section") else ""
+                labels = []
+                for section_id in row.get("section_ids") or []:
+                    try:
+                        labels.append(get_section_spec(section_id).label)
+                    except KeyError:
+                        continue
+                section = f" [{', '.join(labels)}]" if labels else ""
                 shared = " (compartida)" if row.get("shared") else ""
                 lines.append(f"- {row['id']}: {row['title']}{section}{shared}")
     else:

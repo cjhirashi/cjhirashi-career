@@ -24,10 +24,6 @@ class OperationalMethodology(Base):
 
     # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
-    # e.g. "Investigación Operativa" / "Metodología Operativa de la Bóveda" -
-    # free text rather than an enum, new top-level groupings will show up.
-    section = Column(String(150), nullable=True, index=True)
-    subsection = Column(String(150), nullable=True)
     description = Column(Text, nullable=True)
     content = Column(Text, nullable=False)
     # IDs canónicos agent_* para quienes aplica esta metodología — SÓLO L1/L3
@@ -38,9 +34,6 @@ class OperationalMethodology(Base):
     # metodología (spec 004). Un agente L2 ligado a alguna de esas secciones la
     # recibe. Vacío/null = no ligada a ninguna sección.
     section_ids = Column(JSONB, nullable=True)
-
-    notes = Column(Text, nullable=True)
-
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

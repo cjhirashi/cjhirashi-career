@@ -37,7 +37,6 @@ def _methodology_entries(rows: Sequence[Any], profile_id: str) -> List[Dict[str,
             {
                 "id": row.id,
                 "title": row.title,
-                "section": row.section,
                 "shared": shared,
                 "assigned": assigned,
             }

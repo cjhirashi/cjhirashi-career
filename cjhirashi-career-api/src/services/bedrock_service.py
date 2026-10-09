@@ -243,13 +243,13 @@ _METHODOLOGY_EXCERPT_CHARS = 800
 def _methodology_snippet(row: Dict[str, Any]) -> Dict[str, Any]:
     """Extracto de un acierto de `search_knowledge_base type=methodology`:
     lo justo para que el agente decida si ES la que necesita, sin traerse el
-    procedimiento completo (spec 003 Bloque J, RF-016). `title`/`section`
+    procedimiento completo (spec 003 Bloque J, RF-016). `title`/`section_ids`
     vienen en el payload de Qdrant (RF-016); el `excerpt` sale del `text`
     (producido por `CareerRepository._record_to_text` como líneas `campo:
     valor`), quitándole las líneas de metadatos del principio."""
     text = row.get("text") or ""
     body = text
-    for prefix in ("title:", "section:", "subsection:", "description:", "agent_profile_ids:"):
+    for prefix in ("title:", "section_ids:", "description:", "agent_profile_ids:"):
         # cada metadato ocupa una línea al principio; salta hasta el cuerpo real
         while body.lstrip().startswith(prefix):
             body = body.split("\n", 1)[1] if "\n" in body else ""
@@ -261,10 +261,18 @@ def _methodology_snippet(row: Dict[str, Any]) -> Dict[str, Any]:
     else:
         excerpt = body
     record_id = row.get("record_id")
+    from services.admin_sections import get_section_spec
+
+    sections = []
+    for section_id in row.get("section_ids") or []:
+        try:
+            sections.append(get_section_spec(section_id).label)
+        except KeyError:
+            continue
     return {
         "record_id": record_id,
         "title": row.get("title"),
-        "section": row.get("section"),
+        "sections": sections,
         "score": row.get("score"),
         "shared": not (row.get("agent_profile_ids") or []),
         "excerpt": excerpt,

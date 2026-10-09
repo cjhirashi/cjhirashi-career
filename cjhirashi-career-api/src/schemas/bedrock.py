@@ -160,7 +160,6 @@ class BedrockAgentProfilePromptUpdateRequest(BaseModel):
 class BedrockAgentCatalogMethodology(BaseModel):
     id: str
     title: str
-    section: Optional[str] = None
     shared: bool
     assigned: bool
 
@@ -312,7 +311,6 @@ class BedrockKnowledgeBaseReindexResult(BaseModel):
 class BedrockSectionMethodology(BaseModel):
     id: str
     title: str
-    section: Optional[str] = None
 
 
 class BedrockSectionDetail(BaseModel):

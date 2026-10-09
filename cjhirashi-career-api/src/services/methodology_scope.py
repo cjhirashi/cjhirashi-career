@@ -104,7 +104,6 @@ async def list_methodologies_for_catalog(
         select(
             OperationalMethodology.id,
             OperationalMethodology.title,
-            OperationalMethodology.section,
             OperationalMethodology.agent_profile_ids,
         )
         .where(OperationalMethodology.user_id == user_id)
@@ -119,7 +118,6 @@ async def list_methodologies_for_catalog(
             {
                 "id": row.id,
                 "title": row.title,
-                "section": row.section,
                 "shared": shared,
                 "assigned": assigned,
             }
@@ -188,7 +186,6 @@ async def list_assigned_methodologies(
         select(
             OperationalMethodology.id,
             OperationalMethodology.title,
-            OperationalMethodology.section,
             OperationalMethodology.agent_profile_ids,
             OperationalMethodology.section_ids,
         )
@@ -206,7 +203,6 @@ async def list_assigned_methodologies(
                 {
                     "id": row.id,
                     "title": row.title,
-                    "section": row.section,
                     "section_ids": s_ids,
                     "shared": not a_ids and not s_ids,
                 }

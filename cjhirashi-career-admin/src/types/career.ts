@@ -596,11 +596,10 @@ export interface OperationalMethodology {
   id: string
   user_id: string
   title: string
-  section?: string | null
-  subsection?: string | null
   description?: string | null
   content: string
   agent_profile_ids?: string[] | null
+  section_ids?: string[] | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }

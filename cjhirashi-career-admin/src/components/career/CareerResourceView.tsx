@@ -365,7 +365,7 @@ const FkSelectCapsule: React.FC<{
   id: string
   fkResource: string
   fkLabelField?: string | string[]
-  fkApi?: 'career' | 'pdf-template-styles'
+  fkApi?: 'career' | 'pdf-template-styles' | 'admin-sections'
 }> = ({ id, fkResource, fkLabelField, fkApi = 'career' }) => {
   const name = useFkLabel(fkResource, id, fkLabelField, fkApi)
   return <SelectCapsule code={id} label={name} />

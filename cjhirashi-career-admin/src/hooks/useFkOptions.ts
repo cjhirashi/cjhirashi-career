@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { careerApi } from '@/api/career'
 import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
+import { adminSectionsApi } from '@/api/adminSections'
 import { SelectOption } from '@/config/careerResources'
 
 /** Resolves the display label from a record using one or more candidate fields. */
@@ -17,7 +18,7 @@ export function resolveFkLabel(
   return String(record.id ?? '—')
 }
 
-export type FkApiMode = 'career' | 'pdf-template-styles'
+export type FkApiMode = 'career' | 'pdf-template-styles' | 'admin-sections'
 
 /** Career list endpoints cap `limit` at 100 (`le=100` in career_common). */
 const FK_PAGE_SIZE = 100
@@ -25,6 +26,9 @@ const FK_PAGE_SIZE = 100
 async function fetchFkRecords(apiMode: FkApiMode, resource: string): Promise<Record<string, unknown>[]> {
   if (apiMode === 'pdf-template-styles') {
     return pdfTemplateStylesApi.list({ skip: 0, limit: FK_PAGE_SIZE }) as unknown as Record<string, unknown>[]
+  }
+  if (apiMode === 'admin-sections') {
+    return adminSectionsApi.list() as unknown as Record<string, unknown>[]
   }
   const records: Record<string, unknown>[] = []
   let skip = 0

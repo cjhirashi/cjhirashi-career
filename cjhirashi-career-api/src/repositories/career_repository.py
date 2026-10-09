@@ -527,13 +527,12 @@ class CareerRepository(Generic[ModelType]):
             resource_type = "methodology" if self.resource_key == "operational-methodologies" else "career_record"
             extra_payload = None
             if resource_type == "methodology":
-                # `title`/`section` en el payload → `search type=methodology`
+                # Structured metadata lets methodology search build concise snippets.
                 # arma extractos sin re-parsear el markdown (spec 003 RF-016).
                 extra_payload = {
                     "agent_profile_ids": getattr(obj, "agent_profile_ids", None) or [],
                     "section_ids": getattr(obj, "section_ids", None) or [],
                     "title": getattr(obj, "title", None),
-                    "section": getattr(obj, "section", None),
                 }
             await qdrant_service.upsert_point(
                 user_id=user_id,

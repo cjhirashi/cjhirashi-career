@@ -3,7 +3,7 @@ Pydantic schemas - Career domain (v2), Dominio 5: Metodologías Operativas.
 
 Covers: operational_methodologies.
 """
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -60,9 +60,9 @@ def _normalize_section_ids(value: Optional[List[str]]) -> Optional[List[str]]:
 # ============================================================================
 
 class OperationalMethodologyBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: str = Field(..., max_length=255)
-    section: Optional[str] = Field(None, max_length=150)
-    subsection: Optional[str] = Field(None, max_length=150)
     description: Optional[str] = None
     content: str
     agent_profile_ids: Optional[List[str]] = Field(
@@ -73,7 +73,6 @@ class OperationalMethodologyBase(BaseModel):
         None,
         description="IDs sec-N de secciones del Admin a las que está ligada (spec 004). Un L2 ligado a alguna la recibe.",
     )
-    notes: Optional[str] = None
 
 
 class OperationalMethodologyCreate(OperationalMethodologyBase):
@@ -89,14 +88,13 @@ class OperationalMethodologyCreate(OperationalMethodologyBase):
 
 
 class OperationalMethodologyUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: Optional[str] = Field(None, max_length=255)
-    section: Optional[str] = None
-    subsection: Optional[str] = None
     description: Optional[str] = None
     content: Optional[str] = None
     agent_profile_ids: Optional[List[str]] = None
     section_ids: Optional[List[str]] = None
-    notes: Optional[str] = None
 
     @field_validator("agent_profile_ids")
     @classmethod

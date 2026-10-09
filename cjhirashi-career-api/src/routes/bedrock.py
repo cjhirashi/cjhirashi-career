@@ -585,7 +585,6 @@ async def _section_detail(db: AsyncSession, user_id: str, section_id: str) -> di
             select(
                 OperationalMethodology.id,
                 OperationalMethodology.title,
-                OperationalMethodology.section,
             ).where(
                 OperationalMethodology.user_id == user_id,
                 OperationalMethodology.id.in_(method_ids or ["__none__"]),
@@ -601,9 +600,7 @@ async def _section_detail(db: AsyncSession, user_id: str, section_id: str) -> di
         "agent_profile_id": item.get("agent_profile_id"),
         "derived_tools": sorted(tools_for_section(spec)),
         "methodology_ids": method_ids,
-        "methodologies": [
-            {"id": r.id, "title": r.title, "section": r.section} for r in rows
-        ],
+        "methodologies": [{"id": r.id, "title": r.title} for r in rows],
     }
 
 
