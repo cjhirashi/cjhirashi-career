@@ -1099,6 +1099,14 @@ export const vacanciesConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'company', label: 'Empresa', type: 'text', required: true },
+    {
+      name: 'target_company_id',
+      label: 'Empresa diana (vínculo)',
+      type: 'fk-select',
+      fkResource: 'target-companies',
+      fkLabelField: 'company_name',
+      helpText: 'Opcional: si esta vacante corresponde a una Empresa Diana ya investigada, vincúlala aquí para cruzar información de forma confiable.',
+    },
     { name: 'exact_role', label: 'Rol exacto', type: 'text', required: true },
     { name: 'order_number', label: 'Número de orden', type: 'number' },
     { name: 'vacancy_url', label: 'URL de la vacante', type: 'text', fullWidth: true },

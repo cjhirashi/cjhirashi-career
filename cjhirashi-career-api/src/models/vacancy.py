@@ -30,6 +30,13 @@ class Vacancy(Base):
     # --- Campos de negocio ---
     order_number = Column(Integer, nullable=True)
     company = Column(String(255), nullable=False)
+    # FK a target_companies (checklist Paulina #6): `company` sigue siendo
+    # texto libre (vacantes de empresas fuera de la lista de target companies
+    # también se registran), pero cuando sí corresponde a una target company
+    # ya investigada, esto permite cruzar información de forma confiable.
+    target_company_id = Column(
+        String(20), ForeignKey("target_companies.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     exact_role = Column(String(255), nullable=False)
     vacancy_url = Column(String(500), unique=True, nullable=True)
     source = Column(String(50), nullable=True)

@@ -282,6 +282,7 @@ EvaluationLiteral = Literal["apply", "do_not_apply", "pending_review"]
 class VacancyBase(BaseModel):
     order_number: Optional[int] = None
     company: str = Field(..., max_length=255)
+    target_company_id: Optional[str] = None
     exact_role: str = Field(..., max_length=255)
     vacancy_url: Optional[str] = Field(None, max_length=500)
     source: Optional[str] = Field(None, max_length=50)
@@ -301,6 +302,7 @@ class VacancyCreate(VacancyBase):
 class VacancyUpdate(BaseModel):
     order_number: Optional[int] = None
     company: Optional[str] = Field(None, max_length=255)
+    target_company_id: Optional[str] = None
     exact_role: Optional[str] = Field(None, max_length=255)
     vacancy_url: Optional[str] = None
     source: Optional[str] = None

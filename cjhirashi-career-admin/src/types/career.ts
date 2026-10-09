@@ -340,6 +340,7 @@ export interface Vacancy {
   user_id: string
   order_number?: number | null
   company: string
+  target_company_id?: string | null
   exact_role: string
   vacancy_url?: string | null
   source?: string | null
