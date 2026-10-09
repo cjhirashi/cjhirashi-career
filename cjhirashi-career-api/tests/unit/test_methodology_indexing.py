@@ -18,7 +18,7 @@ async def test_index_for_search_includes_agent_profile_ids_for_methodology():
         id="opm-1",
         user_id="usr-1",
         title="Metodología X",
-        section="Calidad",
+        section_ids=["sec-1"],
         content="# contenido",
         agent_profile_ids=["agent_pdf_design"],
     )
@@ -29,8 +29,9 @@ async def test_index_for_search_includes_agent_profile_ids_for_methodology():
         upsert.assert_awaited_once()
         kwargs = upsert.call_args.kwargs
         assert kwargs["resource_type"] == "methodology"
-        # RF-007: agent_profile_ids en el payload; RF-016: + title/section para
-        # que `search type=methodology` arme extractos sin re-parsear markdown.
+        # RF-007: agent_profile_ids en el payload; RF-016: + title/section_ids
+        # (spec 005: section/subsection/notes freeform retirados) para que
+        # `search type=methodology` arme extractos sin re-parsear markdown.
         assert kwargs["extra_payload"]["agent_profile_ids"] == ["agent_pdf_design"]
         assert kwargs["extra_payload"]["title"] == "Metodología X"
-        assert kwargs["extra_payload"]["section"] == "Calidad"
+        assert kwargs["extra_payload"]["section_ids"] == ["sec-1"]

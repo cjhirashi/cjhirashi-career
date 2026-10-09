@@ -25,7 +25,7 @@ def _hit(**over):
         "record_id": "opm-61",
         "text": _METH_TEXT,
         "title": "Redacción de Metodologías Operativas por Dominio",
-        "section": "Soporte",
+        "section_ids": ["sec-1"],
         "agent_profile_ids": ["agent_methodologies"],
     }
     base.update(over)
@@ -53,7 +53,7 @@ async def test_search_methodology_returns_excerpts_not_full_text():
     row = res["results"][0]
     assert row["record_id"] == "opm-61"
     assert row["title"].startswith("Redacción de Metodologías")
-    assert row["section"] == "Soporte"
+    assert row["sections"] == ["Dashboard"]  # resuelto desde section_ids=["sec-1"]
     assert "text" not in row  # NO el contenido completo
     assert "opm-61" in row["read_full"] and "get_career_record" in row["read_full"]
     assert "instruction" in res and "get_career_record" in res["instruction"]
@@ -64,7 +64,9 @@ async def test_search_methodology_returns_excerpts_not_full_text():
 async def test_methodology_excerpt_is_capped():
     from services import bedrock_service
 
-    hits = [_hit(agent_profile_ids=[])]
+    # agent_profile_ids=[] + section_ids=[] = compartida (visible sin importar
+    # las secciones del caller) - este test sólo ejercita el tope de excerpt.
+    hits = [_hit(agent_profile_ids=[], section_ids=[])]
     with patch.object(bedrock_service, "embed_text", new=AsyncMock(return_value=[0.1])), patch(
         "services.qdrant_service.search", new=AsyncMock(return_value=hits)
     ):
