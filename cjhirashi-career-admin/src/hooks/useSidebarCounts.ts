@@ -33,7 +33,7 @@ export function tableResourceKeysForDomain(domainKey: string | null): string[] {
  */
 export function useSidebarCounts(expandedDomain: string | null) {
   const careerKeys = useMemo(() => tableResourceKeysForDomain(expandedDomain), [expandedDomain])
-  const loadAgent = expandedDomain === 'agent'
+  const loadPdf = expandedDomain === 'pdf'
   const loadSettings = expandedDomain === 'settings'
 
   const careerQueries = useQueries({
@@ -59,21 +59,21 @@ export function useSidebarCounts(expandedDomain: string | null) {
   const pdfTemplatesQuery = useQuery({
     queryKey: ['pdf-templates', { count: true }],
     queryFn: async () => (await pdfTemplatesApi.list({ skip: 0, limit: 100 })).length,
-    enabled: loadAgent,
+    enabled: loadPdf,
     ...countQueryOptions,
   })
 
   const pdfStylesQuery = useQuery({
     queryKey: ['pdf-template-styles', { count: true }],
     queryFn: async () => (await pdfTemplateStylesApi.list({ skip: 0, limit: 100 })).length,
-    enabled: loadAgent,
+    enabled: loadPdf,
     ...countQueryOptions,
   })
 
   const catalogQuery = useQuery({
     queryKey: ['bedrock', 'agent-catalog'],
     queryFn: bedrockApi.listAgentCatalog,
-    enabled: loadAgent || loadSettings,
+    enabled: loadSettings,
     ...countQueryOptions,
   })
 
@@ -94,14 +94,14 @@ export function useSidebarCounts(expandedDomain: string | null) {
   const toolsQuery = useQuery({
     queryKey: ['bedrock', 'tools'],
     queryFn: bedrockApi.listTools,
-    enabled: loadAgent,
+    enabled: loadSettings,
     ...countQueryOptions,
   })
 
   const methodologiesQuery = useQuery({
     queryKey: careerQueryKey('operational-methodologies', { count: true }),
     queryFn: () => careerApi.count('operational-methodologies'),
-    enabled: loadAgent,
+    enabled: loadSettings,
     ...countQueryOptions,
   })
 
@@ -114,13 +114,11 @@ export function useSidebarCounts(expandedDomain: string | null) {
     career,
     files: filesQuery.data,
     tasks: tasksQuery.data,
-    agent: {
+    nav: {
       pdfTemplates: pdfTemplatesQuery.data,
       pdfStyles: pdfStylesQuery.data,
       methodologies: methodologiesQuery.data,
       tools: toolsQuery.data?.length,
-    },
-    settings: {
       catalog: catalogQuery.data?.length,
       sections: sectionsQuery.data?.length,
       errorsPending: errorReportsQuery.data?.pending,

@@ -15,6 +15,7 @@ import {
   Brain,
   Library,
   FileText,
+  FileType,
   Palette,
   Plug,
   ScrollText,
@@ -49,19 +50,40 @@ const menuItems = [
 const LINKEDIN_DOMAIN_KEY = 'digital'
 const SEARCH_METRICS_DOMAIN_KEY = 'search'
 const AGENT_DOMAIN_KEY = 'agent'
+const PDF_DOMAIN_KEY = 'pdf'
+const SETTINGS_DOMAIN_KEY = 'settings'
 
-type AgentCountKey = 'pdfTemplates' | 'pdfStyles' | 'methodologies' | 'tools'
+type SidebarCountKey =
+  | 'pdfTemplates'
+  | 'pdfStyles'
+  | 'methodologies'
+  | 'tools'
+  | 'catalog'
+  | 'sections'
+  | 'errorsPending'
 
-const AGENT_LINKS: {
+interface NavLink {
   label: string
   path: string
   icon: LucideIcon
-  countKey?: AgentCountKey
-}[] = [
+  countKey?: SidebarCountKey
+}
+
+const AGENT_LINKS: NavLink[] = [
   { label: 'Chat General', path: '/agent/chat', icon: MessageCircle },
+  { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
+]
+
+const PDF_LINKS: NavLink[] = [
   { label: 'Plantillas PDF', path: '/agent/pdf-templates', icon: FileText, countKey: 'pdfTemplates' },
   { label: 'Estilos PDF', path: '/agent/pdf-template-styles', icon: Palette, countKey: 'pdfStyles' },
-  { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
+]
+
+const SETTINGS_LINKS: NavLink[] = [
+  { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
+  { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
+  { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
+  { label: 'Reportes de Falla', path: '/settings/error-reports', icon: AlertTriangle, countKey: 'errorsPending' },
   {
     label: 'Metodologías Operativas',
     path: '/career/operational-methodologies',
@@ -72,19 +94,6 @@ const AGENT_LINKS: {
   { label: 'Instrucciones', path: '/agent/instructions', icon: FileText },
   { label: 'Herramientas', path: '/agent/tools', icon: Plug, countKey: 'tools' },
   { label: 'Bitácora', path: '/agent/audit-log', icon: ScrollText },
-]
-
-const SETTINGS_DOMAIN_KEY = 'settings'
-const SETTINGS_LINKS: {
-  label: string
-  path: string
-  icon: LucideIcon
-  countKey?: 'catalog' | 'sections' | 'errorsPending'
-}[] = [
-  { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
-  { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
-  { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
-  { label: 'Reportes de Falla', path: '/settings/error-reports', icon: AlertTriangle, countKey: 'errorsPending' },
 ]
 
 const RecordCount: React.FC<{ count?: number }> = ({ count }) => {
@@ -115,6 +124,58 @@ const SidebarSubLink: React.FC<{
     <span className="truncate min-w-0 flex-1">{label}</span>
     <RecordCount count={count} />
   </Link>
+)
+
+const NavAccordion: React.FC<{
+  domainKey: string
+  label: string
+  icon: LucideIcon
+  links: NavLink[]
+  isOpen: boolean
+  isExpanded: boolean
+  onToggle: (domainKey: string) => void
+  isActive: (path: string) => boolean
+  counts: Partial<Record<SidebarCountKey, number | undefined>>
+  onLinkClick: () => void
+}> = ({ domainKey, label, icon: Icon, links, isOpen, isExpanded, onToggle, isActive, counts, onLinkClick }) => (
+  <div className="pt-2 mt-2 border-t border-border space-y-1">
+    <div>
+      <button
+        type="button"
+        onClick={() => onToggle(domainKey)}
+        className="sidebar-item w-full justify-between"
+        title={isOpen ? undefined : label}
+        aria-expanded={isExpanded}
+      >
+        <span className="flex items-center gap-3 min-w-0">
+          <Icon size={20} className="flex-shrink-0" aria-hidden="true" />
+          {isOpen && <span className="text-sm font-medium truncate">{label}</span>}
+        </span>
+        {isOpen && (
+          <ChevronDown
+            size={16}
+            className={clsx('flex-shrink-0 transition-transform', isExpanded && 'rotate-180')}
+          />
+        )}
+      </button>
+
+      {isOpen && isExpanded && (
+        <div className="mt-1 space-y-0.5 mb-1">
+          {links.map((link) => (
+            <SidebarSubLink
+              key={link.path}
+              to={link.path}
+              label={link.label}
+              icon={link.icon}
+              active={isActive(link.path)}
+              count={link.countKey ? counts[link.countKey] : undefined}
+              onClick={onLinkClick}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
 )
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
@@ -263,93 +324,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           })}
         </div>
 
-        <div className="pt-2 mt-2 border-t border-border space-y-1">
-          {(() => {
-            const isAgentExpanded = expandedDomain === AGENT_DOMAIN_KEY
-            return (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleDomainToggle(AGENT_DOMAIN_KEY)}
-                  className="sidebar-item w-full justify-between"
-                  title={isOpen ? undefined : 'Agente IA'}
-                  aria-expanded={isAgentExpanded}
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <Bot size={20} className="flex-shrink-0" aria-hidden="true" />
-                    {isOpen && <span className="text-sm font-medium truncate">Agente IA</span>}
-                  </span>
-                  {isOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={clsx('flex-shrink-0 transition-transform', isAgentExpanded && 'rotate-180')}
-                    />
-                  )}
-                </button>
+        <NavAccordion
+          domainKey={AGENT_DOMAIN_KEY}
+          label="Agente IA"
+          icon={Bot}
+          links={AGENT_LINKS}
+          isOpen={isOpen}
+          isExpanded={expandedDomain === AGENT_DOMAIN_KEY}
+          onToggle={handleDomainToggle}
+          isActive={isActive}
+          counts={counts.nav}
+          onLinkClick={closeMobileDrawer}
+        />
 
-                {isOpen && isAgentExpanded && (
-                  <div className="mt-1 space-y-0.5 mb-1">
-                    {AGENT_LINKS.map((link) => (
-                      <SidebarSubLink
-                        key={link.path}
-                        to={link.path}
-                        label={link.label}
-                        icon={link.icon}
-                        active={isActive(link.path)}
-                        count={link.countKey ? counts.agent[link.countKey] : undefined}
-                        onClick={closeMobileDrawer}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </div>
+        <NavAccordion
+          domainKey={PDF_DOMAIN_KEY}
+          label="PDF"
+          icon={FileType}
+          links={PDF_LINKS}
+          isOpen={isOpen}
+          isExpanded={expandedDomain === PDF_DOMAIN_KEY}
+          onToggle={handleDomainToggle}
+          isActive={isActive}
+          counts={counts.nav}
+          onLinkClick={closeMobileDrawer}
+        />
 
-        <div className="pt-2 mt-2 border-t border-border space-y-1">
-          {(() => {
-            const isSettingsExpanded = expandedDomain === SETTINGS_DOMAIN_KEY
-            return (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleDomainToggle(SETTINGS_DOMAIN_KEY)}
-                  className="sidebar-item w-full justify-between"
-                  title={isOpen ? undefined : 'Settings'}
-                  aria-expanded={isSettingsExpanded}
-                >
-                  <span className="flex items-center gap-3 min-w-0">
-                    <Settings size={20} className="flex-shrink-0" aria-hidden="true" />
-                    {isOpen && <span className="text-sm font-medium truncate">Settings</span>}
-                  </span>
-                  {isOpen && (
-                    <ChevronDown
-                      size={16}
-                      className={clsx('flex-shrink-0 transition-transform', isSettingsExpanded && 'rotate-180')}
-                    />
-                  )}
-                </button>
-
-                {isOpen && isSettingsExpanded && (
-                  <div className="mt-1 space-y-0.5 mb-1">
-                    {SETTINGS_LINKS.map((link) => (
-                      <SidebarSubLink
-                        key={link.path}
-                        to={link.path}
-                        label={link.label}
-                        icon={link.icon}
-                        active={isActive(link.path)}
-                        count={link.countKey ? counts.settings[link.countKey] : undefined}
-                        onClick={closeMobileDrawer}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </div>
+        <NavAccordion
+          domainKey={SETTINGS_DOMAIN_KEY}
+          label="Settings"
+          icon={Settings}
+          links={SETTINGS_LINKS}
+          isOpen={isOpen}
+          isExpanded={expandedDomain === SETTINGS_DOMAIN_KEY}
+          onToggle={handleDomainToggle}
+          isActive={isActive}
+          counts={counts.nav}
+          onLinkClick={closeMobileDrawer}
+        />
       </nav>
 
       {isOpen && (

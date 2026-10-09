@@ -15,6 +15,21 @@ vi.mock('@/api/files', () => ({
 vi.mock('@/api/agentTasks', () => ({
   agentTasksApi: { count: vi.fn(), list: vi.fn() },
 }))
+vi.mock('@/api/bedrock', () => ({
+  bedrockApi: { listAgentCatalog: vi.fn().mockResolvedValue([]), listTools: vi.fn().mockResolvedValue([]) },
+}))
+vi.mock('@/api/adminSections', () => ({
+  adminSectionsApi: { list: vi.fn().mockResolvedValue([]) },
+}))
+vi.mock('@/api/errorReports', () => ({
+  errorReportsApi: { summary: vi.fn().mockResolvedValue({ pending: 0 }) },
+}))
+vi.mock('@/api/pdfTemplates', () => ({
+  pdfTemplatesApi: { list: vi.fn().mockResolvedValue([]) },
+}))
+vi.mock('@/api/pdfTemplateStyles', () => ({
+  pdfTemplateStylesApi: { list: vi.fn().mockResolvedValue([]) },
+}))
 
 const mockedCareerApi = vi.mocked(careerApi)
 const mockedFilesApi = vi.mocked(filesApi)
@@ -247,6 +262,65 @@ describe('Sidebar', () => {
       renderSidebar(false, mockOnToggle)
       fireEvent.click(screen.getByTitle('Identidad Profesional'))
       expect(mockOnToggle).toHaveBeenCalled()
+    })
+  })
+
+  describe('Agente IA / PDF / Settings groups', () => {
+    it('keeps only Chat General and Costo y Uso under "Agente IA"', () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('Agente IA'))
+
+      expect(screen.getByRole('link', { name: 'Chat General' })).toHaveAttribute('href', '/agent/chat')
+      expect(screen.getByRole('link', { name: /Costo y Uso/ })).toHaveAttribute('href', '/agent/metrics')
+      expect(screen.queryByRole('link', { name: 'Plantillas PDF' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: 'Memoria' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Metodologías Operativas/ })).not.toBeInTheDocument()
+    })
+
+    it('exposes a new "PDF" group with the two PDF resources', () => {
+      renderSidebar(true, mockOnToggle)
+      expect(screen.queryByRole('link', { name: 'Plantillas PDF' })).not.toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('PDF'))
+      expect(screen.getByRole('link', { name: /Plantillas PDF/ })).toHaveAttribute(
+        'href',
+        '/agent/pdf-templates'
+      )
+      expect(screen.getByRole('link', { name: /Estilos PDF/ })).toHaveAttribute(
+        'href',
+        '/agent/pdf-template-styles'
+      )
+    })
+
+    it('moves Metodologías, Memoria, Instrucciones, Herramientas and Bitácora into "Settings"', () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('Settings'))
+
+      expect(screen.getByRole('link', { name: 'Catálogo de Agentes' })).toHaveAttribute(
+        'href',
+        '/settings/agents'
+      )
+      expect(screen.getByRole('link', { name: /Metodologías Operativas/ })).toHaveAttribute(
+        'href',
+        '/career/operational-methodologies'
+      )
+      expect(screen.getByRole('link', { name: 'Memoria' })).toHaveAttribute('href', '/agent/memory')
+      expect(screen.getByRole('link', { name: 'Instrucciones' })).toHaveAttribute(
+        'href',
+        '/agent/instructions'
+      )
+      expect(screen.getByRole('link', { name: /Herramientas/ })).toHaveAttribute('href', '/agent/tools')
+      expect(screen.getByRole('link', { name: 'Bitácora' })).toHaveAttribute('href', '/agent/audit-log')
+    })
+
+    it('keeps at most one of the bottom groups open at a time', () => {
+      renderSidebar(true, mockOnToggle)
+      fireEvent.click(screen.getByText('PDF'))
+      expect(screen.getByRole('link', { name: /Plantillas PDF/ })).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText('Settings'))
+      expect(screen.queryByRole('link', { name: /Plantillas PDF/ })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Catálogo de Agentes' })).toBeInTheDocument()
     })
   })
 })
