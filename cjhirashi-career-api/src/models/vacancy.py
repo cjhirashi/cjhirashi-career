@@ -7,6 +7,7 @@ not match the real `vacancies` table (it had already caused a table
 collision; the table was dropped and recreated with this schema).
 """
 from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -47,6 +48,21 @@ class Vacancy(Base):
     analysis_notes = Column(Text, nullable=True)
     evaluation = Column(String(30), default="pending_review", nullable=True, index=True)
     is_active = Column(Boolean, default=True, nullable=True)
+    # --- Atributos nuevos (checklist Paulina #11) ---
+    location = Column(String(255), nullable=True)
+    work_modality = Column(String(100), nullable=True)
+    seniority_level = Column(String(50), nullable=True)
+    salary_min = Column(Integer, nullable=True)
+    salary_max = Column(Integer, nullable=True)
+    required_skills = Column(JSONB, nullable=True)
+    years_experience_required = Column(Integer, nullable=True)
+    posted_date = Column(Date, nullable=True)
+    application_status = Column(String(30), nullable=True, index=True)
+    priority = Column(String(10), nullable=True)
+    contracting_model = Column(String(50), nullable=True)
+    contact_id = Column(
+        String(20), ForeignKey("networking_contacts.id", ondelete="SET NULL"), nullable=True
+    )
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

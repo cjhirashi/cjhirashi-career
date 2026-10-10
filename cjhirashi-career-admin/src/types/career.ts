@@ -364,6 +364,18 @@ export interface Vacancy {
   analysis_notes?: string | null
   evaluation: Evaluation
   is_active: boolean
+  location?: string | null
+  work_modality?: string | null
+  seniority_level?: string | null
+  salary_min?: number | null
+  salary_max?: number | null
+  required_skills?: string[] | null
+  years_experience_required?: number | null
+  posted_date?: ISODate | null
+  application_status?: string | null
+  priority?: string | null
+  contracting_model?: string | null
+  contact_id?: string | null
   created_at: ISODateTime
 }
 

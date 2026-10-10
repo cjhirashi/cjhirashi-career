@@ -311,6 +311,18 @@ class VacancyBase(BaseModel):
     analysis_notes: Optional[str] = None
     evaluation: EvaluationLiteral = "pending_review"
     is_active: bool = True
+    location: Optional[str] = Field(None, max_length=255)
+    work_modality: Optional[str] = Field(None, max_length=100)
+    seniority_level: Optional[str] = Field(None, max_length=50)
+    salary_min: Optional[int] = None
+    salary_max: Optional[int] = None
+    required_skills: Optional[List[str]] = None
+    years_experience_required: Optional[int] = None
+    posted_date: Optional[date] = None
+    application_status: Optional[str] = Field(None, max_length=30)
+    priority: Optional[str] = Field(None, max_length=10)
+    contracting_model: Optional[str] = Field(None, max_length=50)
+    contact_id: Optional[str] = None
 
 
 class VacancyCreate(VacancyBase):
@@ -331,6 +343,18 @@ class VacancyUpdate(BaseModel):
     analysis_notes: Optional[str] = None
     evaluation: Optional[EvaluationLiteral] = None
     is_active: Optional[bool] = None
+    location: Optional[str] = None
+    work_modality: Optional[str] = None
+    seniority_level: Optional[str] = None
+    salary_min: Optional[int] = None
+    salary_max: Optional[int] = None
+    required_skills: Optional[List[str]] = None
+    years_experience_required: Optional[int] = None
+    posted_date: Optional[date] = None
+    application_status: Optional[str] = None
+    priority: Optional[str] = None
+    contracting_model: Optional[str] = None
+    contact_id: Optional[str] = None
 
 
 class VacancyResponse(VacancyBase):
