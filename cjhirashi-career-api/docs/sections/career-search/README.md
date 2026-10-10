@@ -57,6 +57,55 @@ Patrón CRUD: ver [infrastructure](../infrastructure/README.md).
 
 ---
 
+## Esquema: `applications` / `application-interactions` / `interviews` (checklist Paulina #13)
+
+Las tres tablas están vacías en producción (0 registros) — no se pudieron inspeccionar con datos
+reales vía API. Esquema confirmado leyendo directamente los modelos
+(`src/models/application.py`, `application_interaction.py`, `interview.py`).
+
+**`applications`** (`Application`, prefijo id `apl-`)
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `vacancy_id` | FK → `vacancies.id`, `CASCADE` | **Requerido.** FK ya existe y es correcta. |
+| `cv_version_id` | FK → `cv_versions.id`, `SET NULL` | Opcional |
+| `cover_letter_version_id` | FK → `cover_letter_versions.id`, `SET NULL` | Opcional |
+| `recruiter_contact_id` | FK → `networking_contacts.id`, `SET NULL` | Opcional |
+| `applied_at` | datetime | — |
+| `current_status` | string, check | `applied \| in_process \| offer \| rejected \| archived` |
+| `final_result` | string, check | `offer_accepted \| offer_rejected \| rejected \| negotiating` |
+| `notes` | text | — |
+
+**`application-interactions`** (`ApplicationInteraction`, prefijo id `ain-`)
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `application_id` | FK → `applications.id`, `CASCADE` | **Requerido.** FK ya existe y es correcta. |
+| `interaction_at` | datetime | — |
+| `channel` | string(50) | Libre (email, llamada, mensaje…) |
+| `content_sent` | text | — |
+| `response_received` | text | — |
+| `status` | string(50) | Libre |
+| `notes` | text | — |
+
+**`interviews`** (`Interview`, prefijo id `ivw-`)
+
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `application_id` | FK → `applications.id`, `CASCADE` | **Requerido.** FK ya existe y es correcta. |
+| `narrative_used_id` | FK → `role_narratives.id`, `SET NULL` | Opcional |
+| `interview_type` | string(50) | Libre |
+| `scheduled_at` | datetime | — |
+| `interviewers`, `questions_asked`, `answers_given`, `feedback_received` | text | — |
+| `overall_impression` | string, check | `very_positive \| positive \| neutral \| negative` |
+| `interview_result` | string, check | `pending \| advanced \| rejected \| under_consideration` |
+| `notes` | text | — |
+
+No se proponen cambios de esquema para estas tres tablas — el checklist solo pedía documentarlas y
+confirmar sus relaciones.
+
+---
+
 ## Endpoint custom: PDF de CV
 
 | Método | Path | Descripción |
