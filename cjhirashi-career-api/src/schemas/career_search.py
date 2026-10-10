@@ -240,6 +240,15 @@ class TargetCompanyBase(BaseModel):
     notes: Optional[str] = None
     career_board_provider: Optional[Literal["greenhouse", "lever"]] = None
     career_board_token: Optional[str] = Field(None, max_length=100)
+    industry_sector: Optional[str] = Field(None, max_length=100)
+    company_culture: Optional[str] = None
+    funding_stage: Optional[str] = Field(None, max_length=50)
+    tech_stack: Optional[List[str]] = None
+    company_website: Optional[str] = Field(None, max_length=500)
+    linkedin_company_url: Optional[str] = Field(None, max_length=500)
+    hiring_velocity: Optional[str] = Field(None, max_length=30)
+    last_researched_at: Optional[date] = None
+    review_score: Optional[float] = Field(None, ge=0)
 
 
 class TargetCompanyCreate(TargetCompanyBase):
@@ -260,6 +269,15 @@ class TargetCompanyUpdate(BaseModel):
     notes: Optional[str] = None
     career_board_provider: Optional[Literal["greenhouse", "lever"]] = None
     career_board_token: Optional[str] = Field(None, max_length=100)
+    industry_sector: Optional[str] = Field(None, max_length=100)
+    company_culture: Optional[str] = None
+    funding_stage: Optional[str] = Field(None, max_length=50)
+    tech_stack: Optional[List[str]] = None
+    company_website: Optional[str] = Field(None, max_length=500)
+    linkedin_company_url: Optional[str] = Field(None, max_length=500)
+    hiring_velocity: Optional[str] = Field(None, max_length=30)
+    last_researched_at: Optional[date] = None
+    review_score: Optional[float] = Field(None, ge=0)
 
 
 class TargetCompanyResponse(TargetCompanyBase):

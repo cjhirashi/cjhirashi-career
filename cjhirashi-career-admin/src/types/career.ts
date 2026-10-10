@@ -333,6 +333,15 @@ export interface TargetCompany {
   notes?: string | null
   career_board_provider?: 'greenhouse' | 'lever' | null
   career_board_token?: string | null
+  industry_sector?: string | null
+  company_culture?: string | null
+  funding_stage?: string | null
+  tech_stack?: string[] | null
+  company_website?: string | null
+  linkedin_company_url?: string | null
+  hiring_velocity?: string | null
+  last_researched_at?: ISODate | null
+  review_score?: number | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }

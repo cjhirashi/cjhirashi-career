@@ -1070,6 +1070,7 @@ export const targetCompaniesConfig: ResourceConfig = {
   columns: [
     { key: 'company_name', label: 'Empresa' },
     { key: 'tier', label: 'Tier', format: 'number' },
+    { key: 'industry_sector', label: 'Sector' },
     { key: 'priority', label: 'Prioridad' },
     { key: 'status', label: 'Estado', format: 'badge' },
   ],
@@ -1100,6 +1101,21 @@ export const targetCompaniesConfig: ResourceConfig = {
       type: 'text',
       helpText: 'Ej. stripe en boards.greenhouse.io/stripe o jobs.lever.co/stripe',
     },
+    { name: 'industry_sector', label: 'Sector / vertical', type: 'creatable-select' },
+    { name: 'company_culture', label: 'Cultura de la empresa', type: 'textarea', fullWidth: true },
+    { name: 'funding_stage', label: 'Etapa de financiamiento', type: 'creatable-select' },
+    {
+      name: 'tech_stack',
+      label: 'Stack tecnológico',
+      type: 'string-array',
+      fullWidth: true,
+      helpText: 'Una tecnología por línea.',
+    },
+    { name: 'company_website', label: 'Sitio web', type: 'text', fullWidth: true },
+    { name: 'linkedin_company_url', label: 'LinkedIn de la empresa', type: 'text', fullWidth: true },
+    { name: 'hiring_velocity', label: 'Velocidad de contratación', type: 'creatable-select' },
+    { name: 'last_researched_at', label: 'Última investigación', type: 'date' },
+    { name: 'review_score', label: 'Rating externo (Glassdoor, etc.)', type: 'number' },
   ],
 }
 
