@@ -3,6 +3,7 @@ Identity Model - Professional identity core (tagline, bio, UVP).
 Career domain (v2) - Identity. One-to-one with User.
 """
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
 
@@ -23,6 +24,10 @@ class Identity(Base):
     professional_tagline = Column(String(255), nullable=True)
     bio_summary = Column(Text, nullable=True)
     unique_value_proposition = Column(Text, nullable=True)
+    # Orden de preferencia de modalidad, ej. ["remote", "hybrid", "onsite"]
+    # (checklist Paulina #7) - hoy vivía como texto libre dentro de `notes`.
+    modality_priority = Column(JSONB, nullable=True)
+    availability_hours = Column(String(100), nullable=True)
 
     notes = Column(Text, nullable=True)
 

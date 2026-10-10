@@ -32,6 +32,8 @@ export interface Identity {
   professional_tagline?: string | null
   bio_summary?: string | null
   unique_value_proposition?: string | null
+  modality_priority?: string[] | null
+  availability_hours?: string | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }
@@ -76,6 +78,7 @@ export interface Certification {
   name: string
   institution?: string | null
   year?: number | null
+  completion_date?: ISODate | null
   description?: string | null
   related_competency_id?: string | null
   created_at: ISODateTime
@@ -186,6 +189,7 @@ export interface RoleGapAnalysis {
   closing_plan?: string | null
   viability?: Viability | null
   closure_status: ClosureStatus
+  target_date?: ISODate | null
   created_at: ISODateTime
 }
 

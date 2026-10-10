@@ -2,7 +2,7 @@
 Certification Model - Professional certifications.
 Career domain (v2) - Identity.
 """
-from sqlalchemy import CheckConstraint, Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import CheckConstraint, Column, Date, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from database import Base
 
@@ -24,6 +24,9 @@ class Certification(Base):
     name = Column(String(255), nullable=False)
     institution = Column(String(255), nullable=True)
     year = Column(Integer, nullable=True)
+    # Fecha exacta de finalización (checklist Paulina #8) - `year` por sí solo
+    # no permite ordenar certificaciones del mismo año entre sí.
+    completion_date = Column(Date, nullable=True)
     description = Column(Text, nullable=True)
     syllabus = Column(Text, nullable=True)
     document_url = Column(String(1000), nullable=True)

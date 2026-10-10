@@ -286,6 +286,23 @@ export const identityConfig: ResourceConfig = {
       type: 'textarea',
       fullWidth: true,
     },
+    {
+      name: 'modality_priority',
+      label: 'Prioridad de modalidad',
+      type: 'multi-select',
+      options: [
+        { value: 'remote', label: 'Remoto' },
+        { value: 'hybrid', label: 'Híbrido' },
+        { value: 'onsite', label: 'Presencial' },
+      ],
+      helpText: 'Orden de preferencia, de más a menos deseada.',
+    },
+    {
+      name: 'availability_hours',
+      label: 'Disponibilidad horaria',
+      type: 'text',
+      placeholder: 'ej. Lun-Vie 9:00-18:00 CST',
+    },
   ],
 }
 
@@ -403,12 +420,14 @@ export const certificationsConfig: ResourceConfig = {
     { key: 'name', label: 'Nombre' },
     { key: 'institution', label: 'Institución' },
     { key: 'year', label: 'Año', format: 'number' },
+    { key: 'completion_date', label: 'Finalización', format: 'date' },
     { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
   ],
   fields: [
     { name: 'name', label: 'Nombre', type: 'text', required: true },
     { name: 'institution', label: 'Institución', type: 'creatable-select' },
     { name: 'year', label: 'Año', type: 'number' },
+    { name: 'completion_date', label: 'Fecha de finalización', type: 'date' },
     {
       name: 'status',
       label: 'Estado',
@@ -704,6 +723,7 @@ export const roleGapAnalysisConfig: ResourceConfig = {
     { key: 'severity', label: 'Severidad', format: 'badge' },
     { key: 'viability', label: 'Viabilidad', format: 'badge' },
     { key: 'closure_status', label: 'Estado', format: 'badge' },
+    { key: 'target_date', label: 'Fecha objetivo', format: 'date' },
   ],
   fields: [
     { name: 'target_role_id', label: 'Rol objetivo', type: 'fk-select', fkResource: 'target-roles', fkLabelField: 'role_name', required: true },
@@ -740,6 +760,7 @@ export const roleGapAnalysisConfig: ResourceConfig = {
         { value: 'paused', label: 'Pausada' },
       ],
     },
+    { name: 'target_date', label: 'Fecha objetivo de cierre', type: 'date' },
     { name: 'market_requirement', label: 'Requisito de mercado', type: 'textarea', fullWidth: true },
     { name: 'closing_plan', label: 'Plan de cierre', type: 'textarea', fullWidth: true },
   ],

@@ -2,7 +2,7 @@
 RoleGapAnalysis Model - Skill/experience gaps against a target role.
 Career domain (v2) - Identity.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Date, Integer, String, Text, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.sql import func
 from database import Base
 
@@ -32,6 +32,9 @@ class RoleGapAnalysis(Base):
     closing_plan = Column(Text, nullable=True)
     viability = Column(String(30), nullable=True)
     closure_status = Column(String(30), default="not_started", nullable=True)
+    # Fecha objetivo para cerrar la brecha (checklist Paulina #9) - antes sólo
+    # existía closure_status, sin forma de trackear plazos.
+    target_date = Column(Date, nullable=True)
 
     notes = Column(Text, nullable=True)
 

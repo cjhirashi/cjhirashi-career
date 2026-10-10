@@ -56,6 +56,8 @@ class IdentityBase(BaseModel):
     professional_tagline: Optional[str] = Field(None, max_length=255)
     bio_summary: Optional[str] = None
     unique_value_proposition: Optional[str] = None
+    modality_priority: Optional[List[str]] = None
+    availability_hours: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = None
 
 
@@ -232,6 +234,7 @@ class CertificationBase(BaseModel):
     name: str = Field(..., max_length=255)
     institution: Optional[str] = Field(None, max_length=255)
     year: Optional[int] = None
+    completion_date: Optional[date] = None
     description: Optional[str] = None
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
@@ -249,6 +252,7 @@ class CertificationUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=255)
     institution: Optional[str] = None
     year: Optional[int] = None
+    completion_date: Optional[date] = None
     description: Optional[str] = None
     syllabus: Optional[str] = None
     document_url: Optional[str] = Field(None, max_length=1000)
@@ -543,6 +547,7 @@ class RoleGapAnalysisBase(BaseModel):
     closing_plan: Optional[str] = None
     viability: Optional[ViabilityLiteral] = None
     closure_status: ClosureStatusLiteral = "not_started"
+    target_date: Optional[date] = None
     notes: Optional[str] = None
 
 
@@ -559,6 +564,7 @@ class RoleGapAnalysisUpdate(BaseModel):
     closing_plan: Optional[str] = None
     viability: Optional[ViabilityLiteral] = None
     closure_status: Optional[ClosureStatusLiteral] = None
+    target_date: Optional[date] = None
     notes: Optional[str] = None
 
 
