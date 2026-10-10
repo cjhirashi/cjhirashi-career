@@ -1,11 +1,16 @@
 """
-PortalAbout Model - copy for the public portal's "Sobre Mí" page that isn't
-already covered by other tables: no bio/tagline (already in `identity`),
-no experience/skills/certifications (already in work_history/competencies/
-certifications). Just the hero photo. One row per user.
+PortalAbout Model - copy for the public portal's "Sobre Mí" page. One row
+per user.
 Career domain (v2) - Presencia Digital.
+
+NOTE (checklist Paulina #12): photo_url + name alone are insufficient for a
+public "About me" page, so bio_text/headline/timeline_milestones were added
+here even though a bio/tagline already exists in `identity` - that one is
+the internal narrative built from Reflexiones IKIGAI; this is portal-facing
+copy the user may want to phrase differently for a public audience.
 """
 from sqlalchemy import Column, Integer, Text, String, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
 from database import Base
 from sqlalchemy.sql import func
 
@@ -23,6 +28,11 @@ class PortalAbout(Base):
     # --- Campos de negocio ---
     photo_url = Column(String(1024), nullable=True)
     name = Column(String(255), nullable=True)
+    headline = Column(String(255), nullable=True)
+    bio_text = Column(Text, nullable=True)
+    # Lista de hitos [{date, title, description}, ...] para una línea de
+    # tiempo en la página pública.
+    timeline_milestones = Column(JSONB, nullable=True)
 
     notes = Column(Text, nullable=True)
 

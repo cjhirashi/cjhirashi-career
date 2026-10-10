@@ -1726,11 +1726,29 @@ export const portalAboutConfig: ResourceConfig = {
   labelSingular: 'Sobre Mí del portal',
   genderFeminine: false,
   mode: 'singleton',
-  description: 'Solo el nombre y la foto - historia, experiencia, skills y certificaciones ya viven en sus propias tablas.',
+  description: 'Copy pública de la página "Sobre Mí" - experiencia, skills y certificaciones ya viven en sus propias tablas; aquí solo va lo que necesita redactarse distinto para una audiencia pública.',
   columns: [],
   fields: [
     { name: 'photo_url', label: 'URL de la foto', type: 'text', fullWidth: true },
     { name: 'name', label: 'Nombre', type: 'text', fullWidth: true },
+    { name: 'headline', label: 'Headline', type: 'text', fullWidth: true },
+    { name: 'bio_text', label: 'Biografía (texto público)', type: 'textarea', fullWidth: true },
+    {
+      name: 'timeline_milestones',
+      label: 'Línea de tiempo',
+      type: 'json',
+      fullWidth: true,
+      jsonList: {
+        kind: 'records',
+        itemNoun: 'hito',
+        addLabel: 'Añadir hito',
+        itemFields: [
+          { name: 'date', label: 'Fecha', placeholder: 'Ej. 2024-03' },
+          { name: 'title', label: 'Título', placeholder: 'Ej. Lanzamiento de producto X' },
+          { name: 'description', label: 'Descripción', placeholder: 'Opcional' },
+        ],
+      },
+    },
   ],
 }
 

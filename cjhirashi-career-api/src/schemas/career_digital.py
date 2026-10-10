@@ -5,7 +5,7 @@ Covers: publications, linkedin_profile, github_profile, portal_home,
 portal_about, portal_contact.
 """
 from pydantic import BaseModel, Field
-from typing import Optional, List, Any, Literal
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
 
@@ -200,6 +200,9 @@ class PortalHomeResponse(PortalHomeBase):
 class PortalAboutBase(BaseModel):
     photo_url: Optional[str] = Field(None, max_length=1024)
     name: Optional[str] = Field(None, max_length=255)
+    headline: Optional[str] = Field(None, max_length=255)
+    bio_text: Optional[str] = None
+    timeline_milestones: Optional[List[Dict[str, Any]]] = None
     notes: Optional[str] = None
 
 
