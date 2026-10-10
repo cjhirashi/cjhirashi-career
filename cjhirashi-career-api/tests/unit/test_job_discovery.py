@@ -201,6 +201,53 @@ async def test_run_does_not_persist():
 
 
 @pytest.mark.asyncio
+async def test_company_board_results_survive_max_results_truncation():
+    """checklist Paulina #3: con muchos resultados genéricos, el board
+    configurado explícitamente (Mutt Data/Lever) no debe desaparecer por el
+    tope `JOB_DISCOVERY_MAX_RESULTS` - confirmado en vivo que se perdía
+    porque los providers genéricos se agregaban primero a la lista."""
+    from config import settings
+
+    generic = [
+        JobListing(
+            company=f"Generic{i}",
+            exact_role="Engineer",
+            vacancy_url=f"https://example.com/jobs/{i}",
+            source="getonboard",
+        )
+        for i in range(settings.JOB_DISCOVERY_MAX_RESULTS + 5)
+    ]
+    board_listing = JobListing(
+        company="Mutt Data",
+        exact_role="Backend Engineer",
+        vacancy_url="https://jobs.lever.co/muttdata/real-opening",
+        source="lever",
+    )
+    board = CompanyBoard(company_name="Mutt Data", provider="lever", token="muttdata")
+
+    db = _db_mock()
+    with patch(
+        "services.job_discovery.getonboard.GetOnBoardAdapter.search",
+        new=AsyncMock(return_value=generic),
+    ), patch(
+        "services.job_discovery.service._load_company_boards",
+        new=AsyncMock(return_value=[board]),
+    ), patch(
+        "services.job_discovery.service.search_lever_board",
+        new=AsyncMock(return_value=[board_listing]),
+    ):
+        result = await run_discovery(
+            db,
+            user_id=1,
+            query_text="engineer",
+            providers=["getonboard"],
+            include_company_boards=True,
+        )
+    assert any(listing.company == "Mutt Data" for listing in result.listings)
+    assert len(result.listings) <= settings.JOB_DISCOVERY_MAX_RESULTS
+
+
+@pytest.mark.asyncio
 async def test_save_then_skip_duplicate():
     db = _db_mock()
     listing = {

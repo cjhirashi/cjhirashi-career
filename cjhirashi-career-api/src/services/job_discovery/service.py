@@ -158,6 +158,23 @@ async def run_discovery(
     errors: List[ProviderError] = []
     tasks = []
     names: List[str] = []
+
+    # company_boards primero (checklist Paulina #3): son resultados curados
+    # de una empresa específica que el usuario ya configuró explícitamente.
+    # Si van después de los providers genéricos, `unique[:max_results]` los
+    # descarta en cuanto los genéricos solos llenan el cupo - confirmado en
+    # vivo con Mutt Data (token bien configurado, feed idéntico al de antes,
+    # cero relación con la empresa targeteada).
+    if include_boards:
+        boards = await _load_company_boards(db, user_id)
+        query.company_boards = boards
+        for board in boards:
+            names.append(f"{board.provider}:{board.token}")
+            if board.provider == "greenhouse":
+                tasks.append(search_greenhouse_board(board, query))
+            else:
+                tasks.append(search_lever_board(board, query))
+
     for provider_id in wanted:
         adapter = registry.get(provider_id)
         if adapter is None:
@@ -170,16 +187,6 @@ async def run_discovery(
             continue
         names.append(provider_id)
         tasks.append(_search_one(adapter, query))
-
-    if include_boards:
-        boards = await _load_company_boards(db, user_id)
-        query.company_boards = boards
-        for board in boards:
-            names.append(f"{board.provider}:{board.token}")
-            if board.provider == "greenhouse":
-                tasks.append(search_greenhouse_board(board, query))
-            else:
-                tasks.append(search_lever_board(board, query))
 
     listings: List[JobListing] = []
     if tasks:
