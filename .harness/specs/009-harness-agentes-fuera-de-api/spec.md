@@ -259,6 +259,13 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   aceptar la pérdida de rutas.
 - **D-18:** claim `role` en el JWT. *Descartado:* endpoint `GET /auth/session`.
 - **D-19:** `audit_logs` se queda en la API con endpoints REST. *Descartado:* moverla.
+- **D-26 (usuario, 2026-10-13, Fase 4, bloque B):** excepción a D-13 (paridad exacta).
+  `consume_converse_stream` de la API lee `contentBlockIndex` del nivel superior del evento,
+  que siempre vale 0; según el modelo de servicio de botocore el índice va dentro de
+  `contentBlockStart`, `contentBlockDelta` y `contentBlockStop`, así que varios `toolUse` en
+  un mismo mensaje en streaming se mezclan. El harness lo corrige (`_block_index` en
+  `providers/bedrock/converse.py`, con el nivel superior como respaldo); con un solo bloque
+  el comportamiento es idéntico. *Descartado:* paridad con el bug.
 - **Errata 2026-10-13 (T-004):** son 11 tablas `bedrock_*`, no 10 (faltaba `bedrock_conversation_messages`, 578 filas). No cambia ninguna decisión. En `career_ai_db` serán 11 migradas + `bedrock_agent_memory` = 12. T-004 también midió 0 puntos de memoria en Qdrant (los 271 puntos son registros de carrera indexados).
 - **D-25 (usuario, 2026-10-13, tras T-002/T-003):** nueva ruta aditiva `GET /files/{id}` en
   la API (metadatos del archivo: `id`, `mime_type`, `original_filename`, tamaño, categoría,

@@ -38,9 +38,34 @@ class Settings(BaseSettings):
             raise ValueError("MEMORY_FTS_CONFIG debe cumplir [a-z_]+ (p. ej. 'spanish')")
         return value
 
+    # Proveedor de modelos Bedrock (spec 009 RF-005). Mismos nombres y valores que la API.
+    BEDROCK_REGION: str = "us-east-1"
+    BEDROCK_USE_CONVERSE_STREAM: bool = False
+    # Stable Image Core (ADR-010/ADR-025) solo está disponible en us-west-2; región aparte de Converse.
+    BEDROCK_IMAGE_REGION: str = "us-west-2"
+    BEDROCK_IMAGE_MODEL_ID: str = "stability.stable-image-core-v1:1"
+    # Kill-switch global de cachePoint (ADR-019); solo aplica a modelos con soporte en el catálogo.
+    BEDROCK_PROMPT_CACHE_ENABLED: bool = True
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+
     APP_NAME: str = "cjhirashi-career-ai"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
 
 
 settings = Settings()
+
+
+_provider = None
+
+
+def get_provider():
+    """Fábrica del `ModelProvider` (una instancia por proceso). Único sitio fuera de
+    `providers/bedrock/` que importa la implementación Bedrock (RF-005, test AST de frontera)."""
+    global _provider
+    if _provider is None:
+        from providers.bedrock.converse import BedrockProvider
+
+        _provider = BedrockProvider(settings)
+    return _provider

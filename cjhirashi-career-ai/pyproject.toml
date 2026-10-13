@@ -19,6 +19,10 @@ dependencies = [
     "python-dotenv==1.0.0",
     "pyjwt==2.8.0",
     "httpx==0.25.2",
+    # Mismas versiones que cjhirashi-career-api/requirements.txt (inference profiles cross-region).
+    # Solo providers/bedrock/ importa estos paquetes (RF-005).
+    "boto3==1.43.76",
+    "botocore==1.43.76",
 ]
 
 [project.optional-dependencies]

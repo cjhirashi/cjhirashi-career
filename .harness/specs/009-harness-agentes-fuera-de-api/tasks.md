@@ -78,24 +78,24 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque B — AI: interfaz de proveedor y Bedrock
 
-- [ ] **T-020** `[test]` (cubre RF-005) — `tests/unit/providers/test_provider_contract.py`:
+- [x] **T-020** `[test]` (cubre RF-005) — `tests/unit/providers/test_provider_contract.py`:
   un `FakeProvider` cumple el `Protocol ModelProvider` (`converse`, `converse_stream`,
   `generate_image`, `list_models`, `estimate_cost`); tipos neutros `ModelRequest`,
   `ToolSpec`, `ToolCall`, `Usage`. Rojo.
-- [ ] **T-021** `[code]` (cubre RF-005) — `src/providers/base.py`. Verde T-020.
-- [ ] **T-022** `[test]` (cubre RF-005) — `tests/unit/test_provider_boundary.py` (AST):
+- [x] **T-021** `[code]` (cubre RF-005) — `src/providers/base.py`. Verde T-020.
+- [x] **T-022** `[test]` (cubre RF-005) — `tests/unit/test_provider_boundary.py` (AST):
   fuera de `providers/bedrock/` nada importa `boto3`/`botocore`; `services/`/`routes/` no
   importan `providers.bedrock` (sólo la fábrica de `config`). Rojo si aún hay imports.
-- [ ] **T-023** `[test]` (cubre RF-005) — `tests/unit/providers/test_bedrock_converse.py`:
+- [x] **T-023** `[test]` (cubre RF-005) — `tests/unit/providers/test_bedrock_converse.py`:
   con cliente boto3 simulado (stub, sin red): mapeo de petición/respuesta Converse,
   `cachePoint`, errores de throttling, cálculo de coste (tabla de precios). Rojo.
-- [ ] **T-024** `[code]` (cubre RF-005) — `src/providers/bedrock/{client,converse,pricing}.py`
+- [x] **T-024** `[code]` (cubre RF-005) — `src/providers/bedrock/{client,converse,pricing}.py`
   trasladando de `cjhirashi-career-api/src/services/bedrock/` (agent_loop sólo en su parte
   de proveedor). Verde T-023.
-- [ ] **T-025** `[test]` (cubre RF-005) — `tests/unit/providers/test_bedrock_images.py`:
+- [x] **T-025** `[test]` (cubre RF-005) — `tests/unit/providers/test_bedrock_images.py`:
   `generate_image` con stub (Stability vía Bedrock, ADR-025), validación de parámetros.
   Rojo.
-- [ ] **T-026** `[code]` (cubre RF-005) — `src/providers/bedrock/images.py` y fábrica
+- [x] **T-026** `[code]` (cubre RF-005) — `src/providers/bedrock/images.py` y fábrica
   `get_provider()` en `src/config.py`. Verde T-025 y T-022.
 
 ## Bloque C — AI: clientes REST hacia la API
@@ -150,7 +150,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-064** `[test]` (cubre RF-006) — `test_usage_repo.py`: `usage_logs` y
   `usage_round_logs`, agregados de métricas y presupuesto diario. Rojo.
 - [ ] **T-065** `[code]` (cubre RF-006) — `src/repositories/usage_repo.py`,
-  `src/services/usage_service.py`. Verde T-064.
+  `src/services/usage_service.py`. Verde T-064. Nota: el panel de costes necesita
+  `cache_read_savings_usd` (solo en `pricing.py`, ver nota de T-085).
 - [ ] **T-066** `[test]` (cubre RF-006) — `test_task_repo.py`: `bedrock_tasks` con
   `parent_id`, subtareas, filtros `filters`/orden/`count`/`distinct`. Rojo.
 - [ ] **T-067** `[code]` (cubre RF-006) — `src/repositories/task_repo.py`. Verde T-066.
@@ -162,7 +163,11 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-070** `[test]` (cubre RF-001, RF-003) — `tests/unit/services/test_profile_catalog.py`:
   catálogo de perfiles cruza metodologías y secciones leídas por REST (cliente simulado);
   regla `applies_to_caller`; tools por sección derivadas de `/admin/sections`. Rojo.
-- [ ] **T-071** `[code]` (cubre RF-001, RF-003) — `src/services/{profile_catalog,tools_registry,prompt}.py`.
+- [ ] **T-071** `[code]` (cubre RF-001, RF-003) — `src/config.py` (añadir `BEDROCK_DEFAULT_MODEL_ID`,
+  `BEDROCK_ORCHESTRATOR_MODEL_ID`, `BEDROCK_MAX_OUTPUT_TOKENS`, `BEDROCK_MAX_ROUND_TRIPS`,
+  `BEDROCK_DAILY_BUDGET_USD`, `BEDROCK_HISTORY_WINDOW`, con los mismos defaults que la API:
+  `agent_loop.py:310-321` y `settings_loader.py`; con su test en `tests/unit/test_config.py`
+  antes del código), `src/services/{profile_catalog,tools_registry,prompt}.py`.
   Verde T-070.
 
 ## Bloque F — AI: memoria (FTS) y bucle de agente
@@ -181,9 +186,21 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-084** `[test]` (cubre RF-005, RF-004) — `tests/unit/services/test_agent_loop.py`
   con `FakeProvider`: turno sin tools, con tool, límite `max_round_trips`, ventana de
   historial, presupuesto diario superado, coste registrado, el JWT del usuario llega al
-  cliente. Rojo.
+  cliente; dos `toolUse` en un mismo mensaje en streaming no se mezclan (D-26); fallback de
+  `converse_stream` ante `AccessDeniedException` (si se decide, ver T-085). Los tests que usan
+  el provider Bedrock limpian el dict de módulo de clientes boto3 cacheados. Rojo.
 - [ ] **T-085** `[code]` (cubre RF-005) — `src/services/agent_loop.py` (trasladado,
-  inyección del provider). Verde T-084.
+  inyección del provider). Verde T-084. **Notas (bloque B):**
+  - `agent_loop` debe adaptarse a `ModelResponse.tool_calls` y a `Usage` en snake_case (hoy
+    usa `tool_uses` e `inputTokens`).
+  - `ModelProvider.converse_stream` no tiene el fallback a Converse ante
+    `AccessDeniedException` que sí tiene `converse()`: decidir y probar (en T-084) si
+    `agent_loop` lo necesita.
+  - `cache_read_savings_usd` vive solo en `providers/bedrock/pricing.py`, no en el Protocol;
+    el panel de costes (`usage_service`, T-065) la necesita: decidir si se añade al Protocol
+    o se expone por otra vía.
+  - Streaming multi-`toolUse`: D-26 (corrección de `contentBlockIndex`); T-084 incluye un caso
+    con dos `toolUse` en un mensaje en streaming.
 - [ ] **T-086** `[test]` (cubre RF-003) — `test_tools_career_and_local.py`: tools
   de CRUD de carrera vía cliente simulado; `web_search`, `web_fetch`, GitHub (LOCAL) con
   `httpx.MockTransport`; `search_knowledge_base` **no existe** en el catálogo; `bulk_update`
@@ -216,7 +233,9 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-101** `[test]` (cubre RF-008) — `tests/unit/routes/test_chat_sse.py`: `POST
   /bedrock/chat` devuelve `text/event-stream` con eventos `status`/`done`/`error`, ping
   `: ping` cada 15 s (reloj inyectado), `X-Accel-Buffering: no`; error del provider → evento
-  `error`, no 500. Rojo.
+  `error`, no 500. `consume_converse_stream` es síncrono y bloquea el event loop (igual que
+  en el origen): el test debe fijar cómo se ejecuta (p. ej. `asyncio.to_thread`) para que el
+  ping cada 15 s no se retrase. Rojo.
 - [ ] **T-102** `[code]` (cubre RF-001, RF-008) — `src/routes/bedrock.py`,
   `src/services/chat_service.py`, `src/schemas/*` (copiados de la API). Verde T-101.
 - [ ] **T-103** `[test]` (cubre RF-001) — `test_routes_agent_profiles.py` (rutas 9–20 de
@@ -890,3 +909,134 @@ superadas. Nota: `pytest --cov` a secas mide también `tests/` (`--cov` sin fuen
 configuración de `pytest.ini` (`--cov=src`), que es la que mide la cobertura por módulo del Art. 3.
 `bash .harness/gate/check.sh; echo $?` -> `GATE_EXIT=0` (`✅ cjhirashi-career-ai · tests`, 31 ok · 3 warn · 0 error).
 No se repitió la suite en la imagen 3.11 tras este cambio (solo `field_validator`, disponible en pydantic 2.5).
+
+### Bloque B (proveedor) — evidencia
+
+**T-020 (rojo)** `pytest tests/unit/providers/test_provider_contract.py --no-cov -q`:
+```
+tests/unit/providers/test_provider_contract.py:7: in <module>
+    from providers.base import (
+E   ModuleNotFoundError: No module named 'providers'
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.14s ===============================
+```
+**T-021 (verde)** `src/providers/{__init__,base}.py` (dataclasses neutras + `ProviderError` + `Protocol ModelProvider` `runtime_checkable`):
+```
+tests/unit/providers/test_provider_contract.py ......                    [100%]
+============================== 6 passed in 0.03s ===============================
+```
+**T-022 (rojo)** `pytest tests/unit/test_provider_boundary.py --no-cov -q`. Hoy ningún archivo importa boto3, así que la
+aserción "sin imports fuera" pasa sola; se añadió un guardia anti-verde-vacío (el SDK debe vivir de verdad en
+`providers/bedrock/`), que es el que está en rojo hasta T-024:
+```
+tests/unit/test_provider_boundary.py .F...........                       [100%]
+E   AssertionError: providers/bedrock/ no importa boto3: la frontera no tiene implementación
+========================= 1 failed, 12 passed in 0.07s =========================
+```
+Meta-tests (12 de los 13): árboles sintéticos en `tmp_path` con `import boto3`, `from botocore...`, import dentro de función,
+`__import__('boto3')`, `importlib.import_module('botocore.stub')`, boto3 en `providers/base.py`, y `services/`/`routes/`
+importando `providers.bedrock` (incluida la forma `from providers import bedrock`) deben detectarse; y el caso permitido
+(boto3 en `providers/bedrock/`, `providers.bedrock` en `config.py`) no debe marcarse. Además, prueba de fallo real: copia
+desechable de `src/` con `services/leak.py` (`import boto3`):
+```
+E     Left contains one more item: 'services/leak.py: importa boto3 fuera de providers/bedrock/'
+FAILED tests/unit/test_provider_boundary.py::test_src_respects_the_provider_boundary
+```
+(T-022 queda verde tras T-024; ver más abajo.)
+
+**T-023 (rojo)** `pytest tests/unit/providers/test_bedrock_converse.py --no-cov -q`:
+```
+tests/unit/providers/test_bedrock_converse.py:15: in <module>
+    from providers.bedrock.converse import BedrockProvider
+E   ModuleNotFoundError: No module named 'providers.bedrock.converse'
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.28s ===============================
+```
+**T-024 (verde)** `src/providers/bedrock/{__init__,client,converse,errors,pricing}.py`, `src/providers/reply_text.py`;
+`boto3==1.43.76`/`botocore==1.43.76` en `pyproject.toml` (== `cjhirashi-career-api/requirements.txt`) e instalados en el venv.
+Primer intento con 2 fallos que destaparon un defecto del origen: `consume_converse_stream` de la API lee
+`event["contentBlockIndex"]` del nivel superior (siempre 0), pero en la API real el índice va DENTRO de
+`contentBlockStart/Delta/Stop` (comprobado en el modelo de servicio de botocore:
+`contentBlockStart ['start', 'contentBlockIndex']`, `contentBlockDelta ['delta', 'contentBlockIndex']`,
+`contentBlockStop ['contentBlockIndex']`), con lo que dos `toolUse` en un mismo mensaje se mezclaban. El traslado lee
+el índice interno con el nivel superior como respaldo (`_block_index`); con un solo bloque el comportamiento es idéntico.
+```
+tests/unit/providers/test_bedrock_converse.py .......................... [ 78%]
+.......                                                                  [100%]
+============================== 33 passed in 0.30s ==============================
+tests/unit/test_provider_boundary.py + tests/unit/providers: 52 passed   (el guardia de T-022 ya está en verde)
+```
+
+**T-025 (rojo)** `pytest tests/unit/providers/test_bedrock_images.py --no-cov -q` (con `generate_image` aún como `NotImplementedError`):
+```
+      1 E   AttributeError: module 'config' has no attribute 'get_provider'
+      1 E   AttributeError: 'Settings' object has no attribute 'BEDROCK_REGION'
+     21 E   NotImplementedError: T-026
+========================= 23 failed, 1 passed in 0.59s =========================
+```
+**T-026 (verde)** `src/providers/bedrock/images.py` (+ delegación en `BedrockProvider.generate_image`), campos `BEDROCK_*`/`AWS_*`
+y `get_provider()` en `src/config.py`:
+```
+tests/unit/providers/test_bedrock_images.py ........................     [100%]
+============================== 24 passed in 0.40s ==============================
+```
+**Cierre del Bloque B** — suite completa sin BD, `cjhirashi-career-ai/venv/bin/pytest` (config de `pytest.ini`):
+```
+src/config.py                                   34      0   100%
+src/providers/base.py                           42      0   100%
+src/providers/bedrock/client.py                 18      0   100%
+src/providers/bedrock/converse.py              175      2    99%   226, 248
+src/providers/bedrock/errors.py                 20      0   100%
+src/providers/bedrock/images.py                 26      0   100%
+src/providers/bedrock/pricing.py                19      0   100%
+src/providers/reply_text.py                     13      0   100%
+TOTAL                                          601     18    97%
+Required test coverage of 80% reached. Total coverage: 97.00%
+================== 126 passed, 12 skipped, 1 warning in 1.32s ==================
+```
+(los 12 skips son los de Postgres, con motivo.) `bash .harness/gate/check.sh > out; echo $?` -> `GATE_EXIT=0`
+(`✅ cjhirashi-career-ai · tests`, 31 ok · 3 warn · 0 error; los 3 avisos son los anchors `null` de 005/006/009, previos).
+Python 3.11 (cambió `pyproject.toml`): `docker build -t career-ai-test:local .` + `pip install ".[dev]"` en el contenedor:
+```
+Python 3.11.15
+boto3               1.43.76
+botocore            1.43.76
+pytest              7.4.3
+TOTAL                                          617     18    97%
+======================= 126 passed, 12 skipped in 2.86s ========================
+```
+Imagen `career-ai-test:local` borrada (`docker rmi`). Ningún test sale a la red: clientes boto3 reales con credenciales falsas
+bajo `Stubber` o dobles; no se tocó `cjhirashi-career-api`.
+Desviaciones/notas del Bloque B: (1) `BedrockProvider` vive en `converse.py` (el test lo importa de ahí) y `generate_image`
+delega en `images.py`; (2) `providers/reply_text.py` (copia de `reply_text.py`, sin SDK) para que servicios y proveedor la
+compartan; (3) el catálogo de modelos/precios pasa de `config.BEDROCK_AVAILABLE_MODELS` a `providers/bedrock/pricing.py`;
+(4) el origen no tiene validación de parámetros de imagen en el cliente (la hace la tool): se añadió `validate_params`
+(prompt vacío, `aspect_ratio` fuera de los 9 valores del modelo) por T-025; (5) `report_error` no se traslada (el reporte
+de errores del harness llega con `services/error_reporting`); (6) defecto del origen en el índice de bloque de ConverseStream
+(ver T-024) corregido en el traslado; (7) `converse_stream` (eventos neutros) no existe en el origen: el bucle solo consumía
+el stream completo; se implementó la superficie del plan sobre la misma lógica; (8) `messages` mantiene la forma de bloques
+Converse (`text`/`toolUse`/`toolResult`) porque es lo que persiste `bedrock_conversation_messages`.
+
+**Correcciones del revisor al Bloque B (test-first).**
+(1) `converse.py::_wrap` perdía el traceback. Rojo (`test_wrapped_errors_keep_the_traceback_in_the_log`):
+```
+E   assert ([<LogRecord: providers.bedrock.converse, 40, ...converse.py, 264, "Converse failed model=%s stage=%s: %s">] and None)
+FAILED tests/unit/providers/test_bedrock_converse.py::test_wrapped_errors_keep_the_traceback_in_the_log
+========================= 1 failed, 51 passed in 0.45s =========================
+```
+Verde: `logger.error("Converse failed model=%s stage=%s", ..., exc_info=exc)`.
+(2) Test de frontera: imports relativos resueltos a absoluto con la ruta del archivo (`from ..providers.bedrock import client`,
+`from .bedrock import x`, `from . import bedrock`, `from ...providers.bedrock...` desde `routes/sub/`); casos permitidos
+(`from . import y` en services, `from . import client` / `from ..base import Usage` dentro de `providers/bedrock/`).
+`import_module` con nombre no literal queda sin cubrir, anotado en el docstring. Rojo (checker con la lógica anterior, que ignoraba
+`level != 0`), mismos tests nuevos:
+```
+FAILED ...test_meta_services_importing_bedrock_provider_is_detected[services/x.py-from ..providers.bedrock import client\n]
+FAILED ...[services/x.py-from .. import providers\nfrom ..providers import bedrock\n]
+FAILED ...[routes/sub/x.py-from ...providers.bedrock.converse import BedrockProvider\n]
+FAILED ...[providers/x.py-from .bedrock import converse\n]
+FAILED ...[providers/x.py-from . import bedrock\n]
+========================= 5 failed, 13 passed in 0.11s =========================
+```
+Verde con el checker corregido y suite completa (`venv/bin/pytest`): `TOTAL 601 18 97%` · `132 passed, 12 skipped, 1 warning`.
+`bash .harness/gate/check.sh > out; echo $?` -> `GATE_EXIT=0` (31 ok · 3 warn · 0 error).
