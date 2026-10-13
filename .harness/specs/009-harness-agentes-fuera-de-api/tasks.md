@@ -30,7 +30,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   mover el andamiaje actual a un directorio fuera del repo (no se reaprovecha, plan §0) y
   dejar sólo `Dockerfile`, `pyproject.toml`, `README.md` mínimos y `src/__init__.py`. Verificar
   `git status` sin sorpresas.
-- [ ] **T-002** `[code]` (cubre RF-018, P2) — **Inventario de rutas de las tools
+- [x] **T-002** `[code]` (cubre RF-018, P2) — **Inventario de rutas de las tools
   programadas.** Script de solo lectura (AST/grep) sobre `src/services/bedrock/tools.py`
   y `profile_tools.py` que lista, por tool, la ruta REST de la API que usará el harness
   (`contracts/harness-api-dependencies.md`) y las compara con `SERVICE_ALLOWED_PREFIXES`
@@ -38,7 +38,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   usable por tareas programadas exige una ruta fuera de la lista (p. ej. render PDF de
   otros recursos, `generate_pdf`): hay que consultar al usuario y enmendar la spec; no
   ampliar la lista en silencio.
-- [ ] **T-003** `[code]` (cubre RF-019) — Verificar `access_role` (modelo de usuario y
+- [x] **T-003** `[code]` (cubre RF-019) — Verificar `access_role` (modelo de usuario y
   `schemas`): confirmar `String(32)` sin CHECK y los lugares que validan los valores
   permitidos. Anotar archivos a ampliar con `service`. Sin cambios de código.
 - [ ] **T-004** `[code]` (cubre RF-007, RF-022, P3) — **[REQUIERE OK DEL USUARIO]**
@@ -470,3 +470,127 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RNF-002 | T-004, T-005, T-194 | evidencia de backup/snapshot y OK del usuario | |
 | RNF-003 | T-110, T-197 | cobertura ≥ 80 % por módulo y marcadores `requisito` | |
 | doc (34 filas de plan §11) | T-200..T-233 | — | |
+
+## Evidencia (salida real pegada)
+
+**T-002 (2026-10-13, solo lectura):** script `t002_inventory.py` (AST sobre `_RAW_TOOLS` de
+`cjhirashi-career-api/src/services/bedrock/tools.py`; vive en el scratchpad de la sesión, fuera del
+repo). El mapa tool -> ruta se verificó leyendo los ejecutores de `tools.py` y los routers reales
+(`routes/*.py`). Hecho relevante: `SERVICE_ALLOWED_PREFIXES` **aún no existe** en el código; el script
+usa los prefijos del contrato (`auth-jwt-service-account.md` §4) más `/audit-log` (cláusula
+"rutas de auditoría"). Las tareas programadas (`services/task_scheduler.py::execute_claimed_task`)
+ejecutan **cualquier** perfil (L1/L2/L3 -> `run_single_turn_sync`), así que se inventarían las 41 tools.
+```
+tools en _RAW_TOOLS: 41 sin mapeo: [] mapeo sobrante: []
+tool                           | ruta REST / local                                              | cubierta
+list_recent_changes            | GET /audit-log                                                 | SI
+restore_deleted_record         | POST /audit-log/{id}/restore                                   | SI
+describe_resource_schema       | GET /openapi.json                                              | NO  <<<<
+search_knowledge_base          | LOCAL (retirada; GET /career/operational-methodologies)        | n/a (local)
+search_knowledge_base          | GET /career/operational-methodologies                          | SI
+list_career_record             | GET /career/{r}                                                | SI
+count_career_records           | GET /career/{r}/count                                          | SI
+get_career_record              | GET /career/{r}/{id}                                           | SI
+create_career_record           | POST /career/{r}                                               | SI
+update_career_record           | PUT /career/{r}/{id}                                           | SI
+bulk_update_career_record      | PUT /career/{r}/{id}                                           | SI
+delete_career_record           | DELETE /career/{r}/{id}                                        | SI
+get_linkedin_status            | GET /linkedin/status                                           | SI
+list_linkedin_posts            | GET /linkedin/posts                                            | SI
+create_linkedin_post           | POST /linkedin/posts                                           | SI
+delete_scheduled_linkedin_post | DELETE /linkedin/posts/{id}                                    | SI
+pdf_template                   | GET /pdf-templates                                             | SI
+pdf_template                   | GET /pdf-templates/{id}                                        | SI
+pdf_template                   | POST /pdf-templates                                            | SI
+pdf_template                   | PUT /pdf-templates/{id}                                        | SI
+pdf_style                      | GET /pdf-template-styles                                       | SI
+pdf_style                      | GET /pdf-template-styles/{id}                                  | SI
+pdf_style                      | POST /pdf-template-styles                                      | SI
+pdf_style                      | PUT /pdf-template-styles/{id}                                  | SI
+generate_pdf                   | GET /pdf-templates/{id}                                        | SI
+generate_pdf                   | POST /pdf-templates/{id}/render                                | SI
+generate_pdf                   | POST /files                                                    | SI
+list_pdf_capable_resources     | LOCAL (constante PDF_CAPABLE_RESOURCES)                        | n/a (local)
+render_record_pdf              | GET /career/{cv-versions|cover-letter-versions}/{id}           | SI
+render_record_pdf              | GET /pdf-templates/defaults/by-type                            | SI
+render_record_pdf              | GET /pdf-templates/{id}                                        | SI
+render_record_pdf              | POST /pdf-templates/{id}/render                                | SI
+render_record_pdf              | POST /files                                                    | SI
+generate_image                 | LOCAL (provider Bedrock)                                       | n/a (local)
+generate_image                 | POST /files                                                    | SI
+store_uploaded_image           | GET /files/{id}                                                | SI
+store_uploaded_image           | GET /files/{id}/raw                                            | SI
+store_uploaded_image           | POST /files                                                    | SI
+attach_image_to_record         | PUT /career/{publications|projects}/{id}                       | SI
+attach_image_to_record         | LOCAL (agent-profile: foto en BD del harness)                  | n/a (local)
+list_generated_images          | GET /files                                                     | SI
+delegate_to_specialist         | LOCAL                                                          | n/a (local)
+list_job_providers             | GET /career/job-discoveries/providers                          | SI
+run_job_discovery              | POST /career/job-discoveries/run                               | SI
+import_job_url                 | POST /career/job-discoveries/import-url                        | SI
+save_job_listings              | POST /career/job-discoveries/save                              | SI
+web_search                     | LOCAL (Brave)                                                  | n/a (local)
+web_fetch                      | LOCAL                                                          | n/a (local)
+get_github_status              | LOCAL (GitHub)                                                 | n/a (local)
+list_github_repos              | LOCAL (GitHub)                                                 | n/a (local)
+get_github_repo                | LOCAL (GitHub)                                                 | n/a (local)
+list_github_contents           | LOCAL (GitHub)                                                 | n/a (local)
+get_github_file                | LOCAL (GitHub)                                                 | n/a (local)
+search_github_code             | LOCAL (GitHub)                                                 | n/a (local)
+agent_catalog_settings         | LOCAL (catalogo/prompts/delegacion)                            | n/a (local)
+agent_catalog_settings         | GET /career/operational-methodologies                          | SI
+agent_catalog_settings         | PUT /career/operational-methodologies/{id}                     | SI
+admin_section_settings         | GET /admin/sections                                            | SI
+admin_section_settings         | GET /admin/sections/{id}                                       | SI
+admin_section_settings         | PUT /admin/sections/{id}                                       | SI
+bedrock_global_settings        | LOCAL (bedrock_settings)                                       | n/a (local)
+error_report_settings          | GET /settings/error-reports                                    | SI
+error_report_settings          | GET /settings/error-reports/summary                            | SI
+error_report_settings          | GET /settings/error-reports/{id}                               | SI
+error_report_settings          | PATCH /settings/error-reports/{id}                             | SI
+FUERA DE LISTA: [('describe_resource_schema', 'GET /openapi.json')]
+```
+Veredicto: **no PARAR**. Ninguna tool exige una ruta de la API fuera de la lista. Única fila `NO`:
+`GET /openapi.json` (`describe_resource_schema`): es una ruta integrada de FastAPI sin
+`Depends(get_current_user)` (`FastAPI(...)` en `app.py` no fija `openapi_url` ni `dependencies`), por lo
+que es pública y la lista de la cuenta de servicio (que se aplica en `get_current_user`) no la afecta.
+Observaciones (dentro de prefijos ya permitidos; no se amplía la lista ni se enmienda la spec):
+- `store_uploaded_image` necesita metadatos de un archivo por id (`mime_type`, `original_filename`) y
+  hoy **no existe `GET /files/{id}`** (sólo `""`, `/count`, `/categories`, `/{id}/download`, `/{id}/raw`,
+  PATCH visibilidad, DELETE; `GET /files` no filtra por id). Hueco aditivo bajo `/files`; resolver en los
+  bloques C/I (derivar el mime del `Content-Type` de `/raw`, o añadir `GET /files/{id}`).
+- Los `resource_key` genéricos del CRUD incluyen `pdf-output-templates`, `pdf-template-styles` y
+  `agent-tasks` (`RESOURCE_REGISTRY`), que no cuelgan de `/career/*`: el cliente del harness debe
+  enrutarlos a `/pdf-templates`, `/pdf-template-styles` (en lista) y a la BD propia (`agent-tasks`, LOCAL).
+- `/audit-log` queda cubierta sólo si `SERVICE_ALLOWED_PREFIXES` lo enumera literalmente; el contrato
+  dice "rutas de auditoría" sin el literal. Fijarlo al implementar T-136.
+- `generate_pdf`/`render_record_pdf`: cubiertas vía `POST /pdf-templates/{id}/render` + `POST /files`
+  (cover-letter no tiene ruta `/pdf` propia; se renderiza con la plantilla).
+
+**T-003 (2026-10-13, solo lectura):** `access_role`:
+- Modelo: `cjhirashi-career-api/src/models/user.py:44`
+  `Column(String(32), default="user", nullable=False, index=True)`; sin `CheckConstraint`.
+- Migración: `alembic/versions/f8a9b0c1d2e3_user_access_roles.py` -> `String(length=32)`,
+  `server_default="user"`, índice `ix_users_access_role`; sin CHECK. El valor `service` no requiere migración.
+- Schemas: `schemas/user.py` **no** contiene `access_role` (ni `UserCreate/Update/Response`); no se
+  expone ni se valida por API.
+- Único validador de valores: `src/middleware/auth.py:86` `if user.access_role == "agent":` (limita a
+  `/career/*` y `POST /bedrock/chat`; resuelve al dueño con `owner_id` o `PUBLIC_PORTAL_USER_ID`).
+  Cualquier otro valor se trata como usuario normal.
+- Emisión de tokens: `services/auth_service.py::_create_token` (l.71) sólo añade `exp` (+ `type` en
+  refresh); `routes/auth_enhanced.py` l.133 y l.138 (login) y l.194 (refresh) pasan `data={"sub": ...}`
+  sin rol. `decode_token` l.174. No hay código que emita tokens `agent` (fuera de banda).
+- Admin/portfolio: sin ninguna referencia a `access_role` en `cjhirashi-career-admin/src` ni
+  `cjhirashi-career-portfolio/src`; el frontend no valida roles de acceso.
+- Tests existentes (`tests/unit/test_auth.py`, `test_middleware*.py`): sin referencias a `access_role`.
+
+Archivos a ampliar con `service` / claim `role`:
+1. `cjhirashi-career-api/src/middleware/auth.py` (rama `service` con `SERVICE_ALLOWED_PREFIXES`; quitar
+   `POST /bedrock/chat` del `agent`; `role` desconocido -> 401)
+2. `cjhirashi-career-api/src/services/auth_service.py` (`_create_token`/`create_*_token` añaden `role`)
+3. `cjhirashi-career-api/src/routes/auth_enhanced.py` (l.133, 138, 194: rol derivado de `access_role`)
+4. `cjhirashi-career-api/src/models/user.py` (sólo el comentario l.41-43: documentar `service`; sin cambio de columna)
+5. `cjhirashi-career-api/src/routes/notifications.py` (`POST /notifications` sólo `service`, RF-020)
+6. `cjhirashi-career-ai/src/middleware/auth.py` (nuevo; lee el claim)
+7. Tests: nuevos `test_jwt_role_claim`, `test_agent_service_scope`; ampliar `tests/unit/test_middleware*.py`
+8. Docs: `docs/ENVIRONMENT-SECURITY.md` (procedimiento fuera de banda). Sin migración ni cambios en schemas ni Admin.
