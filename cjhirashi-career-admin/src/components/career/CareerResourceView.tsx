@@ -1251,6 +1251,13 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     const col = displayColumns.find((c) => c.key === key)
     const fieldType = field?.type
     const fieldJsonList = field?.jsonList
+    // Opt-in: una columna badge con `badgeLabel` gana a la cápsula de select y también
+    // pinta valores vacíos o fuera de catálogo (p. ej. Vacantes: "Sin definir").
+    if (col?.format === 'badge' && col.badgeLabel) {
+      return (
+        <Badge color={col.badgeColor ? col.badgeColor(value) : 'slate'}>{col.badgeLabel(value)}</Badge>
+      )
+    }
     if (isSelectField(field)) {
       return <SelectFieldCapsules value={value} type={field.type} field={field} />
     }
@@ -1270,7 +1277,9 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
 
   const listHeaderExtra = (key: string): React.ReactNode => {
     if (!supportsListControls) return null
-    const field = fieldForColumn(config, key)
+    // `filterFields`: campos sólo de filtro (columnas calculadas); luego los del formulario.
+    const field =
+      config.filterFields?.find((candidate) => candidate.name === key) ?? fieldForColumn(config, key)
     return isFilterableField(field) ? (
       <ColumnFilterButton
         resourceKey={config.key}

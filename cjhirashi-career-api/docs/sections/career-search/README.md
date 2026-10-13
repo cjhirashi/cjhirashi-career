@@ -44,7 +44,7 @@ flowchart TB
 | `search-plans` | `/career/search-plans` | `SearchPlan` | Planes de búsqueda activos |
 | `networking-contacts` | `/career/networking-contacts` | `NetworkingContact` | Contactos de networking |
 | `target-companies` | `/career/target-companies` | `TargetCompany` | Empresas objetivo |
-| `vacancies` | `/career/vacancies` | `Vacancy` | Vacantes en seguimiento |
+| `vacancies` | `/career/vacancies` | `Vacancy` | Vacantes en seguimiento; etapa y estado: ver [Etapa y estado de la vacante](#etapa-y-estado-de-la-vacante) |
 | `cv-versions` | `/career/cv-versions` | `CVVersion` | **`vectorize=False`** |
 | `cover-letter-versions` | `/career/cover-letter-versions` | `CoverLetterVersion` | Cartas por vacante/rol |
 | `applications` | `/career/applications` | `Application` | Postulaciones |
@@ -103,6 +103,27 @@ reales vía API. Esquema confirmado leyendo directamente los modelos
 
 No se proponen cambios de esquema para estas tres tablas — el checklist solo pedía documentarlas y
 confirmar sus relaciones.
+
+---
+
+## Etapa y estado de la vacante
+
+Spec 007. La columna `process_stage` de `vacancies` (reemplaza a `application_status`) guarda la **etapa** del proceso; el **estado** (`vacancy_status`) se calcula a partir de ella y nunca se guarda.
+
+| Etapa (`process_stage`) | Estado (`vacancy_status`) |
+|---|---|
+| `not_applied` | `pending` (Por postular) |
+| `applied`, `screening`, `hr_interview`, `technical_interview`, `technical_test`, `final_interview`, `offer`, `hiring_process` | `in_process` (En proceso) |
+| `hired`, `rejected`, `withdrawn`, `no_response` | `closed` (Cerrada) |
+
+- **Catálogo y mapeo:** `src/services/vacancy_stage.py` (`PROCESS_STAGES`, `STAGE_TO_STATUS`). El CHECK `ck_vacancies_process_stage`, los schemas y el repositorio salen de ahí. El canon de los tests es `contracts/process-stage-catalog.json` de la spec 007.
+- **Valor por defecto:** una vacante sin etapa queda `not_applied` (también las que guarda el job discovery). La columna es NOT NULL.
+- **Campos de solo lectura:** `vacancy_status` y `process_stage_updated_at` se devuelven en las respuestas, pero se descartan si llegan en un POST/PUT (REST y tools de Bedrock).
+- **Fecha de la etapa:** `process_stage_updated_at` se fija al crear la vacante y cada vez que la etapa cambia a un valor distinto. Un update que omite la etapa o reenvía la misma no la mueve. Se puede saltar o retroceder etapas: no se valida la transición.
+- **Filtro por estado:** `filters={"vacancy_status": ["pending", ...]}` en `GET /career/vacancies` y `/count` se expande a las etapas del mapeo; se combina (AND) con un filtro `process_stage`. Un estado inválido no devuelve filas.
+- **Errores:** una etapa fuera de catálogo, o `process_stage: null` en un PUT, responde 422 con el formato de validación vigente del API (`{"detail": "Error de validación", "errors": [...]}`), no Problem Details RFC 9457 (D-14; deuda preexistente de todo el API). Desde las tools de Bedrock el error llega como `ValueError`.
+- **Base de conocimiento (D-13):** `process_stage` se indexa; `process_stage_updated_at` no entra al texto indexado.
+- **Migración:** `c7e1a4d92b60` (renombra `application_status`, NULL a `not_applied`, rellena la fecha, añade el CHECK). Falla antes de tocar nada si hay valores fuera del catálogo.
 
 ---
 

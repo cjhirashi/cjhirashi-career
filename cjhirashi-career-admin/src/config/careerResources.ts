@@ -146,6 +146,8 @@ export interface ColumnConfig {
   format?: ColumnFormat
   /** Maps a raw value to a badge color when format === 'badge'. */
   badgeColor?: (value: unknown) => 'cyan' | 'slate' | 'success' | 'error' | 'warning'
+  /** Maps a raw value to the badge text when format === 'badge' (default: the raw value). */
+  badgeLabel?: (value: unknown) => string
 }
 
 export interface ResourceConfig {
@@ -161,6 +163,9 @@ export interface ResourceConfig {
   mode?: 'list' | 'singleton'
   columns: ColumnConfig[]
   fields: FieldConfig[]
+  /** Campos sólo de filtro: habilitan el filtro de una columna calculada (p. ej.
+   * `vacancy_status`) sin ser campos del formulario ni de la ficha. */
+  filterFields?: FieldConfig[]
   /** Marks this resource as PDF-exportable: the named field (its Markdown
    * "content") is hidden from the plain INFORMACIÓN field list in the
    * record viewer and replaced there by an embedded, auto-loaded preview of
@@ -1119,6 +1124,52 @@ export const targetCompaniesConfig: ResourceConfig = {
   ],
 }
 
+// Catálogo de etapas y estados de la vacante (spec 007). Canon compartido con el API:
+// .harness/specs/007-vacantes-etapa-y-estado/contracts/process-stage-catalog.json
+export const VACANCY_STAGE_OPTIONS: SelectOption[] = [
+  { value: 'not_applied', label: 'Sin postular' },
+  { value: 'applied', label: 'Postulación (CV enviado)' },
+  { value: 'screening', label: 'Screening (llamada inicial con reclutador)' },
+  { value: 'hr_interview', label: 'Entrevista RH' },
+  { value: 'technical_interview', label: 'Entrevista técnica' },
+  { value: 'technical_test', label: 'Prueba técnica / assessment' },
+  { value: 'final_interview', label: 'Entrevista final' },
+  { value: 'offer', label: 'Oferta recibida' },
+  { value: 'hiring_process', label: 'Proceso de contratación' },
+  { value: 'hired', label: 'Contratado' },
+  { value: 'rejected', label: 'Rechazado' },
+  { value: 'withdrawn', label: 'Me retiré / decliné' },
+  { value: 'no_response', label: 'Sin respuesta / vacante cerrada' },
+]
+
+export const VACANCY_STATUS_LABELS: Record<string, string> = {
+  pending: 'Por postular',
+  in_process: 'En proceso',
+  closed: 'Cerrada',
+}
+
+const VACANCY_UNDEFINED_LABEL = 'Sin definir'
+
+export const vacancyStageLabel = (value: unknown): string =>
+  VACANCY_STAGE_OPTIONS.find((option) => option.value === value)?.label ?? VACANCY_UNDEFINED_LABEL
+
+export const vacancyStatusLabel = (value: unknown): string =>
+  typeof value === 'string' && Object.hasOwn(VACANCY_STATUS_LABELS, value)
+    ? VACANCY_STATUS_LABELS[value]
+    : VACANCY_UNDEFINED_LABEL
+
+export const vacancyStageBadgeColor = (value: unknown) => {
+  const known = VACANCY_STAGE_OPTIONS.some((option) => option.value === value)
+  if (!known) return 'slate' as const
+  if (value === 'hired' || value === 'offer') return 'success' as const
+  if (value === 'rejected') return 'error' as const
+  if (value === 'withdrawn' || value === 'no_response' || value === 'not_applied') return 'slate' as const
+  return 'warning' as const
+}
+
+export const vacancyStatusBadgeColor = (value: unknown) =>
+  value === 'in_process' ? ('warning' as const) : ('slate' as const)
+
 export const vacanciesConfig: ResourceConfig = {
   key: 'vacancies',
   label: 'Vacantes',
@@ -1129,11 +1180,35 @@ export const vacanciesConfig: ResourceConfig = {
   columns: [
     { key: 'company', label: 'Empresa' },
     { key: 'exact_role', label: 'Rol' },
-    { key: 'location', label: 'Ubicación' },
+    {
+      key: 'vacancy_status',
+      label: 'Estado',
+      format: 'badge',
+      badgeColor: vacancyStatusBadgeColor,
+      badgeLabel: vacancyStatusLabel,
+    },
+    {
+      key: 'process_stage',
+      label: 'Etapa',
+      format: 'badge',
+      badgeColor: vacancyStageBadgeColor,
+      badgeLabel: vacancyStageLabel,
+    },
+    { key: 'process_stage_updated_at', label: 'En etapa desde', format: 'date' },
     { key: 'fit_percentage', label: 'Fit %', format: 'badge', badgeColor: fitBadge },
     { key: 'evaluation', label: 'Evaluación', format: 'badge', badgeColor: badgeByEvaluation },
+    { key: 'location', label: 'Ubicación' },
     { key: 'found_date', label: 'Encontrada', format: 'date' },
     { key: 'is_active', label: 'Activa', format: 'boolean' },
+  ],
+  // `vacancy_status` es calculado: sólo habilita el filtro de la columna, no es del formulario.
+  filterFields: [
+    {
+      name: 'vacancy_status',
+      type: 'select',
+      label: 'Estado',
+      options: Object.entries(VACANCY_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+    },
   ],
   fields: [
     { name: 'company', label: 'Empresa', type: 'text', required: true },
@@ -1178,7 +1253,14 @@ export const vacanciesConfig: ResourceConfig = {
     },
     { name: 'years_experience_required', label: 'Años de experiencia requeridos', type: 'number' },
     { name: 'posted_date', label: 'Fecha de publicación', type: 'date' },
-    { name: 'application_status', label: 'Estado de la aplicación', type: 'creatable-select' },
+    {
+      name: 'process_stage',
+      label: 'Etapa del proceso',
+      type: 'select',
+      options: VACANCY_STAGE_OPTIONS,
+      helpText:
+        'Dónde va esta vacante en tu proceso. Puedes saltar o retroceder etapas. El estado (Por postular / En proceso / Cerrada) se calcula solo.',
+    },
     { name: 'priority', label: 'Prioridad', type: 'creatable-select' },
     { name: 'contracting_model', label: 'Modelo de contratación', type: 'creatable-select' },
     { name: 'contact_id', label: 'Contacto', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name' },

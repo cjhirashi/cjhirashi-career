@@ -348,6 +348,24 @@ export interface TargetCompany {
 
 export type Evaluation = 'apply' | 'do_not_apply' | 'pending_review'
 
+export type ProcessStage =
+  | 'not_applied'
+  | 'applied'
+  | 'screening'
+  | 'hr_interview'
+  | 'technical_interview'
+  | 'technical_test'
+  | 'final_interview'
+  | 'offer'
+  | 'hiring_process'
+  | 'hired'
+  | 'rejected'
+  | 'withdrawn'
+  | 'no_response'
+
+/** Calculado por el API a partir de `process_stage`; de sólo lectura. */
+export type VacancyStatus = 'pending' | 'in_process' | 'closed'
+
 export interface Vacancy {
   id: string
   user_id: string
@@ -372,7 +390,9 @@ export interface Vacancy {
   required_skills?: string[] | null
   years_experience_required?: number | null
   posted_date?: ISODate | null
-  application_status?: string | null
+  process_stage: ProcessStage
+  vacancy_status: VacancyStatus
+  process_stage_updated_at: ISODateTime
   priority?: string | null
   contracting_model?: string | null
   contact_id?: string | null

@@ -247,7 +247,7 @@ El Admin Panel sigue una arquitectura de tres capas clásicas de una SPA con bac
 | `EntityDataTable` (genérico) | Gestión de Carrera | Tabla reutilizable con paginación, filtros y ordenamiento, parametrizada por entidad |
 | `EntityForm` (genérico) | Gestión de Carrera | Formulario reutilizable generado a partir de un esquema declarativo por entidad |
 | `EvidenceStarForm` | Gestión de Carrera | Formulario especializado para casos STAR (Situación, Tarea, Acción, Resultado) dentro de Evidencia |
-| `VacancyBoard` | Gestión de Carrera | Vista tipo kanban de vacantes por estado (`wishlist`, `applied`, `interviewing`, `offer`, `rejected`, `closed`) |
+| `VacancyBoard` | Gestión de Carrera | Vista tipo kanban de vacantes por etapa del proceso (`process_stage`, las 13 etapas del catálogo de la spec 007), agrupadas por el estado calculado (`vacancy_status`: `pending`, `in_process`, `closed`) |
 | `McpMetricsPanel` | Métricas Dashboard | Gráficos de solicitudes, latencia y comandos del MCP Agent |
 | `PortalTrafficPanel` | Métricas Dashboard | Gráficos de visitas e interacciones del Portal Público |
 | `RealtimeIndicator` | Métricas Dashboard | Estado de la conexión WebSocket/SSE (conectado, reconectando, caído) |
@@ -284,7 +284,7 @@ React 18 · TypeScript · Tailwind CSS · Zustand · React Query (TanStack Query
 | `competencies` | Inventario de competencias (categoría, nivel, años de experiencia, si es publicable) | N:1 con `users` |
 | `evidence` | Proyectos, cargos, logros y casos STAR que respaldan las competencias | N:1 con `users`; referencia lógica a `competencies` |
 | `job_strategies` | Estrategias de búsqueda de empleo (roles objetivo, enfoque) | N:1 con `users` |
-| `vacancies` | Vacantes en seguimiento, con estado del proceso | N:1 con `users` |
+| `vacancies` | Vacantes en seguimiento, con la etapa del proceso (`process_stage`); el estado (`vacancy_status`: Por postular / En proceso / Cerrada) se calcula a partir de la etapa | N:1 con `users` |
 | `networking` | Contactos profesionales y su relación con la búsqueda de empleo | N:1 con `users` |
 | `interviews` | Entrevistas programadas o realizadas, ligadas a una vacante | N:1 con `users`; N:1 con `vacancies` |
 
@@ -320,7 +320,7 @@ erDiagram
 | Índice | Tabla | Motivo |
 |---|---|---|
 | `idx_competencies_user_id`, `idx_evidence_user_id`, `idx_vacancies_user_id`, `idx_networking_user_id`, `idx_interviews_user_id` | Tablas de carrera | Toda consulta de gestión de carrera filtra por `user_id`; son las consultas más frecuentes del Admin Panel |
-| `idx_vacancies_status` | `vacancies` | Soporta la vista tipo kanban (`VacancyBoard`), que agrupa por estado |
+| `ix_vacancies_process_stage` | `vacancies` | Soporta la vista tipo kanban (`VacancyBoard`) y el filtro por estado, que se traduce a etapas |
 | `idx_evidence_type` | `evidence` | Filtro habitual por tipo (proyecto, cargo, logro, caso STAR) |
 | `idx_mcp_metrics_request_at` | `mcp_agent_metrics` | Consultas de rango de fecha para el dashboard de métricas |
 | `idx_portal_visits_visited_at` | `portal_visits` | Consultas de rango de fecha para el dashboard de tráfico |

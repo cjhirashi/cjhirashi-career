@@ -103,7 +103,7 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 ## Bloque F — Admin
 
-- [ ] **T-050** `[test]` (cubre RF-011, RF-012, RF-013, RF-015, RF-016, RF-017, RF-018,
+- [x] **T-050** `[test]` (cubre RF-011, RF-012, RF-013, RF-015, RF-016, RF-017, RF-018,
   RF-019, RF-020, RF-025) — `src/tests/config/vacanciesConfig.test.ts`: opciones de etapa
   == contrato (valor, etiqueta, orden); label y helpText literales de RF-016; colores de
   las 13 etapas y 3 estados; colores sólo de la unión existente de `Badge`; "Sin
@@ -111,30 +111,38 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
   `filterFields` con `vacancy_status` (3 opciones) y ausente de `fields`; ni
   `vacancy_status` ni `process_stage_updated_at` en `fields`; columna fecha con
   `format: 'date'`. Rojo.
-- [ ] **T-051** `[code]` (cubre RF-011..013, RF-015..020, RF-025) — `src/types/career.ts`
+- [x] **T-051** `[code]` (cubre RF-011..013, RF-015..020, RF-025) — `src/types/career.ts`
   (uniones y `Vacancy`) + `src/config/careerResources.ts` (`ColumnConfig.badgeLabel`,
   `ResourceConfig.filterFields`, catálogo, funciones de color/etiqueta, columnas, campo).
   Verde T-050.
-- [ ] **T-052** `[test]` (cubre RF-010, RF-014, RF-017, RF-019, RF-025) —
+- [x] **T-052** `[test]` (cubre RF-010, RF-014, RF-017, RF-019, RF-025) —
   `src/tests/components/career/VacancyBadges.test.tsx`: la fila muestra dos badges con
   "Entrevista RH"/"En proceso" y no `hr_interview`/`in_process`; valor fuera de catálogo
   muestra "Sin definir" sin romper; encabezados de Estado y Etapa con botón de filtro; el
   formulario no tiene control `vacancy_status`; la fecha sin hora; no regresión de
   `cv-versions.status`; preferencia guardada con `application_status` no rompe (R-5).
   Rojo.
-- [ ] **T-053** `[code]` (cubre RF-010, RF-014, RF-017, RF-019) —
+- [x] **T-053** `[code]` (cubre RF-010, RF-014, RF-017, RF-019) —
   `src/components/career/CareerResourceView.tsx`: prioridad opt-in de la rama badge con
   `badgeLabel` en `renderListCell`; `listHeaderExtra` busca en `filterFields` y luego en
   `fields`. Verde T-052.
 - [ ] **T-054** `[test]` regresión Admin — suite Vitest completa + `npm run type-check` +
   `npm run lint`. Salida pegada, 0 fallos.
+  *Nota (Fase 4):* Vitest completa 468/468 y `type-check` limpio. `npm run lint` falla por
+  deuda **preexistente**: HEAD tiene 228 problemas; 007 suma +2 sólo por la regla
+  `@typescript-eslint/explicit-function-return-types` (no encontrada) en los 2 tests
+  nuevos; 0 errores nuevos reales en los archivos tocados. Además, en la 1.ª corrida
+  completa falló una vez `CareerResourceView.test.tsx > CareerResourceView (list / view /
+  edit-in-place) > goes back to the table when the Lista tab is clicked from the view`:
+  timing bajo carga (aislado pasa 30/30, con y sin 007; la 2.ª corrida completa dio 468/468),
+  no causado por 007.
 
 ## Bloque G — Documentación
 
-- [ ] **T-060** `[doc]` — `cjhirashi-career-api/docs/sections/career-search/README.md`:
+- [x] **T-060** `[doc]` — `cjhirashi-career-api/docs/sections/career-search/README.md`:
   subsección "Etapa y estado de la vacante" (catálogo, mapeo, campos de sólo lectura,
   reglas de la fecha, filtro por estado, 422).
-- [ ] **T-061** `[doc]` — `docs/05-BUILDING-BLOCK-VIEW.md` líneas ~250, ~287, ~323 al
+- [x] **T-061** `[doc]` — `docs/05-BUILDING-BLOCK-VIEW.md` líneas ~250, ~287, ~323 al
   vocabulario `process_stage`/`vacancy_status` e índice `ix_vacancies_process_stage`.
 
 ## Bloque H — Fase 4: revisión y verificación real
