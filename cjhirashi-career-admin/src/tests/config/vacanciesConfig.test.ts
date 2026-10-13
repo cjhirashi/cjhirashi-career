@@ -165,3 +165,50 @@ describe('RF-017/RF-020: filtro por Estado sin campo de formulario', () => {
     }
   })
 })
+
+// Spec 008: cuatro textos descriptivos de la vacante.
+const DESCRIPTIVE = [
+  { name: 'company_overview', label: 'Quiénes son' },
+  { name: 'candidate_profile', label: 'Qué buscan' },
+  { name: 'offer_summary', label: 'Qué ofrecen' },
+  { name: 'work_culture', label: 'Cultura laboral' },
+]
+
+describe('RF-008: cuatro campos descriptivos en el formulario', () => {
+  it('existen, son textarea fullWidth y con la etiqueta literal', () => {
+    for (const d of DESCRIPTIVE) {
+      const field = config.fields.find((f) => f.name === d.name)
+      expect(field, d.name).toBeDefined()
+      expect(field?.type).toBe('textarea')
+      expect(field?.fullWidth).toBe(true)
+      expect(field?.label).toBe(d.label)
+    }
+  })
+
+  it('son contiguos y en orden canónico', () => {
+    const idx = DESCRIPTIVE.map((d) => config.fields.findIndex((f) => f.name === d.name))
+    expect(idx.every((i) => i >= 0)).toBe(true)
+    idx.forEach((i, n) => {
+      if (n > 0) expect(i).toBe(idx[n - 1] + 1)
+    })
+  })
+})
+
+describe('RF-010: los textos descriptivos no son columnas de la tabla', () => {
+  it('ninguna columna con esas claves y el array de claves es el de 007 RF-015', () => {
+    const keys = config.columns.map((c) => c.key)
+    for (const d of DESCRIPTIVE) expect(keys).not.toContain(d.name)
+    expect(keys).toEqual([
+      'company',
+      'exact_role',
+      'vacancy_status',
+      'process_stage',
+      'process_stage_updated_at',
+      'fit_percentage',
+      'evaluation',
+      'location',
+      'found_date',
+      'is_active',
+    ])
+  })
+})

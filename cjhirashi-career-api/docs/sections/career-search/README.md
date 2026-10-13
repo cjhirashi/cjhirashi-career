@@ -127,6 +127,24 @@ Spec 007. La columna `process_stage` de `vacancies` (reemplaza a `application_st
 
 ---
 
+## Textos descriptivos de la vacante
+
+Spec 008. `vacancies` guarda cuatro textos largos opcionales sobre la empresa y el puesto (`TEXT NULL`, sin default; las vacantes existentes quedan en `NULL`).
+
+| Columna | Qué guarda |
+|---|---|
+| `company_overview` | Quiénes son |
+| `candidate_profile` | Qué buscan |
+| `offer_summary` | Qué ofrecen |
+| `work_culture` | Cultura laboral |
+
+- **Reglas (REST, schemas `VacancyBase`/`VacancyUpdate`):** se recortan los espacios de los bordes (el contenido interno se conserva); vacío o solo espacios pasa a `NULL`; el tope es 10 000 caracteres medidos tras el recorte. Superarlo responde 422 con `{"detail", "errors"}` y no cambia la fila. `null` explícito en un PUT borra el campo; omitirlo lo deja intacto. Las respuestas siempre incluyen las cuatro claves (valor o `null`).
+- **Tools de Bedrock (D-07):** `create/update_career_record` no pasan por Pydantic, así que **no** aplican el recorte, el vacío a `NULL` ni el tope. La spec 009 mueve esa escritura a REST.
+- **Base de conocimiento (RF-006, transitorio):** los cuatro campos están en `_KB_EXCLUDED_COLUMNS["vacancies"]` y no se indexan. Es temporal: se retira con la spec 009, que decide su indexado.
+- **Migración:** `d8f2b5a13c97` (idempotente; el downgrade elimina las columnas y su contenido).
+
+---
+
 ## Endpoint custom: PDF de CV
 
 | Método | Path | Descripción |

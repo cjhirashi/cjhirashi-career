@@ -86,29 +86,29 @@ explícita en ese momento.
 
 ## Bloque F — Admin
 
-- [ ] **T-050** `[test]` (cubre RF-008, RF-010) — `src/tests/config/vacanciesConfig.test.ts`
+- [x] **T-050** `[test]` (cubre RF-008, RF-010) — `src/tests/config/vacanciesConfig.test.ts`
   (ampliar): los cuatro `name` existen en `fields`, `type === 'textarea'`,
   `fullWidth === true`, etiquetas literales ("Quiénes son", "Qué buscan", "Qué ofrecen",
   "Cultura laboral"), índices consecutivos y en orden canónico; ninguna columna de
   `columns` con esos keys y el array de keys es exactamente el de 007 RF-015. Rojo.
-- [ ] **T-051** `[code]` (cubre RF-008, RF-010) — `src/types/career.ts` (cuatro campos
+- [x] **T-051** `[code]` (cubre RF-008, RF-010) — `src/types/career.ts` (cuatro campos
   `string | null` opcionales en `Vacancy`) + `src/config/careerResources.ts` (cuatro campos
   en `vacanciesConfig.fields`, tras `contact_id` y antes de `analysis_notes`; `helpText` y
   posición según `experto-ux-ui`, T-070). Verde T-050.
-- [ ] **T-052** `[test]` (cubre RF-008, RF-009, RF-010) —
+- [x] **T-052** `[test]` (cubre RF-008, RF-009, RF-010) —
   `src/tests/components/career/VacancyDescriptiveTexts.test.tsx` (nuevo): el formulario
   muestra cuatro textareas con esas etiquetas, contiguas y en orden; la ficha de detalle
   muestra los cuatro en orden canónico con su etiqueta y renderiza Markdown vigente (D-06:
   párrafos separados por línea en blanco); la tabla no tiene columnas de estos campos. Debe
   quedar verde sin cambios en `CareerResourceView.tsx` (D-06); si falla, se corrige en
   config.
-- [ ] **T-053** `[test]` regresión Admin — suite Vitest completa + `npm run type-check` +
+- [x] **T-053** `[test]` regresión Admin — suite Vitest completa + `npm run type-check` +
   `npm run lint` sin errores nuevos en los archivos tocados (criterio de 007 T-054: deuda de
   lint preexistente no cuenta). Salida pegada.
 
 ## Bloque G — Documentación
 
-- [ ] **T-060** `[doc]` — `cjhirashi-career-api/docs/sections/career-search/README.md`:
+- [x] **T-060** `[doc]` — `cjhirashi-career-api/docs/sections/career-search/README.md`:
   añadir los cuatro campos a la tabla de `vacancies` y una nota con las reglas (trim,
   vacío → `NULL`, tope de 10 000, 422), que las tools Bedrock no las aplican (D-07) y el
   carácter transitorio de la exclusión de la KB (RF-006, spec 009). Verificar con grep que

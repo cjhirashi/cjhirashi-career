@@ -380,6 +380,10 @@ export interface Vacancy {
   track_category?: string | null
   recommended_cv_version?: string | null
   analysis_notes?: string | null
+  company_overview?: string | null
+  candidate_profile?: string | null
+  offer_summary?: string | null
+  work_culture?: string | null
   evaluation: Evaluation
   is_active: boolean
   location?: string | null

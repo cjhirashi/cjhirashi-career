@@ -1264,6 +1264,11 @@ export const vacanciesConfig: ResourceConfig = {
     { name: 'priority', label: 'Prioridad', type: 'creatable-select' },
     { name: 'contracting_model', label: 'Modelo de contratación', type: 'creatable-select' },
     { name: 'contact_id', label: 'Contacto', type: 'fk-select', fkResource: 'networking-contacts', fkLabelField: 'name' },
+    // Spec 008: textos descriptivos (contiguos, orden canónico). helpText/alto: pendiente de UX (T-070).
+    { name: 'company_overview', label: 'Quiénes son', type: 'textarea', fullWidth: true },
+    { name: 'candidate_profile', label: 'Qué buscan', type: 'textarea', fullWidth: true },
+    { name: 'offer_summary', label: 'Qué ofrecen', type: 'textarea', fullWidth: true },
+    { name: 'work_culture', label: 'Cultura laboral', type: 'textarea', fullWidth: true },
     { name: 'analysis_notes', label: 'Notas de análisis', type: 'textarea', fullWidth: true },
   ],
 }
