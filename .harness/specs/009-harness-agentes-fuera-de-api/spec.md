@@ -81,9 +81,64 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   apunta a `/ai/`; 3) eliminar Bedrock/KB/Qdrant de la API. Cada etapa es desplegable y
   reversible por separado.
 
+- **Paridad de contrato (D-13):** el harness expone bajo `/ai/` las mismas rutas
+  relativas, cuerpos y respuestas que hoy `/bedrock/*` y `/agent-tasks/*`; el Admin sólo
+  cambia la URL base.
+- **Tokens `access_role = "agent"`** (agente externo): quedan limitados a `/career/*`;
+  el permiso de `POST /bedrock/chat` desaparece con la ruta. La cuenta de servicio del
+  harness es un token `agent` (D-14).
+
 ## 4 · Criterios de aceptación (EARS)
 
-Pendiente de completar tras cerrar §3.
+### Harness (`cjhirashi-career-ai`)
+- **RF-001** El harness DEBE servir bajo `/ai/` todas las operaciones que hoy sirven
+  `/bedrock/*` y `/agent-tasks/*` de la API, con el mismo contrato (D-13).
+- **RF-002** SI una petición al harness no trae un JWT válido de la API, ENTONCES el
+  harness DEBE responder 401 sin procesarla.
+- **RF-003** El harness NO DEBE conectarse a `career_db`; DEBE leer y escribir datos de
+  carrera, metodologías, secciones y archivos sólo vía la API REST (D-01, D-10, D-12).
+- **RF-004** CUANDO una acción la origina un usuario, el harness DEBE llamar a la API con
+  el JWT de ese usuario; CUANDO la origina una tarea programada, DEBE usar la cuenta de
+  servicio (D-09).
+- **RF-005** El bucle de agente, las tools, los costes y la generación de imágenes DEBEN
+  depender de una interfaz de proveedor de modelos; sólo la implementación Bedrock DEBE
+  importar el SDK de AWS (D-05).
+- **RF-006** El harness DEBE persistir conversaciones, perfiles, prompts, tools, tareas,
+  delegaciones y uso/costes en su propia BD, con migraciones propias (D-02).
+- **RF-007** La migración de datos DEBE copiar las 10 tablas `bedrock_*` de `career_db`
+  a la BD del harness conservando identificadores, y DEBE reportar el conteo por tabla en
+  origen y destino; SI algún conteo difiere, ENTONCES DEBE terminar con error.
+- **RF-008** CUANDO llega una petición de chat con streaming, el harness DEBE emitirla
+  por SSE a través de `/ai/` (D-08).
+
+### API (`cjhirashi-career-api`)
+- **RF-009** La API NO DEBE exponer `/bedrock/*` ni `/agent-tasks/*` (404).
+- **RF-010** CUANDO se crea, actualiza o elimina un registro de carrera, la API NO DEBE
+  generar embeddings ni escribir en Qdrant; el código de Bedrock, de la KB y de Qdrant y
+  sus dependencias DEBEN desaparecer de la API (D-04, D-05).
+- **RF-011** La migración de la API DEBE eliminar las 10 tablas `bedrock_*` sólo después
+  de verificar la copia (RF-007), y su `downgrade` DEBE recrear su estructura (los datos
+  se restauran del backup).
+- **RF-018** SI un token `agent` llama a una ruta fuera de `/career/*`, ENTONCES la API
+  DEBE responder 403 (D-14).
+- **RF-012** Los endpoints de metodologías y secciones DEBEN conservar su contrato sin
+  importar código del harness (D-10).
+
+### Admin
+- **RF-013** Todas las pantallas de agentes, el chat lateral, las métricas de coste y
+  las tareas de agentes DEBEN llamar al harness por `/ai/` y NO DEBEN llamar a
+  `/api/bedrock` ni `/api/agent-tasks` (D-03, D-07).
+- **RF-014** El comportamiento visible de esas pantallas NO DEBE cambiar (paridad).
+
+### Infraestructura y corte
+- **RF-015** `docker-compose.yml` DEBE incluir el servicio del harness y su BD, y NO DEBE
+  incluir el servicio ni el volumen `qdrant` (eliminados tras snapshot) (D-04).
+- **RF-016** El bloque `servicios` de `caddy.json` DEBE enrutar `/ai/` del servicio
+  `admin` al harness con SSE habilitado, sin tocar el bloque `cjhirashi_srv` (D-08).
+- **RF-017** El corte DEBE hacerse en tres etapas desplegables por separado (D-11):
+  (1) harness arriba con datos copiados, la API intacta; (2) el Admin apunta a `/ai/`;
+  (3) se elimina Bedrock/KB/Qdrant de la API. MIENTRAS no se complete la etapa 3, DEBE
+  poder volverse a la etapa anterior sin pérdida de datos.
 
 ## 6 · Registro de decisiones y descartes
 
@@ -116,9 +171,16 @@ Pendiente de completar tras cerrar §3.
   corte único con ventana de mantenimiento.
 - **D-12 (usuario, 2026-10-13, Fase 1):** archivos vía endpoints de la API.
   *Descartado:* acceso propio del harness a MinIO.
+- **D-13 (usuario, 2026-10-13, Fase 1):** paridad exacta de contrato bajo `/ai/`; el
+  rediseño neutro al proveedor queda para specs posteriores. *Descartado:* rediseñar ya.
+- **D-14 (usuario, 2026-10-13, Fase 1):** el agente externo sólo usa `/career/*`; los
+  tokens `agent` pierden `POST /bedrock/chat` y la cuenta de servicio del harness es un
+  token `agent`. *Descartado:* aceptar tokens `agent` en el chat del harness.
 
 ## 7 · Requisitos no funcionales
 
 - **RNF-001:** ninguna prueba llama a Bedrock reales; Qdrant deja de existir.
 - **RNF-002:** backup de `career_db` y snapshot de Qdrant antes de migrar; toda
   operación sobre BD en vivo requiere OK explícito del usuario.
+- **RNF-003:** `cjhirashi-career-ai` con tests y cobertura ≥ 80 % por módulo, trazados
+  con `@pytest.mark.requisito`.
