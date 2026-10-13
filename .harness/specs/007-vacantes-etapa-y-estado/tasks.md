@@ -162,15 +162,37 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 - [ ] **T-070** `[ux]` (cubre RF-010..RF-020, RF-025) — revisión de `experto-ux-ui` según
   plan §7, con contraste **medido** de cada color de badge (RF-018). Resultado en
   `spec.md §8`.
-- [ ] **T-071** `[verify]` (cubre RF-006, RF-007, RF-024) — BD real (plan §3/§8):
+- [x] **T-071** `[verify]` (cubre RF-006, RF-007, RF-024) — BD real (plan §3/§8):
   pre-chequeo `alembic_version` == `a9b1c2d3e4f5`, `\d vacancies`, valores actuales;
   `pg_dump`; `alembic upgrade head`; `\d vacancies` muestra CHECK, NOT NULL, fecha. Si el
   pre-chequeo no cuadra: PARAR y reportar (sin `alembic stamp`). **Requiere OK del
   usuario antes de ejecutar.**
-- [ ] **T-072** `[verify]` (cubre RF-001, RF-004, RF-010, RF-017, RF-021) — rebuild de
+  *Evidencia (2026-10-13, OK del usuario):* pre-chequeo `alembic_version` = `a9b1c2d3e4f5`;
+  `\d vacancies` con `application_status varchar(30)` y sin `process_stage`; valores
+  `not_applied` ×3. Backup `pg_dump -Fc` →
+  `/mnt/disco2/cjhirashi-data/backups/career_db_pre_007_20261013_005618.dump` (902 076 B,
+  67 TABLE DATA). `docker compose run --rm --no-deps api` (imagen nueva, `DATABASE_URL` →
+  `career_db`): `alembic current` `a9b1c2d3e4f5` → `upgrade head` → `c7e1a4d92b60 (head)`.
+  Después: `process_stage varchar(30) not null default 'not_applied'`,
+  `process_stage_updated_at timestamptz not null default now()`, índice
+  `ix_vacancies_process_stage`, CHECK `ck_vacancies_process_stage` (13 etapas);
+  `application_status` ya no existe; vac-122/137/138 → `not_applied` con fecha rellenada.
+- [x] **T-072** `[verify]` (cubre RF-001, RF-004, RF-010, RF-017, RF-021) — rebuild de
   `api` y `admin` (`up -d --force-recreate --no-deps`, verificar `DATABASE_URL`),
   `GET /health` 200, crear/actualizar una vacante en vivo y filtrar por estado. Evidencia
   pegada.
+  *Evidencia (2026-10-13):* `up -d --force-recreate --no-deps api admin`; api `healthy`,
+  `DATABASE_URL=postgresql+asyncpg://career_admin:***@postgres:5432/career_db`;
+  `admin.cjhirashi.com/api/health` 200, `admin.cjhirashi.com/` 200. JWT usr-2:
+  GET lista → 3 vacantes `not_applied`/`pending`, sin `application_status` en la respuesta.
+  POST sin etapa → `not_applied`. PUT `hr_interview` → `in_process`, fecha
+  `2026-10-13T00:58:35.644064Z`; PUT `notes` → fecha sin cambio. PUT `wishlist` → 422
+  `{"detail":"Error de validación","errors":[{"type":"literal_error",...}]}`; PUT `null` →
+  422 `process_stage_not_null`. PUT `{"vacancy_status":"closed"}` → ignorado
+  (`technical_test`/`in_process`). `filters={"vacancy_status":...}`: pending 3,
+  in_process 1, closed 0, bogus 0, [pending,in_process] 4, pending+`process_stage`
+  technical_test 0. Vacantes de prueba vac-139/140 borradas (204). UI del Admin no
+  recorrida con navegador (sin sesión de login); cubierta por Vitest.
 - [ ] **T-073** `[ops]` — reindex de la KB + `scripts/check_kb_consistency.py`. **Sólo con
   autorización explícita del usuario en ese momento** (coste Bedrock, D-13). Si no se
   autoriza, se registra como pendiente.
