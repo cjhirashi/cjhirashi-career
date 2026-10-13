@@ -6,9 +6,11 @@ networking_contacts, target_companies, vacancies, cv_versions,
 cover_letter_versions, applications, application_interactions, interviews,
 contact_interactions, networking_activities.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field, model_validator
 from typing import Optional, List, Dict, Any, Literal
 from datetime import date, datetime
+
+from services.vacancy_stage import ProcessStage, VacancyStatus, vacancy_status_for
 
 
 # ============================================================================
@@ -295,6 +297,7 @@ class TargetCompanyResponse(TargetCompanyBase):
 # ============================================================================
 
 EvaluationLiteral = Literal["apply", "do_not_apply", "pending_review"]
+ProcessStageLiteral = ProcessStage
 
 
 class VacancyBase(BaseModel):
@@ -319,7 +322,7 @@ class VacancyBase(BaseModel):
     required_skills: Optional[List[str]] = None
     years_experience_required: Optional[int] = None
     posted_date: Optional[date] = None
-    application_status: Optional[str] = Field(None, max_length=30)
+    process_stage: ProcessStageLiteral = "not_applied"
     priority: Optional[str] = Field(None, max_length=10)
     contracting_model: Optional[str] = Field(None, max_length=50)
     contact_id: Optional[str] = None
@@ -351,17 +354,30 @@ class VacancyUpdate(BaseModel):
     required_skills: Optional[List[str]] = None
     years_experience_required: Optional[int] = None
     posted_date: Optional[date] = None
-    application_status: Optional[str] = None
+    process_stage: Optional[ProcessStageLiteral] = None
     priority: Optional[str] = None
     contracting_model: Optional[str] = None
     contact_id: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _process_stage_not_null(self):
+        # Omitir la etapa es válido (no cambia); enviarla como null no (RF-002).
+        if "process_stage" in self.model_fields_set and self.process_stage is None:
+            raise ValueError("process_stage no puede ser null")
+        return self
 
 
 class VacancyResponse(VacancyBase):
     id: str
     user_id: str
+    process_stage_updated_at: datetime
     created_at: datetime
     updated_at: datetime
+
+    @computed_field
+    @property
+    def vacancy_status(self) -> VacancyStatus:
+        return vacancy_status_for(self.process_stage)
 
     class Config:
         from_attributes = True

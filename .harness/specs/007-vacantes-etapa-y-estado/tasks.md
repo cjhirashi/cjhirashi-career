@@ -19,30 +19,30 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 ## Bloque A — API: catálogo y reglas puras (`services/vacancy_stage.py`)
 
-- [ ] **T-001** `[test]` (cubre RF-004, RF-017) — `tests/unit/test_vacancy_process_stage.py`:
+- [x] **T-001** `[test]` (cubre RF-004, RF-017) — `tests/unit/test_vacancy_process_stage.py`:
   `PROCESS_STAGES`/`STAGE_TO_STATUS` == contrato JSON (valores y orden);
   `vacancy_status_for` de las 13 etapas, nunca nulo; `stages_for_statuses` de cada
   estado, de dos estados, y de sólo inválidos → vacío. Rojo.
-- [ ] **T-002** `[test]` (cubre RF-002, RF-005, RF-021, RF-022, RF-023) — mismo archivo:
+- [x] **T-002** `[test]` (cubre RF-002, RF-005, RF-021, RF-022, RF-023) — mismo archivo:
   `prepare_vacancy_write` con reloj inyectable: etapa fuera de catálogo → `ValueError`;
   `process_stage=None` → `ValueError`; quita `vacancy_status` y
   `process_stage_updated_at`; Create fija el instante UTC; Update con etapa distinta lo
   fija; Update con etapa omitida o igual no lo incluye. Rojo.
-- [ ] **T-003** `[code]` (cubre RF-002, RF-004, RF-005, RF-017, RF-021..023) — crear
+- [x] **T-003** `[code]` (cubre RF-002, RF-004, RF-005, RF-017, RF-021..023) — crear
   `src/services/vacancy_stage.py` según plan §1. Verde T-001, T-002.
 
 ## Bloque B — API: modelo y schemas
 
-- [ ] **T-010** `[test]` (cubre RF-001, RF-003, RF-005, RF-006, RF-023) — mismo archivo:
+- [x] **T-010** `[test]` (cubre RF-001, RF-003, RF-005, RF-006, RF-023) — mismo archivo:
   `Vacancy(...)` sin etapa → `not_applied` tras flush y `process_stage_updated_at` no
   nulo; INSERT/UPDATE directo con etapa fuera de catálogo → `IntegrityError` (CHECK);
   schemas: Create sin campo → `not_applied`; Create/Update descartan `vacancy_status` y
   `process_stage_updated_at`; Update con `process_stage: null` → error de validación;
   `VacancyResponse` expone `vacancy_status` calculado. Rojo.
-- [ ] **T-011** `[code]` (cubre RF-001, RF-003, RF-006) — `src/models/vacancy.py`:
+- [x] **T-011** `[code]` (cubre RF-001, RF-003, RF-006) — `src/models/vacancy.py`:
   `process_stage` (NOT NULL, default/server_default, index, CHECK con nombre desde
   `PROCESS_STAGES`) + `process_stage_updated_at`; quitar `application_status`.
-- [ ] **T-012** `[code]` (cubre RF-001, RF-002, RF-004, RF-005, RF-023) —
+- [x] **T-012** `[code]` (cubre RF-001, RF-002, RF-004, RF-005, RF-023) —
   `src/schemas/career_search.py`: `ProcessStageLiteral`, Create/Update/Response,
   `model_validator` para `null`, `@computed_field vacancy_status`. Verde T-010.
 

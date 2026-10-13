@@ -13,6 +13,7 @@ from database import Base
 
 
 from services.id_generator import register_id_listener
+from services.vacancy_stage import DEFAULT_PROCESS_STAGE, PROCESS_STAGES
 
 
 class Vacancy(Base):
@@ -22,6 +23,11 @@ class Vacancy(Base):
     __table_args__ = (
         CheckConstraint("fit_percentage BETWEEN 0 AND 100"),
         CheckConstraint("evaluation IN ('apply', 'do_not_apply', 'pending_review')"),
+        # Un solo canon: el catálogo vive en services.vacancy_stage (spec 007, RF-006).
+        CheckConstraint(
+            "process_stage IN (" + ", ".join(f"'{s}'" for s in PROCESS_STAGES) + ")",
+            name="ck_vacancies_process_stage",
+        ),
     )
 
     # --- Identificación (id prefijado + user_id para aislamiento) ---
@@ -57,7 +63,16 @@ class Vacancy(Base):
     required_skills = Column(JSONB, nullable=True)
     years_experience_required = Column(Integer, nullable=True)
     posted_date = Column(Date, nullable=True)
-    application_status = Column(String(30), nullable=True, index=True)
+    # Etapa del proceso (spec 007). El estado (pending/in_process/closed) se calcula
+    # a partir de ella y no se persiste.
+    process_stage = Column(
+        String(30),
+        nullable=False,
+        default=DEFAULT_PROCESS_STAGE,
+        server_default=DEFAULT_PROCESS_STAGE,
+        index=True,
+    )
+    process_stage_updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     priority = Column(String(10), nullable=True)
     contracting_model = Column(String(50), nullable=True)
     contact_id = Column(
