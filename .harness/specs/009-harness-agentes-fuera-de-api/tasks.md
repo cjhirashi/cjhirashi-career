@@ -26,7 +26,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque 0 — Preparación y verificaciones tempranas
 
-- [ ] **T-001** `[code]` (cubre RF-017) — Retirar `cjhirashi-career-ai` del `.gitignore`;
+- [x] **T-001** `[code]` (cubre RF-017) — Retirar `cjhirashi-career-ai` del `.gitignore`;
   mover el andamiaje actual a un directorio fuera del repo (no se reaprovecha, plan §0) y
   dejar sólo `Dockerfile`, `pyproject.toml`, `README.md` mínimos y `src/__init__.py`. Verificar
   `git status` sin sorpresas.
@@ -51,29 +51,29 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque A — AI: esqueleto, configuración y BD propia
 
-- [ ] **T-010** `[test]` (cubre RF-006) — `tests/unit/test_config.py`: `Settings` exige
+- [x] **T-010** `[test]` (cubre RF-006) — `tests/unit/test_config.py`: `Settings` exige
   `AI_DATABASE_URL`, `SECRET_KEY`, `ALGORITHM`, `API_BASE_URL`, `AI_SERVICE_TOKEN`,
   `MEMORY_FTS_CONFIG` (por defecto `spanish`, D-24); sin variable obligatoria → error claro.
   Rojo.
-- [ ] **T-011** `[code]` (cubre RF-006) — `src/config.py`, `.env.example`. Verde T-010.
-- [ ] **T-012** `[test]` (cubre RF-008, RF-002) — `tests/unit/test_app_boot.py`: la app
+- [x] **T-011** `[code]` (cubre RF-006) — `src/config.py`, `.env.example`. Verde T-010.
+- [x] **T-012** `[test]` (cubre RF-008, RF-002) — `tests/unit/test_app_boot.py`: la app
   carga **todos** los routers (hazard del `ImportError` silenciado); `GET /health` 200 sin
   auth; ruta inexistente 404; falla si un router no se registra. Rojo.
-- [ ] **T-013** `[code]` (cubre RF-008) — `src/app.py`, `src/routes/health.py`,
+- [x] **T-013** `[code]` (cubre RF-008) — `src/app.py`, `src/routes/health.py`,
   `src/database.py` (engine/async session). Verde T-012.
-- [ ] **T-014** `[test]` (cubre RF-006) — `tests/unit/models/test_schema_matches_contract.py`:
+- [x] **T-014** `[test]` (cubre RF-006) — `tests/unit/models/test_schema_matches_contract.py`:
   los metadatos SQLAlchemy contienen las 11 tablas + `bedrock_agent_memory` (12) con las columnas
   de `contracts/harness-db-schema.md` §1, sin FK a `users`. Rojo.
-- [ ] **T-015** `[code]` (cubre RF-006) — `src/models/*` (11 modelos copiados de la API sin
+- [x] **T-015** `[code]` (cubre RF-006) — `src/models/*` (11 modelos copiados de la API sin
   `ForeignKey("users.id")`). Verde parcial T-014 (sin memoria).
-- [ ] **T-016** `[test]` (cubre RF-006) — `tests/unit/services/test_id_generator.py`: IDs
+- [x] **T-016** `[test]` (cubre RF-006) — `tests/unit/services/test_id_generator.py`: IDs
   `bco/bcm/bct/btk/bam-N` con `nextval` en BD de test; sin colisión tras `setval`. Rojo.
-- [ ] **T-017** `[code]` (cubre RF-006) — `src/services/id_generator.py` (5 prefijos).
+- [x] **T-017** `[code]` (cubre RF-006) — `src/services/id_generator.py` (5 prefijos).
   Verde T-016.
-- [ ] **T-018** `[test]` (cubre RF-006, RF-022) — `tests/unit/migrations/test_initial_migration.py`:
+- [x] **T-018** `[test]` (cubre RF-006, RF-022) — `tests/unit/migrations/test_initial_migration.py`:
   `alembic upgrade head` en BD de test crea las 12 tablas (11 migradas + `bedrock_agent_memory`), las secuencias, la columna
   generada `search_vector` y el índice GIN; `downgrade base` las elimina. Rojo.
-- [ ] **T-019** `[code]` (cubre RF-006, RF-022) — `alembic.ini`, `alembic/env.py` (async),
+- [x] **T-019** `[code]` (cubre RF-006, RF-022) — `alembic.ini`, `alembic/env.py` (async),
   `alembic/versions/0001_initial_harness_schema.py`. Verde T-018 y T-014 completo.
 
 ## Bloque B — AI: interfaz de proveedor y Bedrock
@@ -171,8 +171,9 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   BD de test: insertar nota/hecho/manual, listar por usuario/perfil, borrar, búsqueda
   `websearch_to_tsquery(MEMORY_FTS_CONFIG)` con `ts_rank` (acentos, plurales en español),
   aislamiento por `user_id`, unicidad `user_id+source_ref`. Rojo.
-- [ ] **T-081** `[code]` (cubre RF-022) — `src/models/bedrock_agent_memory.py`,
-  `src/repositories/memory_repo.py`. Verde T-080 y T-014.
+- [ ] **T-081** `[code]` (cubre RF-022) — `src/repositories/memory_repo.py` (el modelo
+  `src/models/bedrock_agent_memory.py` ya existe desde T-015; la migración 0001 ya incluye la
+  tabla, T-018/T-019). Verde T-080.
 - [ ] **T-082** `[test]` (cubre RF-022, RF-001) — `test_memory_service.py`: sustituye
   `local_memory` (notas del agente, `memory/events` desde mensajes, `memory/records` por FTS,
   `memory/manual`); sin imports de Qdrant. Rojo.
@@ -243,8 +244,15 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   (BD de test origen/destino): copia las 11 tablas conservando ids; idempotente; `setval`
   (insertar tras copiar no colisiona); reporte JSON por tabla (`source`, `dest`,
   `missing_in_dest`, `checksum_ok`); exit ≠ 0 y `ok:false` si un conteo difiere; `--dry-run`;
-  `--verify-only` tolera destino mayor; `--direction ai-to-api`. Rojo.
-- [ ] **T-121** `[code]` (cubre RF-007, RF-017) — `scripts/copy_from_career_db.py`. Verde T-120.
+  `--verify-only` tolera destino mayor; `--direction ai-to-api`. **Verificación de esquema
+  previa:** antes de copiar, el script compara las columnas reales de `career_db` (vía
+  `information_schema.columns`: tipo, longitud, nulabilidad) con el esquema de `career_ai_db`
+  y falla con exit ≠ 0 y un mensaje claro (tabla, columna, tipo/longitud origen vs destino) si
+  hay diferencias de tipo o longitud, sin copiar nada. Motivo: los modelos del harness copian
+  los defaults de la API solo en Python (`default=`), sin `server_default`, y la BD dev de la
+  API tiene `ALTER` directos (Art. 4). Casos: esquemas iguales pasan; `VARCHAR(50)` vs
+  `VARCHAR(100)` y `TEXT` vs `VARCHAR` fallan. Rojo.
+- [ ] **T-121** `[code]` (cubre RF-007, RF-017) — `scripts/copy_from_career_db.py` (incluye la verificación de esquema). Verde T-120.
 - [ ] **T-122** `[test]` (cubre RF-022, RF-007) — `tests/unit/scripts/test_migrate_memory_from_qdrant.py`
   (cliente Qdrant simulado, jamás real): scroll de puntos de memoria, descarta puntos de
   registros indexados, idempotente (`source_ref`), `kind` correcto, reporte con
@@ -676,3 +684,209 @@ Snapshot Qdrant (POST /collections/career_knowledge/snapshots):
   sha256 cf381d823e721929aa01e38f999d50864b352e84154c16d8979bbbc733092e43 (= checksum de la API; tar tf válido)
 Copia (descargada por API): /mnt/disco2/cjhirashi-data/backups/qdrant_pre_009_20261013/career_knowledge-8617655084996019-2026-10-13-20-20-39.snapshot  20825600 bytes (sha256 idéntico)
 ```
+
+**Bloque A + T-001 (2026-10-13, implementador).** Entorno: venv nuevo `cjhirashi-career-ai/venv` (era `.venv`; renombrado, ver corrección posterior)
+(Python 3.14.4 del host; dependencias recientes sin pin, ver desviaciones). BD de test: contenedor
+desechable `career-ai-testdb` (`postgres:15-alpine`, igual que `postgres_db`), red bridge por defecto,
+`127.0.0.1:55433` (el 55432 ya lo usa `hira-server-postgres-1`), URL
+`TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55433/postgres`. Parado con
+`docker stop` al terminar (`docker ps -a | grep -c career-ai-testdb` -> 0).
+
+**T-001:** `.gitignore` NO contenía ninguna línea sobre `cjhirashi-career-ai`; `git check-ignore -v
+cjhirashi-career-ai cjhirashi-career-ai/Dockerfile` -> sin salida, rc=1; `grep -n "career-ai" .gitignore`
+-> rc=1. `git status --ignored` lo mostraba `!! cjhirashi-career-ai/` solo porque todo su contenido eran
+cachés (`__pycache__/`, `.pytest_cache`) y `venv_test` (ver `.gitignore:9 __pycache__/`). Restos movidos
+con `mv` (sin borrar) a `/mnt/disco2/cjhirashi-data/backups/career-ai-andamiaje-pre-009/`
+(`.pytest_cache __pycache__ src tests venv_test`). Creados: `Dockerfile` (python:3.11-slim como la API,
+puerto 8010), `pyproject.toml`, `pytest.ini` (mismas convenciones que la API: `--strict-markers`, cov
+`--cov-fail-under=80`, marcador `requisito`, `asyncio_mode=auto`), `README.md`, `src/__init__.py`.
+```
+$ git status --short -uall | grep -v "^ M"   (tras T-001, antes del resto del bloque)
+?? cjhirashi-career-ai/Dockerfile
+?? cjhirashi-career-ai/README.md
+?? cjhirashi-career-ai/pyproject.toml
+?? cjhirashi-career-ai/pytest.ini
+?? cjhirashi-career-ai/src/__init__.py
+$ git status --short --ignored cjhirashi-career-ai   -> solo `!! cjhirashi-career-ai/venv/...` (ignorado por `.gitignore:31 venv/`; entonces era `.venv`); ningún caché ni venv aparece como nuevo
+```
+
+**T-010 (rojo)** `pytest tests/unit/test_config.py --no-cov -q`:
+```
+tests/unit/test_config.py:22: in _settings
+    from config import Settings
+E   ModuleNotFoundError: No module named 'config'
+FAILED ...test_settings_loads_with_all_required_vars / test_memory_fts_config_defaults_to_spanish /
+       test_memory_fts_config_is_overridable / test_missing_required_var_fails_naming_it[5 variables] /
+       test_short_secret_key_is_rejected
+============================== 9 failed in 0.10s ===============================
+```
+**T-011 (verde):** `src/config.py`, `.env.example`, `tests/conftest.py` (variables mínimas antes de importar el singleton).
+```
+tests/unit/test_config.py .........                                      [100%]
+============================== 9 passed in 0.14s ===============================
+```
+
+**T-012 (rojo)** `pytest tests/unit/test_app_boot.py --no-cov -q`:
+```
+E   ModuleNotFoundError: No module named 'app'      (x4)
+E   FileNotFoundError: [Errno 2] No such file or directory: '.../cjhirashi-career-ai/src/app.py'
+E   ModuleNotFoundError: No module named 'routes'
+========================= 5 failed, 1 warning in 0.44s =========================
+```
+**T-013 (verde):** `src/app.py`, `src/routes/{__init__,health}.py`, `src/database.py`. Un primer intento dio
+`AttributeError: '_IncludedRouter' object has no attribute 'path'` (FastAPI 0.143 envuelve los routers
+incluidos); se corrigió el helper del test para comparar por identidad de `original_router`. Verde:
+```
+tests/unit/test_app_boot.py + tests/unit/test_config.py:  14 passed, 1 warning
+tests/unit/test_database.py (get_db commit/rollback, lifespan -> close_db; añadido para llevar database.py a >= 80 %):  3 passed
+```
+
+**T-014 (rojo)** `pytest tests/unit/models --no-cov -q`: `============================== 27 errors in 0.31s ===============================`
+(`ModuleNotFoundError: models`).
+**T-015 (verde)** `src/models/*` (10 modelos copiados con `sed`-equivalente sin `ForeignKey("users.id")` +
+`bedrock_agent_memory`, ver desviaciones D2/D3):
+```
+tests/unit/models/test_schema_matches_contract.py ...................... [ 81%]
+.....                                                                    [100%]
+============================== 27 passed in 0.49s ==============================
+grep -n "users\|ForeignKey(" src/models/*.py -> solo las 2 FK del contrato (bedrock_tasks.parent_id, bedrock_conversation_messages.conversation_id), ambas ON DELETE CASCADE
+```
+
+**T-016 (rojo)** `pytest tests/unit/services/test_id_generator.py --no-cov -q`, sin BD y con BD:
+```
+E   ModuleNotFoundError: No module named 'services'
+sin TEST_DATABASE_URL: 1 failed, 4 skipped            con TEST_DATABASE_URL: 1 failed, 4 errors
+```
+(skip con motivo: `necesita Postgres real (secuencias, tsvector, GIN): exporta TEST_DATABASE_URL=...`)
+**T-017 (verde)** `src/services/id_generator.py` + `register_id_listener(...)` en los 4 modelos con prefijo (bco/bcm/bct/btk/bam), contra el contenedor:
+```
+tests/unit/services/test_id_generator.py .....                           [100%]
+============================== 5 passed in 1.91s ===============================
+```
+(incluye `test_no_collision_after_setval`: ids `btk-5`,`btk-9` + `setval('btk_id_seq',9)` -> siguiente `btk-10`.)
+
+**T-018 (rojo)** `TEST_DATABASE_URL=... pytest tests/unit/migrations --no-cov -q`:
+```
+E   alembic.util.exc.CommandError: Path doesn't exist: .../cjhirashi-career-ai/alembic.  Please use the 'init' command...
+============================== 6 errors in 0.55s ===============================
+```
+**T-019 (verde)** `alembic.ini`, `alembic/env.py` (async), `alembic/script.py.mako`,
+`alembic/versions/0001_initial_harness_schema.py` (autogenerada contra el contenedor y revisada: añade
+las 5 secuencias `bco/bcm/bct/btk/bam_id_seq` y su `DROP` en downgrade; `search_vector` generada con
+`MEMORY_FTS_CONFIG`, validado `[a-z_]+`, por defecto `spanish`; índice GIN):
+```
+tests/unit/migrations/test_initial_migration.py ......                   [100%]
+============================== 6 passed in 3.55s ===============================
+```
+(12 tablas + secuencias; columnas/nullable/FK de la migración == metadatos de los modelos; generada `ALWAYS`
+con `to_tsvector` y `spanish`; GIN; FTS real `maratón` ~ `maratones`; unicidad `user_id+source_ref`;
+`downgrade base` deja solo `alembic_version` y sin secuencias.)
+
+**Suite completa del Bloque A**, sin BD (`pytest`): `42 passed, 10 skipped` (cifra de entonces; actual 50 passed, 12 skipped, ver última corrección) (los 10 con el motivo de arriba;
+cobertura 90.30 % entonces). Con el contenedor (`TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55433/postgres pytest`):
+```
+Name                                         Stmts   Miss  Cover   Missing
+src/app.py                                      11      0   100%
+src/config.py                                   14      0   100%
+src/database.py                                 19      1    95%   47
+src/models/__init__.py                          12      0   100%
+src/models/bedrock_agent_delegation.py          11      1    91%   23
+src/models/bedrock_agent_memory.py              21      1    95%   41
+src/models/bedrock_agent_profile_photo.py       10      1    90%   25
+src/models/bedrock_agent_profile_prompt.py      10      1    90%   33
+src/models/bedrock_agent_profile_tool.py        11      1    91%   35
+src/models/bedrock_conversation.py              31      2    94%   45, 60
+src/models/bedrock_custom_tool.py               15      1    93%   27
+src/models/bedrock_settings.py                  16      1    94%   37
+src/models/bedrock_task.py                      35      1    97%   64
+src/models/bedrock_usage_log.py                 17      1    94%   36
+src/models/bedrock_usage_round_log.py           19      0   100%
+src/routes/health.py                             5      0   100%
+src/services/id_generator.py                    11      0   100%
+TOTAL                                          268     12    96%
+Required test coverage of 80% reached. Total coverage: 95.52%
+======================== 55 passed, 1 warning in 5.09s =========================
+```
+`bash .harness/gate/check.sh; echo $?` -> `GATE_EXIT=0` (30 ok, 3 warn, 0 error). Nota: el bloque de
+`cjhirashi-career-ai` del gate sale `SKIP` ("pytest no instalado en su venv") porque `check.sh:149` solo
+busca `venv_test|venv|venv_run`, no `.venv`; no se tocó el gate. (Corregido abajo.)
+
+**Corrección post-Bloque A (2026-10-13): versiones fijadas y verificación real en Python 3.11.**
+- `pyproject.toml` fija las mismas versiones que `cjhirashi-career-api/requirements.txt`: fastapi 0.104.1,
+  uvicorn[standard] 0.24.0, sqlalchemy 2.0.23, asyncpg 0.29.0, alembic 1.12.1, pydantic 2.5.0,
+  pydantic-settings 2.1.0, python-dotenv 1.0.0, pyjwt 2.8.0, httpx 0.25.2; dev: pytest 7.4.3, pytest-cov 4.1.0,
+  pytest-asyncio 0.21.1, psycopg2-binary 2.9.9. Todo lo del harness existe en la API, no hubo pins nuevos.
+  Añadido `.dockerignore` (venv, cachés) para que `COPY . .` no meta el venv local en la imagen.
+- El test `test_app_boot.py` asumía `_IncludedRouter` (FastAPI 0.143); con 0.104 las rutas van aplanadas.
+  Helper ahora admite ambas formas (meta-test sigue detectando un router sin registrar).
+- `docker build -t career-ai-test:local .` (python:3.11-slim, `pip install .` con los pins): OK. Suite dentro
+  de un contenedor 3.11 desechable de esa imagen (root, `pip install ".[dev]"`), red desechable
+  `career-ai-testnet` (sin redes de producción) con `career-ai-testdb` (postgres:15-alpine, `--rm`, publicado en
+  127.0.0.1:55433), `TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@career-ai-testdb:5432/postgres`:
+```
+Python 3.11.15
+alembic 1.12.1 / asyncpg 0.29.0 / fastapi 0.104.1 / httpx 0.25.2 / pydantic 2.5.0 / PyJWT 2.8.0 /
+pytest 7.4.3 / pytest-asyncio 0.21.1 / SQLAlchemy 2.0.23
+platform linux -- Python 3.11.15, pytest-7.4.3 ... plugins: asyncio-0.21.1, cov-4.1.0, anyio-3.7.1
+src/app.py 100%  src/config.py 100%  src/database.py 95%  src/services/id_generator.py 100%
+src/models/* 90-100%
+TOTAL                                          268     12    96%
+Required test coverage of 80% reached. Total coverage: 95.52%
+============================== 55 passed in 7.88s ==============================
+```
+  Limpieza: `docker stop career-ai-testdb` (`--rm`), `docker network rm career-ai-testnet`, `docker rmi
+  career-ai-test:local`; `docker ps -a | grep -c career-ai` -> 0, `docker images | grep -c career-ai-test` -> 0.
+  No se usó `docker compose` ni se tocó ningún servicio.
+- Venv local: `.venv` eliminado y recreado como `cjhirashi-career-ai/venv` (el gate lo detecta, `check.sh:149`);
+  `git check-ignore -v venv/bin/python` -> `.gitignore:31:venv/`. Los pins NO instalan en Python 3.14 del host
+  (falla "Getting requirements to build wheel"), así que el venv local lleva las mismas librerías sin pin
+  (fastapi 0.143, pydantic 2.14, SQLAlchemy 2.1.4, pytest 9.1.1...): sirve para el gate y el desarrollo local;
+  la verificación con las versiones de producción es la de 3.11 de arriba. Sin `TEST_DATABASE_URL`:
+  `45 passed, 10 skipped` (los de Postgres se saltan con motivo).
+- Gate tras el cambio (`bash .harness/gate/check.sh; echo $?` sin pipe -> `GATE_EXIT=0`):
+```
+5· Bloques por perfil de arquitectura
+  ⏭️  cjhirashi-career-api · sin cambios — SKIP
+  → cjhirashi-career-ai · pytest
+  ✅ cjhirashi-career-ai · tests
+  ⏭️  cjhirashi-career-admin · sin cambios — SKIP
+Resumen: 31 ok · 3 warn · 0 error — ✅ Compuerta abierta.
+```
+
+**Correcciones del revisor al Bloque A (2026-10-13, test-first).** Postgres desechable
+(`postgres:15-alpine --rm`, `127.0.0.1:55433`, red bridge por defecto), parado al terminar; el venv es
+`cjhirashi-career-ai/venv` (cubierto por `.gitignore:31 venv/`).
+1. `MEMORY_FTS_CONFIG`: la migración leía solo `os.environ` y el modelo `settings` (que también lee `.env`).
+   Tests añadidos primero. Rojo (`pytest --no-cov -q`, con BD):
+```
+FAILED tests/unit/migrations/test_initial_migration.py::test_migration_uses_validated_settings_fts_config[english]
+FAILED tests/unit/test_config.py::test_invalid_fts_config_is_rejected[spanish'); drop]   (+ Spanish, es-ES, "", "english simple")
+=================== 6 failed, 56 passed, 1 warning in 7.27s ====================
+```
+   Código: `Settings` valida `MEMORY_FTS_CONFIG` con `field_validator` (`re.fullmatch(r"[a-z_]+")`); la migración
+   0001 usa `settings.MEMORY_FTS_CONFIG` (sin `os`/`re`), igual que el modelo. Test
+   `test_migration_search_vector_expression_equals_model` compara la `generation_expression` de la BD con
+   `Computed.sqltext` del modelo; `...uses_validated_settings_fts_config[english]` fija `settings` a `english` y
+   comprueba `'english'::regconfig` en la BD.
+2. `test_migrated_columns_match_model_metadata` compara ahora tipo compilado (incluye longitud) y nulabilidad.
+3. `test_get_db_rolls_back_and_reraises_on_error` usa una sesión falsa y afirma `calls == ["rollback", "close"]`.
+   (Los puntos 2 y 3 ya pasaban con el código existente: eran huecos de aserción, no de código.)
+Verde, con BD (`TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55433/postgres pytest`):
+```
+src/config.py                                   21      0   100%
+src/database.py                                 19      1    95%   47
+TOTAL                                          275     12    96%
+Required test coverage of 80% reached. Total coverage: 95.64%
+======================== 62 passed, 1 warning in 6.63s =========================
+```
+Sin BD (`pytest`): 
+```
+TOTAL                                          275     16    94%
+Required test coverage of 80% reached. Total coverage: 94.18%
+================== 50 passed, 12 skipped, 1 warning in 0.65s ===================
+```
+(los 12 skips son los de Postgres, con motivo). Cifras anteriores (42 passed / 90.30 %, 45 passed) quedan
+superadas. Nota: `pytest --cov` a secas mide también `tests/` (`--cov` sin fuente); usar siempre la
+configuración de `pytest.ini` (`--cov=src`), que es la que mide la cobertura por módulo del Art. 3.
+`bash .harness/gate/check.sh; echo $?` -> `GATE_EXIT=0` (`✅ cjhirashi-career-ai · tests`, 31 ok · 3 warn · 0 error).
+No se repitió la suite en la imagen 3.11 tras este cambio (solo `field_validator`, disponible en pydantic 2.5).

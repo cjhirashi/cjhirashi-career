@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cjhirashi-career-ai"
+version = "0.1.0"
+description = "Harness de agentes (chat, herramientas, tareas programadas) de cjhirashi-career, fuera de la API (spec 009)"
+requires-python = ">=3.11"
+dependencies = [
+    # Mismas versiones que cjhirashi-career-api/requirements.txt en lo compartido
+    "fastapi==0.104.1",
+    "uvicorn[standard]==0.24.0",
+    "sqlalchemy==2.0.23",
+    "asyncpg==0.29.0",
+    "alembic==1.12.1",
+    "pydantic==2.5.0",
+    "pydantic-settings==2.1.0",
+    "python-dotenv==1.0.0",
+    "pyjwt==2.8.0",
+    "httpx==0.25.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "pytest-asyncio==0.21.1",
+    "psycopg2-binary==2.9.9",
+]
+
+# Solo se instalan las dependencias; el código vive en src/ y se ejecuta con PYTHONPATH=/app/src
+# (mismo patrón que cjhirashi-career-api).
+[tool.setuptools]
+packages = []

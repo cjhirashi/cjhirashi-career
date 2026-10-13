@@ -61,6 +61,7 @@ python scripts/copy_from_career_db.py --source $SOURCE_DATABASE_URL --dest $AI_D
        [--direction api-to-ai|ai-to-api] [--report ai_copy_report.json] [--dry-run]
 ```
 
+- **Verificación de esquema previa:** compara `information_schema.columns` de `career_db` con el esquema de `career_ai_db` (tipo, longitud, nulabilidad); si difieren, falla sin copiar (los modelos del harness no llevan `server_default` y la BD dev de la API tiene `ALTER` directos).
 - Origen en **transacción `READ ONLY`**. Destino: `INSERT ... ON CONFLICT (pk) DO UPDATE`
   (idempotente, re-ejecutable), en orden de dependencias (conversations → messages;
   tasks por `parent_id`: raíces primero).
