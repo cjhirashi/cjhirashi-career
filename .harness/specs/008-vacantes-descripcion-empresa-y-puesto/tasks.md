@@ -120,22 +120,66 @@ explícita en ese momento.
 - [x] **T-070** `[ux]` (cubre RF-008, RF-009, RF-010) — revisión de `experto-ux-ui` según
   plan §7 (`helpText`, alto de áreas, posición, vacíos en la ficha, contador de
   caracteres, contraste). Resultado en `spec.md §8`. Los ajustes vuelven a T-051.
-- [ ] **T-071** `[verify]` **[REQUIERE OK DEL USUARIO]** (cubre RF-007) — BD real (plan
+- [x] **T-071** `[verify]` **[REQUIERE OK DEL USUARIO]** (cubre RF-007) — BD real (plan
   §3/§9): pre-chequeo `alembic_version` == `c7e1a4d92b60` y `\d vacancies`; `pg_dump -Fc`
   previo (ruta de backup registrada); `alembic upgrade head`; `\d vacancies` muestra las
   cuatro columnas `text` nullable y las filas existentes intactas. Si el pre-chequeo no
   cuadra: PARAR y reportar (sin `alembic stamp`).
-- [ ] **T-072** `[verify]` **[REQUIERE OK DEL USUARIO]** (cubre RF-001..RF-005, RNF-003) —
+- [x] **T-072** `[verify]` **[REQUIERE OK DEL USUARIO]** (cubre RF-001..RF-005, RNF-003) —
   rebuild de `api` y `admin` (`up -d --force-recreate --no-deps`, verificar `DATABASE_URL`),
   `GET /health` 200; CRUD en vivo con una vacante de prueba: crear con los cuatro campos,
   actualizar uno sin tocar los otros, limpiar uno con vacío/`null`, rechazo 422 con 10 001
   caracteres, consultar por GET. Borrar la vacante de prueba. Evidencia pegada.
-- [ ] **T-073** `[ops]` (cubre RF-006) — confirmar que **no** se hace reindex de la KB
+- [x] **T-073** `[ops]` (cubre RF-006) — confirmar que **no** se hace reindex de la KB
   (spec §2: no aplica) y registrar la exclusión transitoria como deuda a retirar en la spec
   009. Si el usuario pidiera reindex, requiere su autorización explícita (coste Bedrock,
   Art. 5).
 
 ## Evidencia (salida real pegada)
+
+**T-071 (2026-10-13, OK del usuario):** pre-chequeo `alembic_version` = `c7e1a4d92b60`;
+`vacancies` sin las cuatro columnas; 3 filas (vac-122, vac-137, vac-138). Backup
+`pg_dump -Fc` → `/mnt/disco2/cjhirashi-data/backups/career_db_pre_008_20261013_170216.dump`
+(903 650 B, 67 TABLE DATA). `docker compose run --rm --no-deps api` (imagen nueva,
+`DATABASE_URL` → `postgresql+asyncpg://***@postgres:5432/career_db`): `alembic current`
+`c7e1a4d92b60` → `upgrade head` → `d8f2b5a13c97 (head)`. Después:
+```
+candidate_profile|text|YES|
+company_overview|text|YES|
+offer_summary|text|YES|
+work_culture|text|YES|
+vac-122|applied|t
+vac-137|not_applied|t
+vac-138|not_applied|t
+```
+(filas intactas, las cuatro columnas en `NULL`).
+
+**T-072 (2026-10-13, OK del usuario):** `docker compose build api admin` →
+`up -d --force-recreate --no-deps api admin`; api `healthy`, `DATABASE_URL` →
+`career_db`; `GET /api/health` 200; Admin `/` 200. CRUD en vivo sobre
+`https://admin.cjhirashi.com/api/career/vacancies`:
+```
+== CREATE
+{'id': 'vac-142', 'company_overview': 'Empresa de prueba.\n\nSegundo párrafo.', 'candidate_profile': 'Python', 'offer_summary': 'Remoto', 'work_culture': 'Colaborativa'}
+== UPDATE solo offer_summary
+{'company_overview': 'Empresa de prueba.\n\nSegundo párrafo.', 'candidate_profile': 'Python', 'offer_summary': 'Remoto + bonos', 'work_culture': 'Colaborativa'}
+== LIMPIAR (vacío y null)
+{'company_overview': 'Empresa de prueba.\n\nSegundo párrafo.', 'candidate_profile': None, 'offer_summary': 'Remoto + bonos', 'work_culture': None}
+== 10001 chars
+{"detail":"Error de validación","errors":[{"type":"string_too_long","loc":["body","company_overview"],"msg":"String should have at most 10000 characters", …
+HTTP 422
+== 10000 chars
+HTTP 200
+== GET
+vac-142 'Empresa de prueba.\n\nSegundo párrafo.' None 10000 None
+== DELETE
+HTTP 204
+GET tras borrar HTTP 404
+```
+(el create con espacios al inicio/fin se guardó recortado; el 422 no alteró `company_overview`).
+
+**T-073:** sin reindex de la KB (spec §2). La exclusión transitoria de los cuatro campos en
+`_KB_EXCLUDED_COLUMNS` queda registrada como deuda a retirar por la spec 009 (RF-010 de 009).
 
 **T-070:** revisión UX sin bloqueantes; decisiones en `spec.md §8`; `helpText` breve aplicado en
 `careerResources.ts` (aserción en `vacanciesConfig.test.ts`).
@@ -168,17 +212,17 @@ after re-upgrade: {'candidate_profile': ('text', 'YES'), 'company_overview': ('t
 
 | RF / doc | Tareas | Test(s) | Estado |
 |---|---|---|---|
-| RF-001 | T-010, T-011, T-020, T-030, T-072 | test_vacancy_descriptive_texts | |
-| RF-002 | T-001, T-002, T-010, T-011, T-030 | test_vacancy_descriptive_texts | |
-| RF-003 | T-001, T-002, T-020, T-030 | test_vacancy_descriptive_texts | |
-| RF-004 | T-001, T-002, T-030, T-072 | test_vacancy_descriptive_texts | |
-| RF-005 | T-001, T-002, T-030, T-072 | test_vacancy_descriptive_texts | |
-| RF-006 | T-021, T-022, T-073 | test_vacancy_descriptive_texts | |
-| RF-007 | T-040, T-041, T-042, T-071 | test_vacancy_descriptive_texts_migration | |
-| RF-008 | T-050, T-051, T-052, T-070 | vacanciesConfig.test · VacancyDescriptiveTexts.test | |
-| RF-009 | T-052, T-070 | VacancyDescriptiveTexts.test | |
-| RF-010 | T-050, T-051, T-052, T-070 | vacanciesConfig.test · VacancyDescriptiveTexts.test | |
-| RNF-001 | T-043, T-053 | cobertura ≥ 80 % por módulo (pytest-cov / Vitest) | |
-| RNF-002 | T-001, T-021 | tests sin Bedrock ni Qdrant reales | |
-| RNF-003 | T-071, T-072 | verificación en vivo (evidencia pegada) | |
-| doc: career-search/README | T-060 | — | |
+| RF-001 | T-010, T-011, T-020, T-030, T-072 | test_vacancy_descriptive_texts | Pass |
+| RF-002 | T-001, T-002, T-010, T-011, T-030 | test_vacancy_descriptive_texts | Pass |
+| RF-003 | T-001, T-002, T-020, T-030 | test_vacancy_descriptive_texts | Pass |
+| RF-004 | T-001, T-002, T-030, T-072 | test_vacancy_descriptive_texts | Pass |
+| RF-005 | T-001, T-002, T-030, T-072 | test_vacancy_descriptive_texts | Pass |
+| RF-006 | T-021, T-022, T-073 | test_vacancy_descriptive_texts | Pass |
+| RF-007 | T-040, T-041, T-042, T-071 | test_vacancy_descriptive_texts_migration | Pass |
+| RF-008 | T-050, T-051, T-052, T-070 | vacanciesConfig.test · VacancyDescriptiveTexts.test | Pass |
+| RF-009 | T-052, T-070 | VacancyDescriptiveTexts.test | Pass |
+| RF-010 | T-050, T-051, T-052, T-070 | vacanciesConfig.test · VacancyDescriptiveTexts.test | Pass |
+| RNF-001 | T-043, T-053 | cobertura ≥ 80 % por módulo (pytest-cov / Vitest) | Pass |
+| RNF-002 | T-001, T-021 | tests sin Bedrock ni Qdrant reales | Pass |
+| RNF-003 | T-071, T-072 | verificación en vivo (evidencia pegada) | Pass |
+| doc: career-search/README | T-060 | — | hecho |
