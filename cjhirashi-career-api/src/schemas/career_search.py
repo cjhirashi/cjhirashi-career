@@ -7,6 +7,7 @@ cover_letter_versions, applications, application_interactions, interviews,
 contact_interactions, networking_activities.
 """
 from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic_core import PydanticCustomError
 from typing import Optional, List, Dict, Any, Literal
 from datetime import date, datetime
 
@@ -363,7 +364,9 @@ class VacancyUpdate(BaseModel):
     def _process_stage_not_null(self):
         # Omitir la etapa es válido (no cambia); enviarla como null no (RF-002).
         if "process_stage" in self.model_fields_set and self.process_stage is None:
-            raise ValueError("process_stage no puede ser null")
+            # PydanticCustomError (no ValueError): su detalle es serializable por el
+            # handler global de 422; un ValueError dejaba un objeto en ctx -> 500.
+            raise PydanticCustomError("process_stage_not_null", "process_stage no puede ser null")
         return self
 
 

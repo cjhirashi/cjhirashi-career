@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import Base
+from services.vacancy_stage import prepare_vacancy_write, stages_for_statuses
 
 # ============================================================================
 # Imports y tipos genéricos
@@ -32,6 +33,12 @@ logger = logging.getLogger(__name__)
 _VIRTUAL_FIELDS = {
     "work-history": frozenset({"achievement_ids"}),
     "agent-tasks": frozenset({"subtasks"}),
+}
+
+# Columnas que no se vuelcan al texto indexado en la KB (spec 007, D-13): la fecha
+# de cambio de etapa es ruido para la búsqueda semántica y forzaría reindexar.
+_KB_EXCLUDED_COLUMNS = {
+    "vacancies": frozenset({"process_stage_updated_at"}),
 }
 
 # ============================================================================
@@ -116,6 +123,15 @@ class CareerRepository(Generic[ModelType]):
         if not filters:
             return stmt
         for field, raw in filters.items():
+            if field == "vacancy_status" and self.resource_key == "vacancies":
+                # Clave virtual (spec 007): el estado se calcula, no es columna.
+                # Se expande a las etapas del mismo mapeo; un estado inválido
+                # no devuelve filas (no se ignora el filtro). AND con process_stage.
+                states = raw if isinstance(raw, list) else [raw]
+                states = [str(item) for item in states if item is not None and item != ""]
+                if states:
+                    stmt = stmt.where(self.model.process_stage.in_(stages_for_statuses(states)))
+                continue
             if field not in self._column_names or field in ("id", "user_id"):
                 continue
             column = getattr(self.model, field)
@@ -264,6 +280,10 @@ class CareerRepository(Generic[ModelType]):
         data = dict(data)
         data.pop("user_id", None)
         virtual = self._pop_virtual_fields(data)
+        if self.resource_key == "vacancies":
+            # Mismas reglas para REST y tools de Bedrock (spec 007): valida la etapa,
+            # descarta campos de sólo lectura y fija process_stage_updated_at.
+            data = prepare_vacancy_write(data)
         if self.resource_key == "agent-tasks":
             await self._validate_task_parent(db, user_id, data.get("parent_id"))
         if self.resource_key == "projects" and "competency_ids" in data:
@@ -289,6 +309,8 @@ class CareerRepository(Generic[ModelType]):
         data = dict(data)
         data.pop("user_id", None)
         virtual = self._pop_virtual_fields(data)
+        if self.resource_key == "vacancies":
+            data = prepare_vacancy_write(data, current_stage=obj.process_stage)
         if self.resource_key == "agent-tasks" and "parent_id" in data:
             await self._validate_task_parent(db, user_id, data.get("parent_id"), item_id)
         if self.resource_key == "projects" and "competency_ids" in data:
@@ -449,7 +471,10 @@ class CareerRepository(Generic[ModelType]):
         """Flatten a record into `column: value` lines for embedding - every
         column except `id`/`user_id`, skipping empty values."""
         lines = []
+        excluded = _KB_EXCLUDED_COLUMNS.get(self.resource_key or "", frozenset())
         for col in self._indexable_columns:
+            if col in excluded:
+                continue
             value = getattr(obj, col, None)
             if value not in (None, "", []):
                 lines.append(f"{col}: {value}")

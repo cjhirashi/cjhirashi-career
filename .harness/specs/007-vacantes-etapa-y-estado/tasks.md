@@ -48,37 +48,37 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 ## Bloque C — API: repositorio (escritura, filtro, KB)
 
-- [ ] **T-020** `[test]` (cubre RF-001, RF-002, RF-003, RF-005, RF-021, RF-022, RF-023) —
+- [x] **T-020** `[test]` (cubre RF-001, RF-002, RF-003, RF-005, RF-021, RF-022, RF-023) —
   mismo archivo, con `db_session`: `CareerRepository` de `vacancies` (vía tools): create
   sin etapa, etapa inválida → `ValueError` sin `IntegrityError` ni sesión rota,
   `vacancy_status`/`process_stage_updated_at` en `data` ignorados, update de otro campo y
   update con la misma etapa no mueven la fecha, update con etapa nueva sí. Rojo.
-- [ ] **T-021** `[code]` (mismos RF) — rama `resource_key == "vacancies"` en
+- [x] **T-021** `[code]` (mismos RF) — rama `resource_key == "vacancies"` en
   `create_for_user`/`update_for_user` de `src/repositories/career_repository.py` que delega
   en `prepare_vacancy_write`. Verde T-020.
-- [ ] **T-022** `[test]` (cubre RF-017) — mismo archivo: `list`/`count` con filtro
+- [x] **T-022** `[test]` (cubre RF-017) — mismo archivo: `list`/`count` con filtro
   `vacancy_status` (cada estado; dos estados) devuelven exactamente las etapas del
   contrato; estado inválido → 0 filas; `vacancy_status` + `process_stage` se intersectan;
   `count` == `len(list)`; regresión R-6: el filtro por columna de otro recurso no cambia.
   Rojo.
-- [ ] **T-023** `[code]` (cubre RF-017) — expansión de `vacancy_status` en
+- [x] **T-023** `[code]` (cubre RF-017) — expansión de `vacancy_status` en
   `_apply_filters`, sólo para `vacancies`. Verde T-022.
-- [ ] **T-024** `[test]` (cubre RF-023, D-13) — mismo archivo: `_record_to_text` de una
+- [x] **T-024** `[test]` (cubre RF-023, D-13) — mismo archivo: `_record_to_text` de una
   `Vacancy` contiene `process_stage` y no contiene `process_stage_updated_at` ni
   `vacancy_status`. Rojo.
-- [ ] **T-025** `[code]` (cubre RF-023, D-13) — `_KB_EXCLUDED_COLUMNS` en
+- [x] **T-025** `[code]` (cubre RF-023, D-13) — `_KB_EXCLUDED_COLUMNS` en
   `_record_to_text`. Verde T-024.
 
 ## Bloque D — API: ruta HTTP y job discovery
 
-- [ ] **T-030** `[test]` (cubre RF-001..005, RF-017, RF-021..023) — mismo archivo, con
+- [x] **T-030** `[test]` (cubre RF-001..005, RF-017, RF-021..023) — mismo archivo, con
   `async_client` + JWT sobre `/career/vacancies`: POST/PUT con cada etapa del contrato
   devuelve el valor + `vacancy_status`; etapa inválida → 422 RFC 9457 y GET posterior sin
   cambio; `process_stage: null` → 422; POST/PUT con `vacancy_status`/
   `process_stage_updated_at` no se persisten; GET con `filters={"vacancy_status":[...]}`.
   Si exige Postgres, usar el fixture PG-only existente. Debe quedar verde sin código nuevo
   (lo cubren T-003..T-025); si falla, se corrige en la capa responsable.
-- [ ] **T-031** `[test]` (cubre RF-003) — mismo archivo: la vacante guardada por
+- [x] **T-031** `[test]` (cubre RF-003) — mismo archivo: la vacante guardada por
   `services/job_discovery/service.py` queda `not_applied` con fecha de etapa. Verde sin
   cambio de código.
 
