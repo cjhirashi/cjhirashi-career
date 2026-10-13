@@ -38,7 +38,15 @@ _VIRTUAL_FIELDS = {
 # Columnas que no se vuelcan al texto indexado en la KB (spec 007, D-13): la fecha
 # de cambio de etapa es ruido para la búsqueda semántica y forzaría reindexar.
 _KB_EXCLUDED_COLUMNS = {
-    "vacancies": frozenset({"process_stage_updated_at"}),
+    "vacancies": frozenset({
+        "process_stage_updated_at",
+        # Spec 008, RF-006: textos largos descriptivos, fuera de la KB por ahora.
+        # TRANSITORIO: se retira con la spec 009 (que decide su indexado).
+        "company_overview",
+        "candidate_profile",
+        "offer_summary",
+        "work_culture",
+    }),
 }
 
 # ============================================================================

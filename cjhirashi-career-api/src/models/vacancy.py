@@ -79,6 +79,12 @@ class Vacancy(Base):
         String(20), ForeignKey("networking_contacts.id", ondelete="SET NULL"), nullable=True
     )
 
+    # Textos descriptivos de la vacante (spec 008): sin default, NULL = sin dato.
+    company_overview = Column(Text, nullable=True)
+    candidate_profile = Column(Text, nullable=True)
+    offer_summary = Column(Text, nullable=True)
+    work_culture = Column(Text, nullable=True)
+
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

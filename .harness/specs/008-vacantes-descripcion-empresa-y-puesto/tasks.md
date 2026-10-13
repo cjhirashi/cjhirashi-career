@@ -21,42 +21,42 @@ explícita en ese momento.
 
 ## Bloque A — API: schemas (normalización y tope)
 
-- [ ] **T-001** `[test]` (cubre RF-002, RF-003, RF-004, RF-005) —
+- [x] **T-001** `[test]` (cubre RF-002, RF-003, RF-004, RF-005) —
   `tests/unit/test_vacancy_descriptive_texts.py`, capa schemas: Create/Update aceptan los
   cuatro campos; `""`, `"   "`, `"\n\t"` → `None`; `"  hola  "` → `"hola"`; saltos de línea
   internos, viñetas y emojis intactos; 10 000 caracteres válido, 10 001 →
   `ValidationError` (el tope se mide tras el trim); `VacancyResponse` sin valores expone
   las cuatro claves con `None`; Update que omite un campo no lo incluye en
   `model_dump(exclude_unset=True)`; `null` explícito sí lo incluye. Rojo.
-- [ ] **T-002** `[code]` (cubre RF-002, RF-003, RF-004, RF-005) —
+- [x] **T-002** `[code]` (cubre RF-002, RF-003, RF-004, RF-005) —
   `src/schemas/career_search.py`: normalizador `_trim_or_none` + `StringConstraints(max_length=10_000)`,
   campos en `VacancyBase` y `VacancyUpdate` (plan §1). Verde T-001.
 
 ## Bloque B — API: modelo
 
-- [ ] **T-010** `[test]` (cubre RF-001, RF-002) — mismo archivo, con `db_session`: una
+- [x] **T-010** `[test]` (cubre RF-001, RF-002) — mismo archivo, con `db_session`: una
   `Vacancy` guarda y relee los cuatro campos (texto multilínea de ≥ 5 000 caracteres); sin
   valores quedan `None`. Rojo.
-- [ ] **T-011** `[code]` (cubre RF-001, RF-002) — `src/models/vacancy.py`: cuatro
+- [x] **T-011** `[code]` (cubre RF-001, RF-002) — `src/models/vacancy.py`: cuatro
   `Column(Text, nullable=True)` sin default. Verde T-010.
 
 ## Bloque C — API: repositorio y KB
 
-- [ ] **T-020** `[test]` (cubre RF-001, RF-003, RF-004, RF-005) — mismo archivo, repositorio
+- [x] **T-020** `[test]` (cubre RF-001, RF-003, RF-004, RF-005) — mismo archivo, repositorio
   de `vacancies` con `db_session`: create/update persisten los cuatro; update de otro campo
   no los altera. Documenta D-07: por la vía del repositorio (tools) no hay trim ni tope
   (caracterización, no contrato). Debe quedar verde sin código nuevo.
-- [ ] **T-021** `[test]` (cubre RF-006) — mismo archivo: `_record_to_text(Vacancy con los
+- [x] **T-021** `[test]` (cubre RF-006) — mismo archivo: `_record_to_text(Vacancy con los
   cuatro campos rellenos)` no contiene sus nombres ni su texto; sí contiene `process_stage`
   y `analysis_notes`; `process_stage_updated_at` sigue excluida (no regresión 007 D-13).
   Sin Bedrock ni Qdrant. Rojo.
-- [ ] **T-022** `[code]` (cubre RF-006) — `src/repositories/career_repository.py`:
+- [x] **T-022** `[code]` (cubre RF-006) — `src/repositories/career_repository.py`:
   ampliar `_KB_EXCLUDED_COLUMNS["vacancies"]` con los cuatro campos, con comentario
   `# TRANSITORIO: se retira con la spec 009`. Verde T-021.
 
 ## Bloque D — API: ruta HTTP
 
-- [ ] **T-030** `[test]` (cubre RF-001..RF-005) — mismo archivo, con `async_client` + JWT
+- [x] **T-030** `[test]` (cubre RF-001..RF-005) — mismo archivo, con `async_client` + JWT
   sobre `/career/vacancies`: POST/PUT con cada campo y con los cuatro a la vez devuelve y
   persiste (GET posterior igual); respuestas sin valores traen `null`; PUT que cambia sólo
   `company` o sólo un campo no toca los otros; `null` explícito borra; vacío/espacios →
@@ -67,19 +67,19 @@ explícita en ese momento.
 
 ## Bloque E — API: migración `d8f2b5a13c97`
 
-- [ ] **T-040** `[test]` (cubre RF-007) —
+- [x] **T-040** `[test]` (cubre RF-007) —
   `tests/unit/test_vacancy_descriptive_texts_migration.py` con dobles (patrón
   `test_vacancy_process_stage_migration.py`): `down_revision == "c7e1a4d92b60"`; upgrade
   emite `ADD COLUMN` de las cuatro (`TEXT NULL`) y ninguna sentencia `UPDATE`; idempotente
   (no repite si existen); downgrade elimina las cuatro sólo si existen. Rojo.
-- [ ] **T-041** `[code]` (cubre RF-007) —
+- [x] **T-041** `[code]` (cubre RF-007) —
   `alembic/versions/d8f2b5a13c97_vacancy_descriptive_texts.py` según plan §3. Antes,
   re-verificar con script que `c7e1a4d92b60` sigue siendo el único head. Verde T-040.
-- [ ] **T-042** `[verify]` (cubre RF-007) — en un clon **desechable** de Postgres
+- [x] **T-042** `[verify]` (cubre RF-007) — en un clon **desechable** de Postgres
   (`TEST_DATABASE_URL`): con filas previas, upgrade → columnas `text` nullable, filas
   intactas con `NULL`; downgrade → columnas fuera; upgrade de nuevo. Salida pegada. Nunca en
   prod.
-- [ ] **T-043** `[test]` regresión API — `pytest` completo de la API (incluye
+- [x] **T-043** `[test]` regresión API — `pytest` completo de la API (incluye
   `test_vacancy_process_stage.py`, `test_vacancy_duplicate_url.py`,
   `test_vacancy_target_company_fk.py`, `test_job_discovery.py`). Salida pegada, 0 fallos.
   Grep de `vacancies` fuera de la API en `cjhirashi-career-ai` y Portfolio: sin impacto.

@@ -6,9 +6,9 @@ networking_contacts, target_companies, vacancies, cv_versions,
 cover_letter_versions, applications, application_interactions, interviews,
 contact_interactions, networking_activities.
 """
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, BeforeValidator, Field, StringConstraints, computed_field, model_validator
 from pydantic_core import PydanticCustomError
-from typing import Optional, List, Dict, Any, Literal
+from typing import Annotated, Optional, List, Dict, Any, Literal
 from datetime import date, datetime
 
 from services.vacancy_stage import ProcessStage, VacancyStatus, vacancy_status_for
@@ -300,6 +300,23 @@ class TargetCompanyResponse(TargetCompanyBase):
 EvaluationLiteral = Literal["apply", "do_not_apply", "pending_review"]
 ProcessStageLiteral = ProcessStage
 
+# Spec 008: textos descriptivos largos de la vacante. Se recortan los bordes, el
+# vacío pasa a None y el tope (RF-005) se mide DESPUÉS del recorte.
+VACANCY_LONG_TEXT_MAX = 10_000
+
+
+def _trim_or_none(value: Any) -> Any:
+    if isinstance(value, str):
+        value = value.strip()
+        return value or None
+    return value  # no-str: que Pydantic lo rechace
+
+
+VacancyLongText = Annotated[
+    Optional[Annotated[str, StringConstraints(max_length=VACANCY_LONG_TEXT_MAX)]],
+    BeforeValidator(_trim_or_none),
+]
+
 
 class VacancyBase(BaseModel):
     order_number: Optional[int] = None
@@ -327,6 +344,10 @@ class VacancyBase(BaseModel):
     priority: Optional[str] = Field(None, max_length=10)
     contracting_model: Optional[str] = Field(None, max_length=50)
     contact_id: Optional[str] = None
+    company_overview: VacancyLongText = None
+    candidate_profile: VacancyLongText = None
+    offer_summary: VacancyLongText = None
+    work_culture: VacancyLongText = None
 
 
 class VacancyCreate(VacancyBase):
@@ -359,6 +380,10 @@ class VacancyUpdate(BaseModel):
     priority: Optional[str] = None
     contracting_model: Optional[str] = None
     contact_id: Optional[str] = None
+    company_overview: VacancyLongText = None
+    candidate_profile: VacancyLongText = None
+    offer_summary: VacancyLongText = None
+    work_culture: VacancyLongText = None
 
     @model_validator(mode="after")
     def _process_stage_not_null(self):
