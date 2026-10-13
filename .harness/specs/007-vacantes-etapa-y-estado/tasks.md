@@ -126,8 +126,9 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
   `src/components/career/CareerResourceView.tsx`: prioridad opt-in de la rama badge con
   `badgeLabel` en `renderListCell`; `listHeaderExtra` busca en `filterFields` y luego en
   `fields`. Verde T-052.
-- [ ] **T-054** `[test]` regresión Admin — suite Vitest completa + `npm run type-check` +
-  `npm run lint`. Salida pegada, 0 fallos.
+- [x] **T-054** `[test]` regresión Admin — suite Vitest completa + `npm run type-check` +
+  `npm run lint` **sin errores nuevos en los archivos tocados** (D-16). Salida pegada,
+  0 fallos de Vitest/type-check.
   *Nota (Fase 4):* Vitest completa 468/468 y `type-check` limpio. `npm run lint` falla por
   deuda **preexistente**: HEAD tiene 228 problemas; 007 suma +2 sólo por la regla
   `@typescript-eslint/explicit-function-return-types` (no encontrada) en los 2 tests
@@ -136,6 +137,17 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
   edit-in-place) > goes back to the table when the Lista tab is clicked from the view`:
   timing bajo carga (aislado pasa 30/30, con y sin 007; la 2.ª corrida completa dio 468/468),
   no causado por 007.
+  *Re-ejecución tras T-055/T-056:* Vitest 485/485, `type-check` limpio, lint 231 problemas
+  (HEAD 228 + 3 tests nuevos, cada uno sólo por la regla rota); 0 errores nuevos reales.
+- [x] **T-055** `[test]` (cubre RF-018, D-15) — `src/tests/styles/badgeContrast.test.ts`:
+  lee `src/index.css` por fs, extrae los tokens `--{warning,success,error,secondary}-text`
+  y `-bg` de los temas claro y oscuro, compone el fondo translúcido sobre las bases de
+  superficie de cada tema y afirma ratio WCAG ≥ 4.5:1 para cada variante usada por los
+  badges de Vacantes. Rojo esperado con los tokens actuales del tema claro.
+- [x] **T-056** `[code]` (cubre RF-018, D-15) — oscurecer en el tema claro de
+  `src/index.css` sólo `--warning-text: #92400e`, `--success-text: #065f46`,
+  `--error-text: #b91c1c`. ADR `docs/09-DECISIONS/028-contraste-tokens-semanticos-admin.md`
+  + índice `docs/09-DECISIONS/README.md`. Verde T-055; re-ejecutar T-054.
 
 ## Bloque G — Documentación
 
@@ -184,7 +196,7 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 | RF-015 | T-050, T-051, T-070 | vacanciesConfig.test | — |
 | RF-016 | T-050, T-051, T-070 | vacanciesConfig.test | — |
 | RF-017 | T-001, T-003, T-022, T-023, T-030, T-050, T-051, T-052, T-053, T-072 | test_vacancy_process_stage · vacanciesConfig.test · VacancyBadges.test | — |
-| RF-018 | T-050, T-070 | vacanciesConfig.test · revisión UX (contraste medido) | — |
+| RF-018 | T-050, T-055, T-056, T-070 | vacanciesConfig.test · badgeContrast.test · revisión UX (contraste medido) | — |
 | RF-019 | T-050, T-051, T-052, T-053 | vacanciesConfig.test · VacancyBadges.test | — |
 | RF-020 | T-050, T-051, T-052 | vacanciesConfig.test · VacancyBadges.test | — |
 | RF-021 | T-002, T-003, T-020, T-021, T-030, T-072 | test_vacancy_process_stage | — |

@@ -52,13 +52,13 @@
 
     /* Semantic */
     --error-bg: rgba(220, 38, 38, 0.1);
-    --error-text: #dc2626;
+    --error-text: #b91c1c;
     --error-border: rgba(220, 38, 38, 0.2);
     --warning-bg: rgba(217, 119, 6, 0.1);
-    --warning-text: #d97706;
+    --warning-text: #92400e;
     --warning-border: rgba(217, 119, 6, 0.2);
     --success-bg: rgba(5, 150, 105, 0.1);
-    --success-text: #059669;
+    --success-text: #065f46;
     --success-border: rgba(5, 150, 105, 0.2);
 
     /* Elevation */

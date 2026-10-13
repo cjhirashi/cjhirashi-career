@@ -129,6 +129,13 @@ actualizado: 2026-09-04
   (Constitución) y además da **500** si un validador lanza `ValueError` (`ctx.error` no
   serializable; arreglo de raíz: `jsonable_encoder(exc.errors())`). Afectados probables:
   `schemas/bedrock_task.py`, `career_methodologies.py`, `user.py`. Feature SDD aparte.
+- **[2026-10-13] Deuda (decisión del usuario, 007 D-16):** `npm run lint` del Admin falla
+  en todo el repo (228 problemas en HEAD 42b79f26): la regla
+  `@typescript-eslint/explicit-function-return-types` no existe en el plugin instalado
+  (config rota) + `formatCellValue` sin usar en `CareerResourceView.tsx:54`. Arreglo de
+  configuración ESLint: tarea aparte.
+- **[2026-10-13] Deuda (revisión UX 007, §8.1):** `formatDate` del Admin usa locale
+  `en-US` en una UI en español (global, preexistente).
 - Deuda: `test_auth_integration.py` (hoy `skip`) contra el esquema de rutas actual;
   `cjhirashi-career-ai` sin suite; reescritura narrativa del arc42 sin el Canal 3 (ADR-023).
 - **[2026-09-04] Feature `002-generacion-imagenes-agente-visual` — CERRADA

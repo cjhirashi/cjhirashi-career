@@ -21,6 +21,10 @@ covers:
   - cjhirashi-career-admin/src/tests/components/career/VacancyBadges.test.tsx
   - cjhirashi-career-api/docs/sections/career-search/README.md
   - docs/05-BUILDING-BLOCK-VIEW.md
+  - docs/09-DECISIONS/028-contraste-tokens-semanticos-admin.md
+  - docs/09-DECISIONS/README.md
+  - cjhirashi-career-admin/src/index.css
+  - cjhirashi-career-admin/src/tests/styles/badgeContrast.test.ts
   - .harness/specs/007-vacantes-etapa-y-estado/**
 ---
 
@@ -178,6 +182,19 @@ Fronteras:
   API** (handler global `app.py:144-162`); se trata en una tarea aparte (deuda en
   `state.md`). *Descartado:* migrar el handler global dentro de 007 (cambia la respuesta
   de error de todas las rutas).
+- **D-15 (usuario, 2026-10-13, Fase 4):** la revisión UX (§8.1, B-1) midió en el tema
+  claro warning 2.71, success 3.16 y error 3.90 (< 4.5:1). Se oscurecen **sólo** los tokens
+  del tema claro `--warning-text` → `#92400e`, `--success-text` → `#065f46` y
+  `--error-text` → `#b91c1c` en `cjhirashi-career-admin/src/index.css`; el tema oscuro no
+  cambia. Efecto global: mejora todos los badges y textos semánticos del Admin. Se registra
+  en ADR `docs/09-DECISIONS/028-contraste-tokens-semanticos-admin.md`. *Descartado:*
+  aceptar el contraste como deuda; usar sólo `slate` en Vacantes (pierde la distinción
+  por color).
+- **D-16 (usuario, 2026-10-13, Fase 4):** el criterio de lint de T-054 pasa a "sin errores
+  de lint nuevos en los archivos tocados". La configuración rota de ESLint (regla
+  `@typescript-eslint/explicit-function-return-types` no encontrada, 228 problemas en
+  HEAD) es deuda preexistente registrada en `state.md`. *Descartado:* arreglar la
+  configuración de ESLint dentro de 007 (amplía el alcance).
 
 ## 8 · UX (Admin)
 
@@ -212,7 +229,9 @@ campo. **Alternativa mínima:** añadir a `ColumnConfig` un `badgeLabel?: (v) =>
   habilite NO DEBE aparecer en el formulario. La Etapa DEBE ser filtrable por sus 13
   valores. No se exige ordenar por Estado ni por orden canónico de Etapa (D-11).
 - **RF-018** Cada badge DEBE tener contraste de texto ≥ 4.5:1 sobre su fondo (WCAG 2.1 AA)
-  usando únicamente los colores del componente `Badge` existente; no se añaden colores nuevos.
+  en los temas claro y oscuro, usando únicamente las variantes del componente `Badge`
+  existente; no se añaden variantes nuevas. Se permite ajustar el tono de los tokens
+  `--*-text` existentes para alcanzar el umbral (D-15).
 - **RF-019** SI `process_stage` está vacío o fuera de catálogo en el cliente, ENTONCES
   el badge DEBE mostrar "Sin definir" en `slate`, sin romper la fila.
 - **RF-020** El formulario DEBE mostrar `vacancy_status` sólo como texto informativo no
@@ -224,3 +243,106 @@ campo. **Alternativa mínima:** añadir a `ColumnConfig` un `badgeLabel?: (v) =>
 
 Nota: `success` para `offer` coincide con `badgeByStatusGeneric`. §5 resuelto (D-06,
 D-07): RF-012 no cambia.
+
+### 8.1 · Revisión UX de Fase 4 (T-070, `experto-ux-ui`, 2026-10-13)
+
+Informe, no aprobación: nada queda `verified` por esta revisión.
+
+**Cómo se midió.** Los badges no usan clases Tailwind sino CSS propio (`.badge-*` en
+`cjhirashi-career-admin/src/index.css:882-914`) con variables (`:root` líneas 43-62,
+`[data-theme='dark']` líneas 112-131). Los fondos son translúcidos, así que se compuso el
+fondo sobre dos bases por tema (alpha-blending) y se aplicó la fórmula WCAG 2.1 (script en
+el scratchpad de la sesión; salida real abajo). Variantes realmente usadas por Vacantes:
+`slate` (Por postular, Cerrada, Sin postular, Sin definir, retirado, sin respuesta),
+`warning` (En proceso, etapas 1-6 y 8), `success` (Contratado, Oferta), `error` (Rechazado).
+`cyan` se mide como referencia (no la usa Vacantes).
+
+| Tema | Base | Variante | Texto | Fondo compuesto | Ratio | AA 4.5 |
+|---|---|---|---|---|---|---|
+| claro | blanco #ffffff | slate | #475569 | #ffffff | 7.58 | OK |
+| claro | blanco | warning | #d97706 | #fbf1e6 | 2.86 | FALLA |
+| claro | blanco | success | #059669 | #e6f4f0 | 3.34 | FALLA |
+| claro | blanco | error | #dc2626 | #fce9e9 | 4.14 | FALLA |
+| claro | página #f0fafb | slate | #475569 | #fafdfe | 7.42 | OK |
+| claro | página | warning | #d97706 | #eeede2 | 2.71 | FALLA |
+| claro | página | success | #059669 | #d8f0ec | 3.16 | FALLA |
+| claro | página | error | #dc2626 | #eee5e6 | 3.90 | FALLA |
+| claro | página | cyan (ref.) | #0891b2 | #d9f0f4 | 3.10 | FALLA |
+| oscuro | página #071018 | slate | #a3b6c0 | #0a161f | 8.74 | OK |
+| oscuro | página | warning | #fbbf24 | #2b2516 | 9.11 | OK |
+| oscuro | página | success | #34d399 | #082928 | 8.01 | OK |
+| oscuro | página | error | #f87171 | #2a181f | 6.09 | OK |
+| oscuro | card sobre página | slate | #a3b6c0 | #0d1a25 | 8.37 | OK |
+| oscuro | card | warning | #fbbf24 | #333327 | 7.67 | OK |
+| oscuro | card | success | #34d399 | #103739 | 6.71 | OK |
+| oscuro | card | error | #f87171 | #322530 | 5.25 | OK |
+| oscuro | card | cyan (ref.) | #06b6d4 | #133d4b | 4.83 | OK |
+
+Corrección candidata (tema claro; ratio sobre blanco / sobre página): warning `#92400e`
+6.38 / 6.02; success `#065f46` 6.81 / 6.45 (`#047857` 4.86 / 4.60 también pasa);
+error `#b91c1c` 5.54 / 5.23. (`#b45309` NO basta: 4.52 / 4.26.)
+
+**Veredicto por RF**
+
+| RF | Veredicto | Evidencia |
+|---|---|---|
+| RF-010 | Cumple | columnas Estado y Etapa con badge (`careerResources.ts:1180-1196`) |
+| RF-011 | Cumple (revisión de código) | selector `select` con 13 opciones en `VACANCY_STAGE_OPTIONS`; sin campo de estado |
+| RF-012 | Cumple | `vacancyStatusBadgeColor` (:1170) + `vacancyStatusLabel`; texto en español |
+| RF-013 | Cumple | `vacancyStageBadgeColor` (:1161) coincide con la regla |
+| RF-014 | Cumple | `badgeLabel` en `CareerResourceView.tsx:1256-1260`; el texto siempre acompaña al color |
+| RF-015 | Cumple | orden de columnas en :1176-1205 |
+| RF-016 | Cumple | etiqueta y helpText literales (:1255-1262) |
+| RF-017 | Cumple (UI) | `filterFields` (:1205) + `listHeaderExtra` (`CareerResourceView.tsx:1280`); el efecto en API es de otra tarea |
+| RF-018 | **NO CUMPLE** | tema claro: warning/success/error entre 2.71 y 4.14 |
+| RF-019 | Cumple | `?? 'Sin definir'` y `slate` para valores nulos o fuera de catálogo |
+| RF-020 | Cumple | no hay control de `vacancy_status` en `fields` |
+| RF-025 | Cumple con matiz | `format: 'date'`, no es campo del formulario; ver R-3 |
+
+**Hallazgos**
+
+- **B-1 (bloqueante) · RF-018 incumplido en tema claro.** `--warning-text`, `--success-text`
+  y `--error-text` (`index.css:55,58,61`) sobre su fondo al 10% no llegan a 4.5:1; la
+  etapa más frecuente (`warning`, 8 de 13) es la peor (2.71-2.86). El oscuro cumple. El
+  RF-018 pide además «no añadir colores nuevos», y esa cláusula no se puede cumplir junto
+  con el umbral: hay que decidir. Corrección propuesta: oscurecer sólo los tres tokens
+  `*-text` del tema claro con los valores de arriba (cambia todos los badges del Admin,
+  que hoy fallan igual), o fijar los badges de Vacantes con una variante local. Lo primero
+  es más coherente; registrar la decisión en un ADR de diseño y reformular RF-018.
+  Los bordes (`*-border`) son decorativos y no entran en la medición.
+- **R-1 (recomendado) · Dos badges `slate` con sentido distinto.** «Por postular» y
+  «Cerrada» (y «Sin postular» frente a «Me retiré»/«Sin respuesta») se distinguen sólo por
+  texto. Cumple WCAG 1.4.1, pero al escanear la tabla no se diferencian. Opción sin colores
+  nuevos: anteponer un icono o glifo al texto (círculo vacío para pendiente, candado/check
+  para cerrada). Aceptable dejarlo si se decide expresamente (D-06/D-07).
+- **R-2 (recomendado) · Semántica de color.** Contratado y Oferta en `success` y Rechazado
+  en `error` son correctos. Pero «Oferta recibida» (aún no es resultado final) tiene el
+  mismo color que «Contratado», y «Cerrada» (estado) queda `slate` aun cuando la etapa
+  sea Contratado (`success`) o Rechazado (`error`): Estado y Etapa contiguos dan una
+  lectura mixta (gris + verde). Es coherente con el diseño (el estado es el grupo, la
+  etapa el detalle); basta dejarlo documentado.
+- **R-3 (recomendado) · Fecha en inglés.** `formatDate` (`utils/formatters.ts:17`) usa
+  `en-US` («Oct 13, 2026») mientras el resto de la fila está en español. Es preexistente y
+  global; proponer `es-MX` como tarea aparte. Además, la zona `America/Mexico_City` sobre
+  un instante UTC cerca de medianoche puede mostrar el día anterior: es lo esperado para
+  el usuario, pero conviene saberlo al comparar con la BD.
+- **R-4 (recomendado) · Etiquetas largas en la tabla.** «Screening (llamada inicial con
+  reclutador)» y «Sin respuesta / vacante cerrada» miden 35-37 caracteres; el badge
+  (`inline-flex`, sin `truncate`) o se envuelve o ensancha la columna. En móvil (≤ 375 px)
+  la tabla hace scroll horizontal dentro de `.table-scroll` (`SectionTable.tsx:121`), que
+  es el patrón vigente y no rompe la página. Sugerencia: etiqueta corta para tabla
+  (p. ej. «Screening») y la larga sólo en el selector; añadir `title` con la etiqueta
+  completa. No verificado en un dispositivo real; es revisión de código.
+- **M-1 (menor) · Filtro por Estado.** Las tres opciones tienen etiqueta en español y el
+  filtro es un `select` estándar del sistema (`ColumnFilterButton`). Comprobar en vivo que
+  el botón de filtro tiene `aria-label` con el nombre de la columna (no revisado aquí).
+- **M-2 (menor) · «Sin definir».** Cubre vacío y fuera de catálogo en `slate`, lo que es
+  correcto. No distingue «dato faltante» de «dato inválido»; aceptable porque la BD lo
+  impide con CHECK (RF-006).
+- **M-3 (menor) · Detalle.** La ficha muestra `process_stage` como cápsula de `select`, no
+  como badge (plan §7): es una inconsistencia visual leve entre lista y detalle, ya
+  conocida.
+
+**Veredicto global: NO APTO para cerrar (condicionado).** Un bloqueante (B-1, RF-018,
+medido). Todo lo demás cumple o es recomendación. Al corregir B-1, volver a ejecutar la
+medición y adjuntar la salida nueva. Tareas: ninguna marcada `[x]`.
