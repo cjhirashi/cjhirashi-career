@@ -1,7 +1,7 @@
 ---
 titulo: "Harness de agentes fuera de la API (cjhirashi-career-ai) y sin indexación"
 tipo: spec
-estado: draft
+estado: approved
 fecha: 2026-10-13
 feature_id: "009"
 anchor_mode: advisory
