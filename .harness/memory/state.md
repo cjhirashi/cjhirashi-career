@@ -124,6 +124,11 @@ actualizado: 2026-09-04
 - **Cuidado al desplegar:** `docker compose up -d` puede recrear `api` con un
   `DATABASE_URL` obsoleto — usar `up -d --force-recreate --no-deps api` y verificar
   `docker inspect ... .Config.Env`.
+- **[2026-10-13] Deuda (decisión del usuario, 007 D-14):** el handler global de
+  `RequestValidationError` (`cjhirashi-career-api/src/app.py:144-162`) no emite RFC 9457
+  (Constitución) y además da **500** si un validador lanza `ValueError` (`ctx.error` no
+  serializable; arreglo de raíz: `jsonable_encoder(exc.errors())`). Afectados probables:
+  `schemas/bedrock_task.py`, `career_methodologies.py`, `user.py`. Feature SDD aparte.
 - Deuda: `test_auth_integration.py` (hoy `skip`) contra el esquema de rutas actual;
   `cjhirashi-career-ai` sin suite; reescritura narrativa del arc42 sin el Canal 3 (ADR-023).
 - **[2026-09-04] Feature `002-generacion-imagenes-agente-visual` — CERRADA

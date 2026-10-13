@@ -365,16 +365,23 @@ async def test_repo_ignores_read_only_fields_in_data(repo_env):
 @pytest.mark.requisito("RF-021")
 async def test_repo_update_moves_timestamp_only_when_stage_changes(repo_env):
     repo, session = repo_env
-    vac = await _create(repo, session, 1, process_stage="applied")
-    t0 = vac.process_stage_updated_at
-    other = await repo.update_for_user(session, USER, vac.id, {"company": "Nueva"})
+    vid = (await _create(repo, session, 1, process_stage="applied")).id
+    # Fecha de partida determinista (sin depender de que avance el reloj).
+    t0 = datetime(2020, 1, 1, 12, 0, 0)
+    await session.execute(
+        text("UPDATE vacancies SET process_stage_updated_at = :t WHERE id = :i"),
+        {"t": t0, "i": vid},
+    )
+    await session.commit()
+    session.expire_all()
+    other = await repo.update_for_user(session, USER, vid, {"company": "Nueva"})
     assert other.company == "Nueva"
     assert other.process_stage_updated_at == t0
-    same = await repo.update_for_user(session, USER, vac.id, {"process_stage": "applied"})
+    same = await repo.update_for_user(session, USER, vid, {"process_stage": "applied"})
     assert same.process_stage_updated_at == t0
-    moved = await repo.update_for_user(session, USER, vac.id, {"process_stage": "hr_interview"})
+    moved = await repo.update_for_user(session, USER, vid, {"process_stage": "hr_interview"})
     assert moved.process_stage == "hr_interview"
-    assert moved.process_stage_updated_at > t0
+    assert moved.process_stage_updated_at.replace(tzinfo=None) > t0
 
 
 @pytest.fixture

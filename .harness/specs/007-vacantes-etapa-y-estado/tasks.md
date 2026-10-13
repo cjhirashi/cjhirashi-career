@@ -73,7 +73,7 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 - [x] **T-030** `[test]` (cubre RF-001..005, RF-017, RF-021..023) — mismo archivo, con
   `async_client` + JWT sobre `/career/vacancies`: POST/PUT con cada etapa del contrato
-  devuelve el valor + `vacancy_status`; etapa inválida → 422 RFC 9457 y GET posterior sin
+  devuelve el valor + `vacancy_status`; etapa inválida → 422 (formato vigente, D-14) y GET posterior sin
   cambio; `process_stage: null` → 422; POST/PUT con `vacancy_status`/
   `process_stage_updated_at` no se persisten; GET con `filters={"vacancy_status":[...]}`.
   Si exige Postgres, usar el fixture PG-only existente. Debe quedar verde sin código nuevo
@@ -84,20 +84,20 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 ## Bloque E — API: migración `c7e1a4d92b60`
 
-- [ ] **T-040** `[test]` (cubre RF-006, RF-007, RF-008, RF-009, RF-024) —
+- [x] **T-040** `[test]` (cubre RF-006, RF-007, RF-008, RF-009, RF-024) —
   `tests/unit/test_vacancy_process_stage_migration.py` con dobles (patrón
   `test_methodology_section_ids_migration.py`): `down_revision == "a9b1c2d3e4f5"`; copia
   literal del catálogo == contrato; preflight con `"foo"` lanza antes de cualquier
   `ALTER`/`CREATE CONSTRAINT`; orden de pasos de upgrade (rename, NULL→`not_applied`,
   fecha con `COALESCE(updated_at, created_at, now())`, CHECK); idempotencia; downgrade
   en orden inverso. Rojo.
-- [ ] **T-041** `[code]` (mismos RF) — `alembic/versions/c7e1a4d92b60_vacancy_process_stage.py`
+- [x] **T-041** `[code]` (mismos RF) — `alembic/versions/c7e1a4d92b60_vacancy_process_stage.py`
   según plan §3. Verde T-040.
-- [ ] **T-042** `[verify]` (cubre RF-006, RF-007, RF-008, RF-009, RF-024) — en un clon
+- [x] **T-042** `[verify]` (cubre RF-006, RF-007, RF-008, RF-009, RF-024) — en un clon
   **desechable** de Postgres (`TEST_DATABASE_URL`): upgrade → CHECK rechaza valor
   inválido, NULL→`not_applied`, fecha rellenada en los 3 casos; downgrade → vuelve
   `application_status` sin la fecha; upgrade de nuevo. Salida pegada. Nunca en prod.
-- [ ] **T-043** `[test]` regresión API — `pytest` completo de la API (incluye
+- [x] **T-043** `[test]` regresión API — `pytest` completo de la API (incluye
   `test_vacancy_duplicate_url.py`, `test_vacancy_target_company_fk.py`,
   `test_job_discovery.py`). Salida pegada, 0 fallos.
 

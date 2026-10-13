@@ -88,7 +88,7 @@ ni `evaluation` ni `is_active` intervienen.
 
 Fronteras:
 - **REST `/vacancies`** (CRUD genérico): Create/Update aceptan `process_stage`;
-  Response añade `vacancy_status` y `process_stage_updated_at`. Valor fuera de catálogo → 422 RFC 9457.
+  Response añade `vacancy_status` y `process_stage_updated_at`. Valor fuera de catálogo → 422 con el formato de error de validación vigente del API (`{"detail", "errors"}`; D-14).
 - **BD `vacancies`**: renombre de columna + CHECK + NOT NULL default + columna
   `process_stage_updated_at`.
 
@@ -172,6 +172,12 @@ Fronteras:
   embedding en cada cambio de etapa sin aportar a la búsqueda). El reindex de la KB
   tras el deploy (renombre de `application_status`) requiere autorización del usuario
   en ese momento (coste Bedrock).
+- **D-14 (usuario, 2026-10-13, Fase 4):** el 422 usa el formato de error de validación
+  vigente del API (`{"detail": "Error de validación", "errors": [...]}`), no Problem
+  Details RFC 9457. La contradicción con la Constitución es **preexistente y de todo el
+  API** (handler global `app.py:144-162`); se trata en una tarea aparte (deuda en
+  `state.md`). *Descartado:* migrar el handler global dentro de 007 (cambia la respuesta
+  de error de todas las rutas).
 
 ## 8 · UX (Admin)
 
