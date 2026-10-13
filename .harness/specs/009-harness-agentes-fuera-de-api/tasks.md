@@ -130,11 +130,11 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque D — AI: autenticación
 
-- [ ] **T-050** `[test]` (cubre RF-002, RF-019) — `tests/unit/middleware/test_auth.py`
+- [x] **T-050** `[test]` (cubre RF-002, RF-019) — `tests/unit/middleware/test_auth.py`
   (matriz `contracts/auth-jwt-service-account.md` §5, fila ai/middleware): sin header,
   firma inválida, expirado, refresh, `role` desconocido → 401; `role` agent/service → 403;
   sin claim = user; token válido → `Principal`; ninguna llamada a la API. Rojo.
-- [ ] **T-051** `[code]` (cubre RF-002, RF-019) — `src/middleware/auth.py`. Verde T-050.
+- [x] **T-051** `[code]` (cubre RF-002, RF-019) — `src/middleware/auth.py`. Verde T-050.
 
 ## Bloque E — AI: repositorios y servicios (catálogo, ajustes, uso)
 
@@ -1130,3 +1130,57 @@ test_hardening.py .........   ·   errors.py 100%  api_client.py 100%  principal
 AI (cwd=cjhirashi-career-ai): 213 passed, 12 skipped · raíz (-c ...): 213 passed, 12 skipped · GATE_EXIT=0
 ```
 Nota: el test del timeout se reescribió tras el rojo (la primera versión esperaba `ValueError`, no válido); el rojo real es el caso `timeout=0`.
+
+### Bloque D (auth) — evidencia
+
+**T-050 (rojo)** `venv/bin/pytest --no-cov -q tests/unit/middleware` antes de crear `src/middleware/auth.py`:
+```
+tests/unit/middleware/test_auth.py:16: in <module>
+    from middleware.auth import require_principal
+E   ModuleNotFoundError: No module named 'middleware.auth'
+ERROR tests/unit/middleware/test_auth.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+========================= 1 warning, 1 error in 0.35s ==========================
+```
+**T-051 (verde)** `src/middleware/auth.py` (`authenticate_token`, dependencia `require_principal` que mantiene `principal_scope`):
+```
+collected 19 items
+tests/unit/middleware/test_auth.py ...................                   [100%]
+======================== 19 passed, 1 warning in 0.36s =========================
+```
+Suite completa desde `cjhirashi-career-ai/`:
+```
+tests/unit/middleware/test_auth.py ...................                   [ 36%]
+src/middleware/auth.py                          40      0   100%
+src/middleware/principal.py                     32      0   100%
+TOTAL                                          997     18    98%
+Required test coverage of 80% reached. Total coverage: 98.19%
+================== 232 passed, 12 skipped, 1 warning in 1.59s ==================
+```
+Desde la raíz (`-c cjhirashi-career-ai/pytest.ini`): `232 passed, 12 skipped` (exit 1 por cobertura 0.00 %, conocido). `.harness/gate/check.sh` sin pipe: `GATE=0`
+(`31 ok · 3 warn · 0 error`; los 3 avisos son anclas `null` de 005/006/009, previos).
+Decisiones: formato de error = el de la API (`{"detail": str}` + `WWW-Authenticate: Bearer` en 401), porque el AI no define otro;
+`sub` ausente/no-str y `type == "refresh"` -> 401; `role` no-str o desconocido -> 401. Ningún mensaje ni log contiene el token (test).
+Red bloqueada en los tests (transportes reales de httpx y `socket.connect` fallan). `pyjwt==2.8.0` ya fijado en el `pyproject.toml` del AI (igual que la API);
+el venv local tiene 2.15.1 (desviación de entorno, no de código).
+
+**Menores del revisor (post-APPROVED)** — tests nuevos en `test_auth.py` (HS384/HS512 -> 401, `sub` entero -> 401, scope `None` si el handler
+lanza, 20 requests concurrentes vía ASGI sin mezcla) y en `test_config.py` (allowlist de `ALGORITHM`). Rojo (`pytest --no-cov` antes de tocar `config.py`):
+```
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[none]
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[None]
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[RS256]
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[ES256]
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[hs256]
+FAILED tests/unit/test_config.py::test_algorithm_outside_allowlist_is_rejected[]
+=================== 6 failed, 44 passed, 3 warnings in 0.56s ===================
+```
+(los casos de `test_auth.py` ya pasaban: el middleware con `algorithms=[settings.ALGORITHM]` ya los cubría; ahora quedan fijados.)
+Verde (`src/config.py`: `_ALLOWED_JWT_ALGORITHMS` + validador de `ALGORITHM`), suite desde `cjhirashi-career-ai/`:
+```
+src/config.py                                   43      0   100%
+src/middleware/auth.py                          40      0   100%
+Required test coverage of 80% reached. Total coverage: 98.21%
+================= 246 passed, 12 skipped, 3 warnings in 1.64s =================
+```
+Raíz (`-c ...`): `246 passed, 12 skipped` · `GATE=0` (31 ok · 3 warn · 0 error). Sin cambios en tokens sin `exp` ni `type` desconocido (paridad con la API).

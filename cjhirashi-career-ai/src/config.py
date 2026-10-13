@@ -11,6 +11,9 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+_ALLOWED_JWT_ALGORITHMS = frozenset({"HS256", "HS384", "HS512"})
+
+
 class Settings(BaseSettings):
     """Configuración global leída desde `.env` y variables de entorno."""
 
@@ -33,6 +36,14 @@ class Settings(BaseSettings):
 
     # Memoria del agente (full-text, D-24).
     MEMORY_FTS_CONFIG: str = Field(default="spanish", description="Configuración regconfig de FTS")
+
+    @field_validator("ALGORITHM")
+    @classmethod
+    def _validate_algorithm(cls, value: str) -> str:
+        # Lista cerrada: evita `none` y la confusión de algoritmo (HMAC vs asimétricos).
+        if value not in _ALLOWED_JWT_ALGORITHMS:
+            raise ValueError(f"ALGORITHM debe ser uno de {sorted(_ALLOWED_JWT_ALGORITHMS)}")
+        return value
 
     @field_validator("MEMORY_FTS_CONFIG")
     @classmethod

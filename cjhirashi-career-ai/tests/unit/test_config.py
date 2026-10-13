@@ -99,3 +99,20 @@ def test_rest_client_settings_reject_non_positive(clean_env, name, value):
     clean_env.setenv(name, value)
     with pytest.raises(ValidationError):
         _settings()
+
+
+@pytest.mark.requisito("RF-002")
+@pytest.mark.parametrize("alg", ["HS256", "HS384", "HS512"])
+def test_algorithm_allowlist_accepts_hmac(clean_env, alg):
+    for k, v in {**REQUIRED, "ALGORITHM": alg}.items():
+        clean_env.setenv(k, v)
+    assert _settings().ALGORITHM == alg
+
+
+@pytest.mark.requisito("RF-002")
+@pytest.mark.parametrize("alg", ["none", "None", "RS256", "ES256", "hs256", ""])
+def test_algorithm_outside_allowlist_is_rejected(clean_env, alg):
+    for k, v in {**REQUIRED, "ALGORITHM": alg}.items():
+        clean_env.setenv(k, v)
+    with pytest.raises(ValidationError, match="ALGORITHM"):
+        _settings()
