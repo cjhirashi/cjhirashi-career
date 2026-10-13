@@ -9,7 +9,7 @@ subtipo: history
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
 ## [2026-10-13] 008 Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral — implementada y desplegada
-- **Fase alcanzada:** implemented (pendiente Gate 4 del usuario)
+- **Fase alcanzada:** implemented — Gate 4 aprobado por el usuario (2026-10-13); push a `origin/main`
 - **Rebotes del verificador:** 0 (APPROVED con 2 observaciones: test-first no visible en
   git; faltaba evidencia pegada de T-042/T-043/T-053 → añadida)
 - **Directiva de Pausa:** no. Cambios tras Gate 1 decididos por el usuario: D-06 (ficha
@@ -21,7 +21,7 @@ subtipo: history
 - **Decisiones de diseño / límites de integración:** 4 columnas `text` nullable; trim,
   vacío→NULL, tope 10 000 tras trim (sólo REST); exclusión KB transitoria hasta la 009.
   Migración `d8f2b5a13c97` con backup; verificado en vivo (CRUD, 422, límite exacto).
-- **Próximo paso:** Gate 4 de 008 y push; Gate 2 de 009.
+- **Próximo paso:** Gate 2 de 009.
 
 ## [2026-10-13] 007 Vacantes: etapa del proceso y estado calculado — implementada y desplegada
 - **Fase alcanzada:** verified (marcado a petición explícita del usuario, 2026-10-13)
