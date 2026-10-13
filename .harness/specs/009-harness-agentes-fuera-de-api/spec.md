@@ -8,6 +8,59 @@ anchor_mode: advisory
 anchor_commit: null
 covers:
   - .harness/specs/009-harness-agentes-fuera-de-api/**
+  - cjhirashi-career-ai/src/**
+  - cjhirashi-career-ai/tests/**
+  - cjhirashi-career-ai/alembic/**
+  - cjhirashi-career-ai/scripts/**
+  - cjhirashi-career-ai/README.md
+  - cjhirashi-career-api/src/app.py
+  - cjhirashi-career-api/src/config.py
+  - cjhirashi-career-api/src/middleware/auth.py
+  - cjhirashi-career-api/src/routes/auth.py
+  - cjhirashi-career-api/src/routes/career_common.py
+  - cjhirashi-career-api/src/routes/admin_sections.py
+  - cjhirashi-career-api/src/repositories/career_repository.py
+  - cjhirashi-career-api/src/services/agent_registry.py
+  - cjhirashi-career-api/src/services/admin_sections.py
+  - cjhirashi-career-api/src/services/methodology_scope.py
+  - cjhirashi-career-api/src/services/section_catalog.py
+  - cjhirashi-career-api/src/services/error_reporting.py
+  - cjhirashi-career-api/src/services/id_generator.py
+  - cjhirashi-career-api/src/schemas/career_methodologies.py
+  - cjhirashi-career-api/src/schemas/admin_sections.py
+  - cjhirashi-career-api/alembic/versions/*_drop_bedrock_tables.py
+  - cjhirashi-career-api/tests/unit/test_bedrock_routes_removed.py
+  - cjhirashi-career-api/tests/unit/test_drop_bedrock_tables_migration.py
+  - cjhirashi-career-api/tests/unit/test_agent_registry_contract.py
+  - cjhirashi-career-admin/src/api/client.ts
+  - cjhirashi-career-admin/src/api/bedrock.ts
+  - cjhirashi-career-admin/src/api/agentTasks.ts
+  - cjhirashi-career-admin/vite.config.ts
+  - cjhirashi-career-admin/src/tests/api/aiRoutes.test.ts
+  - cjhirashi-career-admin/src/tests/api/noLegacyAgentRoutes.test.ts
+  - cjhirashi-career-api/src/services/auth_service.py
+  - cjhirashi-career-api/src/routes/notifications.py
+  - cjhirashi-career-api/src/routes/audit_log.py
+  - cjhirashi-career-api/src/services/audit_service.py
+  - cjhirashi-career-api/tests/unit/test_jwt_role_claim.py
+  - cjhirashi-career-api/tests/unit/test_notifications_route.py
+  - cjhirashi-career-api/tests/unit/test_audit_log_routes.py
+  - cjhirashi-career-api/docs/ARCHITECTURE.md
+  - cjhirashi-career-api/docs/API.md
+  - cjhirashi-career-api/docs/DATABASE.md
+  - cjhirashi-career-ai/docs/MEMORY.md
+  - docs/09-DECISIONS/README.md
+  - docker-compose.yml
+  - caddy.json
+  - prometheus.yml
+  - .env.example
+  - docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md
+  - docs/BEDROCK-SYSTEM.md
+  - docs/ENVIRONMENT-SECURITY.md
+  - AGENTS.md
+  - README.md
+  - cjhirashi-career-api/docs/BEDROCK-HARNESS.md
+  - cjhirashi-career-admin/docs/BEDROCK-CHAT.md
 ---
 
 # Harness de agentes fuera de la API y sin indexación
@@ -92,7 +145,9 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
 
 ### Harness (`cjhirashi-career-ai`)
 - **RF-001** El harness DEBE servir bajo `/ai/` todas las operaciones que hoy sirven
-  `/bedrock/*` y `/agent-tasks/*` de la API, con el mismo contrato (D-13).
+  `/bedrock/*` y `/agent-tasks/*` de la API, con el mismo contrato (D-13), salvo
+  `POST /bedrock/knowledge-base/reindex` y `GET /bedrock/knowledge/search`, que se
+  retiran (D-16).
 - **RF-002** SI una petición al harness no trae un JWT válido de la API, ENTONCES el
   harness DEBE responder 401 sin procesarla.
 - **RF-003** El harness NO DEBE conectarse a `career_db`; DEBE leer y escribir datos de
@@ -108,6 +163,9 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
 - **RF-007** La migración de datos DEBE copiar las 10 tablas `bedrock_*` de `career_db`
   a la BD del harness conservando identificadores, y DEBE reportar el conteo por tabla en
   origen y destino; SI algún conteo difiere, ENTONCES DEBE terminar con error.
+- **RF-022** El harness DEBE guardar la memoria del agente (notas y hechos) en su BD con
+  búsqueda de texto completo de Postgres, y la migración DEBE trasladar el contenido
+  actual de la memoria desde Qdrant antes de eliminarlo (D-15).
 - **RF-008** CUANDO llega una petición de chat con streaming, el harness DEBE emitirla
   por SSE a través de `/ai/` (D-08).
 
@@ -120,7 +178,17 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   de verificar la copia (RF-007), y su `downgrade` DEBE recrear su estructura (los datos
   se restauran del backup).
 - **RF-018** SI un token `agent` llama a una ruta fuera de `/career/*`, ENTONCES la API
-  DEBE responder 403 (D-14).
+  DEBE responder 403 (D-14). SI un token `service` llama a una ruta fuera de su lista
+  explícita (`/career/*`, `/files`, `/pdf-*`, `/linkedin`, `/admin/sections`,
+  `/settings/error-reports`, `/notifications`, auditoría), ENTONCES la API DEBE
+  responder 403 (D-17).
+- **RF-019** Los tokens que emite la API DEBEN incluir el claim `role` (`user`, `agent`
+  o `service`); SI un token válido no trae el claim, ENTONCES API y harness DEBEN
+  tratarlo como `user` (D-18).
+- **RF-020** CUANDO un token `service` hace `POST /notifications`, la API DEBE crear la
+  notificación y el Admin DEBE mostrarla como hoy (D-20).
+- **RF-021** La API DEBE conservar `audit_logs` y exponer por REST la lectura del
+  historial y la restauración de cambios que hoy usa el agente (D-19).
 - **RF-012** Los endpoints de metodologías y secciones DEBEN conservar su contrato sin
   importar código del harness (D-10).
 
@@ -176,6 +244,25 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
 - **D-14 (usuario, 2026-10-13, Fase 1):** el agente externo sólo usa `/career/*`; los
   tokens `agent` pierden `POST /bedrock/chat` y la cuenta de servicio del harness es un
   token `agent`. *Descartado:* aceptar tokens `agent` en el chat del harness.
+
+### Decisiones de Fase 2 (usuario, 2026-10-13 — enmiendan la spec tras Gate 1)
+- **D-15:** memoria del agente en Postgres del harness con full-text; se migra su
+  contenido. `search_knowledge_base` se retira (los datos se consultan por REST).
+  *Descartado:* retirar la memoria; conservar Qdrant sólo para memoria.
+- **D-16:** no se portan `POST /bedrock/knowledge-base/reindex` ni
+  `GET /bedrock/knowledge/search` (excepción a RF-001; el Admin no las usa).
+- **D-17:** rol nuevo `service` para la cuenta del harness, con lista explícita de
+  rutas; el token `agent` del agente externo sigue sólo en `/career/*`. Enmienda D-09 y
+  D-14 (la cuenta de servicio ya no es un token `agent`). *Descartado:* ampliar `agent`;
+  aceptar la pérdida de rutas.
+- **D-18:** claim `role` en el JWT. *Descartado:* endpoint `GET /auth/session`.
+- **D-19:** `audit_logs` se queda en la API con endpoints REST. *Descartado:* moverla.
+- **D-20:** `POST /notifications` aditivo en la API, sólo rol `service`. *Descartado:*
+  notificaciones en el harness.
+- **D-21:** BD del harness = base `career_ai_db` en `postgres_db`, usuario propio sin
+  permisos sobre `career_db`. *Descartado:* contenedor Postgres nuevo.
+- **D-22:** la revisión UX (Art. 8) no se limita a una prueba de humo: el usuario no
+  confirmó esa reducción, así que aplica la revisión completa de las pantallas afectadas.
 
 ## 7 · Requisitos no funcionales
 

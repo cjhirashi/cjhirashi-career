@@ -1,0 +1,25 @@
+{
+  "_doc": "Canon del registro estático de perfiles de agente que la API conserva (id, label, level) para validar agent_profile_ids y mostrar agent_label en /admin/sections. El harness (cjhirashi-career-ai) conserva la definición completa. Test de contrato en AMBOS servicios: los ids/labels/levels de sus registros deben coincidir con este archivo. Generado 2026-10-13 desde cjhirashi-career-api/src/services/bedrock/agent_profiles.py (20 perfiles).",
+  "profiles": [
+    {"id": "agent_changelog", "label": "Gestor de bitácora", "level": 3},
+    {"id": "agent_configuration", "label": "Configuración", "level": 2},
+    {"id": "agent_cover_letter_writing", "label": "Redacción de cover letters", "level": 3},
+    {"id": "agent_cv_writing", "label": "Redacción de CVs", "level": 3},
+    {"id": "agent_digital_presence", "label": "Presencia Digital", "level": 2},
+    {"id": "agent_github", "label": "Control GitHub", "level": 3},
+    {"id": "agent_linkedin_publishing", "label": "Control de publicación LinkedIn", "level": 3},
+    {"id": "agent_methodologies", "label": "Metodologías", "level": 2},
+    {"id": "agent_networking", "label": "Networking", "level": 2},
+    {"id": "agent_orchestrator", "label": "Orquestador", "level": 1},
+    {"id": "agent_pdf_design", "label": "Diseño PDF", "level": 2},
+    {"id": "agent_pdf_render", "label": "Renderizado PDF", "level": 3},
+    {"id": "agent_professional_identity", "label": "Identidad Profesional", "level": 2},
+    {"id": "agent_search_operations", "label": "Operativa de Búsqueda", "level": 2},
+    {"id": "agent_settings", "label": "Incidencias y Bitácora", "level": 2},
+    {"id": "agent_support", "label": "Soporte", "level": 2},
+    {"id": "agent_task_manager", "label": "Gestor de tareas", "level": 3},
+    {"id": "agent_vacancy_search", "label": "Control de búsqueda de vacantes", "level": 3},
+    {"id": "agent_visual_design", "label": "Agente Visual", "level": 3},
+    {"id": "agent_web_search", "label": "Consulta web", "level": 3}
+  ]
+}
