@@ -1,0 +1,23 @@
+{
+  "$comment": "Canon unico del catalogo de etapas (spec 007 §3). Lo leen los tests de API y de Admin para detectar deriva. Orden = orden canonico.",
+  "stages": [
+    {"value": "not_applied",         "label": "Sin postular",                                   "status": "pending"},
+    {"value": "applied",             "label": "Postulación (CV enviado)",                       "status": "in_process"},
+    {"value": "screening",           "label": "Screening (llamada inicial con reclutador)",     "status": "in_process"},
+    {"value": "hr_interview",        "label": "Entrevista RH",                                  "status": "in_process"},
+    {"value": "technical_interview", "label": "Entrevista técnica",                             "status": "in_process"},
+    {"value": "technical_test",      "label": "Prueba técnica / assessment",                    "status": "in_process"},
+    {"value": "final_interview",     "label": "Entrevista final",                               "status": "in_process"},
+    {"value": "offer",               "label": "Oferta recibida",                                "status": "in_process"},
+    {"value": "hiring_process",      "label": "Proceso de contratación",                        "status": "in_process"},
+    {"value": "hired",               "label": "Contratado",                                     "status": "closed"},
+    {"value": "rejected",            "label": "Rechazado",                                      "status": "closed"},
+    {"value": "withdrawn",           "label": "Me retiré / decliné",                            "status": "closed"},
+    {"value": "no_response",         "label": "Sin respuesta / vacante cerrada",                "status": "closed"}
+  ],
+  "statuses": [
+    {"value": "pending",    "label": "Por postular"},
+    {"value": "in_process", "label": "En proceso"},
+    {"value": "closed",     "label": "Cerrada"}
+  ]
+}

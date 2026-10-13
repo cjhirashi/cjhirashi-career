@@ -115,7 +115,7 @@ Todos los campos nuevos son nullable para compatibilidad con filas existentes.
 | | `required_skills` | JSONB `list[str]` |
 | | `years_experience_required` | integer >= 0 |
 | | `posted_date` | date |
-| | `application_status` | varchar(30) |
+| | `application_status` | varchar(30) — *reemplazado por spec 007 (`process_stage` con catálogo cerrado + `vacancy_status` calculado, 007 D-02)* |
 | | `priority` | varchar(10), P1/P2/P3 |
 | | `contracting_model` | varchar(30), employee/contractor/freelance |
 | | `contact_id` | varchar(20), FK `networking_contacts.id`, SET NULL |
