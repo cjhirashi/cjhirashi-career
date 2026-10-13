@@ -168,10 +168,10 @@ describe('RF-017/RF-020: filtro por Estado sin campo de formulario', () => {
 
 // Spec 008: cuatro textos descriptivos de la vacante.
 const DESCRIPTIVE = [
-  { name: 'company_overview', label: 'Quiénes son' },
-  { name: 'candidate_profile', label: 'Qué buscan' },
-  { name: 'offer_summary', label: 'Qué ofrecen' },
-  { name: 'work_culture', label: 'Cultura laboral' },
+  { name: 'company_overview', label: 'Quiénes son', helpText: 'Qué hace la empresa, su tamaño y su sector.' },
+  { name: 'candidate_profile', label: 'Qué buscan', helpText: 'Experiencia, habilidades y rasgos que piden.' },
+  { name: 'offer_summary', label: 'Qué ofrecen', helpText: 'Compensación, prestaciones, esquema de trabajo y crecimiento.' },
+  { name: 'work_culture', label: 'Cultura laboral', helpText: 'Valores, ritmo, equipo y ambiente de trabajo.' },
 ]
 
 describe('RF-008: cuatro campos descriptivos en el formulario', () => {
@@ -182,6 +182,7 @@ describe('RF-008: cuatro campos descriptivos en el formulario', () => {
       expect(field?.type).toBe('textarea')
       expect(field?.fullWidth).toBe(true)
       expect(field?.label).toBe(d.label)
+      expect(field?.helpText).toBe(d.helpText)
     }
   })
 

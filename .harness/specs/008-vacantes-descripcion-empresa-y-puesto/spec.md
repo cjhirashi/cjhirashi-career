@@ -161,5 +161,15 @@ Fronteras:
 
 ## 8 · UX (Admin)
 
-Detalle de UX (etiquetas, `helpText`, alto de las áreas de texto, posición en el
-formulario) → lo aporta `experto-ux-ui` en la Fase 2.
+Revisión de `experto-ux-ui` (T-070): sin bloqueantes. Decisiones:
+
+- **helpText breve** (elegido por el usuario, 2026-10-13): "Quiénes son" → *Qué hace la
+  empresa, su tamaño y su sector.*; "Qué buscan" → *Experiencia, habilidades y rasgos que
+  piden.*; "Qué ofrecen" → *Compensación, prestaciones, esquema de trabajo y crecimiento.*;
+  "Cultura laboral" → *Valores, ritmo, equipo y ambiente de trabajo.*
+- **Alto de las áreas:** `h-48` heredado del `textarea` del formulario; sin prop `rows`.
+- **Posición:** tras `contact_id` y antes de `analysis_notes`, sin encabezado de sección.
+- **Ficha con valor vacío:** muestra la etiqueta y "—" (comportamiento vigente de `FieldValue`).
+- **Sin contador de caracteres:** el 422 indica el campo y el tope.
+- **Mejoras transversales fuera de alcance (no se hacen en 008):** `max-w-prose` en
+  `.markdown-body` y `aria-describedby` en los textareas de `ResourceForm`.

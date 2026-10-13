@@ -117,7 +117,7 @@ explícita en ese momento.
 
 ## Bloque H — Fase 4: revisión y verificación real
 
-- [ ] **T-070** `[ux]` (cubre RF-008, RF-009, RF-010) — revisión de `experto-ux-ui` según
+- [x] **T-070** `[ux]` (cubre RF-008, RF-009, RF-010) — revisión de `experto-ux-ui` según
   plan §7 (`helpText`, alto de áreas, posición, vacíos en la ficha, contador de
   caracteres, contraste). Resultado en `spec.md §8`. Los ajustes vuelven a T-051.
 - [ ] **T-071** `[verify]` **[REQUIERE OK DEL USUARIO]** (cubre RF-007) — BD real (plan
@@ -134,6 +134,35 @@ explícita en ese momento.
   (spec §2: no aplica) y registrar la exclusión transitoria como deuda a retirar en la spec
   009. Si el usuario pidiera reindex, requiere su autorización explícita (coste Bedrock,
   Art. 5).
+
+## Evidencia (salida real pegada)
+
+**T-070:** revisión UX sin bloqueantes; decisiones en `spec.md §8`; `helpText` breve aplicado en
+`careerResources.ts` (aserción en `vacanciesConfig.test.ts`).
+
+**T-042** (Postgres 15 desechable, eliminado; `upgrade`/`downgrade` vía `alembic.Operations`):
+```
+before cols: {}
+after upgrade: {'candidate_profile': ('text', 'YES'), 'company_overview': ('text', 'YES'), 'offer_summary': ('text', 'YES'), 'work_culture': ('text', 'YES')}
+[('vac-1', 'ACME', 'n1', None, None, None, None), ('vac-2', 'Beta', None, None, None, None, None)]
+upgrade again OK (idempotent)
+after downgrade: {}
+[('vac-1', 'ACME', 'n1'), ('vac-2', 'Beta', None)]
+after re-upgrade: {'candidate_profile': ('text', 'YES'), 'company_overview': ('text', 'YES'), 'offer_summary': ('text', 'YES'), 'work_culture': ('text', 'YES')}
+[('vac-1', 'ACME', 'n1', None, None, None, None), ('vac-2', 'Beta', None, None, None, None, None)]
+```
+
+**T-043** (`pytest` completo de la API):
+```
+================= 575 passed, 73 skipped, 5 warnings in 7.74s ==================
+```
+
+**T-053** (Vitest completo Admin; `npm run type-check` exit 0):
+```
+    at startTests (file:///mnt/disco2/cjhirashi-data/proyectos/cjhirashi-career/cjhirashi-career-admin/node_modules/@vitest/runner/dist/index.js:967:3)
+ Test Files  46 passed (46)
+      Tests  491 passed (491)
+```
 
 ## Cobertura (el gate exige 100 %; `Estado` lo rellena el gate)
 
