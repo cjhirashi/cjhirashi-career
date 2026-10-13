@@ -9,7 +9,7 @@ subtipo: history
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
 ## [2026-10-13] 007 Vacantes: etapa del proceso y estado calculado — implementada y desplegada
-- **Fase alcanzada:** implement (spec/plan `implemented`; `verified` sólo tras Gate 4 humano)
+- **Fase alcanzada:** verified (marcado a petición explícita del usuario, 2026-10-13)
 - **Rebotes del verificador:** 3 (`PUT process_stage:null` → 500; fila `VacancyBoard` de
   `05-BUILDING-BLOCK-VIEW.md:250` sin actualizar; fila RF-018 de cobertura sin T-055/T-056)
   + 1 bloqueante UX (contraste tema claro < 4.5:1)

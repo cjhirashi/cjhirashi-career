@@ -1,7 +1,7 @@
 ---
 titulo: "Vacantes: etapa del proceso y estado calculado"
 tipo: spec
-estado: implemented
+estado: verified
 fecha: 2026-10-12
 feature_id: "007"
 anchor_mode: strict

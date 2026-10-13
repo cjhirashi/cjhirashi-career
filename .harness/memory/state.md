@@ -91,7 +91,7 @@ actualizado: 2026-09-04
 - **[2026-09-04] MCP Server retirado** — `ADR-023` (carpeta, compose, CORS, docs y host
   `mcp.cjhirashi.com` retirados; MSG-0003 cerrado). **Pendiente:** reescritura narrativa
   del arc42 sin el Canal 3.
-- **[2026-10-13] Feature `007-vacantes-etapa-y-estado` — `implemented` + DESPLEGADA**
+- **[2026-10-13] Feature `007-vacantes-etapa-y-estado` — `verified` (por el usuario) + DESPLEGADA**
   (sin push; commits f871832f…3c5907f9 + cierre; `anchor_commit` = `3c5907f9`).
   `career_db` migrada a `c7e1a4d92b60` (backup
   `/mnt/disco2/cjhirashi-data/backups/career_db_pre_007_20261013_005618.dump`); api+admin
