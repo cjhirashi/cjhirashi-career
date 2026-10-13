@@ -8,6 +8,17 @@ anchor_mode: advisory
 anchor_commit: null
 covers:
   - .harness/specs/008-vacantes-descripcion-empresa-y-puesto/**
+  - cjhirashi-career-api/src/models/vacancy.py
+  - cjhirashi-career-api/src/schemas/career_search.py
+  - cjhirashi-career-api/src/repositories/career_repository.py
+  - cjhirashi-career-api/alembic/versions/d8f2b5a13c97_vacancy_descriptive_texts.py
+  - cjhirashi-career-api/tests/unit/test_vacancy_descriptive_texts.py
+  - cjhirashi-career-api/tests/unit/test_vacancy_descriptive_texts_migration.py
+  - cjhirashi-career-api/docs/sections/career-search/README.md
+  - cjhirashi-career-admin/src/types/career.ts
+  - cjhirashi-career-admin/src/config/careerResources.ts
+  - cjhirashi-career-admin/src/tests/config/vacanciesConfig.test.ts
+  - cjhirashi-career-admin/src/tests/components/career/VacancyDescriptiveTexts.test.tsx
 ---
 
 # Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral
@@ -45,8 +56,8 @@ transitoria de la KB (`_KB_EXCLUDED_COLUMNS` en `career_repository.py`, D-05), A
   precargar al enlazar una empresa diana (D-02).
 - Rellenarlos automáticamente desde *job discovery* / importar por URL (hoy sólo se
   guarda un *snippet*; extraer apartados exige LLM → feature aparte).
-- Formato enriquecido (Markdown renderizado) en el Admin: se muestra como texto plano con
-  saltos de línea.
+- Un modo de presentación propio para estos campos en el Admin: la ficha usa el
+  renderizado vigente de áreas de texto (Markdown, D-06).
 - Reindex de la KB: no aplica (los campos no se indexan y las vacantes existentes no cambian).
 - Desactivar o cambiar el indexado de otras columnas o tablas.
 - Tocar `required_skills`, `analysis_notes`, `notes` u otros campos existentes.
@@ -71,8 +82,10 @@ Fronteras:
 - **REST `/career/vacancies`** (CRUD genérico): Create/Update aceptan los cuatro campos
   (opcionales); Response los devuelve siempre (valor o `null`). Excederse de longitud →
   422 con el formato de validación vigente (`{"detail", "errors"}`; 007 D-14).
-- **Tools Bedrock `create/update_career_record`**: pasan por el mismo esquema y
-  repositorio, así que heredan el contrato sin cambios propios.
+- **Tools Bedrock `create/update_career_record`**: escriben por el repositorio sin pasar
+  por el schema, así que **no** aplican trim/vacío→`NULL` ni el tope de longitud; RF-004 y
+  RF-005 rigen para REST (D-07). Con la spec 009 el harness escribirá vía REST y heredará
+  el contrato.
 - **KB** (transitorio, hasta la spec 009): los cuatro campos **no** entran al texto
   indexado de la vacante (D-05).
 - **BD `vacancies`**: cuatro columnas `text` nullable, sin default.
@@ -97,7 +110,8 @@ Fronteras:
 - **RF-008** El formulario de Vacante del Admin DEBE ofrecer los cuatro campos como áreas
   de texto de ancho completo, contiguas, en el orden canónico y con las etiquetas de §3.
 - **RF-009** La ficha de detalle de Vacante del Admin DEBE mostrar los cuatro campos en
-  el orden canónico conservando los saltos de línea.
+  el orden canónico con el renderizado vigente de áreas de texto (Markdown), como el resto
+  de campos de texto largo de la ficha.
 - **RF-010** La tabla de Vacantes del Admin NO DEBE añadir columnas para estos campos.
 
 ## 5 · Casos límite y errores
@@ -128,6 +142,14 @@ Fronteras:
   (una línea, como 007 D-13) para no generar embeddings sin consumidor; 009 la retira
   junto con el resto del indexado. *Descartado:* indexarlos (coste sin consumidor);
   pausar 008 hasta terminar 009 (bloquea una feature pequeña e independiente).
+- **D-06 (usuario, 2026-10-13, Fase 2 — enmienda RF-009):** la ficha muestra los cuatro
+  campos con el renderizado Markdown vigente de las áreas de texto. Un salto de línea
+  simple se colapsa; los párrafos se separan con línea en blanco. *Descartado:* una opción
+  nueva `plainText` en la configuración del Admin (extensión que no compensa).
+- **D-07 (usuario, 2026-10-13, Fase 2):** la normalización (RF-004) y el tope (RF-005)
+  rigen sólo para la API REST; las tools Bedrock internas no se adaptan porque la spec
+  009 las mueve a `cjhirashi-career-ai` y escribirán vía REST. *Descartado:* normalizar
+  también en el repositorio (código que 009 deja sin uso).
 
 ## 7 · Requisitos no funcionales
 
