@@ -1040,3 +1040,24 @@ FAILED ...[providers/x.py-from . import bedrock\n]
 ```
 Verde con el checker corregido y suite completa (`venv/bin/pytest`): `TOTAL 601 18 97%` · `132 passed, 12 skipped, 1 warning`.
 `bash .harness/gate/check.sh > out; echo $?` -> `GATE_EXIT=0` (31 ok · 3 warn · 0 error).
+
+**Aislamiento de los tests respecto de `.env` y credenciales (corrección del coordinador).** Desde la raíz del repo,
+`Settings` leía el `.env` de la raíz (credenciales reales de AWS; no se pegan aquí) y fallaba
+`test_settings_expose_bedrock_defaults_equal_to_the_api`. Test primero, `tests/unit/test_env_isolation.py`, con un `.env`
+sintético en `tmp_path` (`AWS_ACCESS_KEY_ID=FAKEFROMENV`, cwd allí, y también `_env_file=` explícito). Rojo:
+```
+E   AssertionError: assert '<fake>' == ''      (x2: lectura desde cwd y desde _env_file explícito)
+========================= 2 failed, 3 passed in 0.24s ==========================
+```
+Arreglo general en `tests/conftest.py`, al importarse (antes de crear el singleton `settings`): `DotEnvSettingsSource._read_env_files`
+neutralizado para toda la sesión (ningún `.env`, de ningún cwd ni argumento, se lee); se eliminan las variables `AWS_*`/`BEDROCK_*`
+heredadas; las variables mínimas pasan de `setdefault` a asignación (un entorno real no se cuela); y fixture autouse
+`_isolated_environment` que quita `AWS_*`/`BEDROCK_*` por test y vacía los clientes boto3 cacheados antes y después.
+Los únicos tests que instancian `Settings` son `test_config.py` (ya usa `_env_file=None` y `delenv`) y el nuevo. Verde, con
+`AWS_ACCESS_KEY_ID=FAKEINHERITED` exportada para probar el descarte, desde dos cwd:
+```
+raíz:  pytest -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai   -> 137 passed, 12 skipped, 1 warning
+cjhirashi-career-ai/:  pytest                                         -> TOTAL 601 18 97% · 137 passed, 12 skipped, 1 warning
+GATE_EXIT=0   (31 ok · 3 warn · 0 error)
+```
+`.coverage` de la raíz borrado. No se imprimió ningún valor de credencial real.

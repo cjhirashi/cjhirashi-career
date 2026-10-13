@@ -1,11 +1,25 @@
 """Fixtures compartidas. Variables mínimas ANTES de importar `config` (singleton)."""
 import os
 
-os.environ.setdefault("AI_DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/career_ai_test")
-os.environ.setdefault("SECRET_KEY", "test-secret-key-0123456789abcdef0123456789")
-os.environ.setdefault("ALGORITHM", "HS256")
-os.environ.setdefault("API_BASE_URL", "http://api.test")
-os.environ.setdefault("AI_SERVICE_TOKEN", "test-service-token")
+# Aislamiento (corre al importar conftest, ANTES de que cualquier test importe `config` y se
+# construya el singleton `settings`):
+#  1. Ningún `.env` (del cwd, de la raíz del repo o pasado con `_env_file=`) puede leerse: el de la
+#     raíz tiene credenciales reales de AWS y los tests nunca deben cargarlas.
+#  2. Se descartan las variables AWS_*/BEDROCK_* heredadas del entorno.
+#  3. Las variables mínimas se FIJAN (no setdefault) para que un entorno real no se cuele.
+from pydantic_settings.sources import DotEnvSettingsSource  # noqa: E402
+
+DotEnvSettingsSource._read_env_files = lambda self, *args, **kwargs: {}  # type: ignore[method-assign]
+
+_ISOLATED_PREFIXES = ("AWS_", "BEDROCK_")
+for _name in [k for k in os.environ if k.startswith(_ISOLATED_PREFIXES)]:
+    del os.environ[_name]
+
+os.environ["AI_DATABASE_URL"] = "postgresql+asyncpg://test:test@localhost:5432/career_ai_test"
+os.environ["SECRET_KEY"] = "test-secret-key-0123456789abcdef0123456789"
+os.environ["ALGORITHM"] = "HS256"
+os.environ["API_BASE_URL"] = "http://api.test"
+os.environ["AI_SERVICE_TOKEN"] = "test-service-token"
 
 # ---------------------------------------------------------------------------
 # Postgres desechable (secuencias, tsvector, GIN). NUNCA la BD de desarrollo.
@@ -14,6 +28,18 @@ os.environ.setdefault("AI_SERVICE_TOKEN", "test-service-token")
 import pytest  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isolated_environment(monkeypatch):
+    """Por test: sin AWS_*/BEDROCK_* en el entorno y sin clientes boto3 cacheados (antes y después)."""
+    for name in [k for k in os.environ if k.startswith(_ISOLATED_PREFIXES)]:
+        monkeypatch.delenv(name)
+    from providers.bedrock import client as bedrock_client
+
+    bedrock_client.reset_clients()
+    yield
+    bedrock_client.reset_clients()
 
 
 @pytest.fixture(scope="session")
