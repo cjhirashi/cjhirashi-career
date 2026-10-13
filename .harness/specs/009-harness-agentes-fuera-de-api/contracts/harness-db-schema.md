@@ -11,7 +11,7 @@ Fuente del inventario: metadatos SQLAlchemy de los modelos `bedrock_*` de la API
 (2026-10-13). Cambios respecto al origen: **sólo** se eliminan las FK a `users.id`
 (cruzan de BD, D-01/D-02); `user_id` queda `VARCHAR(20)` indexado, sin FK.
 
-## 1. Tablas (10 migradas + 1 nueva: `bedrock_agent_memory`)
+## 1. Tablas (11 migradas + 1 nueva: `bedrock_agent_memory`)
 
 | Tabla | PK | FK conservadas | Columnas |
 |---|---|---|---|
@@ -83,14 +83,14 @@ python scripts/copy_from_career_db.py --source $SOURCE_DATABASE_URL --dest $AI_D
   `mode:"verify"`; en ese modo la condición es `missing_in_dest == 0` (el destino puede
   tener **más** filas que el origen: la etapa 2 ya escribe en el harness).
 
-## 4. Migración de la API que elimina las 10 tablas (RF-011)
+## 4. Migración de la API que elimina las 11 tablas (RF-011)
 
 `cjhirashi-career-api/alembic/versions/<nueva>_drop_bedrock_tables.py`
 (`down_revision = "d8f2b5a13c97"`, único head hoy; se re-verifica al implementar).
 
 - `upgrade()`:
   1. **Guarda previa:** exige env `AI_COPY_REPORT` apuntando a un reporte con `ok:true`,
-     `generated_at` ≤ 24 h, las 10 tablas y `missing_in_dest == 0`; si no existe o no
+     `generated_at` ≤ 24 h, las 11 tablas y `missing_in_dest == 0`; si no existe o no
      cumple → `RuntimeError` **antes de cualquier DDL**. Además compara, tabla a tabla,
      los PK actuales de `career_db` contra el reporte (el origen no cambió desde la
      verificación).
@@ -103,7 +103,7 @@ python scripts/copy_from_career_db.py --source $SOURCE_DATABASE_URL --dest $AI_D
   con `--direction ai-to-api` o del backup (RNF-002).
 - Test de migración con dobles (patrón `test_vacancy_process_stage_migration.py`): guarda
   falla sin reporte / con reporte `ok:false` / con reporte viejo, sin emitir DDL; `upgrade`
-  elimina; `downgrade` recrea las 10 con las columnas de §1.
+  elimina; `downgrade` recrea las 11 con las columnas de §1.
 
 ## 5. Conteos de referencia (a rellenar en la operación, RNF-002)
 

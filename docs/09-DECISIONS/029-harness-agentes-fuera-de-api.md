@@ -29,7 +29,7 @@ Decisiones D-01..D-22 de la spec 009 (todas del usuario; D-15..D-22 en la Fase 2
 - `audit_logs` se queda en la API con endpoints REST (D-19); se añade `POST /notifications` solo para `service` (D-20). La BD del harness es `career_ai_db` en `postgres_db` con usuario propio (D-21).
 - Se elimina la indexación, la KB y Qdrant. La API queda como servicio de datos puro y los
   tokens `agent` quedan limitados a `/career/*`.
-- Corte en tres etapas reversibles; las 10 tablas `bedrock_*` se copian y luego se eliminan
+- Corte en tres etapas reversibles; las 11 tablas `bedrock_*` se copian y luego se eliminan
   de `career_db` con una migración que exige verificación previa.
 
 ## Qué reemplaza parcialmente

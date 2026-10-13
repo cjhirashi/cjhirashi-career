@@ -41,11 +41,11 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [x] **T-003** `[code]` (cubre RF-019) — Verificar `access_role` (modelo de usuario y
   `schemas`): confirmar `String(32)` sin CHECK y los lugares que validan los valores
   permitidos. Anotar archivos a ampliar con `service`. Sin cambios de código.
-- [ ] **T-004** `[code]` (cubre RF-007, RF-022, P3) — **[REQUIERE OK DEL USUARIO]**
+- [x] **T-004** `[code]` (cubre RF-007, RF-022, P3) — **[REQUIERE OK DEL USUARIO]**
   Obtener conteos reales de referencia (solo lectura): `SELECT count(*)` de las 10 tablas
   `bedrock_*` en `career_db` y número de puntos de memoria en Qdrant (scroll con conteo, sin
   escribir). Pegar los conteos en la evidencia; sirven de comparación para T-0xx de copia.
-- [ ] **T-005** `[code]` (cubre RNF-002) — **[REQUIERE OK DEL USUARIO]** Backup de
+- [x] **T-005** `[code]` (cubre RNF-002) — **[REQUIERE OK DEL USUARIO]** Backup de
   `career_db` (`pg_dump`) y snapshot de Qdrant antes de la etapa 1; guardar rutas y tamaños
   en la evidencia.
 
@@ -62,16 +62,16 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-013** `[code]` (cubre RF-008) — `src/app.py`, `src/routes/health.py`,
   `src/database.py` (engine/async session). Verde T-012.
 - [ ] **T-014** `[test]` (cubre RF-006) — `tests/unit/models/test_schema_matches_contract.py`:
-  los metadatos SQLAlchemy contienen las 10 tablas + `bedrock_agent_memory` con las columnas
+  los metadatos SQLAlchemy contienen las 11 tablas + `bedrock_agent_memory` (12) con las columnas
   de `contracts/harness-db-schema.md` §1, sin FK a `users`. Rojo.
-- [ ] **T-015** `[code]` (cubre RF-006) — `src/models/*` (10 modelos copiados de la API sin
+- [ ] **T-015** `[code]` (cubre RF-006) — `src/models/*` (11 modelos copiados de la API sin
   `ForeignKey("users.id")`). Verde parcial T-014 (sin memoria).
 - [ ] **T-016** `[test]` (cubre RF-006) — `tests/unit/services/test_id_generator.py`: IDs
   `bco/bcm/bct/btk/bam-N` con `nextval` en BD de test; sin colisión tras `setval`. Rojo.
 - [ ] **T-017** `[code]` (cubre RF-006) — `src/services/id_generator.py` (5 prefijos).
   Verde T-016.
 - [ ] **T-018** `[test]` (cubre RF-006, RF-022) — `tests/unit/migrations/test_initial_migration.py`:
-  `alembic upgrade head` en BD de test crea las 11 tablas, las secuencias, la columna
+  `alembic upgrade head` en BD de test crea las 12 tablas (11 migradas + `bedrock_agent_memory`), las secuencias, la columna
   generada `search_vector` y el índice GIN; `downgrade base` las elimina. Rojo.
 - [ ] **T-019** `[code]` (cubre RF-006, RF-022) — `alembic.ini`, `alembic/env.py` (async),
   `alembic/versions/0001_initial_harness_schema.py`. Verde T-018 y T-014 completo.
@@ -240,7 +240,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 ## Bloque H — Scripts de copia de datos (offline)
 
 - [ ] **T-120** `[test]` (cubre RF-007, RF-017) — `tests/unit/scripts/test_copy_from_career_db.py`
-  (BD de test origen/destino): copia las 10 tablas conservando ids; idempotente; `setval`
+  (BD de test origen/destino): copia las 11 tablas conservando ids; idempotente; `setval`
   (insertar tras copiar no colisiona); reporte JSON por tabla (`source`, `dest`,
   `missing_in_dest`, `checksum_ok`); exit ≠ 0 y `ok:false` si un conteo difiere; `--dry-run`;
   `--verify-only` tolera destino mayor; `--direction ai-to-api`. Rojo.
@@ -378,8 +378,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-190** `[test]` (cubre RF-011) — `tests/unit/test_drop_bedrock_tables_migration.py`
   (patrón `test_vacancy_process_stage_migration.py`, dobles): sin `AI_COPY_REPORT` / con
   `ok:false` / con reporte > 24 h / PK actuales ≠ reporte → `RuntimeError` **sin DDL**;
-  `upgrade` elimina las 10 tablas y secuencias (idempotente); `downgrade` recrea estructura
-  (10 tablas, columnas de `harness-db-schema.md` §1). Rojo.
+  `upgrade` elimina las 11 tablas y secuencias (idempotente); `downgrade` recrea estructura
+  (11 tablas, columnas de `harness-db-schema.md` §1). Rojo.
 - [ ] **T-191** `[code]` (cubre RF-011) — `alembic/versions/<nueva>_drop_bedrock_tables.py`
   (`down_revision` re-verificado contra el head real). Verde T-190.
 - [ ] **T-192** `[test]` (cubre RF-015) — `test_deploy_files.py`: `docker-compose.yml` no
@@ -390,7 +390,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   fresco, `copy_from_career_db.py --verify-only` (reporte `ok:true`) y confirmar reporte de
   memoria `ok:true`; snapshot de Qdrant. Pegar los tres.
 - [ ] **T-195** `[code]` (cubre RF-011) — **[REQUIERE OK DEL USUARIO]** `alembic upgrade
-  head` de la API con `AI_COPY_REPORT` apuntando al reporte; verificar que las 10 tablas ya
+  head` de la API con `AI_COPY_REPORT` apuntando al reporte; verificar que las 11 tablas ya
   no existen. Pegar `\dt`.
 - [ ] **T-196** `[code]` (cubre RF-015) — **[REQUIERE OK DEL USUARIO]** Detener y eliminar
   el contenedor y volumen `qdrant`; `docker compose up` sin `qdrant`; humo end-to-end
@@ -600,3 +600,79 @@ Archivos a ampliar con `service` / claim `role`:
 6. `cjhirashi-career-ai/src/middleware/auth.py` (nuevo; lee el claim)
 7. Tests: nuevos `test_jwt_role_claim`, `test_agent_service_scope`; ampliar `tests/unit/test_middleware*.py`
 8. Docs: `docs/ENVIRONMENT-SECURITY.md` (procedimiento fuera de banda). Sin migración ni cambios en schemas ni Admin.
+
+**T-004 (2026-10-13, solo lectura, autorizada por el usuario):**
+Discrepancia: `\dt bedrock_*` da **11** tablas, no 10 (incluye `bedrock_conversation_messages`);
+`harness-db-schema.md` §1 ya lista las 11. El arquitecto corregirá spec/plan/tasks.
+```
+$ docker exec postgres_db psql -U career_admin -d career_db -Atc "select count(*) from <tabla>"
+bedrock_agent_delegation 1
+bedrock_agent_profile_photos 12
+bedrock_agent_profile_prompts 1
+bedrock_agent_profile_tools 1
+bedrock_conversation_messages 578
+bedrock_conversations 42
+bedrock_custom_tools 0
+bedrock_settings 1
+bedrock_tasks 4
+bedrock_usage_logs 432
+bedrock_usage_round_logs 824
+```
+Qdrant (contenedor `qdrant`, 172.20.0.5:6333 en net-cjhirashi-career, sin API key; la API usa
+`QDRANT_URL=http://qdrant:6333`). `GET /collections` -> solo `career_knowledge`;
+`POST /collections/career_knowledge/points/count {"exact":true}` -> `{"count":271}`.
+Memoria del agente: se guarda en `career_knowledge` con `resource_key` = `manual_memory` o
+`agent-notes` (`local_memory.py:99`, `:106`/`:138`). Scroll de los 271 puntos agrupado por `resource_key`:
+```
+$ curl -s -X POST http://172.20.0.5:6333/collections/career_knowledge/points/scroll -H 'Content-Type: application/json' -d '{"limit":300,"with_payload":["resource_key"],"with_vector":false}' | python3 (Counter)
+puntos: 271 next_page_offset: None
+competencies: 68
+operational-methodologies: 22
+target-companies: 15
+networking-activities: 15
+networking-contacts: 14
+certifications: 13
+market-segments: 12
+projects: 11
+contact-interactions: 10
+role-narratives: 10
+role-gap-analysis: 8
+fit-scoring-factors: 7
+cover-letter-versions: 7
+publications: 7
+achievements: 6
+work-history: 6
+career-reviews: 6
+identity-reflections: 4
+target-roles: 4
+star-stories: 4
+agent-tasks: 4
+differentiators: 3
+vacancies: 3
+personal-profile: 2
+identity: 2
+portal-home: 1
+applications: 1
+linkedin-profile: 1
+portal-about: 1
+tags: 1
+search-plans: 1
+github-profile: 1
+portal-contact: 1
+$ POST /collections/career_knowledge/points/count {"exact":true,"filter":{"must":[{"key":"resource_key","match":{"value":"<k>"}}]}}
+manual_memory: {"result":{"count":0},"status":"ok"}
+agent_note: {"result":{"count":0},"status":"ok"}
+agent-notes: {"result":{"count":0},"status":"ok"}
+```
+**Conclusión: la memoria a migrar en Qdrant hoy es 0 puntos.** Los 271 son registros de carrera
+indexados (derivados del CRUD) y no se migran (contrato `harness-db-schema.md` §6).
+
+**T-005 (2026-10-13, autorizada por el usuario):**
+```
+pg_dump -Fc: /mnt/disco2/cjhirashi-data/backups/career_db_pre_009_20261013_202038.dump  904162 bytes
+pg_restore -l (dentro de postgres_db): Format CUSTOM, Dump Version 1.14-0, TOC Entries 707, 718 líneas
+Snapshot Qdrant (POST /collections/career_knowledge/snapshots):
+  career_knowledge-8617655084996019-2026-10-13-20-20-39.snapshot  20825600 bytes
+  sha256 cf381d823e721929aa01e38f999d50864b352e84154c16d8979bbbc733092e43 (= checksum de la API; tar tf válido)
+Copia (descargada por API): /mnt/disco2/cjhirashi-data/backups/qdrant_pre_009_20261013/career_knowledge-8617655084996019-2026-10-13-20-20-39.snapshot  20825600 bytes (sha256 idéntico)
+```

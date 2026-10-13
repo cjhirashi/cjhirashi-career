@@ -14,7 +14,7 @@ Spec: `spec.md` (Gate 1 aprobado, commit c9393a95). Contratos en `contracts/`:
 |---|---|
 | `contracts/ai-routes.md` | Inventario de las **47** operaciones (39 `/bedrock/*` + 8 `/agent-tasks/*`; no 22) y su disposición (P/P*/S/X) |
 | `contracts/auth-jwt-service-account.md` | JWT compartido con claim `role`, rol `service` y su lista de rutas |
-| `contracts/harness-db-schema.md` | 10 tablas, secuencias, script de copia, migración DROP de la API |
+| `contracts/harness-db-schema.md` | 11 tablas (+ memoria), secuencias, script de copia, migración DROP de la API |
 | `contracts/harness-api-dependencies.md` | 41 tools → endpoint REST (OK/GAP/LOCAL) y cliente `clients/` |
 | `contracts/agent-registry.json` | 20 perfiles (id, label, nivel) compartidos API/harness |
 
@@ -65,7 +65,7 @@ cjhirashi-career-ai/
                    web_search.py github_tools.py agent_registry.py
     repositories/  conversation_repo.py task_repo.py settings_repo.py profile_repo.py
                    usage_repo.py custom_tool_repo.py
-    models/        los 10 modelos bedrock_* (sin FK a users)
+    models/        los 11 modelos bedrock_* (sin FK a users)
     providers/     base.py  bedrock/{client.py,converse.py,images.py,pricing.py}
     clients/       api_client.py career.py files.py sections.py linkedin.py pdf.py
                    job_discovery.py errors.py
@@ -135,7 +135,7 @@ Cada fila va con su test (§8).
 | `src/services/task_scheduler.py` | Quitar | Pasa al harness (`services/task_scheduler.py`). Se retira su arranque de `app.py`. |
 | `src/routes/bedrock.py`, `src/routes/bedrock_tasks.py` | Quitar | RF-009. |
 | `src/schemas/bedrock*.py` | Quitar | |
-| `src/models/bedrock_*.py` (10) y sus imports en `models/__init__.py` | Quitar | Tras la migración DROP. |
+| `src/models/bedrock_*.py` (11) y sus imports en `models/__init__.py` | Quitar | Tras la migración DROP. |
 | `src/app.py` | Editar | Quitar `include_router` de ambas rutas, el arranque/parada del scheduler, el cierre de Qdrant y cualquier métrica Bedrock. |
 | `src/middleware/auth.py` | Editar | Quitar el permiso `POST /bedrock/chat` del rol `agent`; el rol `agent` solo pasa en `/career/*`; el resto → 403 (RF-018). Añadir el rol `service` con su lista explícita (`SERVICE_ALLOWED_PREFIXES`) y emitir/leer el claim `role` (`services/auth_service.py`, RF-019). Sin migración: `access_role` es `String(32)` sin CHECK. |
 | `src/routes/notifications.py` (nuevo), `src/routes/audit_log.py` (nuevo), `src/services/audit_service.py` | Crear | `POST /notifications` (solo `service`, RF-020); lectura y restauración de `audit_logs` por REST (RF-021). Etapa 1 (aditivos). |
@@ -194,7 +194,7 @@ claim `role`, rol `service`, `/notifications` y `/audit-log` (aditivos, etapa 1)
 
 ## 6 · BD y migración de datos
 
-Detalle en `contracts/harness-db-schema.md`. Resumen: 10 tablas con los mismos nombres y
+Detalle en `contracts/harness-db-schema.md`. Resumen: 11 tablas con los mismos nombres y
 tipos más `bedrock_agent_memory` (nueva, FTS; contenido migrado de Qdrant con `scripts/migrate_memory_from_qdrant.py` y reporte de conteos); sin FK a `users`; migración inicial propia; secuencias recreadas y ajustadas con
 `setval` tras copiar; script offline idempotente con reporte por tabla (origen, destino,
 faltantes, checksum) que termina con error si algún conteo difiere (RF-007); modo
@@ -244,7 +244,7 @@ Orden: para cada tarea, primero el test (rojo), luego el código (verde). Todos 
 | R1 | Regresión funcional del bucle al trasladar 7.8k líneas | Mover con tests existentes primero; traslado mecánico; paridad por contrato |
 | R2 | Las tools pasan de BD directa a REST: latencia/costes en bucles largos y N+1 (`bulk_update`) | Cliente con paginación tope; medir en etapa 1; `bulk_update` secuencial con límite |
 | R3 | La lista del rol `service` puede quedarse corta frente a las tools programadas reales | Inventario en Fase 3; 403 explícito como error de tool; ampliar solo con cambio de spec |
-| R4 | Pérdida de memoria del agente (solo en Qdrant) | `migrate_memory_from_qdrant.py` con reporte de conteos; gate + snapshot antes de borrar el volumen; cambia la relevancia (FTS vs vectorial) |
+| R4 | Pérdida de memoria del agente (solo en Qdrant). **Residual:** T-004 midió 0 puntos de memoria (`manual_memory`/`agent-notes`); los 271 puntos de Qdrant son registros de carrera indexados (se descartan, D-04) | `migrate_memory_from_qdrant.py` se mantiene por si se crea memoria antes del corte, con reporte de conteos; gate + snapshot antes de borrar el volumen; cambia la relevancia (FTS vs vectorial) |
 | R5 | Secuencias desincronizadas tras copiar | `setval` en el script + test |
 | R6 | El harness no consulta `is_active`: un usuario desactivado conserva el chat hasta que expire el access token | **Riesgo aceptado por el usuario (D-23).** Mitigación: los datos pasan por la API con el mismo token (que sí rechaza). Tokens antiguos sin `role` = user |
 | R7 | Dependencia circular de arranque (harness ↔ API) | `/health` del harness no falla si la API está caída al arrancar |
@@ -272,7 +272,7 @@ Rutas del harness en `cjhirashi-career-ai/src/routes/{bedrock,agent_profiles,mem
 `cjhirashi-career-ai/src/providers/base.py` (`ModelProvider`), `src/providers/bedrock/{client,converse,images,pricing}.py`, fábrica en `src/config.py`; `services/agent_loop.py`, `services/usage_service.py` e `services/image_service.py` dependen solo del protocolo. Prueba AST `tests/unit/test_provider_boundary.py`.
 
 ### Implementación de RF-006
-`cjhirashi-career-ai/src/models/*` (10 modelos), `src/repositories/*`, `src/database.py`, `alembic/versions/0001_initial_harness_schema.py`, `src/services/id_generator.py`. Esquema: `contracts/harness-db-schema.md` §1–2.
+`cjhirashi-career-ai/src/models/*` (11 modelos + `bedrock_agent_memory`), `src/repositories/*`, `src/database.py`, `alembic/versions/0001_initial_harness_schema.py`, `src/services/id_generator.py`. Esquema: `contracts/harness-db-schema.md` §1–2.
 
 ### Implementación de RF-007
 `cjhirashi-career-ai/scripts/copy_from_career_db.py` (upsert idempotente, ids conservados, `setval`, reporte JSON, exit ≠ 0 si un conteo difiere, `--verify-only`, `--direction`). Tests en `cjhirashi-career-ai/tests/unit/scripts/test_copy_from_career_db.py`. Contrato: `harness-db-schema.md` §3.
@@ -351,7 +351,7 @@ Una fila = una tarea `[doc]`.
 | 21 | `cjhirashi-career-api/README.md` y `src/README.md`, `src/models/README.md` | Quitar Bedrock/Qdrant |
 | 22 | `cjhirashi-career-api/docs/ARCHITECTURE.md` | Capas sin harness |
 | 23 | `cjhirashi-career-api/docs/API.md` | Retirar rutas |
-| 24 | `cjhirashi-career-api/docs/DATABASE.md` | Retirar 10 tablas |
+| 24 | `cjhirashi-career-api/docs/DATABASE.md` | Retirar 11 tablas |
 | 25 | `cjhirashi-career-api/docs/BEDROCK-HARNESS.md` | Mover al README del harness |
 | 26 | `cjhirashi-career-api/docs/sections/` (bedrock, bedrock-tasks, files, linkedin, pdf-*, career-*) | Actualizar o retirar |
 | 27 | `cjhirashi-career-api/src/services/bedrock/README.md` | Retirar |

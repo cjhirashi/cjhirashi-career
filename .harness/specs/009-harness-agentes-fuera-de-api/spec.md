@@ -85,7 +85,7 @@ pantallas de agentes, pero habla directamente con `cjhirashi-career-ai`.
 Inventario actual (solo lectura, 2026-10-13):
 - API `services/bedrock/` (~7.8k líneas), `bedrock_service.py`, `qdrant_service.py`,
   `routes/bedrock.py`, `routes/bedrock_tasks.py`, `schemas/bedrock*.py`.
-- 10 tablas `bedrock_*` (conversation, settings, task, usage_log, usage_round_log,
+- 11 tablas `bedrock_*` (conversation, conversation_message, settings, task, usage_log, usage_round_log,
   custom_tool, agent_delegation, profile_photo, profile_prompt, profile_tool).
 - Acoplamientos en `app.py`, `middleware/auth.py`, `career_repository.py` (hook de
   indexado, `_KB_EXCLUDED_COLUMNS`), `admin_sections`, `methodology_scope`,
@@ -107,7 +107,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   tools, delegación, memoria, tareas programadas de agentes, uso/costes, generación de
   imágenes (D-05).
 - Abstracción de proveedor de modelos con Bedrock como única implementación (D-05).
-- BD propia del harness con sus migraciones; trasladar los datos de las 10 tablas
+- BD propia del harness con sus migraciones; trasladar los datos de las 11 tablas
   `bedrock_*` y eliminarlas de `career_db` (D-02).
 - Tools del harness que leen/escriben datos de carrera vía API REST (D-01).
 - Admin: las pantallas y el chat de agentes llaman directo a `cjhirashi-career-ai` por
@@ -162,7 +162,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   importar el SDK de AWS (D-05).
 - **RF-006** El harness DEBE persistir conversaciones, perfiles, prompts, tools, tareas,
   delegaciones y uso/costes en su propia BD, con migraciones propias (D-02).
-- **RF-007** La migración de datos DEBE copiar las 10 tablas `bedrock_*` de `career_db`
+- **RF-007** La migración de datos DEBE copiar las 11 tablas `bedrock_*` de `career_db`
   a la BD del harness conservando identificadores, y DEBE reportar el conteo por tabla en
   origen y destino; SI algún conteo difiere, ENTONCES DEBE terminar con error.
 - **RF-022** El harness DEBE guardar la memoria del agente (notas y hechos) en su BD con
@@ -176,7 +176,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
 - **RF-010** CUANDO se crea, actualiza o elimina un registro de carrera, la API NO DEBE
   generar embeddings ni escribir en Qdrant; el código de Bedrock, de la KB y de Qdrant y
   sus dependencias DEBEN desaparecer de la API (D-04, D-05).
-- **RF-011** La migración de la API DEBE eliminar las 10 tablas `bedrock_*` sólo después
+- **RF-011** La migración de la API DEBE eliminar las 11 tablas `bedrock_*` sólo después
   de verificar la copia (RF-007), y su `downgrade` DEBE recrear su estructura (los datos
   se restauran del backup).
 - **RF-018** SI un token `agent` llama a una ruta fuera de `/career/*`, ENTONCES la API
@@ -259,6 +259,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   aceptar la pérdida de rutas.
 - **D-18:** claim `role` en el JWT. *Descartado:* endpoint `GET /auth/session`.
 - **D-19:** `audit_logs` se queda en la API con endpoints REST. *Descartado:* moverla.
+- **Errata 2026-10-13 (T-004):** son 11 tablas `bedrock_*`, no 10 (faltaba `bedrock_conversation_messages`, 578 filas). No cambia ninguna decisión. En `career_ai_db` serán 11 migradas + `bedrock_agent_memory` = 12. T-004 también midió 0 puntos de memoria en Qdrant (los 271 puntos son registros de carrera indexados).
 - **D-25 (usuario, 2026-10-13, tras T-002/T-003):** nueva ruta aditiva `GET /files/{id}` en
   la API (metadatos del archivo: `id`, `mime_type`, `original_filename`, tamaño, categoría,
   como los elementos de `GET /files`), dentro de `/files` ya permitido a `service`; la
