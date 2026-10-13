@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     API_BASE_URL: str = Field(..., description="URL base de la API de datos")
     AI_SERVICE_TOKEN: str = Field(..., description="JWT de la cuenta de servicio del harness")
 
+    # Cliente REST (RF-003): timeout por petición y tope duro de registros que `list` lee (coste/latencia).
+    API_TIMEOUT_SECONDS: float = Field(default=15.0, gt=0)
+    API_LIST_MAX_ITEMS: int = Field(default=500, ge=1)
+
     # Memoria del agente (full-text, D-24).
     MEMORY_FTS_CONFIG: str = Field(default="spanish", description="Configuración regconfig de FTS")
 

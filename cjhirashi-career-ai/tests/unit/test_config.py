@@ -80,3 +80,22 @@ def test_invalid_fts_config_is_rejected(clean_env, bad):
     with pytest.raises(ValidationError) as exc:
         _settings()
     assert "MEMORY_FTS_CONFIG" in str(exc.value)
+
+
+@pytest.mark.requisito("RF-003")
+def test_rest_client_settings_have_safe_defaults(clean_env):
+    for k, v in REQUIRED.items():
+        clean_env.setenv(k, v)
+    s = _settings()
+    assert s.API_TIMEOUT_SECONDS == 15.0
+    assert s.API_LIST_MAX_ITEMS == 500
+
+
+@pytest.mark.requisito("RF-003")
+@pytest.mark.parametrize("name,value", [("API_TIMEOUT_SECONDS", "0"), ("API_LIST_MAX_ITEMS", "0")])
+def test_rest_client_settings_reject_non_positive(clean_env, name, value):
+    for k, v in REQUIRED.items():
+        clean_env.setenv(k, v)
+    clean_env.setenv(name, value)
+    with pytest.raises(ValidationError):
+        _settings()

@@ -100,31 +100,31 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque C — AI: clientes REST hacia la API
 
-- [ ] **T-030** `[test]` (cubre RF-004, RF-003) — `tests/unit/clients/test_api_client.py`
+- [x] **T-030** `[test]` (cubre RF-004, RF-003) — `tests/unit/clients/test_api_client.py`
   (`httpx.MockTransport`): bearer del `Principal`; `AI_SERVICE_TOKEN` con `ServiceContext`;
   sin contexto → `MissingCredentialError`; 401/403/404/409/422 → `ApiError`; reintento sólo
   en idempotentes 5xx/timeout (máx. 2). Rojo.
-- [ ] **T-031** `[code]` (cubre RF-004) — `src/middleware/principal.py`,
+- [x] **T-031** `[code]` (cubre RF-004) — `src/middleware/principal.py`,
   `src/clients/api_client.py`. Verde T-030.
-- [ ] **T-032** `[test]` (cubre RF-003) — `tests/unit/clients/test_career.py`: list con
+- [x] **T-032** `[test]` (cubre RF-003) — `tests/unit/clients/test_career.py`: list con
   paginación y tope, get/create/update/delete, `count`, `distinct`, `bulk_update` = N× PUT.
   Rojo.
-- [ ] **T-033** `[code]` (cubre RF-003) — `src/clients/career.py`. Verde T-032.
-- [ ] **T-034** `[test]` (cubre RF-003, RF-004) — `tests/unit/clients/test_files_sections.py`:
+- [x] **T-033** `[code]` (cubre RF-003) — `src/clients/career.py`. Verde T-032.
+- [x] **T-034** `[test]` (cubre RF-003, RF-004) — `tests/unit/clients/test_files_sections.py`:
   `files` (POST multipart, GET raw, PATCH visibilidad), `sections` (`GET/PUT /admin/sections`),
   metodologías (`/career/operational-methodologies`). Rojo.
-- [ ] **T-035** `[code]` (cubre RF-003) — `src/clients/{files,sections}.py`. Verde T-034.
-- [ ] **T-036** `[test]` (cubre RF-003) — `tests/unit/clients/test_linkedin_pdf_jobs_errors.py`:
+- [x] **T-035** `[code]` (cubre RF-003) — `src/clients/{files,sections}.py`. Verde T-034.
+- [x] **T-036** `[test]` (cubre RF-003) — `tests/unit/clients/test_linkedin_pdf_jobs_errors.py`:
   `linkedin`, `pdf` (`/pdf-templates`, `/pdf-template-styles`), `job_discovery`, `errors`
   (`POST /system/error-report` sin auth). Rojo.
-- [ ] **T-037** `[code]` (cubre RF-003) — `src/clients/{linkedin,pdf,job_discovery,errors}.py`.
+- [x] **T-037** `[code]` (cubre RF-003) — `src/clients/{linkedin,pdf,job_discovery,errors}.py`.
   Verde T-036.
-- [ ] **T-038** `[test]` (cubre RF-020, RF-021) — `tests/unit/clients/test_notifications_audit.py`:
+- [x] **T-038** `[test]` (cubre RF-020, RF-021) — `tests/unit/clients/test_notifications_audit.py`:
   `POST /notifications` con token de servicio; `GET /audit-log`, `POST /audit-log/{id}/restore`
   con el JWT del usuario. Rojo.
-- [ ] **T-039** `[code]` (cubre RF-020, RF-021) — `src/clients/{notifications,audit}.py`.
+- [x] **T-039** `[code]` (cubre RF-020, RF-021) — `src/clients/{notifications,audit}.py`.
   Verde T-038.
-- [ ] **T-040** `[test]` (cubre RF-003) — `tests/unit/test_isolation.py`: regex sobre
+- [x] **T-040** `[test]` (cubre RF-003) — `tests/unit/test_isolation.py`: regex sobre
   `src/` sin referencias a `career_db`, `qdrant`, `SOURCE_`, `psycopg` hacia otra BD. Rojo
   si queda alguna. (Se ejecuta de nuevo al final de cada bloque.)
 
@@ -1061,3 +1061,72 @@ cjhirashi-career-ai/:  pytest                                         -> TOTAL 6
 GATE_EXIT=0   (31 ok · 3 warn · 0 error)
 ```
 `.coverage` de la raíz borrado. No se imprimió ningún valor de credencial real.
+
+### Bloque C (clientes REST) — evidencia
+
+**T-030/T-032 (rojo)** `pytest --no-cov tests/unit/clients` antes de crear `src/clients`:
+```
+tests/unit/clients/test_career.py:7: in <module>
+    from clients.api_client import ApiError
+E   ModuleNotFoundError: No module named 'clients'
+ERROR tests/unit/clients/test_api_client.py
+ERROR tests/unit/clients/test_career.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!
+============================== 2 errors in 0.23s ===============================
+```
+**T-031/T-033 (verde)** `src/middleware/{__init__,principal}.py`, `src/clients/{__init__,api_client,career}.py`; `Settings`
+gana `API_TIMEOUT_SECONDS` (15.0) y `API_LIST_MAX_ITEMS` (500) (`API_BASE_URL`/`AI_SERVICE_TOKEN` ya existían desde T-011);
+`.env.example` actualizado (sin valores reales); 2 tests nuevos en `test_config.py`:
+```
+tests/unit/clients/test_api_client.py .........................          [ 43%]
+tests/unit/clients/test_career.py ...............                        [ 70%]
+tests/unit/test_config.py .................                              [100%]
+============================== 57 passed in 0.40s ==============================
+```
+**T-034 (rojo)** `ModuleNotFoundError: No module named 'clients.files'` · `1 error during collection`.
+**T-035 (verde)** `src/clients/{files,sections}.py`: `tests/unit/clients/test_files_sections.py .......  7 passed`.
+**T-036 (rojo)** `ERROR tests/unit/clients/test_linkedin_pdf_jobs_errors.py` · `1 error during collection`.
+**T-037 (verde)** `src/clients/{linkedin,pdf,job_discovery,errors}.py`: `test_linkedin_pdf_jobs_errors.py ........  8 passed`.
+**T-038 (rojo)** `ERROR tests/unit/clients/test_notifications_audit.py` · `1 error during collection`.
+**T-039 (verde)** `src/clients/{notifications,audit}.py`: `test_notifications_audit.py .......  7 passed`.
+**T-040 (rojo, con una violación temporal `import psycopg2` en `src/_violacion_temporal.py`, luego borrada)**:
+```
+E   assert ["_violacion_...: 'psycopg2'"] == []
+FAILED tests/unit/test_isolation.py::test_src_has_no_reference_to_career_db_qdrant_or_foreign_db_drivers
+========================= 1 failed, 1 passed in 0.21s ==========================
+```
+**T-040 (verde)** sin la violación: `tests/unit/test_isolation.py ..  2 passed`.
+
+**Suite completa y cobertura** (desde `cjhirashi-career-ai/` con `pytest`, y desde la raíz con `-c cjhirashi-career-ai/pytest.ini`):
+```
+src/clients/api_client.py       94  0 100%     src/clients/audit.py          11 0 100%
+src/clients/career.py           78  0 100%     src/clients/errors.py         14 0 100%
+src/clients/files.py            21  0 100%     src/clients/job_discovery.py  14 0 100%
+src/clients/linkedin.py         14  0 100%     src/clients/notifications.py   9 0 100%
+src/clients/pdf.py              35  0 100%     src/clients/sections.py       22 0 100%
+src/middleware/principal.py     30  0 100%     TOTAL 945 18 98%
+AI (cwd=cjhirashi-career-ai):  204 passed, 12 skipped, 1 warning
+raíz (-c ...pytest.ini):       204 passed, 12 skipped, 1 warning
+GATE_EXIT=0   (30 ok · 4 warn · 0 error; el warn nuevo: superficie observable (.env.example) sin doc del mapa -> cubierto por T-233)
+```
+Notas: los 2 tests de `Settings` nuevos se escribieron junto al código (sin rojo previo separado). El paginado usa los
+query params reales de la API (`skip`/`limit`), `audit-log` usa `limit`/`offset`. `.coverage` de la raíz borrado.
+
+**Menores del revisor (bloque C), test-first** — `tests/unit/clients/test_hardening.py`.
+Rojo (`pytest --no-cov tests/unit/clients/test_hardening.py`):
+```
+FAILED test_repr_never_contains_the_token
+FAILED test_blank_principal_token_is_missing_credential[] / [   ] / [\t\n]
+FAILED test_blank_service_token_is_missing_credential[] / [  ]
+FAILED test_timeout_zero_is_not_replaced_by_default   (luego renombrado a test_explicit_timeout_zero_is_respected)
+FAILED test_cookies_are_not_kept_between_requests
+FAILED test_error_report_never_raises_on_unserializable_payload
+============================== 9 failed in 0.34s ===============================
+```
+Verde: `token` con `field(repr=False)`; `_bearer()` rechaza token vacío/blanco con `MissingCredentialError` (modos context y service);
+`timeout if timeout is not None`; `cookies.clear()` tras cada respuesta; `ErrorsClient.report` captura `Exception`.
+```
+test_hardening.py .........   ·   errors.py 100%  api_client.py 100%  principal.py 100%  TOTAL 957 18 98%
+AI (cwd=cjhirashi-career-ai): 213 passed, 12 skipped · raíz (-c ...): 213 passed, 12 skipped · GATE_EXIT=0
+```
+Nota: el test del timeout se reescribió tras el rojo (la primera versión esperaba `ValueError`, no válido); el rojo real es el caso `timeout=0`.
