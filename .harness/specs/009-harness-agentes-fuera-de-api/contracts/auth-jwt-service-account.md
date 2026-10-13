@@ -32,7 +32,9 @@ y devuelve al **dueño** (`owner_id` o `PUBLIC_PORTAL_USER_ID`).
 1. El Admin envía el mismo `Authorization: Bearer <access_token>`.
 2. `cjhirashi-career-ai/src/middleware/auth.py` decodifica con `SECRET_KEY` + `ALGORITHM`
    compartidos (misma variable, un solo `.env`). Falla → **401** sin procesar el cuerpo:
-   firma inválida, `exp` vencido, `type == "refresh"`, `sub` ausente, `role` desconocido.
+   firma inválida, `exp` vencido **o ausente**, `type` distinto de `access` (ausente =
+   `access`; así se rechazan `refresh` y el `state` de LinkedIn OAuth), `sub` ausente,
+   `role` desconocido (D-27).
 3. `role == "agent"` o `role == "service"` → **403** en las rutas de chat y gestión
    (D-14: los tokens de agente y de servicio no usan el chat). Sin claim = `user`.
 4. Pone `Principal(user_id=sub, token)` en `contextvars`.
@@ -78,5 +80,7 @@ y devuelve al **dueño** (`owner_id` o `PUBLIC_PORTAL_USER_ID`).
 | ai/middleware | sin header, firma inválida, expirado, refresh, `role` desconocido → 401; `role` agent/service → 403; sin claim → user; token válido → `Principal`; **sin llamada a la API** |
 | ai/clients | usuario → API recibe el mismo bearer; scheduler → `AI_SERVICE_TOKEN`; sin contexto → `MissingCredentialError` |
 | ai/e2e | JWT real firmado con secreto de prueba contra API simulada (`httpx.MockTransport`) |
+| ai/middleware (D-27) | sin `exp` → 401; `type` `refresh`/`linkedin_oauth_state`/otro → 401; `type` ausente o `access` → aceptado |
 | api/auth | tokens emitidos llevan `role` correcto; token sin claim = user; claim desconocido → 401; discrepancia claim/BD manda la BD |
+| api/auth (D-27) | access tokens emitidos llevan `"type": "access"`; sin `exp` → 401; `state` de LinkedIn OAuth como bearer → 401; `type` ausente → aceptado; el flujo OAuth de LinkedIn (`decode_state_token`) sigue funcionando |
 | api/middleware | `agent`: `/career/*` 200, todo lo demás 403; `service`: cada prefijo de la lista 200 y rutas fuera (p. ej. `/auth/*` de gestión, `/users`) 403; `POST /notifications` sólo `service` |

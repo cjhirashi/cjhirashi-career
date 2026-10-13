@@ -135,6 +135,11 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   firma inválida, expirado, refresh, `role` desconocido → 401; `role` agent/service → 403;
   sin claim = user; token válido → `Principal`; ninguna llamada a la API. Rojo.
 - [x] **T-051** `[code]` (cubre RF-002, RF-019) — `src/middleware/auth.py`. Verde T-050.
+- [ ] **T-052** `[test]` (cubre RF-019, D-27) — `tests/unit/middleware/test_auth.py`: sin
+  `exp` → 401; `type` `refresh`, `linkedin_oauth_state` u otro → 401; `type` ausente o
+  `access` → `Principal`. Rojo.
+- [ ] **T-053** `[code]` (cubre RF-019, D-27) — `src/middleware/auth.py` (`require` de
+  `exp`/`sub`; lista blanca de `type`). Verde T-052.
 
 ## Bloque E — AI: repositorios y servicios (catálogo, ajustes, uso)
 
@@ -312,6 +317,13 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   token `service` 200 (dentro de `/files`); `agent` 403 (D-25). Rojo. Luego `[code]`:
   `src/routes/files.py` (ruta nueva, aditiva; sin romper `/raw` ni `/visibility`). Verde.
   Desbloquea `store_uploaded_image` (T-088/T-089).
+- [ ] **T-142** `[test]` (cubre RF-019, D-27) — `tests/unit/test_jwt_hardening.py` (API):
+  `create_access_token` emite `"type": "access"`; `decode_access_token` y
+  `get_current_user` rechazan (401) un token sin `exp` y el `state` de LinkedIn OAuth como
+  bearer; aceptan `type` ausente; `decode_state_token` sigue funcionando. Rojo.
+- [ ] **T-143** `[code]` (cubre RF-019, D-27) — `src/services/auth_service.py`
+  (`_create_token`, `decode_token` con `require`, `decode_access_token` con lista blanca de
+  `type`). Verde T-142 sin romper la suite de auth/LinkedIn existente.
 - [ ] **T-140** `[code]` (cubre RNF-001) — `pytest` completo de la API y del AI; pegar la
   salida y la cobertura. Cierra la parte de código de la etapa 1.
 
@@ -495,7 +507,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RF-016 | T-150, T-151, T-163 | test_deploy_files (caddy) | |
 | RF-017 | T-001, T-120, T-121, T-161, T-163, T-176, T-187, T-194 | test_copy_from_career_db · evidencia por etapa | |
 | RF-018 | T-002, T-132, T-133, T-141 | test_agent_service_scope · test_file_metadata_route | |
-| RF-019 | T-003, T-050, T-130, T-131 | test_jwt_role_claim · test_auth (ai) | |
+| RF-019 | T-003, T-050, T-052, T-053, T-130, T-131, T-142, T-143 | test_jwt_role_claim · test_jwt_hardening · test_auth (ai) | |
 | RF-020 | T-038, T-039, T-092, T-134, T-135 | test_notifications_route · test_task_scheduler | |
 | RF-021 | T-038, T-039, T-088, T-107, T-136, T-137 | test_audit_log_routes · test_tools_files_pdf_linkedin_audit | |
 | RF-022 | T-004, T-018, T-080..T-083, T-122, T-123, T-162 | test_memory_repo · test_memory_service · test_migrate_memory_from_qdrant | |

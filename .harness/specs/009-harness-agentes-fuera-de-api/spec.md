@@ -45,6 +45,7 @@ covers:
   - cjhirashi-career-api/src/routes/audit_log.py
   - cjhirashi-career-api/src/services/audit_service.py
   - cjhirashi-career-api/tests/unit/test_jwt_role_claim.py
+  - cjhirashi-career-api/tests/unit/test_jwt_hardening.py
   - cjhirashi-career-api/tests/unit/test_notifications_route.py
   - cjhirashi-career-api/tests/unit/test_audit_log_routes.py
   - cjhirashi-career-api/docs/ARCHITECTURE.md
@@ -186,7 +187,9 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   responder 403 (D-17).
 - **RF-019** Los tokens que emite la API DEBEN incluir el claim `role` (`user`, `agent`
   o `service`); SI un token válido no trae el claim, ENTONCES API y harness DEBEN
-  tratarlo como `user` (D-18).
+  tratarlo como `user` (D-18). API y harness DEBEN rechazar con 401 un token sin `exp` o
+  con `type` distinto de `access` (ausente = `access`); la API DEBE emitir `"type":
+  "access"` en los access tokens (D-27).
 - **RF-020** CUANDO un token `service` hace `POST /notifications`, la API DEBE crear la
   notificación y el Admin DEBE mostrarla como hoy (D-20).
 - **RF-021** La API DEBE conservar `audit_logs` y exponer por REST la lectura del
@@ -283,6 +286,17 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   token. Los datos siguen pasando por la API, que sí lo rechaza.
 - **D-24:** la búsqueda de memoria usa full-text de Postgres con configuración `spanish`,
   configurable por variable de entorno (`MEMORY_FTS_CONFIG`).
+- **D-27 (usuario, 2026-10-13, Fase 4, tras el bloque D):** se endurece la validación del
+  JWT en API y harness por igual. (1) `exp` obligatorio (`options={"require": ["exp",
+  "sub"]}`); hoy todo token emitido ya lo trae. (2) La API emite `"type": "access"` en los
+  access tokens; API y harness aceptan como access sólo `type == "access"` o `type`
+  ausente (compatibilidad con los emitidos antes del despliegue, como RF-019 con `role`),
+  y rechazan con 401 cualquier otro valor. Motivo verificado: el token `state` de LinkedIn
+  OAuth (`linkedin_service.build_state_token`, `type = "linkedin_oauth_state"`, mismo
+  `SECRET_KEY`) hoy se acepta como bearer en la API porque `decode_access_token` sólo
+  excluye `refresh`. *Descartado:* paridad con la validación vigente (a); exigir `type`
+  presente ya (cerraría las sesiones vigentes y los tokens de agente sin `type`; se puede
+  hacer más adelante cuando caduquen todos).
 
 ## 7 · Requisitos no funcionales
 
