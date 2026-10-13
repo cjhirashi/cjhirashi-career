@@ -42,12 +42,11 @@ servicios:
   cjhirashi-career-admin:     { stack: react/vite (SPA),      tipo: panel de administración }
   cjhirashi-career-portfolio: { stack: react/vite (SPA),      tipo: portal público read-only }
   # cjhirashi-career-mcp retirado 2026-09-04 — ADR-023
-infraestructura: [ postgres-compartida (Alembic en api), qdrant, minio ]
+infraestructura: [ postgres-compartida (Alembic en api; BD propia career_ai_db del harness), minio ]
 topologia_agentes: multi-perfil-bedrock   # perfiles agent-N, delegación entre perfiles, niveles L1/L2/L3 (ADR 012/013)
 sustratos_integracion:
   - rest-http            # FastAPI en api/ai; consumido por los frontends
-  - bedrock-llm          # servicio ai contra AWS Bedrock Converse API
-  - qdrant-vector        # búsqueda semántica
+  - bedrock-llm          # servicio ai contra AWS Bedrock Converse API (implementación Bedrock del provider)
 capas_transversales: [ observabilidad (prometheus + logging/tracing), auth-jwt ]
 rutas:
   arnes: .harness/
@@ -68,11 +67,13 @@ rutas:
 
 ## Artículo 4 · Persistencia
 
-- **Postgres compartida**, gobernada por Alembic en `cjhirashi-career-api`.
+- **Postgres compartida** (contenedor `postgres_db`); `cjhirashi-career-api` la gobierna con
+  Alembic sobre `career_db`.
 - La dev DB tiene cambios aplicados por `ALTER TABLE` directo → **no asumir** que
   `alembic upgrade head` = estado real del schema. Verificar contra la DB.
-- `cjhirashi-career-ai` usa la misma Postgres con **sesión async** (`+asyncpg` en
-  `DATABASE_URL`).
+- `cjhirashi-career-ai` usa su propia base `career_ai_db` (mismo contenedor, usuario propio sin
+  permisos sobre `career_db`) con Alembic propio y **sesión async** (`+asyncpg` en
+  `AI_DATABASE_URL`); accede a los datos de carrera solo por la API REST.
 
 ## Artículo 5 · Seguridad
 
@@ -174,3 +175,4 @@ sincroniza (Fase 2 `plan.md §Impacto en documentación` → tareas `[doc]` → 
 | 2026-09-04 | — | Constitución inicial (Génesis en modo alineación) | ADR-001 |
 | 2026-09-04 | 1, 2, 6 | Retiro del MCP Server: 5→4 servicios; fuera el sustrato `mcp` y la regla de JSON Schema por tool | ADR-023 |
 | 2026-09-10 | 8 | Especialista `experto-ux-ui`: revisión de UX/UI obligatoria en features de frontend antes de `verified` | ADR-003 |
+| 2026-10-13 | 2, 4 | Harness de agentes fuera de la API: `ai` con BD propia `career_ai_db` y Alembic propio; fuera `qdrant` (infraestructura y sustrato `qdrant-vector`) | ADR-029 |

@@ -2,8 +2,9 @@
 
 ## Estado
 
-Propuesto — 2026-10-13 (feature 009, Fase 2, incorpora D-15..D-22; pendiente de aprobación del usuario en el
-Gate 2). Revisa parcialmente el ADR-025 y las specs 001–005.
+Aceptado — 2026-10-13 (aprobado por el usuario en el Gate 2 de la feature 009, junto con
+la enmienda de la Constitución Art. 2 y 4). Revisa parcialmente el ADR-025 y las
+specs 001–005.
 
 ## Contexto
 
@@ -37,8 +38,10 @@ Decisiones D-01..D-22 de la spec 009 (todas del usuario; D-15..D-22 en la Fase 2
   Bedrock del harness; la decisión de modelo se mantiene.
 - **Specs 001–005** (agentes y metodologías por sección): el harness sale de la API; las
   metodologías y secciones siguen en la API (D-10).
-- **Constitución, Art. 2 (topología/sustrato) y Art. 4**: el Alembic de `career_db` deja de
-  gobernar el harness; Qdrant deja de ser sustrato. Su edición requiere OK del usuario.
+- **Constitución, Art. 2 y Art. 4** (enmienda aprobada):
+  - Art. 2: `infraestructura` pasa a `[ postgres-compartida (Alembic en api; BD propia career_ai_db del harness), minio ]` (sin `qdrant`); se retira el sustrato `qdrant-vector`; `bedrock-llm` pasa a ser la implementación Bedrock del provider del servicio `ai`.
+  - Art. 4: el Alembic de `cjhirashi-career-api` gobierna solo `career_db`; `cjhirashi-career-ai` usa su propia base `career_ai_db` (mismo contenedor `postgres_db`, usuario propio sin permisos sobre `career_db`) con Alembic propio y sesión async (`+asyncpg`).
+  - Decisiones adicionales del Gate 2: D-23 (usuario inactivo conserva el chat hasta que caduque el token) y D-24 (full-text `spanish` configurable).
 
 ## Alternativas descartadas
 

@@ -263,6 +263,11 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   permisos sobre `career_db`. *Descartado:* contenedor Postgres nuevo.
 - **D-22:** la revisión UX (Art. 8) no se limita a una prueba de humo: el usuario no
   confirmó esa reducción, así que aplica la revisión completa de las pantallas afectadas.
+- **D-23:** riesgo aceptado: el harness valida solo firma y claim `role` (no consulta
+  `is_active`); un usuario desactivado conserva el chat hasta que caduque su access
+  token. Los datos siguen pasando por la API, que sí lo rechaza.
+- **D-24:** la búsqueda de memoria usa full-text de Postgres con configuración `spanish`,
+  configurable por variable de entorno (`MEMORY_FTS_CONFIG`).
 
 ## 7 · Requisitos no funcionales
 

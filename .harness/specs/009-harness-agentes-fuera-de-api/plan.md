@@ -2,7 +2,7 @@
 titulo: "Plan — Harness de agentes fuera de la API (cjhirashi-career-ai) y sin indexación"
 tipo: plan
 feature_id: "009"
-estado: borrador
+estado: approved
 fecha: 2026-10-13
 ---
 
@@ -137,7 +137,7 @@ Cada fila va con su test (§8).
 | `src/schemas/bedrock*.py` | Quitar | |
 | `src/models/bedrock_*.py` (10) y sus imports en `models/__init__.py` | Quitar | Tras la migración DROP. |
 | `src/app.py` | Editar | Quitar `include_router` de ambas rutas, el arranque/parada del scheduler, el cierre de Qdrant y cualquier métrica Bedrock. |
-| `src/middleware/auth.py` | Editar | Quitar el permiso `POST /bedrock/chat` del rol `agent`; el rol `agent` solo pasa en `/career/*`; el resto → 403 (RF-018). Añadir el rol `service` con su lista explícita (`SERVICE_ALLOWED_PREFIXES`) y emitir/leer el claim `role` (`services/auth_service.py`, RF-019). |
+| `src/middleware/auth.py` | Editar | Quitar el permiso `POST /bedrock/chat` del rol `agent`; el rol `agent` solo pasa en `/career/*`; el resto → 403 (RF-018). Añadir el rol `service` con su lista explícita (`SERVICE_ALLOWED_PREFIXES`) y emitir/leer el claim `role` (`services/auth_service.py`, RF-019). Sin migración: `access_role` es `String(32)` sin CHECK. |
 | `src/routes/notifications.py` (nuevo), `src/routes/audit_log.py` (nuevo), `src/services/audit_service.py` | Crear | `POST /notifications` (solo `service`, RF-020); lectura y restauración de `audit_logs` por REST (RF-021). Etapa 1 (aditivos). |
 | `src/repositories/career_repository.py` | Editar | Quitar el hook de indexado (`after_write` → KB), `_KB_EXCLUDED_COLUMNS` y la **creación de subtareas `BedrockTask`** en el flujo de escritura (si existe, se mueve a una tarea de harness vía su propia ruta); el repositorio queda sin imports de `bedrock`/`qdrant`. |
 | `src/routes/career_common.py` | Editar | Quitar la importación/uso de indexado y de perfiles Bedrock; `build_crud_router` conserva su contrato (el harness lo reutiliza por copia en `routes/agent_tasks.py`). |
@@ -246,7 +246,7 @@ Orden: para cada tarea, primero el test (rojo), luego el código (verde). Todos 
 | R3 | La lista del rol `service` puede quedarse corta frente a las tools programadas reales | Inventario en Fase 3; 403 explícito como error de tool; ampliar solo con cambio de spec |
 | R4 | Pérdida de memoria del agente (solo en Qdrant) | `migrate_memory_from_qdrant.py` con reporte de conteos; gate + snapshot antes de borrar el volumen; cambia la relevancia (FTS vs vectorial) |
 | R5 | Secuencias desincronizadas tras copiar | `setval` en el script + test |
-| R6 | El harness no consulta `is_active`: un usuario desactivado conserva el chat hasta que expire el access token | Aceptado: los datos pasan por la API con el mismo token (que sí rechaza). Tokens antiguos sin `role` = user |
+| R6 | El harness no consulta `is_active`: un usuario desactivado conserva el chat hasta que expire el access token | **Riesgo aceptado por el usuario (D-23).** Mitigación: los datos pasan por la API con el mismo token (que sí rechaza). Tokens antiguos sin `role` = user |
 | R7 | Dependencia circular de arranque (harness ↔ API) | `/health` del harness no falla si la API está caída al arrancar |
 | R8 | DROP irreversible de datos | Guarda con reporte, backup, `downgrade` estructural, copia inversa |
 | R9 | Duplicación de `agent_registry` y `github_service` | Test de contrato en ambos; duplicación documentada |
@@ -311,7 +311,7 @@ Secuencia y reversibilidad en §7; script `copy_from_career_db.py` (ambas direcc
 Editar `cjhirashi-career-api/src/middleware/auth.py`: el rol `agent` solo `/career/*` (sin `POST /bedrock/chat`); el rol `service` solo `SERVICE_ALLOWED_PREFIXES` (`/career/*`, `/files`, `/pdf-templates`, `/pdf-template-styles`, `/linkedin`, `/admin/sections`, `/settings/error-reports`, `/notifications`, auditoría); lo demás 403. Prueba: matriz de `auth-jwt-service-account.md` §5 (API).
 
 ### Implementación de RF-019
-Editar `cjhirashi-career-api/src/services/auth_service.py` (`_create_token` añade `role` derivado de `access_role`; un valor de `access_role = "service"` nuevo en el modelo de usuario/validación en `schemas`/`models/user.py`, sin migración de datos si la columna ya es texto: verificar en Fase 3, si es enum hace falta migración Alembic), `src/middleware/auth.py` (lee el claim; sin claim = `user`; desconocido = 401) y el middleware del harness (RF-002). Pruebas: `cjhirashi-career-api/tests/unit/test_jwt_role_claim.py`, `cjhirashi-career-ai/tests/unit/middleware/test_auth_role.py`.
+Editar `cjhirashi-career-api/src/services/auth_service.py` (`_create_token` añade `role` derivado de `access_role`; `access_role = "service"` es un valor nuevo de una columna `String(32)` sin CHECK: sin migración Alembic; se amplía la validación en `schemas`), `src/middleware/auth.py` (lee el claim; sin claim = `user`; desconocido = 401) y el middleware del harness (RF-002). Pruebas: `cjhirashi-career-api/tests/unit/test_jwt_role_claim.py`, `cjhirashi-career-ai/tests/unit/middleware/test_auth_role.py`.
 
 ### Implementación de RF-020
 Crear `cjhirashi-career-api/src/routes/notifications.py` (`POST /notifications`, body `{user_id, title, message, type?}` mapeado al modelo `UserNotification` existente; solo rol `service`, si no 403), con servicio/repositorio en las capas actuales; registrar en `app.py`. El harness lo llama desde `clients/notifications.py` (nuevo) en `services/task_scheduler.py`. El Admin ya muestra las notificaciones (sin cambios). Pruebas: `tests/unit/test_notifications_route.py` (API), `tests/unit/clients/test_notifications.py` (ai).
@@ -368,11 +368,10 @@ Una fila = una tarea `[doc]`.
 Las Q1–Q8 de la versión anterior quedaron resueltas por el usuario (D-15..D-22 en la spec).
 Quedan **supuestos a confirmar en la Fase 3** (no bloquean el Gate 2):
 
-- **P1.** `access_role` del modelo de usuario: si es una columna enum, el rol `service`
-  necesita migración Alembic en la API; si es texto, no (verificar al implementar).
 - **P2.** Que la lista de rutas del rol `service` cubra las tools programadas reales
   (`generate_pdf`/render de otros recursos aún por inventariar). Ampliarla requiere cambio
   de spec.
 - **P3.** Conteos reales (tablas `bedrock_*`, puntos de memoria en Qdrant) solo se obtienen
   con OK explícito del usuario para operar sobre BD/Qdrant vivos (RNF-002).
-- **P4.** Idioma de la configuración FTS (`spanish` propuesto).
+
+Resueltos tras el Gate 2: P1 (`access_role` es `String(32)` sin CHECK: el rol `service` no necesita migración Alembic) y P4 (full-text `spanish`, configurable por env `MEMORY_FTS_CONFIG`, D-24).
