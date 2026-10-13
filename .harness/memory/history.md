@@ -26,7 +26,8 @@ subtipo: history
   vía `filters`; `process_stage_updated_at` fuera de la KB. Migración en vivo con backup,
   `docker compose run --rm` antes de recrear `api`. Verificado en vivo (CRUD, 422,
   filtros, reindex KB EXIT 0).
-- **Próximo paso:** Gate 4 del usuario; luego push. Deuda: handler 422/RFC 9457, config
+- **Gate 4:** aprobado por el usuario (2026-10-13); `git push origin main` (incluye 23 commits previos no subidos).
+- **Próximo paso:** tareas de deuda: handler 422/RFC 9457, config
   ESLint, `formatDate` en `en-US`.
 
 ## [2026-09-10] Especialista `experto-ux-ui` añadido al arnés — ADR-003

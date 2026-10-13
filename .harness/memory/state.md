@@ -95,7 +95,7 @@ actualizado: 2026-09-04
   (sin push; commits f871832f…3c5907f9 + cierre; `anchor_commit` = `3c5907f9`).
   `career_db` migrada a `c7e1a4d92b60` (backup
   `/mnt/disco2/cjhirashi-data/backups/career_db_pre_007_20261013_005618.dump`); api+admin
-  recreados; KB reindexada. **Pendiente:** Gate 4 (aprobación humana) y `git push`.
+  recreados; KB reindexada. Gate 4 aprobado y push hecho (2026-10-13).
 
 ## Decisiones tomadas (esta sesión)
 
@@ -106,7 +106,7 @@ actualizado: 2026-09-04
 
 ## Próximo paso concreto
 
-- **007:** esperar Gate 4 del usuario; después `git push origin main` sólo si lo pide.
+- **007:** Gate 4 aprobado por el usuario y subido a `origin/main` (2026-10-13).
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.
