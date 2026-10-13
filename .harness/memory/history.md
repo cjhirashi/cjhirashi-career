@@ -8,6 +8,27 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-10-13] 007 Vacantes: etapa del proceso y estado calculado — implementada y desplegada
+- **Fase alcanzada:** implement (spec/plan `implemented`; `verified` sólo tras Gate 4 humano)
+- **Rebotes del verificador:** 3 (`PUT process_stage:null` → 500; fila `VacancyBoard` de
+  `05-BUILDING-BLOCK-VIEW.md:250` sin actualizar; fila RF-018 de cobertura sin T-055/T-056)
+  + 1 bloqueante UX (contraste tema claro < 4.5:1)
+- **Directiva de Pausa:** sí — RF-018 ("sin colores nuevos" vs 4.5:1) contradictorio con
+  los tokens reales; el usuario decidió D-15 (oscurecer 3 tokens, ADR-028). Formato 422 vs
+  RFC 9457 → D-14 (deuda global). Criterio de lint → D-16.
+- **Drift / re-anchor:** no
+- **Anclas movidas:** 007 → `3c5907f9` (advisory → strict)
+- **Gate:** verde (API 527 passed / 73 skipped; Admin Vitest 485/485, type-check limpio)
+- **Docs actualizadas:** `career-search/README.md`, `05-BUILDING-BLOCK-VIEW.md`,
+  ADR-028 + índice `09-DECISIONS`, nota en spec 006 (reemplazo de `application_status`)
+- **Decisiones de diseño / límites de integración:** `application_status` renombrado a
+  `process_stage` (13 etapas, CHECK); `vacancy_status` calculado (no columna), filtrable
+  vía `filters`; `process_stage_updated_at` fuera de la KB. Migración en vivo con backup,
+  `docker compose run --rm` antes de recrear `api`. Verificado en vivo (CRUD, 422,
+  filtros, reindex KB EXIT 0).
+- **Próximo paso:** Gate 4 del usuario; luego push. Deuda: handler 422/RFC 9457, config
+  ESLint, `formatDate` en `en-US`.
+
 ## [2026-09-10] Especialista `experto-ux-ui` añadido al arnés — ADR-003
 
 - **Fase alcanzada:** (mantenimiento del arnés — no aplica ciclo de feature)

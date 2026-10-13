@@ -1,11 +1,11 @@
 ---
 titulo: "Vacantes: etapa del proceso y estado calculado"
 tipo: spec
-estado: approved
+estado: implemented
 fecha: 2026-10-12
 feature_id: "007"
-anchor_mode: advisory
-anchor_commit: null
+anchor_mode: strict
+anchor_commit: "3c5907f9"
 covers:
   - cjhirashi-career-api/src/models/vacancy.py
   - cjhirashi-career-api/src/schemas/career_search.py
@@ -245,6 +245,9 @@ Nota: `success` para `offer` coincide con `badgeByStatusGeneric`. §5 resuelto (
 D-07): RF-012 no cambia.
 
 ### 8.1 · Revisión UX de Fase 4 (T-070, `experto-ux-ui`, 2026-10-13)
+
+> **Resolución (2026-10-13):** B-1 resuelto por D-15 (T-055/T-056, ADR-028); contraste
+> re-medido ≥ 5.23:1 en el tema claro. R-1..R-4 y M-1..M-3 quedan como mejoras opcionales.
 
 Informe, no aprobación: nada queda `verified` por esta revisión.
 

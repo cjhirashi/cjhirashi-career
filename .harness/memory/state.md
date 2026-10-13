@@ -83,26 +83,19 @@ actualizado: 2026-09-04
   `init_db`; `alembic upgrade head` tras rebuild). Sidebar derecho condicional (sin
   chat ni instrucciones → ni panel ni botón). ADR-024. **Pendiente:** merge del PR +
   `alembic upgrade head` en el deploy.
-- **[2026-09-04] Mensajes de `caddy.json` — los 4 cerrados (`resuelto`):** MSG-0002
-  (API `:8001`→`:8000` en `Dockerfile`+`docker-compose.yml`), MSG-0001 (`net-cjhirashi-career`
-  `external` en los 5 contenedores), MSG-0004 (esa red también en postgres/qdrant, luego
-  `network-cjhirashi-srv` retirada de los 6 + de `networks:`). Verificado runtime: los 6
-  solo en `net-cjhirashi-career`, api resuelve postgres/qdrant/minio, `admin`/`portafolio`/
-  `/api/health`/`/api/public/home` 200, `mcp.cjhirashi.com` sin respuesta (host retirado).
+- **[2026-09-04] Mensajes de `caddy.json` — los 4 cerrados (`resuelto`):** MSG-0001..0004
+  (API en `:8000`; los 6 contenedores sólo en `net-cjhirashi-career`; host mcp retirado).
 - Repo en la rama `recover/pre-section-tables` (commit base 8227848). El backlog del
   arnés anterior **no** se importó: era sobre trabajo posterior a este commit o
   revertido. Las features nuevas las prioriza el humano.
-- **[2026-09-04] MCP Server retirado** — `ADR-023`. Decisión del humano: borrar carpeta
-  + pedir retiro del host + ADR/docs. Hecho en código: `git rm -r cjhirashi-career-mcp/`;
-  fuera de `docker-compose.yml` y `caddy.json → servicios`; contenedor `cjhirashi-career-mcp`
-  parado, borrado y sus imágenes eliminadas; CORS sin `:8004` (`.env`, `.env.example`,
-  `api/src/config.py`); `AGENTS.md`/`README`/`constitution.md` (Art. 1/2/6 + enmienda)
-  actualizados; `ADR-014` revisado; banner de estado en arc42 01/04/05/07/08/10/12.
-  **MSG-0003 cerrado (`resuelto`)** por cjhirashi-srv: retiró `hosts.mcp`, regeneró la
-  conf de Caddy sin la ruta a `cjhirashi-career-mcp` y sacó el host de DNS_RECORDS
-  (la baja del registro A en Cloudflare la hace el operador a mano). `mcp.cjhirashi.com`
-  ya no da 502. **Pendiente:** reescritura narrativa completa del arc42 sin el Canal 3
-  (tarea de doc aparte, anotada en ADR-023).
+- **[2026-09-04] MCP Server retirado** — `ADR-023` (carpeta, compose, CORS, docs y host
+  `mcp.cjhirashi.com` retirados; MSG-0003 cerrado). **Pendiente:** reescritura narrativa
+  del arc42 sin el Canal 3.
+- **[2026-10-13] Feature `007-vacantes-etapa-y-estado` — `implemented` + DESPLEGADA**
+  (sin push; commits f871832f…3c5907f9 + cierre; `anchor_commit` = `3c5907f9`).
+  `career_db` migrada a `c7e1a4d92b60` (backup
+  `/mnt/disco2/cjhirashi-data/backups/career_db_pre_007_20261013_005618.dump`); api+admin
+  recreados; KB reindexada. **Pendiente:** Gate 4 (aprobación humana) y `git push`.
 
 ## Decisiones tomadas (esta sesión)
 
@@ -113,7 +106,7 @@ actualizado: 2026-09-04
 
 ## Próximo paso concreto
 
-- **001 cerrada y desplegada.** No queda nada de 001.
+- **007:** esperar Gate 4 del usuario; después `git push origin main` sólo si lo pide.
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.

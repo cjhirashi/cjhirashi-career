@@ -1,7 +1,7 @@
 ---
 titulo: "Plan — Vacantes: etapa del proceso y estado calculado"
 tipo: plan
-estado: approved
+estado: implemented
 fecha: 2026-10-12
 feature_id: "007"
 spec: ./spec.md

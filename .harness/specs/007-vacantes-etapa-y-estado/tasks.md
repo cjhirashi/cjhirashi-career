@@ -159,9 +159,11 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
 
 ## Bloque H — Fase 4: revisión y verificación real
 
-- [ ] **T-070** `[ux]` (cubre RF-010..RF-020, RF-025) — revisión de `experto-ux-ui` según
+- [x] **T-070** `[ux]` (cubre RF-010..RF-020, RF-025) — revisión de `experto-ux-ui` según
   plan §7, con contraste **medido** de cada color de badge (RF-018). Resultado en
   `spec.md §8`.
+  *Resultado:* `spec.md §8.1`. Bloqueante B-1 (contraste tema claro) resuelto por D-15 →
+  T-055/T-056, re-medido por el revisor (mín. 5.23 claro, 5.27 oscuro).
 - [x] **T-071** `[verify]` (cubre RF-006, RF-007, RF-024) — BD real (plan §3/§8):
   pre-chequeo `alembic_version` == `a9b1c2d3e4f5`, `\d vacancies`, valores actuales;
   `pg_dump`; `alembic upgrade head`; `\d vacancies` muestra CHECK, NOT NULL, fecha. Si el
@@ -193,38 +195,45 @@ Rutas API relativas a `cjhirashi-career-api/`; Admin a `cjhirashi-career-admin/`
   in_process 1, closed 0, bogus 0, [pending,in_process] 4, pending+`process_stage`
   technical_test 0. Vacantes de prueba vac-139/140 borradas (204). UI del Admin no
   recorrida con navegador (sin sesión de login); cubierta por Vitest.
-- [ ] **T-073** `[ops]` — reindex de la KB + `scripts/check_kb_consistency.py`. **Sólo con
+- [x] **T-073** `[ops]` — reindex de la KB + `scripts/check_kb_consistency.py`. **Sólo con
   autorización explícita del usuario en ese momento** (coste Bedrock, D-13). Si no se
   autoriza, se registra como pendiente.
+  *Evidencia (2026-10-13, autorizado por el usuario):* `check_kb_consistency.py` ANTES →
+  usr-1 5/5 + 1/1, usr-2 243/243 + 21/21, 0 huérfanos, EXIT 0. `POST
+  /bedrock/knowledge-base/reindex` (JWT usr-2) → HTTP 200 en 1 m 8,8 s,
+  `{"reindexed":{"career_record":248,"methodology":22},"purged_orphans":0,"users":3}`.
+  DESPUÉS → mismos conteos, 0 huérfanos, EXIT 0. Punto Qdrant `vac-122`
+  (`career_knowledge`): texto con `process_stage: not_applied`, sin `application_status`
+  ni `process_stage_updated_at` (D-13).
 
 ## Cobertura (el gate exige 100 %; `Estado` lo rellena el gate)
 
 | RF / doc | Tareas | Test(s) | Estado |
 |---|---|---|---|
-| RF-001 | T-010, T-011, T-012, T-020, T-021, T-030, T-072 | test_vacancy_process_stage | — |
-| RF-002 | T-002, T-003, T-012, T-020, T-021, T-030 | test_vacancy_process_stage | — |
-| RF-003 | T-010, T-011, T-020, T-021, T-030, T-031 | test_vacancy_process_stage | — |
-| RF-004 | T-001, T-003, T-012, T-030, T-072 | test_vacancy_process_stage | — |
-| RF-005 | T-002, T-003, T-010, T-012, T-020, T-021, T-030 | test_vacancy_process_stage | — |
-| RF-006 | T-010, T-011, T-040, T-041, T-042, T-071 | test_vacancy_process_stage · test_vacancy_process_stage_migration | — |
-| RF-007 | T-040, T-041, T-042, T-071 | test_vacancy_process_stage_migration | — |
-| RF-008 | T-040, T-041, T-042 | test_vacancy_process_stage_migration | — |
-| RF-009 | T-040, T-041, T-042 | test_vacancy_process_stage_migration | — |
-| RF-010 | T-052, T-053, T-070, T-072 | VacancyBadges.test | — |
-| RF-011 | T-050, T-051, T-070 | vacanciesConfig.test | — |
-| RF-012 | T-050, T-051, T-070 | vacanciesConfig.test | — |
-| RF-013 | T-050, T-051, T-070 | vacanciesConfig.test | — |
-| RF-014 | T-052, T-053, T-070 | VacancyBadges.test | — |
-| RF-015 | T-050, T-051, T-070 | vacanciesConfig.test | — |
-| RF-016 | T-050, T-051, T-070 | vacanciesConfig.test | — |
-| RF-017 | T-001, T-003, T-022, T-023, T-030, T-050, T-051, T-052, T-053, T-072 | test_vacancy_process_stage · vacanciesConfig.test · VacancyBadges.test | — |
-| RF-018 | T-050, T-055, T-056, T-070 | vacanciesConfig.test · badgeContrast.test · revisión UX (contraste medido) | — |
-| RF-019 | T-050, T-051, T-052, T-053 | vacanciesConfig.test · VacancyBadges.test | — |
-| RF-020 | T-050, T-051, T-052 | vacanciesConfig.test · VacancyBadges.test | — |
-| RF-021 | T-002, T-003, T-020, T-021, T-030, T-072 | test_vacancy_process_stage | — |
-| RF-022 | T-002, T-003, T-020, T-021, T-030 | test_vacancy_process_stage | — |
-| RF-023 | T-002, T-003, T-010, T-012, T-020, T-021, T-024, T-025, T-030 | test_vacancy_process_stage | — |
-| RF-024 | T-040, T-041, T-042, T-071 | test_vacancy_process_stage_migration | — |
-| RF-025 | T-050, T-051, T-052 | vacanciesConfig.test · VacancyBadges.test | — |
-| doc: career-search/README | T-060 | — | — |
-| doc: 05-BUILDING-BLOCK-VIEW | T-061 | — | — |
+| RF-001 | T-010, T-011, T-012, T-020, T-021, T-030, T-072 | test_vacancy_process_stage | Pass |
+| RF-002 | T-002, T-003, T-012, T-020, T-021, T-030 | test_vacancy_process_stage | Pass |
+| RF-003 | T-010, T-011, T-020, T-021, T-030, T-031 | test_vacancy_process_stage | Pass |
+| RF-004 | T-001, T-003, T-012, T-030, T-072 | test_vacancy_process_stage | Pass |
+| RF-005 | T-002, T-003, T-010, T-012, T-020, T-021, T-030 | test_vacancy_process_stage | Pass |
+| RF-006 | T-010, T-011, T-040, T-041, T-042, T-071 | test_vacancy_process_stage · test_vacancy_process_stage_migration | Pass |
+| RF-007 | T-040, T-041, T-042, T-071 | test_vacancy_process_stage_migration | Pass |
+| RF-008 | T-040, T-041, T-042 | test_vacancy_process_stage_migration | Pass |
+| RF-009 | T-040, T-041, T-042 | test_vacancy_process_stage_migration | Pass |
+| RF-010 | T-052, T-053, T-070, T-072 | VacancyBadges.test | Pass |
+| RF-011 | T-050, T-051, T-070 | vacanciesConfig.test | Pass |
+| RF-012 | T-050, T-051, T-070 | vacanciesConfig.test | Pass |
+| RF-013 | T-050, T-051, T-070 | vacanciesConfig.test | Pass |
+| RF-014 | T-052, T-053, T-070 | VacancyBadges.test | Pass |
+| RF-015 | T-050, T-051, T-070 | vacanciesConfig.test | Pass |
+| RF-016 | T-050, T-051, T-070 | vacanciesConfig.test | Pass |
+| RF-017 | T-001, T-003, T-022, T-023, T-030, T-050, T-051, T-052, T-053, T-072 | test_vacancy_process_stage · vacanciesConfig.test · VacancyBadges.test | Pass |
+| RF-018 | T-050, T-055, T-056, T-070 | vacanciesConfig.test · badgeContrast.test · revisión UX (contraste medido) | Pass |
+| RF-019 | T-050, T-051, T-052, T-053 | vacanciesConfig.test · VacancyBadges.test | Pass |
+| RF-020 | T-050, T-051, T-052 | vacanciesConfig.test · VacancyBadges.test | Pass |
+| RF-021 | T-002, T-003, T-020, T-021, T-030, T-072 | test_vacancy_process_stage | Pass |
+| RF-022 | T-002, T-003, T-020, T-021, T-030 | test_vacancy_process_stage | Pass |
+| RF-023 | T-002, T-003, T-010, T-012, T-020, T-021, T-024, T-025, T-030 | test_vacancy_process_stage | Pass |
+| RF-024 | T-040, T-041, T-042, T-071 | test_vacancy_process_stage_migration | Pass |
+| RF-025 | T-050, T-051, T-052 | vacanciesConfig.test · VacancyBadges.test | Pass |
+| doc: career-search/README | T-060 | — | hecho |
+| doc: 05-BUILDING-BLOCK-VIEW | T-061 | — | hecho |
