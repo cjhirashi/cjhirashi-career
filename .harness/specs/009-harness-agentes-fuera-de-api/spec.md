@@ -40,6 +40,8 @@ covers:
   - cjhirashi-career-admin/src/tests/api/noLegacyAgentRoutes.test.ts
   - cjhirashi-career-api/src/services/auth_service.py
   - cjhirashi-career-api/src/routes/notifications.py
+  - cjhirashi-career-api/src/routes/files.py
+  - cjhirashi-career-api/tests/unit/test_file_metadata_route.py
   - cjhirashi-career-api/src/routes/audit_log.py
   - cjhirashi-career-api/src/services/audit_service.py
   - cjhirashi-career-api/tests/unit/test_jwt_role_claim.py
@@ -180,7 +182,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
 - **RF-018** SI un token `agent` llama a una ruta fuera de `/career/*`, ENTONCES la API
   DEBE responder 403 (D-14). SI un token `service` llama a una ruta fuera de su lista
   explícita (`/career/*`, `/files`, `/pdf-*`, `/linkedin`, `/admin/sections`,
-  `/settings/error-reports`, `/notifications`, auditoría), ENTONCES la API DEBE
+  `/settings/error-reports`, `/notifications`, `/audit-log`), ENTONCES la API DEBE
   responder 403 (D-17).
 - **RF-019** Los tokens que emite la API DEBEN incluir el claim `role` (`user`, `agent`
   o `service`); SI un token válido no trae el claim, ENTONCES API y harness DEBEN
@@ -257,6 +259,11 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   aceptar la pérdida de rutas.
 - **D-18:** claim `role` en el JWT. *Descartado:* endpoint `GET /auth/session`.
 - **D-19:** `audit_logs` se queda en la API con endpoints REST. *Descartado:* moverla.
+- **D-25 (usuario, 2026-10-13, tras T-002/T-003):** nueva ruta aditiva `GET /files/{id}` en
+  la API (metadatos del archivo: `id`, `mime_type`, `original_filename`, tamaño, categoría,
+  como los elementos de `GET /files`), dentro de `/files` ya permitido a `service`; la
+  usa `store_uploaded_image`. *Descartado:* derivar el mime del `Content-Type` de
+  `/files/{id}/raw`. Además se fija `/audit-log` literal en `SERVICE_ALLOWED_PREFIXES`.
 - **D-20:** `POST /notifications` aditivo en la API, sólo rol `service`. *Descartado:*
   notificaciones en el harness.
 - **D-21:** BD del harness = base `career_ai_db` en `postgres_db`, usuario propio sin

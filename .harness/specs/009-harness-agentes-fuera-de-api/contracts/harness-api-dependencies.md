@@ -27,7 +27,7 @@ harness (sin API). **Alcance `agent`:** ¿accesible con la cuenta de servicio (s
 | `pdf_template` | `PdfOutputTemplate` | `/pdf-templates` CRUD | OK | sí (en lista) |
 | `pdf_style` | `PdfTemplateStyle` | `/pdf-template-styles` CRUD | OK | sí (en lista) |
 | `generate_pdf`, `render_record_pdf`, `list_pdf_capable_resources` | WeasyPrint en proceso (`pdf_service`, `pdf_template_render`) | `POST /pdf-templates/{id}/render` y la ruta de PDF de `career_search` (CV/vacante); `generate_pdf` (markdown→PDF) y el render de otros recursos: **a inventariar en la Fase 3** | OK/GAP por verificar | sí (en lista) |
-| `generate_image`, `store_uploaded_image`, `attach_image_to_record`, `list_generated_images` | `file_upload`, MinIO (`storage_service`) | `POST /files` (multipart), `GET /files`, `GET /files/{id}/raw`, `PATCH /files/{id}/visibility`; el modelo de imagen lo llama el harness (Stability vía Bedrock, provider) | OK | sí (`/files`) |
+| `generate_image`, `store_uploaded_image`, `attach_image_to_record`, `list_generated_images` | `file_upload`, MinIO (`storage_service`) | `POST /files` (multipart), `GET /files`, **`GET /files/{id}` (nuevo, D-25)**, `GET /files/{id}/raw`, `PATCH /files/{id}/visibility`; el modelo de imagen lo llama el harness (Stability vía Bedrock, provider) | OK salvo `GET /files/{id}` (GAP→nuevo, D-25) | sí (`/files`) |
 | adjuntos del chat (`attachments.py`) | `FileUpload` + MinIO | `GET /files/{id}/raw` con el JWT del usuario | OK | n/a (siempre usuario) |
 | `list_job_providers`, `run_job_discovery`, `import_job_url`, `save_job_listings` | `services.job_discovery` | `GET /career/job-discoveries/providers`, `POST /run`, `POST /import-url`, `POST /save` | OK | sí (`/career/*`) |
 | `web_search`, `web_fetch` | `web_search_service` (Brave) | **LOCAL**: el servicio se mueve al harness con `BRAVE_SEARCH_API_KEY` | LOCAL | sí |
@@ -44,11 +44,30 @@ harness (sin API). **Alcance `agent`:** ¿accesible con la cuenta de servicio (s
 
 **Cuenta de servicio (D-17):** rol `service` con lista explícita (`/career/*`, `/files`,
 `/pdf-templates`, `/pdf-template-styles`, `/linkedin`, `/admin/sections`,
-`/settings/error-reports`, `/notifications`, auditoría). Las filas marcadas **no** arriba en
+`/settings/error-reports`, `/notifications`, `/audit-log`). Las filas marcadas **no** arriba en
 "Cuenta de servicio" pasan a **sí** para las rutas de esa lista; `/files/{id}/raw` y la
 generación de PDF quedan sujetas al inventario de la Fase 3 (si requieren una ruta fuera de
 la lista, se añade vía cambio de spec). Las tareas programadas conservan así las tools que
 hoy usan.
+
+## Rutas nuevas aditivas de la API (resumen)
+
+| Ruta | Detalle | Decisión |
+|---|---|---|
+| `POST /notifications` | solo rol `service` | D-20, RF-020 |
+| `GET /audit-log`, `POST /audit-log/{audit_id}/restore` | hoy `/bedrock/audit-log*`; pasan a `/audit-log` (literal en `SERVICE_ALLOWED_PREFIXES`) | D-19, RF-021 |
+| `GET /files/{id}` | metadatos de un archivo: como mínimo `id`, `mime_type`, `original_filename`, tamaño y categoría, en el mismo formato que los elementos de `GET /files`. Lo necesita `store_uploaded_image`. Dentro de `/files` (permitido a `service`) | D-25 |
+
+## Enrutado de `resource_key` que no cuelgan de `/career/*`
+
+El CRUD genérico del harness (`RESOURCE_REGISTRY`) enruta así:
+
+| `resource_key` | Destino |
+|---|---|
+| `pdf-output-templates` | `/pdf-templates` (API) |
+| `pdf-template-styles` | `/pdf-template-styles` (API) |
+| `agent-tasks` | BD propia del harness (LOCAL, `bedrock_tasks`) |
+| resto | `/career/<recurso>` |
 
 ## Cliente (`clients/`)
 

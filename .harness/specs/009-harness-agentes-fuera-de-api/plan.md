@@ -41,7 +41,7 @@ Este plan **no implementa** ni toca BD, contenedores, Bedrock o Qdrant reales.
    `search_knowledge_base` se retira); `reindex` y `knowledge/search` no se portan;
    claim `role` en el JWT (sin `GET /auth/session`); rol `service` con lista explícita de
    rutas para la cuenta del harness (el `agent` externo sigue solo en `/career/*`);
-   `audit_logs` se queda en la API con endpoints REST; `POST /notifications` solo para
+   `audit_logs` se queda en la API con endpoints REST; `GET /files/{id}` aditivo (D-25); `POST /notifications` solo para
    `service`; BD `career_ai_db` en el `postgres_db` existente con usuario propio; revisión
    UX completa (Art. 8).
 
@@ -108,7 +108,7 @@ El harness **no** tiene ninguna variable ni referencia a `career_db`/Qdrant en `
 - **Autenticación:** `contracts/auth-jwt-service-account.md`.
 - **Harness → API:** `contracts/harness-api-dependencies.md`. Cambios aditivos mínimos en la
   API (aprobados: D-18, D-19, D-20): claim `role` en los tokens (RF-019),
-  `POST /notifications` solo `service` (RF-020) y `GET /audit-log` +
+  `POST /notifications` solo `service` (RF-020), `GET /files/{id}` (D-25) y `GET /audit-log` +
   `POST /audit-log/{audit_id}/restore` (RF-021). Contrato de cada ruta nueva en
   `contracts/harness-api-dependencies.md`.
 - **Catálogo de agentes compartido:** la API conserva `services/agent_registry.py`
@@ -308,7 +308,7 @@ Editar `caddy.json` solo en `servicios` (ruta `/ai/` en `admin`, `quitar_prefijo
 Secuencia y reversibilidad en §7; script `copy_from_career_db.py` (ambas direcciones); migración de la API con guarda; despliegues como commits separados por etapa. Verificación de reversibilidad: prueba de scripts (ida y vuelta) y de migración (upgrade/downgrade).
 
 ### Implementación de RF-018
-Editar `cjhirashi-career-api/src/middleware/auth.py`: el rol `agent` solo `/career/*` (sin `POST /bedrock/chat`); el rol `service` solo `SERVICE_ALLOWED_PREFIXES` (`/career/*`, `/files`, `/pdf-templates`, `/pdf-template-styles`, `/linkedin`, `/admin/sections`, `/settings/error-reports`, `/notifications`, auditoría); lo demás 403. Prueba: matriz de `auth-jwt-service-account.md` §5 (API).
+Editar `cjhirashi-career-api/src/middleware/auth.py`: el rol `agent` solo `/career/*` (sin `POST /bedrock/chat`); el rol `service` solo `SERVICE_ALLOWED_PREFIXES` (`/career/*`, `/files`, `/pdf-templates`, `/pdf-template-styles`, `/linkedin`, `/admin/sections`, `/settings/error-reports`, `/notifications`, `/audit-log`); lo demás 403. Prueba: matriz de `auth-jwt-service-account.md` §5 (API).
 
 ### Implementación de RF-019
 Editar `cjhirashi-career-api/src/services/auth_service.py` (`_create_token` añade `role` derivado de `access_role`; `access_role = "service"` es un valor nuevo de una columna `String(32)` sin CHECK: sin migración Alembic; se amplía la validación en `schemas`), `src/middleware/auth.py` (lee el claim; sin claim = `user`; desconocido = 401) y el middleware del harness (RF-002). Pruebas: `cjhirashi-career-api/tests/unit/test_jwt_role_claim.py`, `cjhirashi-career-ai/tests/unit/middleware/test_auth_role.py`.

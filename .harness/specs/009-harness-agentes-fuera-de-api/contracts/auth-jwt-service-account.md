@@ -63,8 +63,9 @@ y devuelve al **dueño** (`owner_id` o `PUBLIC_PORTAL_USER_ID`).
   token `agent` del agente externo (se revocan por separado).
 - **Lista explícita de rutas permitidas** (en la API, `middleware/auth.py`, constante
   `SERVICE_ALLOWED_PREFIXES`): `/career/*`, `/files`, `/pdf-templates`, `/pdf-template-styles`,
-  `/linkedin`, `/admin/sections`, `/settings/error-reports`, `/notifications`, y las rutas de
-  auditoría (ver `harness-api-dependencies.md`). Cualquier otra → **403**.
+  `/linkedin`, `/admin/sections`, `/settings/error-reports`, `/notifications` y `/audit-log`
+  (literal; hoy la ruta es `/bedrock/audit-log` y pasa a `/audit-log` por RF-021; ver
+  `harness-api-dependencies.md`). Cualquier otra → **403**.
 - `POST /notifications` (RF-020): **sólo** `role == service` (usuario/agent → 403).
 - El token `agent` sigue limitado a `/career/*`; pierde `POST /bedrock/chat`.
 - Esta lista debe confirmarse contra las tools reales en la implementación (Fase 3): si una

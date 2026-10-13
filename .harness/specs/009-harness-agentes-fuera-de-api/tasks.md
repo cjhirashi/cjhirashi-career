@@ -279,6 +279,12 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   `src/services/agent_registry.py` == `contracts/agent-registry.json`. Rojo.
 - [ ] **T-139** `[code]` (cubre RF-012) — `src/services/agent_registry.py` (estático). Verde
   T-138. (Aún no se cambian los imports: eso es 3a.)
+- [ ] **T-141** `[test]` (cubre RF-003, RF-018) — `tests/unit/test_file_metadata_route.py`:
+  `GET /files/{id}` devuelve `id`, `mime_type`, `original_filename`, tamaño y categoría en
+  el mismo formato que los elementos de `GET /files`; 404 si no existe o no es del usuario;
+  token `service` 200 (dentro de `/files`); `agent` 403 (D-25). Rojo. Luego `[code]`:
+  `src/routes/files.py` (ruta nueva, aditiva; sin romper `/raw` ni `/visibility`). Verde.
+  Desbloquea `store_uploaded_image` (T-088/T-089).
 - [ ] **T-140** `[code]` (cubre RNF-001) — `pytest` completo de la API y del AI; pegar la
   salida y la cobertura. Cierra la parte de código de la etapa 1.
 
@@ -446,7 +452,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 |---|---|---|---|
 | RF-001 | T-068, T-070, T-071, T-100, T-102..T-109 | test_ai_route_parity · test_routes_* · e2e | |
 | RF-002 | T-012, T-050, T-051, T-100 | test_auth (ai) · test_app_boot | |
-| RF-003 | T-030..T-040, T-070, T-086..T-089 | test_api_client · test_career · test_isolation · test_tools_* | |
+| RF-003 | T-030..T-040, T-141, T-070, T-086..T-089 | test_api_client · test_career · test_isolation · test_tools_* · test_file_metadata_route | |
 | RF-004 | T-030, T-031, T-084, T-092, T-093 | test_api_client · test_agent_loop · test_task_scheduler | |
 | RF-005 | T-020..T-026, T-084, T-085, T-090, T-091 | test_provider_contract · test_provider_boundary · test_bedrock_* | |
 | RF-006 | T-010..T-019, T-060..T-067 | test_schema_matches_contract · test_initial_migration · test_*_repo | |
@@ -461,7 +467,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RF-015 | T-150, T-151, T-160, T-192, T-193, T-196 | test_deploy_files | |
 | RF-016 | T-150, T-151, T-163 | test_deploy_files (caddy) | |
 | RF-017 | T-001, T-120, T-121, T-161, T-163, T-176, T-187, T-194 | test_copy_from_career_db · evidencia por etapa | |
-| RF-018 | T-002, T-132, T-133 | test_agent_service_scope | |
+| RF-018 | T-002, T-132, T-133, T-141 | test_agent_service_scope · test_file_metadata_route | |
 | RF-019 | T-003, T-050, T-130, T-131 | test_jwt_role_claim · test_auth (ai) | |
 | RF-020 | T-038, T-039, T-092, T-134, T-135 | test_notifications_route · test_task_scheduler | |
 | RF-021 | T-038, T-039, T-088, T-107, T-136, T-137 | test_audit_log_routes · test_tools_files_pdf_linkedin_audit | |
