@@ -1,7 +1,7 @@
 ---
 titulo: "Plan — Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral"
 tipo: plan
-estado: approved
+estado: implemented
 fecha: 2026-10-13
 feature_id: "008"
 spec: ./spec.md

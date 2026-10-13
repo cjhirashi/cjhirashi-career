@@ -1,11 +1,11 @@
 ---
 titulo: "Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral"
 tipo: spec
-estado: approved
+estado: implemented
 fecha: 2026-10-13
 feature_id: "008"
-anchor_mode: advisory
-anchor_commit: null
+anchor_mode: strict
+anchor_commit: "50d672d9"
 covers:
   - .harness/specs/008-vacantes-descripcion-empresa-y-puesto/**
   - cjhirashi-career-api/src/models/vacancy.py
@@ -154,7 +154,7 @@ Fronteras:
 ## 7 · Requisitos no funcionales
 
 - **RNF-001:** cobertura ≥ 80 % por módulo tocado; tests trazados con
-  `@pytest.mark.requisito` / `describe("RF-0NN")`.
+  `@pytest.mark.requisito` / `describe("RF-…")`.
 - **RNF-002:** ninguna prueba llama a Bedrock ni a Qdrant reales.
 - **RNF-003:** despliegue con backup previo, migración y verificación en vivo (crear,
   actualizar, limpiar y consultar una vacante con los cuatro campos).

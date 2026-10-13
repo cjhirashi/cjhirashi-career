@@ -91,11 +91,11 @@ actualizado: 2026-09-04
 - **[2026-09-04] MCP Server retirado** — `ADR-023` (carpeta, compose, CORS, docs y host
   `mcp.cjhirashi.com` retirados; MSG-0003 cerrado). **Pendiente:** reescritura narrativa
   del arc42 sin el Canal 3.
-- **[2026-10-13] Feature `007-vacantes-etapa-y-estado` — `verified` (por el usuario) + DESPLEGADA**
-  (sin push; commits f871832f…3c5907f9 + cierre; `anchor_commit` = `3c5907f9`).
-  `career_db` migrada a `c7e1a4d92b60` (backup
-  `/mnt/disco2/cjhirashi-data/backups/career_db_pre_007_20261013_005618.dump`); api+admin
-  recreados; KB reindexada. Gate 4 aprobado y push hecho (2026-10-13).
+- **[2026-10-13] 007** `verified` (usuario), desplegada (`c7e1a4d92b60`) y en `origin/main`.
+- **[2026-10-13] 008** (4 textos descriptivos de vacante) implementada, revisor APPROVED,
+  DESPLEGADA: `career_db` → `d8f2b5a13c97` (backup `…/backups/career_db_pre_008_20261013_170216.dump`);
+  api+admin recreados; CRUD en vivo OK. Exclusión KB transitoria → la retira 009. Sin push.
+- **[2026-10-13] 009** (harness → `cjhirashi-career-ai`, sin KB/Qdrant): Gate 1 OK, en Fase 2.
 
 ## Decisiones tomadas (esta sesión)
 
@@ -106,7 +106,7 @@ actualizado: 2026-09-04
 
 ## Próximo paso concreto
 
-- **007:** Gate 4 aprobado por el usuario y subido a `origin/main` (2026-10-13).
+- **008:** pendiente Gate 4 (usuario) y push. **009:** revisar plan + ADR-029 → Gate 2.
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.
