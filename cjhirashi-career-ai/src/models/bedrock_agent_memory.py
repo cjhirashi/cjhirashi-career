@@ -3,7 +3,8 @@ BedrockAgentMemory — memoria del agente en Postgres con full-text (RF-022, D-1
 
 Sustituye a la memoria que vivía solo en Qdrant. `search_vector` es una columna
 generada (`to_tsvector(<MEMORY_FTS_CONFIG>, text)`) con índice GIN; el idioma se fija
-al crear la tabla (migración 0001) y por defecto es `spanish` (D-24).
+al crear la tabla (migración 0001) y por defecto es `spanish_unaccent` (D-24, D-29: `spanish` + `unaccent`, ignora tildes;
+la crea la migración 0001).
 """
 from sqlalchemy import Column, Computed, DateTime, Index, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TSVECTOR

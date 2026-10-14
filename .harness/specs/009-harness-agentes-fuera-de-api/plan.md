@@ -374,4 +374,9 @@ Quedan **supuestos a confirmar en la Fase 3** (no bloquean el Gate 2):
 - **P3.** Conteos reales (tablas `bedrock_*`, puntos de memoria en Qdrant) solo se obtienen
   con OK explícito del usuario para operar sobre BD/Qdrant vivos (RNF-002).
 
-Resueltos tras el Gate 2: P1 (`access_role` es `String(32)` sin CHECK: el rol `service` no necesita migración Alembic) y P4 (full-text `spanish`, configurable por env `MEMORY_FTS_CONFIG`, D-24).
+Resueltos tras el Gate 2: P1 (`access_role` es `String(32)` sin CHECK: el rol `service` no necesita migración Alembic) y P4 (full-text `spanish`, configurable por env `MEMORY_FTS_CONFIG`, D-24). **D-29** (Fase 4): por defecto
+`spanish_unaccent` (extensión `unaccent` + configuración `COPY = spanish` con `ALTER MAPPING FOR
+hword, hword_part, word WITH unaccent, spanish_stem`), creada en la migración 0001 antes de la
+tabla y borrada en su `downgrade` después de ella; la consulta usa la misma configuración, así
+que tildes y sin tildes casan por igual. T-160: el usuario dueño de `career_ai_db` crea la
+extensión (trusted, PG13+).

@@ -72,6 +72,12 @@ async def pg_db(pg_engine):
     from services.id_generator import TABLE_PREFIXES
 
     async with pg_engine.begin() as conn:
+        # D-29: la migración 0001 crea la configuración FTS; aquí (create_all) se replica.
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
+        await conn.execute(text("CREATE TEXT SEARCH CONFIGURATION spanish_unaccent (COPY = pg_catalog.spanish)"))
+        await conn.execute(text(
+            "ALTER TEXT SEARCH CONFIGURATION spanish_unaccent "
+            "ALTER MAPPING FOR hword, hword_part, word WITH unaccent, spanish_stem"))
         await conn.run_sync(Base.metadata.create_all)
         for prefix in TABLE_PREFIXES.values():
             await conn.execute(text(f"CREATE SEQUENCE IF NOT EXISTS {prefix}_id_seq START 1"))

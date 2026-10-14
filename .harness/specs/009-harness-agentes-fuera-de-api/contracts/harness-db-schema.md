@@ -133,7 +133,9 @@ manuales) vive **sólo en Qdrant** (colección `career_knowledge`, payload con `
 - Búsqueda: `retrieve_memory_records` pasa de similitud vectorial a
   `search_vector @@ websearch_to_tsquery('spanish', :q)` ordenado por `ts_rank`; sin
   embeddings. Cambia la relevancia (no la forma del contrato `GET /bedrock/memory/records`).
-  Idioma `spanish`; configurable (`MEMORY_FTS_CONFIG`).
+  Idioma `spanish_unaccent` por defecto (D-29: `spanish` + `unaccent`, ignora tildes);
+  configurable (`MEMORY_FTS_CONFIG`). La migración 0001 crea la extensión `unaccent` y la
+  configuración `spanish_unaccent`.
 - `GET /bedrock/memory/events` sigue saliendo de `bedrock_conversation_messages`.
 
 ## 7. Qué NO se migra

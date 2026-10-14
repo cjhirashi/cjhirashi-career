@@ -36,10 +36,10 @@ def test_settings_loads_with_all_required_vars(clean_env):
 
 
 @pytest.mark.requisito("RF-006")
-def test_memory_fts_config_defaults_to_spanish(clean_env):
+def test_memory_fts_config_defaults_to_spanish_unaccent(clean_env):
     for k, v in REQUIRED.items():
         clean_env.setenv(k, v)
-    assert _settings().MEMORY_FTS_CONFIG == "spanish"
+    assert _settings().MEMORY_FTS_CONFIG == "spanish_unaccent"
 
 
 @pytest.mark.requisito("RF-006")

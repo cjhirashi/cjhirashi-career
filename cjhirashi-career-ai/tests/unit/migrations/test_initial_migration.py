@@ -107,6 +107,40 @@ def test_full_text_search_works_in_spanish(migrated):
     assert hit == 1
 
 
+def _fts_config_exists(engine) -> bool:
+    with engine.connect() as conn:
+        return conn.execute(text(
+            "SELECT count(*) FROM pg_ts_config WHERE cfgname='spanish_unaccent'")).scalar() == 1
+
+
+@pytest.mark.requisito("RF-022")
+def test_upgrade_creates_unaccent_extension_and_config(migrated):
+    """D-29: extensión y configuración existen tras upgrade; ignora tildes."""
+    engine, _ = migrated
+    with engine.connect() as conn:
+        assert conn.execute(text(
+            "SELECT count(*) FROM pg_extension WHERE extname='unaccent'")).scalar() == 1
+        assert conn.execute(text(
+            "SELECT to_tsvector('spanish_unaccent','tecnología') "
+            "@@ websearch_to_tsquery('spanish_unaccent','tecnologias')")).scalar() is True
+    assert _fts_config_exists(engine)
+
+
+@pytest.mark.requisito("RF-022")
+@pytest.mark.parametrize("migrated", ["english"], indirect=True)
+def test_unaccent_config_is_created_regardless_of_chosen_fts_config(migrated):
+    engine, _ = migrated
+    assert _fts_config_exists(engine)
+
+
+@pytest.mark.requisito("RF-022")
+def test_downgrade_drops_unaccent_config(migrated):
+    engine, cfg = migrated
+    assert _fts_config_exists(engine)  # precondición: existía antes del downgrade
+    command.downgrade(cfg, "base")
+    assert not _fts_config_exists(engine)
+
+
 @pytest.mark.requisito("RF-006")
 def test_unique_user_source_ref(migrated):
     engine, _ = migrated

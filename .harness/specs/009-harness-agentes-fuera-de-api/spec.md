@@ -167,7 +167,7 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   a la BD del harness conservando identificadores, y DEBE reportar el conteo por tabla en
   origen y destino; SI algún conteo difiere, ENTONCES DEBE terminar con error.
 - **RF-022** El harness DEBE guardar la memoria del agente (notas y hechos) en su BD con
-  búsqueda de texto completo de Postgres, y la migración DEBE trasladar el contenido
+  búsqueda de texto completo de Postgres que ignore las tildes (D-29), y la migración DEBE trasladar el contenido
   actual de la memoria desde Qdrant antes de eliminarlo (D-15).
 - **RF-008** CUANDO llega una petición de chat con streaming, el harness DEBE emitirla
   por SSE a través de `/ai/` (D-08).
@@ -307,6 +307,16 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   guardián ve todas), que hoy vive en `search_knowledge_base`, lo aplica el ejecutor de
   esas tools en el harness (bloque F). *Descartado:* dejar a esos cuatro perfiles sin
   metodologías; dar la lectura también a `agent_task_manager`.
+- **D-29 (usuario, 2026-10-14, Fase 4, al revisar T-080):** la búsqueda de memoria
+  **ignora las tildes**: buscar "tecnologia" encuentra "tecnología". Motivo verificado en
+  Postgres 15: con `spanish` a secas el stemmer no quita tildes ("tecnología" →
+  `tecnolog`, "tecnologias" → `tecnologi`, no casan). Se crea la configuración de búsqueda
+  `spanish_unaccent` (copia de `spanish` con el diccionario `unaccent` antes de
+  `spanish_stem`) en la migración 0001 (todavía no aplicada en ninguna BD real), y pasa a
+  ser el valor por defecto de `MEMORY_FTS_CONFIG`; D-24 sigue en pie (configurable). La
+  extensión `unaccent` es *trusted* desde PG13: la crea el dueño de `career_ai_db` sin
+  superusuario. *Descartado:* dejar `spanish` a secas y que las búsquedas sin tilde
+  fallen cuando cambia la raíz.
 
 ## 7 · Requisitos no funcionales
 

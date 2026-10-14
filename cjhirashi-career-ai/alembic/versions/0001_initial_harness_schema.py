@@ -27,6 +27,16 @@ def upgrade() -> None:
     for seq in PREFIX_SEQUENCES:
         op.execute(f"CREATE SEQUENCE IF NOT EXISTS {seq} START 1")
 
+    # D-29: búsqueda sin tildes. `unaccent` es trusted (PG13+). La configuración se crea siempre,
+    # sea cual sea MEMORY_FTS_CONFIG. CREATE TEXT SEARCH CONFIGURATION no admite IF NOT EXISTS.
+    op.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
+    op.execute("DROP TEXT SEARCH CONFIGURATION IF EXISTS spanish_unaccent")
+    op.execute("CREATE TEXT SEARCH CONFIGURATION spanish_unaccent (COPY = pg_catalog.spanish)")
+    op.execute(
+        "ALTER TEXT SEARCH CONFIGURATION spanish_unaccent "
+        "ALTER MAPPING FOR hword, hword_part, word WITH unaccent, spanish_stem"
+    )
+
     # Idioma del full-text (D-24): se fija al crear la columna generada.
     fts = settings.MEMORY_FTS_CONFIG  # ya validado ([a-z_]+) por Settings; mismo valor que el modelo
 
@@ -234,6 +244,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_bedrock_agent_memory_user_id'), table_name='bedrock_agent_memory')
     op.drop_index('ix_bedrock_agent_memory_search_vector', table_name='bedrock_agent_memory', postgresql_using='gin')
     op.drop_table('bedrock_agent_memory')
+    op.execute("DROP TEXT SEARCH CONFIGURATION IF EXISTS spanish_unaccent")
     op.drop_table('bedrock_agent_delegation')
 
     for seq in PREFIX_SEQUENCES:

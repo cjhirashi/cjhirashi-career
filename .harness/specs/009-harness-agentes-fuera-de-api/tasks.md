@@ -177,10 +177,23 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 ## Bloque F — AI: memoria (FTS) y bucle de agente
 
-- [ ] **T-080** `[test]` (cubre RF-022) — `tests/unit/repositories/test_memory_repo.py` con
+- [x] **T-078** `[test]` (cubre RF-022, D-29) — `tests/unit/test_config.py`: el valor por
+  defecto de `MEMORY_FTS_CONFIG` pasa a `spanish_unaccent`. `tests/unit/migrations/test_initial_migration.py`
+  (Postgres real): tras `upgrade` existen la extensión `unaccent` y la configuración
+  `spanish_unaccent`; `to_tsvector('spanish_unaccent','tecnología') @@
+  websearch_to_tsquery('spanish_unaccent','tecnologias')` es verdadero; `downgrade` borra la
+  configuración (la extensión puede quedar). Rojo.
+- [x] **T-079** `[code]` (cubre RF-022, D-29) — `src/config.py` (defecto), `.env.example`,
+  `alembic/versions/0001_initial_harness_schema.py` (extensión + configuración antes de la
+  tabla; `downgrade` en orden inverso), docstring de `src/models/bedrock_agent_memory.py`,
+  README del ai si menciona `spanish`. Verde T-078 y la suite.
+
+- [x] **T-080** `[test]` (cubre RF-022) — `tests/unit/repositories/test_memory_repo.py` con
   BD de test: insertar nota/hecho/manual, listar por usuario/perfil, borrar, búsqueda
   `websearch_to_tsquery(MEMORY_FTS_CONFIG)` con `ts_rank` (acentos, plurales en español),
-  aislamiento por `user_id`, unicidad `user_id+source_ref`. Rojo.
+  aislamiento por `user_id`, unicidad `user_id+source_ref`. Rojo. **Depende de T-079** (D-29:
+  la búsqueda sin tilde encuentra con tilde; revisor rechazó la 1.ª entrega por ese assert,
+  inalcanzable con `spanish` a secas).
 - [ ] **T-081** `[code]` (cubre RF-022) — `src/repositories/memory_repo.py` (el modelo
   `src/models/bedrock_agent_memory.py` ya existe desde T-015; la migración 0001 ya incluye la
   tabla, T-018/T-019). Verde T-080.
@@ -517,7 +530,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RF-019 | T-003, T-050, T-052, T-053, T-130, T-131, T-142, T-143 | test_jwt_role_claim · test_jwt_hardening · test_auth (ai) | |
 | RF-020 | T-038, T-039, T-092, T-134, T-135 | test_notifications_route · test_task_scheduler | |
 | RF-021 | T-038, T-039, T-088, T-107, T-136, T-137 | test_audit_log_routes · test_tools_files_pdf_linkedin_audit | |
-| RF-022 | T-004, T-018, T-080..T-083, T-122, T-123, T-162 | test_memory_repo · test_memory_service · test_migrate_memory_from_qdrant | |
+| RF-022 | T-004, T-018, T-078, T-079, T-080..T-083, T-122, T-123, T-162 | test_memory_repo · test_memory_service · test_migrate_memory_from_qdrant | |
 | RNF-001 | T-022, T-140, T-186 | tests sin Bedrock ni Qdrant reales (stubs/dobles) | |
 | RNF-002 | T-004, T-005, T-194 | evidencia de backup/snapshot y OK del usuario | |
 | RNF-003 | T-110, T-197 | cobertura ≥ 80 % por módulo y marcadores `requisito` | |
@@ -1411,3 +1424,24 @@ $ pytest -q   (sin BD): 317 passed, 74 skipped · Total coverage: 73.03% (< 80 %
 $ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai   (raíz, sin BD): 317 passed, 74 skipped (exit 1 por cobertura, conocido)
 ```
 Compuerta: `bash .harness/gate/check.sh` (sin pipe) -> exit 0 (`31 ok · 3 warn · 0 error`, avisos conocidos de 005/006/009). `.coverage` de la raíz borrado. Contenedor `career-ai-test-pg-009e` detenido y eliminado: `docker ps -a --filter name=career-ai-test-pg-009e` sin filas (solo cabecera).
+
+### T-078 / T-079 / T-080 (reentrega) — evidencia D-29
+
+Rojo T-078 (Postgres desechable 55433), `pytest --no-cov -q tests/unit/test_config.py tests/unit/migrations`:
+```
+FAILED tests/unit/test_config.py::test_memory_fts_config_defaults_to_spanish_unaccent   (assert 'spanish' == 'spanish_unaccent')
+FAILED tests/unit/migrations/test_initial_migration.py::test_upgrade_creates_unaccent_extension_and_config   (pg_extension unaccent: 0 == 1)
+FAILED tests/unit/migrations/test_initial_migration.py::test_unaccent_config_is_created_regardless_of_chosen_fts_config[english]
+FAILED tests/unit/migrations/test_initial_migration.py::test_downgrade_drops_unaccent_config   (precondición: la config no existía)
+4 failed, 37 passed
+```
+Verde T-079: mismos archivos -> `41 passed`. Suite completa (con BD): `Total coverage: 98.73%`, `8 failed, 394 passed` (los 8 son test_memory_repo.py, solo `ImportError: cannot import name 'memory_repo'`, T-081).
+
+Archivos: `src/config.py`, `.env.example`, `alembic/versions/0001_initial_harness_schema.py` (extensión + config antes de las tablas; `DROP ... IF EXISTS` tras `drop_table('bedrock_agent_memory')`; CREATE TEXT SEARCH CONFIGURATION no admite IF NOT EXISTS, por eso DROP IF EXISTS previo), `src/models/bedrock_agent_memory.py` (docstring), `tests/conftest.py` (fixture `pg_db` usa `create_all`: replica el DDL de la config), README del ai no menciona `spanish`.
+
+T-080: comentario falso corregido; asserts intactos. Verificación directa en PG15 con config equivalente:
+```
+ a | b | c | d      (a: 'empresa' ~ 'empresas'; b: 'tecnologias' ~ 'tecnología'; c: 'base de dato' ~ 'bases de datos'; d: 'astronauta' sin coincidencia)
+ t | t | t | f
+```
+Rojo legítimo: `8 failed` en test_memory_repo.py, todos `ImportError ... 'memory_repo' from 'repositories'`.

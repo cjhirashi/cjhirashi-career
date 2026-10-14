@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     API_LIST_MAX_ITEMS: int = Field(default=500, ge=1)
 
     # Memoria del agente (full-text, D-24).
-    MEMORY_FTS_CONFIG: str = Field(default="spanish", description="Configuración regconfig de FTS")
+    MEMORY_FTS_CONFIG: str = Field(default="spanish_unaccent", description="Configuración regconfig de FTS (D-29: ignora tildes)")
 
     @field_validator("ALGORITHM")
     @classmethod
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     def _validate_fts_config(cls, value: str) -> str:
         # Se interpola en DDL (columna generada): solo identificadores simples.
         if not re.fullmatch(r"[a-z_]+", value):
-            raise ValueError("MEMORY_FTS_CONFIG debe cumplir [a-z_]+ (p. ej. 'spanish')")
+            raise ValueError("MEMORY_FTS_CONFIG debe cumplir [a-z_]+ (p. ej. 'spanish_unaccent')")
         return value
 
     # Proveedor de modelos Bedrock (spec 009 RF-005). Mismos nombres y valores que la API.
