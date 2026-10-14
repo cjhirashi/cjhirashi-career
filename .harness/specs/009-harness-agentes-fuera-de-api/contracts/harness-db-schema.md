@@ -27,7 +27,7 @@ Fuente del inventario: metadatos SQLAlchemy de los modelos `bedrock_*` de la API
 | `bedrock_usage_logs` | `id` INTEGER (serial) | — | user_id!, session_id VARCHAR(64)!, model_id!, input/output/cache_read/cache_write_tokens!, estimated_cost_usd NUMERIC(12,6)!, created_at! |
 | `bedrock_usage_round_logs` | `id` INTEGER (serial) | — | user_id!, session_id VARCHAR(100)!, model_id, round_type!, tool_name, agent_profile_id, tokens (4)!, estimated_cost_usd!, notes, created_at! |
 
-| `bedrock_agent_memory` (**nueva**, RF-022) | `id` VARCHAR(20) (`bam-N`) | — | user_id!, kind VARCHAR(20)! (`note`\|`fact`\|`manual`), agent_profile_id VARCHAR(50) (NULL = global del usuario), text TEXT!, search_vector TSVECTOR (columna generada `to_tsvector('spanish', text)`) con índice GIN, source VARCHAR(20)! (`harness`\|`qdrant_import`), source_ref VARCHAR(100) (id del punto Qdrant, único por `user_id`+`source_ref` para idempotencia), created_at! |
+| `bedrock_agent_memory` (**nueva**, RF-022) | `id` VARCHAR(20) (`bam-N`) | — | user_id!, kind VARCHAR(20)! (`note`\|`fact`\|`manual`), agent_profile_id VARCHAR(50) (NULL = global del usuario), text TEXT!, search_vector TSVECTOR (columna generada `to_tsvector('spanish', text)`) con índice GIN, source VARCHAR(20)! (`harness`\|`qdrant_import`), source_ref VARCHAR(100) (clave de idempotencia, única por `user_id`+`source_ref`: `note:<perfil>:<sha256[:40]>` / `manual:<sha256[:40]>` para notas y memorias manuales — D-30, también al importar —; id del punto Qdrant para el resto de lo importado), created_at! |
 
 (`!` = NOT NULL.) El detalle fino (longitudes, defaults, índices) lo fija la migración
 inicial **generada desde los modelos copiados** y verificada por un test de esquema que la

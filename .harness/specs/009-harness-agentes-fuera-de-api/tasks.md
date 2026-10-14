@@ -197,10 +197,15 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [x] **T-081** `[code]` (cubre RF-022) — `src/repositories/memory_repo.py` (el modelo
   `src/models/bedrock_agent_memory.py` ya existe desde T-015; la migración 0001 ya incluye la
   tabla, T-018/T-019). Verde T-080.
-- [ ] **T-082** `[test]` (cubre RF-022, RF-001) — `test_memory_service.py`: sustituye
+- [x] **T-082** `[test]` (cubre RF-022, RF-001) — `test_memory_service.py`: sustituye
   `local_memory` (notas del agente, `memory/events` desde mensajes, `memory/records` por FTS,
-  `memory/manual`); sin imports de Qdrant. Rojo.
-- [ ] **T-083** `[code]` (cubre RF-022) — `src/services/memory_service.py`. Verde T-082.
+  `memory/manual`); sin imports de Qdrant. Rojo. **Ampliación D-30** (reentrega): reenviar
+  la misma nota/memoria manual no duplica y devuelve la existente (clave `source_ref`
+  determinista, función compartida con T-122).
+- [ ] **T-083** `[code]` (cubre RF-022, D-30) — `src/services/memory_service.py`. Verde T-082.
+  Llamar a `memory_repo.add_memory(...)` por módulo (no `from ... import add_memory`): el test
+  de carrera determinista de T-082 lo parchea así. Ante `IntegrityError` de
+  `uq_bedrock_agent_memory_user_source_ref`: rollback y devolver la fila existente.
 - [ ] **T-084** `[test]` (cubre RF-005, RF-004) — `tests/unit/services/test_agent_loop.py`
   con `FakeProvider`: turno sin tools, con tool, límite `max_round_trips`, ventana de
   historial, presupuesto diario superado, coste registrado, el JWT del usuario llega al
@@ -299,7 +304,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-121** `[code]` (cubre RF-007, RF-017) — `scripts/copy_from_career_db.py` (incluye la verificación de esquema). Verde T-120.
 - [ ] **T-122** `[test]` (cubre RF-022, RF-007) — `tests/unit/scripts/test_migrate_memory_from_qdrant.py`
   (cliente Qdrant simulado, jamás real): scroll de puntos de memoria, descarta puntos de
-  registros indexados, idempotente (`source_ref`), `kind` correcto, reporte con
+  registros indexados, idempotente (`source_ref`; notas y manuales con la clave de D-30 vía la
+  función compartida de `memory_service`), `kind` correcto, reporte con
   `source = dest + skipped_invalid`, exit ≠ 0 si no cuadra, inválidos listados. Rojo.
 - [ ] **T-123** `[code]` (cubre RF-022) — `scripts/migrate_memory_from_qdrant.py`. Verde T-122.
 
@@ -509,7 +515,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 
 | RF / RNF / doc | Tareas | Test(s) | Pass |
 |---|---|---|---|
-| RF-001 | T-068, T-070, T-071, T-100, T-102..T-109 | test_ai_route_parity · test_routes_* · e2e | |
+| RF-001 | T-068, T-070, T-071, T-100, T-102..T-109, T-082, T-083 | test_ai_route_parity · test_routes_* · e2e · test_memory_service | |
 | RF-002 | T-012, T-050, T-051, T-100 | test_auth (ai) · test_app_boot | |
 | RF-003 | T-030..T-040, T-141, T-070, T-086..T-089 | test_api_client · test_career · test_isolation · test_tools_* · test_file_metadata_route | |
 | RF-004 | T-030, T-031, T-084, T-092, T-093 | test_api_client · test_agent_loop · test_task_scheduler | |
@@ -1460,3 +1466,43 @@ Required test coverage of 80% reached. Total coverage: 98.76%
 ======================= 402 passed, 3 warnings in 42.81s =======================
 ```
 Compuerta: `bash .harness/gate/check.sh` -> exit 0 (`31 ok · 3 warn · 0 error`). Contenedor detenido: `docker ps -a --filter name=career-ai-testdb` sin filas (solo cabecera). Test T-080 sin modificar. Sin commit.
+
+### T-082 — test_memory_service.py (rojo)
+Postgres desechable `career-ai-testdb` (127.0.0.1:55433). `venv/bin/python -m pytest tests/unit/services/test_memory_service.py -q --no-cov`:
+```
+12 x E   ImportError: cannot import name 'memory_service' from 'services' (.../cjhirashi-career-ai/src/services/__init__.py)
+ 1 x E   AssertionError: falta src/services/memory_service.py   (test de frontera)
+13 failed
+```
+Resto de la suite (`--deselect` el archivo nuevo): `402 passed, 13 deselected`. Suite completa: `13 failed, 402 passed`.
+Decisiones: fixture `pg_db` (FTS exige PG real); `MAX_LIMIT = 50` (el `le=50` de `top_k` de la ruta hoy; la API no acota `max_results` de events ni `limit` de notas, ahora sí); NUL saneado en texto y consulta; `MemoryServiceError(ValueError)`. Contenedor detenido: `docker ps -a` sin `career-ai-testdb`. Sin commit.
+
+### T-082 (reentrega D-30) — idempotencia de notas/manual y `memory_source_ref`
+Postgres desechable `career-ai-testdb` (127.0.0.1:55433). `pytest tests/unit/services/test_memory_service.py -q --no-cov`:
+```
+18 x E   ImportError: cannot import name 'memory_service' from 'services' (.../cjhirashi-career-ai/src/services/__init__.py)
+ 1 x E   AssertionError: falta src/services/memory_service.py   (test de frontera)
+19 failed
+```
+Resto de la suite (`--deselect` el archivo): `402 passed, 19 deselected`. Contenedor detenido: `docker ps -a` sin `career-ai-testdb`.
+Longitud de la clave: `note:` + perfil (<=50) + `:` + 64 puede llegar a 120 > 100. Propuesta (testeada): si la forma literal excede 100, se sustituye el perfil por `sha256(profile_id).hexdigest()[:16]` (<= 86). Perfiles <= 30 caracteres conservan la forma literal de D-30. Sin commit.
+
+### T-082 (ajuste D-30: formato único de clave)
+Clave `note:<profile_id>:<h>` / `manual:<h>`, `h` = 40 hex de sha256; máx. 96. Quitada la sustitución condicional del perfil. Postgres desechable 127.0.0.1:55433. `pytest tests/unit/services/test_memory_service.py -q --no-cov`:
+```
+19 x E   ImportError: cannot import name 'memory_service' from 'services' (.../cjhirashi-career-ai/src/services/__init__.py)
+ 1 x E   AssertionError: falta src/services/memory_service.py   (test de frontera)
+20 failed
+```
+Resto de la suite (`--deselect` el archivo): `402 passed, 20 deselected`. Contenedor detenido: `docker ps -a` sin `career-ai-testdb`. Sin commit.
+
+### T-082 (reentrega tras rechazo del revisor: D-1, D-2, R-1..R-3)
+Añadido: retorno de `create_manual_memory` ({id,text}, reenvío con espacios/NUL igual); dedup por `source_ref` contra fila `qdrant_import` (nota y manual); fila creada (source_ref/kind/perfil NULL en manual/source="harness"); nota y manual con mismo texto = 2 filas; frontera por subproceso (`sys.modules`) además del AST; events = 50 más antiguos en orden; orden exacto de records; `memory_source_ref("note", t)` sin perfil -> ValueError; carrera: (a) 6 `create_agent_note` en `asyncio.gather` con sesión propia cada una (la fixture `pg_db` es una factory, lo permite) y (b) determinista por monkeypatch de `memory_repo.add_memory`, que inserta la fila rival con otra sesión justo antes del INSERT del servicio -> debe capturar `IntegrityError` y devolver la existente.
+Postgres desechable 127.0.0.1:55433. `pytest tests/unit/services/test_memory_service.py -q --no-cov`:
+```
+24 x E   ImportError: cannot import name 'memory_service' from 'services' (.../cjhirashi-career-ai/src/services/__init__.py)
+ 1 x E   AssertionError: falta src/services/memory_service.py   (frontera AST)
+ 1 x E   ModuleNotFoundError: No module named 'services.memory_service'   (frontera subproceso)
+26 failed
+```
+Resto de la suite (`--deselect` el archivo): `402 passed, 26 deselected`. Contenedor detenido: `docker ps -a` sin `career-ai-testdb`. Sin commit.

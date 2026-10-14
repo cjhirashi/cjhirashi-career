@@ -110,8 +110,8 @@ actualizado: 2026-10-14
 
 ## Próximo paso concreto
 
-- **009:** Bloque F — T-078..T-081 hechos (D-29: FTS `spanish_unaccent`; `memory_repo.py` 100 %
-  cobertura); sigue T-082 (`test_memory_service.py`). Notas del revisor para T-082: acotar `limit`
+- **009:** Bloque F — T-078..T-082 hechos (D-29: FTS `spanish_unaccent`; D-30: sin duplicados por
+  `source_ref` determinista); sigue T-083 (`memory_service.py`). Notas del revisor para T-082: acotar `limit`
   si se expone a un agente; sanear byte NUL en la entrada (el driver lanza `DBAPIError`).
   Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la
   fixture hace `DROP SCHEMA`).

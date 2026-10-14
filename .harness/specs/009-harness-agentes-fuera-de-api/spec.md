@@ -317,6 +317,21 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   extensión `unaccent` es *trusted* desde PG13: la crea el dueño de `career_ai_db` sin
   superusuario. *Descartado:* dejar `spanish` a secas y que las búsquedas sin tilde
   fallen cuando cambia la raíz.
+- **D-30 (usuario, 2026-10-14, Fase 4, al revisar T-082):** guardar dos veces la misma nota
+  del agente o la misma memoria manual **no duplica** (paridad con la API, cuyo id era un
+  hash del texto). Se usa la unicidad existente `user_id+source_ref` con una clave
+  determinista: `note:<profile_id>:<h>` y `manual:<h>`, con `h` = los primeros 40
+  hex de `sha256(texto recortado, sin NUL)` (máximo 5+50+1+40 = 96 ≤ 100 con `profile_id`
+  VARCHAR(50); formato único, sin casos especiales); un reenvío devuelve la fila existente. Una única función
+  calcula la clave y la usan `memory_service` y el script de migración (T-122) para las notas
+  y memorias manuales importadas de Qdrant, de modo que lo migrado y lo nuevo deduplican
+  entre sí. *Descartado:* permitir duplicados. Diferencias de contrato informadas al usuario
+  y aceptadas como consecuencia de D-15: los ids pasan de hash numérico a `bam-N` (sigue
+  `str`); `delete_agent_note` comprueba el propietario (antes no); `limit`/`top_k`/
+  `max_results` acotados a 1–50 (el `le=50` vigente de `/memory/records`); sin 502 por
+  embeddings; `namespaces` de `GET /memory/records` pasa de `[type, resource_key]`
+  (`manual_memory`/`agent_note`/`agent-notes`) a `[kind, agent_profile_id | "global"]`
+  (`manual`/`note`/`fact`); el Admin sólo lo tipa (`types/bedrock.ts:308`, opcional), no lo muestra.
 
 ## 7 · Requisitos no funcionales
 
