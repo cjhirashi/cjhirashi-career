@@ -332,6 +332,12 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   embeddings; `namespaces` de `GET /memory/records` pasa de `[type, resource_key]`
   (`manual_memory`/`agent_note`/`agent-notes`) a `[kind, agent_profile_id | "global"]`
   (`manual`/`note`/`fact`); el Admin sólo lo tipa (`types/bedrock.ts:308`, opcional), no lo muestra.
+- **D-31 (usuario, 2026-10-14, Fase 4, al revisar T-084):** en el chat contextual, si la
+  lectura REST de secciones (`GET /admin/sections`, D-10) falla —red, 401/403, 5xx— el turno
+  **degrada al orquestador L1** y registra un `warning` con la causa; no corta el turno.
+  Diferencia aceptada respecto a la API, donde la lectura era de BD local y un fallo se
+  propagaba. Un `agent_profile_id` inexistente (de sección u override) mantiene el
+  comportamiento de la API. *Descartado:* propagar el fallo como evento `error`.
 
 ## 7 · Requisitos no funcionales
 

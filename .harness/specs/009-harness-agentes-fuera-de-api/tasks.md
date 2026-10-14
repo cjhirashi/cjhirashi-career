@@ -207,19 +207,44 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   Llamar a `memory_repo.add_memory(...)` por módulo (no `from ... import add_memory`): el test
   de carrera determinista de T-082 lo parchea así. Ante `IntegrityError` de
   `uq_bedrock_agent_memory_user_source_ref`: rollback y devolver la fila existente.
-- [ ] **T-084** `[test]` (cubre RF-005, RF-004) — `tests/unit/services/test_agent_loop.py`
+- [x] **T-084** `[test]` (cubre RF-005, RF-004) — `tests/unit/services/test_agent_loop.py`
   con `FakeProvider`: turno sin tools, con tool, límite `max_round_trips`, ventana de
   historial, presupuesto diario superado, coste registrado, el JWT del usuario llega al
   cliente; dos `toolUse` en un mismo mensaje en streaming no se mezclan (D-26); fallback de
-  `converse_stream` ante `AccessDeniedException` (si se decide, ver T-085). Los tests que usan
-  el provider Bedrock limpian el dict de módulo de clientes boto3 cacheados. Rojo.
+  `converse_stream` ante `AccessDeniedException`. **Decidido: agent_loop usa `provider.converse()`;
+  fallback heredado, sin cambio en el Protocol.** Los tests que usan el provider Bedrock limpian
+  el dict de módulo de clientes boto3 cacheados. Rojo. (La interfaz que T-085 debe cumplir está
+  en el docstring del módulo de test.) **Ampliación (rechazo del revisor):** paridad con todo el
+  comportamiento del bucle de la API: nudges (`should_retry_max_tokens`, `should_nudge_persist`,
+  `persist_nudge_text`, `should_nudge_progress`, textos exactos, forzado de tool, `status`), adjuntos
+  (`build_user_content_blocks`), `affected_resources` vía `invalidation_key` y limpieza de `seen_reads`,
+  nivel 3 con historial, elección de modelo (débiles, último recurso), enganche de delegación, `max_tokens`
+  desde config. Pendiente fuera de T-084: `report_error` ante fallo de tool (T-093).
+- [ ] **T-084a** `[test]` (cubre RF-005) — `tests/unit/services/test_attachments.py` (2.º rechazo de
+  T-084: el helper de adjuntos no tenía dueño). Traslado de `cjhirashi-career-api/src/services/bedrock/attachments.py`
+  (`build_user_content_blocks`): sin adjuntos → `[{"text": message}]`; adjunto inexistente
+  (`Adjunto no encontrado: file_id=…`); demasiado grande (límite 5 MB de la API); bloque imagen; bloque
+  documento; lectura del archivo vía `clients/files.py` con la credencial en contexto (D-10). Rojo.
+- [ ] **T-084b** `[code]` (cubre RF-005) — `src/services/attachments.py`. Verde T-084a.
+- [ ] **T-084c** `[test]` (cubre RF-005) — `tests/unit/services/test_section_profiles.py`: traslado de
+  `resolve_recommended_model(page_context)` (`cjhirashi-career-api/src/services/bedrock/section_profiles.py:58`):
+  sin contexto → modelo por defecto; ruta estática; `chat_profile`; `resource_key`; desconocido → defecto. Rojo.
+- [ ] **T-084d** `[code]` (cubre RF-005) — `src/services/section_profiles.py` (solo lo que usa el bucle).
+  Verde T-084c.
 - [ ] **T-085** `[code]` (cubre RF-005) — `src/services/agent_loop.py` (trasladado,
-  inyección del provider). Verde T-084. **Notas (bloque B):**
+  inyección del provider). Verde T-084. Interfaz: ver docstring de `test_agent_loop.py`
+  (`ChatTurnRequest`, `TurnContext`, `resolve_turn_context`, `chat_stream`, `run_single_turn_sync`).
+  Además T-085 debe: (a) añadir `BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3` a `config.Settings`; (b) exponer en
+  `agent_loop` los nombres `build_user_content_blocks`, `invalidation_key`, `is_write_tool`,
+  `resolve_recommended_model`, `run_specialist_sub_turn` (hoy no existen en el harness: `services/attachments`,
+  `attachments` → T-084a/b; `section_profiles` → T-084c/d; `invalidation_key`/`is_write_tool` → T-086/T-087).
+  Depende de T-084b y T-084d; (c) el enganche de
+  delegación (`run_specialist_sub_turn`, eventos `delegation_*`, denegaciones) queda **completo en T-091**. **Notas (bloque B):**
   - `agent_loop` debe adaptarse a `ModelResponse.tool_calls` y a `Usage` en snake_case (hoy
     usa `tool_uses` e `inputTokens`).
-  - `ModelProvider.converse_stream` no tiene el fallback a Converse ante
-    `AccessDeniedException` que sí tiene `converse()`: decidir y probar (en T-084) si
-    `agent_loop` lo necesita.
+  - **Decidido: agent_loop usa `provider.converse()`; fallback heredado, sin cambio en el
+    Protocol.** (`converse_stream` no tiene el fallback a Converse ante `AccessDeniedException`;
+    `converse()` sí.) Probado en T-084 con `BedrockProvider` + cliente boto3 stub.
   - `cache_read_savings_usd` vive solo en `providers/bedrock/pricing.py`, no en el Protocol;
     el panel de costes (`usage_service`, T-065) la necesita: decidir si se añade al Protocol
     o se expone por otra vía.
@@ -238,6 +263,11 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   (`_known_resource_keys`), con test de paridad contra la lista de recursos de la API.
 - [ ] **T-087** `[code]` (cubre RF-003) — `src/services/{tools_career.py,web_search.py,github_tools.py}`.
   Verde T-086.
+  `is_write_tool` e `invalidation_key` (consumidos por `agent_loop`) se trasladan aquí, con test en T-086.
+  Nota (orquestador, T-084): `invalidation_key` se porta con paridad (D-13) — en la API
+  devuelve `resource_key` para cualquier tool que lo lleve, incluidas lecturas
+  (`cjhirashi-career-api/src/services/bedrock/tools.py` ~1374); T-086 lo fija con un test.
+  Cambiarlo sería un delta de spec, no una corrección silenciosa.
 - [ ] **T-088** `[test]` (cubre RF-003, RF-021) — `test_tools_files_pdf_linkedin_audit.py`:
   tools de archivos/PDF/LinkedIn/ajustes/errores vía cliente; `list_recent_changes` y
   `restore_deleted_record` vía `/audit-log`; 403 de la API → error de tool legible (no
@@ -255,6 +285,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   (`enqueue_advance`). Rojo.
 - [ ] **T-093** `[code]` (cubre RF-004, RF-020) — `src/services/task_scheduler.py`,
   `src/services/error_reporting.py` (envía a `POST /system/error-report`). Verde T-092.
+  T-093 añade la llamada `error_reporting.report_error` desde agent_loop ante fallo de tool (api:794-803) con su test.
 
 ## Bloque G — AI: rutas
 
@@ -266,7 +297,9 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   `: ping` cada 15 s (reloj inyectado), `X-Accel-Buffering: no`; error del provider → evento
   `error`, no 500. `consume_converse_stream` es síncrono y bloquea el event loop (igual que
   en el origen): el test debe fijar cómo se ejecuta (p. ej. `asyncio.to_thread`) para que el
-  ping cada 15 s no se retrase. Rojo.
+  ping cada 15 s no se retrase. Además (revisor, T-084): una excepción inesperada del
+  generador (p. ej. `KeyError` de perfil inexistente) → evento `error` "Error interno del agente: {e}"
+  y `report_error(severity="critical")`, como `cjhirashi-career-api/src/routes/bedrock.py:99-120`. Rojo.
 - [ ] **T-102** `[code]` (cubre RF-001, RF-008) — `src/routes/bedrock.py`,
   `src/services/chat_service.py`, `src/schemas/*` (copiados de la API). Verde T-101.
 - [ ] **T-103** `[test]` (cubre RF-001) — `test_routes_agent_profiles.py` (rutas 9–20 de
@@ -520,7 +553,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RF-002 | T-012, T-050, T-051, T-100 | test_auth (ai) · test_app_boot | |
 | RF-003 | T-030..T-040, T-141, T-070, T-086..T-089 | test_api_client · test_career · test_isolation · test_tools_* · test_file_metadata_route | |
 | RF-004 | T-030, T-031, T-084, T-092, T-093 | test_api_client · test_agent_loop · test_task_scheduler | |
-| RF-005 | T-020..T-026, T-084, T-085, T-090, T-091 | test_provider_contract · test_provider_boundary · test_bedrock_* | |
+| RF-005 | T-020..T-026, T-084, T-084a..T-084d, T-085, T-090, T-091 | test_provider_contract · test_provider_boundary · test_bedrock_* · test_agent_loop · test_attachments · test_section_profiles | |
 | RF-006 | T-010..T-019, T-060..T-067 | test_schema_matches_contract · test_initial_migration · test_*_repo | |
 | RF-007 | T-004, T-120, T-121, T-122, T-161 | test_copy_from_career_db · evidencia en vivo | |
 | RF-008 | T-012, T-013, T-101, T-102, T-172, T-173 | test_chat_sse · test SSE Admin | |
@@ -1535,3 +1568,18 @@ FAILED tests/unit/services/test_memory_service.py::test_delete_agent_note_solo_b
 Fix: `delete_agent_note` hace su propio DELETE con `id + user_id + kind='note'` (memory_repo intacto).
 VERDE: `27 passed in 12.83s`. Suite completa: `memory_service.py 65 1 98% 71`, `TOTAL 2085 26 99%`, `429 passed, 3 warnings in 54.29s`.
 Gate `env -u TEST_DATABASE_URL`: `31 ok · 3 warn · 0 error`, compuerta abierta. Contenedor borrado (`docker ps -a` sin filas). Sin commit.
+
+### T-084 — test_agent_loop.py (rojo; 3.ª reentrega tras REJECTED del revisor, D-31)
+146 tests (`@pytest.mark.requisito("RF-005")`/`("RF-004")`); 2 no dependen del módulo y pasan (FakeProvider cumple el Protocol; tabla `_TOOL_STATUS` idéntica a la API leída por `ast`, con `pytest.skip("API de referencia no disponible")` si falta el archivo).
+Cambios: (1) coincidencia de ruta fiel a `match_section` (admin_sections.py:680-701): sección más específica sin agente -> orquestador (`/networking/x`, `/networking/x/y`), `/networking/?tab=1`, raíz `/` (y `/?tab=1`), y `agent_profile_id` inexistente (de sección u override) -> `KeyError("Unknown agent profile: …")` propagado fuera de `chat_stream` sin eventos ni llamada al provider (la API no lo captura: agent_loop.py:466-473). (2) D-31: fallo de `sections.list()` con `httpx.ConnectError` y `ApiError` 401/403/500 -> orquestador + exactamente un `warning` con la causa (`caplog`); documentado en el docstring. (3) test AST con marcador `requisito` y skip. (4) `search_knowledge_base` marcada como entrada muerta (T-086). Nota: `ApiError` vive en `clients/api_client.py` (no en `clients/errors.py`, que sólo tiene `ErrorsClient`).
+ROJO (`pytest tests/unit/services/test_agent_loop.py -q -o addopts=''`):
+```
+E   ModuleNotFoundError: No module named 'services.agent_loop'
+2 passed, 144 errors in 5.62s
+```
+Validación de los tests: prototipo desechable fuera del repo (scratchpad, plugin de pytest, nunca en `src/`; reutiliza funciones/regex de la API): `146 passed in 0.65s`. Salida completa (-v) guardada en `/tmp/claude-1000/-mnt-disco2-cjhirashi-data-proyectos-cjhirashi-career/abae7dba-8248-55c7-9765-5a01e2d92ce4/scratchpad/t084_prototype_run.txt`. Prototipo borrado (`ls src/services | grep -c agent_loop` = 0).
+Suite con Postgres desechable `career-ai-testdb` (postgres:15-alpine, 127.0.0.1:55433):
+- sin el archivo nuevo (`--ignore`): `429 passed, 3 warnings in 54.45s` (= base).
+- con el archivo: `431 passed, 3 warnings, 144 errors in 59.59s` (los 144 errores son los tests rojos).
+Contenedor borrado (`docker ps -a --filter name=career-ai-testdb -q | wc -l` = 0).
+Gate `env -u TEST_DATABASE_URL bash .harness/gate/check.sh`: `30 ok · 3 warn · 1 error` -> `cjhirashi-career-ai · tests FALLAN` (sólo por los tests rojos de T-084, esperado hasta T-085). Sin commit.

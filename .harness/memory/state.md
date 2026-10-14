@@ -110,9 +110,9 @@ actualizado: 2026-10-14
 
 ## Próximo paso concreto
 
-- **009:** Bloque F — T-078..T-083 hechos (D-29: FTS `spanish_unaccent`; D-30: sin duplicados por
-  `source_ref` determinista); sigue T-084 (test de agent_loop). Notas del revisor para T-082: acotar `limit`
-  si se expone a un agente; sanear byte NUL en la entrada (el driver lanza `DBAPIError`).
+- **009:** Bloque F — T-078..T-084 hechos (D-29: FTS `spanish_unaccent`; D-30: sin duplicados por
+  `source_ref` determinista; D-31: fallo REST de secciones → L1 + warning). Sigue T-084a (test de
+  adjuntos), luego T-084b..d y T-085 (`agent_loop`, 144 tests en rojo; el gate cierra hasta entonces).
   Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la
   fixture hace `DROP SCHEMA`).
 - **[2026-10-14] Deuda (gate/tests ai):** con `TEST_DATABASE_URL` exportada y el Postgres de
