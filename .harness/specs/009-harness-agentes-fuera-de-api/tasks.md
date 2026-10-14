@@ -258,7 +258,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
     T-085a/b. La rama `KeyError` de delegación a perfil desconocido (`{"error": "unknown agent
     profile: …"}`) la fija T-090. `invalidation_key`/`run_specialist_sub_turn` son ganchos que
     lanzan `NotImplementedError` hasta T-087/T-091: el bucle no es usable en producción antes.
-- [ ] **T-085a** `[test]` (cubre RF-005) — `test_turn_context.py`: `resolve_turn_context` real,
+- [x] **T-085a** `[test]` (cubre RF-005) — `test_turn_context.py`: `resolve_turn_context` real,
   port de `cjhirashi-career-api/src/services/bedrock/prompt.py:246-289` con dobles de
   `SectionsClient`, `MethodologiesClient` y repos. Fija: el prompt incluye el bloque de
   metodologías asignadas (`profile_catalog.list_assigned_methodologies` con
@@ -269,7 +269,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   `chat_surface="general"` y override no L2 no leen). Comprobar que `/admin/sections` trae
   `label`. Compatible con T-084 (`test_general_surface_…` y `test_contextual_override_…` exigen
   `list_calls == 0` al resolver el perfil): si algún test de T-084 choca, el delta lo hace esta
-  tarea `[test]`, no T-085b. Import perezoso. Rojo.
+  tarea `[test]`, no T-085b. Import perezoso. Rojo. Hecho: `tests/unit/services/test_turn_context.py` (46 tests);
+  interfaz en su docstring (`methodologies=` en `resolve_turn_context`/`chat_stream`/`run_single_turn_sync`, `TurnContext.profile`).
 - [ ] **T-085b** `[code]` (cubre RF-005) — verde T-085a: cablear `MethodologiesClient` (credencial
   del llamante, D-10) hasta `resolve_turn_context` desde `chat_stream`/`run_single_turn_sync`,
   `assigned`/`section_labels` a `compose_system_prompt`, y la lectura única de secciones (D-32).
@@ -324,7 +325,10 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   en el origen): el test debe fijar cómo se ejecuta (p. ej. `asyncio.to_thread`) para que el
   ping cada 15 s no se retrase. Además (revisor, T-084): una excepción inesperada del
   generador (p. ej. `KeyError` de perfil inexistente) → evento `error` "Error interno del agente: {e}"
-  y `report_error(severity="critical")`, como `cjhirashi-career-api/src/routes/bedrock.py:99-120`. Rojo.
+  y `report_error(severity="critical")`, como `cjhirashi-career-api/src/routes/bedrock.py:99-120`.
+  Además (revisor, T-085a): la ruta construye `SectionsClient` y `MethodologiesClient` con la
+  credencial del llamante (D-10) y los pasa a `chat_stream` (`methodologies=None` deja el
+  catálogo vacío en silencio: el test lo impide). Rojo.
 - [ ] **T-102** `[code]` (cubre RF-001, RF-008) — `src/routes/bedrock.py`,
   `src/services/chat_service.py`, `src/schemas/*` (copiados de la API). Verde T-101.
 - [ ] **T-103** `[test]` (cubre RF-001) — `test_routes_agent_profiles.py` (rutas 9–20 de
@@ -1676,3 +1680,8 @@ Evidencia:
   Suite ai con Postgres desechable 127.0.0.1:55433 (parado): 679 passed, 3 warnings; agent_loop.py 293 stmts, 24 miss, 92 % (300,305,310,324,360-381,657-659,734-735: enganches NotImplemented, resolve_turn_context real, ramas defensivas); TOTAL 97.96 % (umbral 80)
   Suite ai sin BD (`env -u TEST_DATABASE_URL`): 571 passed, 108 skipped (cov 74.79 % por los skips de BD, no por esta tarea)
   Gate `env -u TEST_DATABASE_URL`: 31 ok · 3 warn · 0 error -> Compuerta abierta.
+
+### T-085a — test_turn_context.py (rojo)
+46 tests (RF-005) en `cjhirashi-career-ai/tests/unit/services/test_turn_context.py`; interfaz nueva en su docstring: `methodologies=None` (resolve_turn_context, chat_stream, run_single_turn_sync; chat_stream lo pasa al resolver SOLO si no es None para no romper los dobles de T-084), `TurnContext.profile: Optional = None` (perfil efectivo tras D-31). `/admin/sections` trae `label` (api `AdminSectionItem.label: str`). Restricciones para T-085b: `sections` llega al resolver por identidad (T-084) y sin kwargs extra, así que la lectura única se comparte por estado de turno (p. ej. caché en la request), no con un envoltorio.
+Evidencia (scratchpad t085a/): rojo `44 failed, 2 passed` (TypeError: kwarg `methodologies` inexistente); prototipo desechable (copia de agent_loop en scratchpad) -> `46 passed` y los 146 de T-084 `146 passed`; mutaciones: sin metodologías 14 failed, dos lecturas 2 failed, notas para no user_facing 1 failed, sin section_labels 4 failed.
+Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN solo por los 44 rojos nuevos (573 passed, 108 skipped). Sin commit.
