@@ -232,7 +232,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [x] **T-084c** `[test]` (cubre RF-005) — `tests/unit/services/test_section_profiles.py`: traslado de
   `resolve_recommended_model(page_context)` (`cjhirashi-career-api/src/services/bedrock/section_profiles.py:58`):
   sin contexto → modelo por defecto; ruta estática; `chat_profile`; `resource_key`; desconocido → defecto. Rojo.
-- [ ] **T-084d** `[code]` (cubre RF-005) — `src/services/section_profiles.py` (solo lo que usa el bucle).
+- [x] **T-084d** `[code]` (cubre RF-005) — `src/services/section_profiles.py` (solo lo que usa el bucle).
   Verde T-084c.
 - [ ] **T-085** `[code]` (cubre RF-005) — `src/services/agent_loop.py` (trasladado,
   inyección del provider). Verde T-084. Interfaz: ver docstring de `test_agent_loop.py`
@@ -1639,3 +1639,9 @@ Ramas API -> tests: sin contexto (None/{}) -> `test_no_context_returns_default_m
 ROJO real (sin módulo): `63 errors` (todos `ModuleNotFoundError: No module named 'services.section_profiles'`; la colección no se rompe).
 Prototipo desechable (plugin pytest en scratchpad, no en src/): `63 passed`. Mutaciones (cae algún test): cp antes que ruta -> 1 failed; rk antes que cp -> 1 failed; ruta por prefijo -> 2 failed; defecto hardcodeado -> fallos; recurso erróneo -> 1 failed; ruta estática errónea -> 1 failed; defecto en snapshot -> fallos; muta el contexto -> 3 failed. Salidas en `/tmp/claude-1000/.../scratchpad/t084c/`.
 Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN (364 passed, 108 skipped, 207 errors = 144 T-084 + 63 T-084c). Sin commit.
+
+### T-084d — services/section_profiles.py (verde)
+Creado `cjhirashi-career-ai/src/services/section_profiles.py`: port fiel de la API (`_PROFILE_MODELS`, `_RESOURCE_CHAT_PROFILE`, `_STATIC_ROUTE_PROFILE`, `resolve_recommended_model`); `settings.BEDROCK_DEFAULT_MODEL_ID` leído en cada llamada vía `from config import settings`.
+`pytest tests/unit/services/test_section_profiles.py --cov=services.section_profiles`: `src/services/section_profiles.py 17 stmts 0 miss 100%` · `63 passed in 3.22s` (el FAIL de umbral 80 % global es por acotar --cov a un módulo).
+Suite ai completa (`env -u TEST_DATABASE_URL`): `427 passed, 108 skipped, 3 warnings, 144 errors` (solo test_agent_loop, T-084). Ruff no instalado en el repo (ni en venv): lint omitido.
+Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN solo por los 144 errores de T-084. Sin commit; pendiente revisor.
