@@ -229,7 +229,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   Además añade a `src/clients/files.py` el método de `GET /files/{id}/download` (URL firmada,
   `PresignedUrlResponse.url` de `cjhirashi-career-api/src/routes/files.py:279-295`), test-first
   con su caso en los tests del cliente de archivos (ruta, método y credencial).
-- [ ] **T-084c** `[test]` (cubre RF-005) — `tests/unit/services/test_section_profiles.py`: traslado de
+- [x] **T-084c** `[test]` (cubre RF-005) — `tests/unit/services/test_section_profiles.py`: traslado de
   `resolve_recommended_model(page_context)` (`cjhirashi-career-api/src/services/bedrock/section_profiles.py:58`):
   sin contexto → modelo por defecto; ruta estática; `chat_profile`; `resource_key`; desconocido → defecto. Rojo.
 - [ ] **T-084d** `[code]` (cubre RF-005) — `src/services/section_profiles.py` (solo lo que usa el bucle).
@@ -1632,3 +1632,10 @@ Suite ai completa con Postgres desechable 55433 (borrado): 472 passed, 3 warning
 Cobertura: attachments.py 52 stmts 0 miss 100% · clients/files.py 24 stmts 0 miss 100%
 Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN (364 passed, 108 skipped, 144 errors; solo T-084)
 ```
+
+### T-084c — test_section_profiles.py (rojo)
+63 tests (RF-005) en `cjhirashi-career-ai/tests/unit/services/test_section_profiles.py`; interfaz esperada por T-084d en su docstring. La función solo usa tablas constantes + `config.settings.BEDROCK_DEFAULT_MODEL_ID` (sin BD/REST: D-10 no interviene).
+Ramas API -> tests: sin contexto (None/{}) -> `test_no_context_returns_default_model`; defecto leído de settings en cada llamada -> `test_default_is_read_from_settings_at_call_time`; ruta estática (6) -> `test_static_route_maps_to_profile_model`; ruta gana a chat_profile/resource_key -> `test_static_route_wins_over_...`; ruta exacta sin prefijo -> `test_route_is_exact_match_not_prefix_or_normalized`; route None/"" y desconocida caen a siguientes reglas -> `test_empty_or_null_route_...`, `test_unknown_route_...`; chat_profile (8) -> `test_chat_profile_maps_to_profile_model`; chat_profile gana a resource_key -> `test_chat_profile_wins_over_resource_key`; chat_profile desconocido/vacío cae a resource_key -> `test_unknown_chat_profile_...`, `test_empty_chat_profile_...`; resource_key (16) -> `test_resource_key_maps_to_profile_model`; resource_key desconocido -> `test_unknown_resource_key_returns_default`; contexto sin claves -> `test_context_without_known_keys_...`; no muta -> `test_does_not_mutate_page_context`; síncrona -> `test_is_synchronous_plain_function`.
+ROJO real (sin módulo): `63 errors` (todos `ModuleNotFoundError: No module named 'services.section_profiles'`; la colección no se rompe).
+Prototipo desechable (plugin pytest en scratchpad, no en src/): `63 passed`. Mutaciones (cae algún test): cp antes que ruta -> 1 failed; rk antes que cp -> 1 failed; ruta por prefijo -> 2 failed; defecto hardcodeado -> fallos; recurso erróneo -> 1 failed; ruta estática errónea -> 1 failed; defecto en snapshot -> fallos; muta el contexto -> 3 failed. Salidas en `/tmp/claude-1000/.../scratchpad/t084c/`.
+Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN (364 passed, 108 skipped, 207 errors = 144 T-084 + 63 T-084c). Sin commit.

@@ -110,9 +110,9 @@ actualizado: 2026-10-14
 
 ## Próximo paso concreto
 
-- **009:** Bloque F — T-078..T-084 hechos (D-29: FTS `spanish_unaccent`; D-30: sin duplicados por
-  `source_ref` determinista; D-31: fallo REST de secciones → L1 + warning). Sigue T-084c (test de
-  `resolve_recommended_model`), luego T-084d y T-085 (`agent_loop`, 144 tests en rojo; el gate cierra hasta entonces).
+- **009:** Bloque F — T-078..T-084c hechos (D-29: FTS `spanish_unaccent`; D-30: sin duplicados por
+  `source_ref` determinista; D-31: fallo REST de secciones → L1 + warning). Sigue T-084d (código de
+  `section_profiles`), luego T-085 (`agent_loop`, 144 tests en rojo; el gate cierra hasta entonces).
   Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la
   fixture hace `DROP SCHEMA`).
 - **[2026-10-14] Deuda (gate/tests ai):** con `TEST_DATABASE_URL` exportada y el Postgres de
