@@ -110,7 +110,7 @@ actualizado: 2026-10-14
 
 ## Próximo paso concreto
 
-- **009:** Bloque F — empezar por T-080 (`tests/unit/repositories/test_memory_repo.py`).
+- **009:** Bloque F — T-078..T-080 hechos (D-29: FTS `spanish_unaccent`, ignora tildes); sigue T-081 (`memory_repo.py`, interfaz fijada por `test_memory_repo.py`). Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la fixture hace `DROP SCHEMA`).
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.
