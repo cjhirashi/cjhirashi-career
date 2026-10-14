@@ -61,6 +61,13 @@ class Settings(BaseSettings):
     BEDROCK_IMAGE_MODEL_ID: str = "stability.stable-image-core-v1:1"
     # Kill-switch global de cachePoint (ADR-019); solo aplica a modelos con soporte en el catálogo.
     BEDROCK_PROMPT_CACHE_ENABLED: bool = True
+    # Runtime del agente: mismos valores por defecto que cjhirashi-career-api/src/config.py (95-96, 121-128).
+    BEDROCK_DEFAULT_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    BEDROCK_ORCHESTRATOR_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    BEDROCK_MAX_OUTPUT_TOKENS: int = Field(default=8192, ge=1)
+    BEDROCK_HISTORY_WINDOW: int = Field(default=20, ge=1)
+    BEDROCK_MAX_ROUND_TRIPS: int = Field(default=6, ge=1)
+    BEDROCK_DAILY_BUDGET_USD: float = Field(default=5.0, ge=0)
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
 

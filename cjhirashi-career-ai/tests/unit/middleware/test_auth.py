@@ -194,3 +194,26 @@ async def test_requests_concurrentes_no_mezclan_principal():
     for i, r in enumerate(responses):
         assert r.json() == {"user_id": f"u-{i}", "scope": f"u-{i}"}
     assert current_principal() is None
+
+
+# --- T-052 (D-27): `exp` obligatorio y lista blanca de `type` -------------------------------------
+
+
+def test_sin_exp_401(client):
+    _assert_rejected(client, _get(client, _sign(exp=None)), 401)
+
+
+@pytest.mark.parametrize("token_type", ["refresh", "linkedin_oauth_state", "otro", "", "ACCESS", 7, ["access"]])
+def test_type_distinto_de_access_401(client, token_type):
+    _assert_rejected(client, _get(client, _sign(type=token_type)), 401)
+
+
+def test_type_access_es_aceptado(client):
+    resp = _get(client, _sign(type="access", sub="u-7"))
+    assert resp.status_code == 200
+    assert resp.json()["user_id"] == "u-7"
+
+
+def test_type_ausente_es_aceptado(client):
+    resp = _get(client, _sign())  # `_sign` no emite `type`: token anterior al despliegue
+    assert resp.status_code == 200

@@ -116,3 +116,30 @@ def test_algorithm_outside_allowlist_is_rejected(clean_env, alg):
         clean_env.setenv(k, v)
     with pytest.raises(ValidationError, match="ALGORITHM"):
         _settings()
+
+
+# --- T-070: defaults del runtime del agente (iguales a cjhirashi-career-api/src/config.py) ---
+
+@pytest.mark.requisito("RF-001")
+def test_agent_runtime_defaults_match_api(clean_env):
+    for k, v in REQUIRED.items():
+        clean_env.setenv(k, v)
+    s = _settings()
+    assert s.BEDROCK_DEFAULT_MODEL_ID == "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    assert s.BEDROCK_ORCHESTRATOR_MODEL_ID == "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    assert s.BEDROCK_MAX_OUTPUT_TOKENS == 8192
+    assert s.BEDROCK_HISTORY_WINDOW == 20
+    assert s.BEDROCK_MAX_ROUND_TRIPS == 6
+    assert s.BEDROCK_DAILY_BUDGET_USD == 5.0
+
+
+@pytest.mark.requisito("RF-001")
+@pytest.mark.parametrize("name", [
+    "BEDROCK_MAX_OUTPUT_TOKENS", "BEDROCK_HISTORY_WINDOW", "BEDROCK_MAX_ROUND_TRIPS",
+])
+def test_agent_runtime_limits_reject_non_positive(clean_env, name):
+    for k, v in REQUIRED.items():
+        clean_env.setenv(k, v)
+    clean_env.setenv(name, "0")
+    with pytest.raises(ValidationError, match=name):
+        _settings()

@@ -135,40 +135,40 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   firma inválida, expirado, refresh, `role` desconocido → 401; `role` agent/service → 403;
   sin claim = user; token válido → `Principal`; ninguna llamada a la API. Rojo.
 - [x] **T-051** `[code]` (cubre RF-002, RF-019) — `src/middleware/auth.py`. Verde T-050.
-- [ ] **T-052** `[test]` (cubre RF-019, D-27) — `tests/unit/middleware/test_auth.py`: sin
+- [x] **T-052** `[test]` (cubre RF-019, D-27) — `tests/unit/middleware/test_auth.py`: sin
   `exp` → 401; `type` `refresh`, `linkedin_oauth_state` u otro → 401; `type` ausente o
   `access` → `Principal`. Rojo.
-- [ ] **T-053** `[code]` (cubre RF-019, D-27) — `src/middleware/auth.py` (`require` de
+- [x] **T-053** `[code]` (cubre RF-019, D-27) — `src/middleware/auth.py` (`require` de
   `exp`/`sub`; lista blanca de `type`). Verde T-052.
 
 ## Bloque E — AI: repositorios y servicios (catálogo, ajustes, uso)
 
-- [ ] **T-060** `[test]` (cubre RF-006) — `tests/unit/repositories/test_conversation_repo.py`
+- [x] **T-060** `[test]` (cubre RF-006) — `tests/unit/repositories/test_conversation_repo.py`
   con `db_session`: CRUD de `bedrock_conversations` y mensajes (cascade), listado por
   `user_id`, renombrar. Rojo.
-- [ ] **T-061** `[code]` (cubre RF-006) — `src/repositories/conversation_repo.py`. Verde T-060.
-- [ ] **T-062** `[test]` (cubre RF-006) — `test_settings_profile_repo.py`: `bedrock_settings`
+- [x] **T-061** `[code]` (cubre RF-006) — `src/repositories/conversation_repo.py`. Verde T-060.
+- [x] **T-062** `[test]` (cubre RF-006) — `test_settings_profile_repo.py`: `bedrock_settings`
   (modelo, presupuesto, reglas), prompts, fotos, tools por perfil, delegación, tools
   personalizadas. Rojo.
-- [ ] **T-063** `[code]` (cubre RF-006) — `src/repositories/{settings_repo,profile_repo,custom_tool_repo}.py`.
+- [x] **T-063** `[code]` (cubre RF-006) — `src/repositories/{settings_repo,profile_repo,custom_tool_repo}.py`.
   Verde T-062.
-- [ ] **T-064** `[test]` (cubre RF-006) — `test_usage_repo.py`: `usage_logs` y
+- [x] **T-064** `[test]` (cubre RF-006) — `test_usage_repo.py`: `usage_logs` y
   `usage_round_logs`, agregados de métricas y presupuesto diario. Rojo.
-- [ ] **T-065** `[code]` (cubre RF-006) — `src/repositories/usage_repo.py`,
+- [x] **T-065** `[code]` (cubre RF-006) — `src/repositories/usage_repo.py`,
   `src/services/usage_service.py`. Verde T-064. Nota: el panel de costes necesita
   `cache_read_savings_usd` (solo en `pricing.py`, ver nota de T-085).
-- [ ] **T-066** `[test]` (cubre RF-006) — `test_task_repo.py`: `bedrock_tasks` con
+- [x] **T-066** `[test]` (cubre RF-006) — `test_task_repo.py`: `bedrock_tasks` con
   `parent_id`, subtareas, filtros `filters`/orden/`count`/`distinct`. Rojo.
-- [ ] **T-067** `[code]` (cubre RF-006) — `src/repositories/task_repo.py`. Verde T-066.
-- [ ] **T-068** `[test]` (cubre RF-012, RF-001) — `tests/contract/test_agent_registry_contract.py`:
+- [x] **T-067** `[code]` (cubre RF-006) — `src/repositories/task_repo.py`. Verde T-066.
+- [x] **T-068** `[test]` (cubre RF-012, RF-001) — `tests/contract/test_agent_registry_contract.py`:
   `src/services/agent_registry.py` coincide con `contracts/agent-registry.json` (20 perfiles,
   id/label/nivel). Rojo.
-- [ ] **T-069** `[code]` (cubre RF-012) — `src/services/agent_registry.py` (+ perfiles
+- [x] **T-069** `[code]` (cubre RF-012) — `src/services/agent_registry.py` (+ perfiles
   trasladados de `agent_profiles.py`). Verde T-068.
-- [ ] **T-070** `[test]` (cubre RF-001, RF-003) — `tests/unit/services/test_profile_catalog.py`:
+- [x] **T-070** `[test]` (cubre RF-001, RF-003) — `tests/unit/services/test_profile_catalog.py`:
   catálogo de perfiles cruza metodologías y secciones leídas por REST (cliente simulado);
   regla `applies_to_caller`; tools por sección derivadas de `/admin/sections`. Rojo.
-- [ ] **T-071** `[code]` (cubre RF-001, RF-003) — `src/config.py` (añadir `BEDROCK_DEFAULT_MODEL_ID`,
+- [x] **T-071** `[code]` (cubre RF-001, RF-003) — `src/config.py` (añadir `BEDROCK_DEFAULT_MODEL_ID`,
   `BEDROCK_ORCHESTRATOR_MODEL_ID`, `BEDROCK_MAX_OUTPUT_TOKENS`, `BEDROCK_MAX_ROUND_TRIPS`,
   `BEDROCK_DAILY_BUDGET_USD`, `BEDROCK_HISTORY_WINDOW`, con los mismos defaults que la API:
   `agent_loop.py:310-321` y `settings_loader.py`; con su test en `tests/unit/test_config.py`
@@ -209,7 +209,14 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-086** `[test]` (cubre RF-003) — `test_tools_career_and_local.py`: tools
   de CRUD de carrera vía cliente simulado; `web_search`, `web_fetch`, GitHub (LOCAL) con
   `httpx.MockTransport`; `search_knowledge_base` **no existe** en el catálogo; `bulk_update`
-  secuencial. Rojo.
+  secuencial. Rojo. Además (D-28, revisión del bloque E): `list/get_career_record` sobre
+  `operational-methodologies` aplica `applies_to_caller` (asignadas al perfil o compartidas;
+  el guardián ve todas), como prometen el prompt (`prompt.py:162-164`) y la API
+  (`bedrock_service.py:332-352`). Para `agent_pdf_design`, `agent_visual_design`,
+  `agent_configuration` y `agent_settings` (que ganaron `list/get_career_record` sólo por
+  D-28) el ejecutor admite **únicamente** `resource_key = operational-methodologies`; test
+  de denegación explícito para cualquier otro recurso en esos cuatro perfiles. El llamador del prompt base pasa el registro real de recursos
+  (`_known_resource_keys`), con test de paridad contra la lista de recursos de la API.
 - [ ] **T-087** `[code]` (cubre RF-003) — `src/services/{tools_career.py,web_search.py,github_tools.py}`.
   Verde T-086.
 - [ ] **T-088** `[test]` (cubre RF-003, RF-021) — `test_tools_files_pdf_linkedin_audit.py`:
@@ -1196,3 +1203,211 @@ Required test coverage of 80% reached. Total coverage: 98.21%
 ================= 246 passed, 12 skipped, 3 warnings in 1.64s =================
 ```
 Raíz (`-c ...`): `246 passed, 12 skipped` · `GATE=0` (31 ok · 3 warn · 0 error). Sin cambios en tokens sin `exp` ni `type` desconocido (paridad con la API).
+
+### T-052/T-053 (D-27) — evidencia
+
+Rojo (T-052: 4 tests nuevos en `tests/unit/middleware/test_auth.py`, ejecutados contra el `auth.py` previo de `HEAD`):
+```
+$ pytest --no-cov -q tests/unit/middleware/test_auth.py      # con src/middleware/auth.py de HEAD
+E   assert 200 == 401   (x7: token sin exp; type = linkedin_oauth_state / otro / "" / ACCESS / 7 / lista)
+FAILED tests/unit/middleware/test_auth.py::test_sin_exp_401 - assert 200 == 401
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[linkedin_oauth_state]
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[otro]
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[]
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[ACCESS]
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[7]
+FAILED tests/unit/middleware/test_auth.py::test_type_distinto_de_access_401[token_type6]
+=================== 7 failed, 27 passed, 3 warnings in 0.56s ===================
+```
+Verde (T-053: `options={"require": ["exp", "sub"]}` + `payload.get("type", "access") != "access"` -> 401):
+```
+$ pytest --no-cov -q tests/unit/middleware/test_auth.py
+======================== 34 passed, 3 warnings in 0.46s ========================
+```
+`type` ausente o `access` sigue dando `Principal` (casos ya existentes en el mismo archivo).
+
+### Bloque E — evidencia
+
+Entorno: Postgres de pruebas con `docker run --rm -d` (contenedor `career-ai-test-pg-009e`, `127.0.0.1:55477`, sin red de producción ni volúmenes), pasado por `TEST_DATABASE_URL`. Todos los tests llevan `@pytest.mark.requisito`.
+
+Rojo -> verde por pareja (salida real; el rojo es siempre antes de escribir el código):
+
+T-060/T-061 `conversation_repo` (RF-006). Rojo:
+```
+============================== 10 failed in 4.14s ==============================
+     10 E   ModuleNotFoundError: No module named 'repositories'
+```
+Verde: `$ pytest --no-cov -q tests/unit/repositories/test_conversation_repo.py` -> `11 passed in 4.85s` (10 de T-060 + `conversation_counts_by_profile`, T-070).
+
+T-062/T-063 `settings_repo`, `profile_repo`, `custom_tool_repo` (RF-006). Rojo:
+```
+============================== 11 failed in 4.76s ==============================
+      2 E   ImportError: cannot import name 'custom_tool_repo' from 'repositories'
+      4 E   ImportError: cannot import name 'profile_repo' from 'repositories'
+      5 E   ImportError: cannot import name 'settings_repo' from 'repositories'
+```
+Verde: `test_settings_profile_repo.py` -> `11 passed in 5.13s`.
+
+T-064/T-065 `usage_repo` + `usage_service` (RF-006). Rojo:
+```
+============================== 12 failed in 4.49s ==============================
+      8 E   ImportError: cannot import name 'usage_repo' from 'repositories'
+      4 E   ImportError: cannot import name 'usage_service' from 'services'
+```
+Verde: `test_usage_repo.py` + `test_usage_service.py` -> `14 passed in 4.70s` (12 + 2 de la frontera del proveedor, ver "Desviaciones").
+
+T-066/T-067 `task_repo` (RF-006). Rojo:
+```
+============================== 12 failed in 5.50s ==============================
+     12 E   ImportError: cannot import name 'task_repo' from 'repositories'
+```
+Verde: `test_task_repo.py` -> `12 passed in 5.79s`.
+
+T-068/T-069 `agent_registry` + `agent_profiles` (RF-012, RF-001). Rojo:
+```
+========================= 13 failed, 1 passed in 0.24s =========================
+     11 E   ImportError: cannot import name 'agent_profiles' from 'services'
+      2 E   ModuleNotFoundError: No module named 'services.agent_registry'
+```
+Verde: `$ pytest --no-cov -q tests/contract tests/unit/services/test_agent_profiles.py` -> `14 passed in 0.15s` (el registro coincide con `contracts/agent-registry.json`: 20 perfiles, id/label/nivel).
+
+T-070/T-071 `config` + `settings_loader` + `tools_registry` + `prompt` + `profile_catalog` (RF-001, RF-003). Rojo (tests en `test_config.py`, `test_settings_loader.py`, `test_tools_registry.py`, `test_prompt.py`, `test_profile_catalog.py`, `test_conversation_repo.py`):
+```
+======================== 40 failed, 10 passed in 8.02s =========================
+     12 E   ImportError: cannot import name 'tools_registry' from 'services'
+     12 E   ImportError: cannot import name 'prompt' from 'services'
+     11 E   ModuleNotFoundError: No module named 'services.profile_catalog'
+      3 E   ImportError: cannot import name 'settings_loader' from 'services'
+      1 E   ModuleNotFoundError: No module named 'services.settings_loader'
+      1 E   AttributeError: module 'repositories.conversation_repo' has no attribute 'conversation_counts_by_profile'
+```
+y, en `test_config.py` (rojo previo al campo de `src/config.py`):
+```
+E   AttributeError: 'Settings' object has no attribute 'BEDROCK_DEFAULT_MODEL_ID'. Did you mean: 'BEDROCK_IMAGE_MODEL_ID'?
+E   Failed: DID NOT RAISE ValidationError   (x3: BEDROCK_MAX_OUTPUT_TOKENS / BEDROCK_HISTORY_WINDOW / BEDROCK_MAX_ROUND_TRIPS = 0)
+========================= 4 failed, 26 passed in 0.27s =========================
+```
+Verde: `$ pytest --no-cov -q tests/unit/services/test_prompt.py tests/unit/services/test_profile_catalog.py tests/unit/services/test_tools_registry.py tests/unit/services/test_settings_loader.py tests/unit/test_config.py` -> `69 passed in 3.66s`.
+
+Defaults de `src/config.py` (T-071) frente a la API (`cjhirashi-career-api/src/config.py`):
+
+| Campo | AI `src/config.py` | API `src/config.py` |
+|---|---|---|
+| `BEDROCK_DEFAULT_MODEL_ID` | `us.anthropic.claude-haiku-4-5-20251001-v1:0` (l.65) | l.95 igual |
+| `BEDROCK_ORCHESTRATOR_MODEL_ID` | igual (l.66) | l.96 igual |
+| `BEDROCK_MAX_OUTPUT_TOKENS` | `8192` (l.67) | l.121 `8192` |
+| `BEDROCK_HISTORY_WINDOW` | `20` (l.68) | l.125 `20` |
+| `BEDROCK_MAX_ROUND_TRIPS` | `6` (l.69) | l.126 `6` |
+| `BEDROCK_DAILY_BUDGET_USD` | `5.0` (l.70) | l.128 `5.0` |
+
+Uso como respaldo cuando no hay fila: `cjhirashi-career-api/src/services/bedrock/settings_loader.py:35-41`, replicado en `src/services/settings_loader.py`. Nota: `agent_loop.py:310-321` (citado en T-071) es la lógica de resolución del modelo, no los defaults; los defaults están en `config.py`. Test: `test_agent_runtime_defaults_match_api`.
+
+Suite completa (tras todo el bloque):
+```
+$ cd cjhirashi-career-ai && TEST_DATABASE_URL=... pytest -q
+Required test coverage of 80% reached. Total coverage: 98.69%
+======================= 373 passed, 3 warnings in 31.97s =======================
+$ cd cjhirashi-career-ai && pytest -q            # sin TEST_DATABASE_URL
+================= 309 passed, 64 skipped, 3 warnings in 2.21s ==================
+FAIL Required test coverage of 80% not reached. Total coverage: 75.37%   # los tests de BD se saltan
+$ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai/tests   # raíz, con BD
+======================= 373 passed, 3 warnings in 31.30s =======================   (exit 1 por cobertura: "No data was collected", conocido)
+$ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai/tests   # raíz, sin BD
+================= 309 passed, 64 skipped, 3 warnings in 1.73s ==================   (exit 1 por cobertura, conocido)
+```
+Cobertura por módulo nuevo (run con BD, desde `cjhirashi-career-ai/`; todos >= 80 %):
+```
+src/config.py                                   49      0   100%
+src/middleware/auth.py                          40      1    98%   67
+src/repositories/conversation_repo.py           72      0   100%
+src/repositories/custom_tool_repo.py            32      0   100%
+src/repositories/profile_repo.py                76      1    99%   97
+src/repositories/settings_repo.py               35      0   100%
+src/repositories/task_repo.py                  149      3    98%   34, 41, 59
+src/repositories/usage_repo.py                  31      0   100%
+src/services/agent_profiles.py                 149      1    99%   907
+src/services/agent_registry.py                   9      0   100%
+src/services/profile_catalog.py                140      3    98%   149, 164-165
+src/services/prompt.py                         105      0   100%
+src/services/settings_loader.py                 11      0   100%
+src/services/tools_registry.py                  46      0   100%
+src/services/usage_service.py                   47      2    96%   42-44
+TOTAL                                         1912     25    99%
+```
+Compuerta: `bash .harness/gate/check.sh` (sin pipe) -> exit 0 (`31 ok · 3 warn · 0 error`; los 3 avisos son el anclaje `null` de 005/006/009, conocidos). `.coverage` de la raíz borrado.
+
+Desviaciones y puntos abiertos (para el revisor / orquestador):
+1. **Frontera del proveedor (T-065, corregido en esta entrega).** `usage_service` importaba `providers.bedrock.pricing` y `tests/unit/test_provider_boundary.py` lo detectó. Raíz: el servicio ahora usa `config.get_provider()` (`_provider()`), y el ahorro de caché se deriva solo de `estimate_cost` (coste como entrada normal menos coste como lectura de caché), sin ampliar el `ModelProvider` (su superficie está fijada en 5 métodos por `test_provider_contract.py`). Resuelve la nota de T-065 sobre `cache_read_savings_usd`; el resultado coincide con `pricing.cache_read_savings_usd` (test de paridad).
+2. **D-15 y metodologías.** Sin `search_knowledge_base`, los perfiles que la tenían y no tienen `get_career_record` (L2 `agent_configuration`/`agent_settings`; L3 visual y de redacción de documentos) pierden la lectura de metodologías. `profile_can_read_methodologies` devuelve False para ellos y el prompt lo dice. Pendiente de decisión (¿dotar de `get_career_record` a esos perfiles?).
+3. **Recursos del prompt base.** En la API la lista `Recursos disponibles` sale de `RESOURCE_REGISTRY`; el harness no lo tiene, así que `default_system_prompt(resource_keys=None)` usa la unión de `resource_keys` de los perfiles (o la lista que pase quien llama; Bloque F puede pasar el registro real).
+4. **Paridad del catálogo con la API.** `_methodology_entries` considera "compartida" por `agent_profile_ids` vacío aunque tenga `section_ids` (igual que la API); `list_assigned_methodologies` (prompt) sí usa `applies_to_caller`. Se conserva y se fija en test; es una inconsistencia heredada.
+5. `compose_system_prompt` recibe `assigned` (metodologías vía `profile_catalog.list_assigned_methodologies`) y `notes` (memoria, Bloque F) por parámetro, sin acceso a datos de carrera. `tools_registry` solo tiene esquemas (los ejecutores son del Bloque F). Ninguna ruta REST fuera del inventario fue necesaria (`/admin/sections`, `/career/operational-methodologies`).
+
+### Bloque E — ajustes de paridad (D-13) tras la revisión — evidencia
+
+Pedidos por el coordinador tras el APPROVED del revisor; el acceso a metodologías (desviación 3) NO se toca. Postgres de pruebas: `docker run --rm -d --name career-ai-test-pg-009e -p 127.0.0.1:55477:5432 ... postgres:15-alpine` (misma mayor que `docker-compose.yml:189`), eliminado al terminar.
+
+1. `task_repo._sync_subtasks` valida con `SubtaskInput` (nuevo `src/schemas/bedrock_task.py`, traslado del de la API) y aplica `model_dump()`: los campos omitidos vuelven a su default y una subtarea sin `title` da `ValidationError`, no `IntegrityError`.
+2. `profile_repo.set_delegation_override` guarda `filter_level_allowed(...)` (movido a `services/agent_profiles.py`; `profile_catalog` lo importa) y lanza `KeyError` si el perfil no existe.
+
+Rojo (tests nuevos en `test_task_repo.py` y `test_settings_profile_repo.py`, antes del código):
+```
+$ pytest --no-cov -q tests/unit/repositories/test_task_repo.py tests/unit/repositories/test_settings_profile_repo.py
+E   AssertionError: assert ('uno-bis', '..., 'high', 'n') == ('uno-bis', '...medium', None)        # defaults no restablecidos
+E   sqlalchemy.exc.IntegrityError: (sqlalchemy.dialects.postgresql.asyncpg.NotNullViolationError) null value in column "title" of relation "bedrock_tasks" violates not-null constraint
+E   Failed: DID NOT RAISE ValidationError                                                           (x5: status, priority, assignee_type x2, agente desconocido)
+E   sqlalchemy.exc.DBAPIError: ... invalid input for query argument $9: '2026-02-01T00:00:00Z' (expected a datetime.date ...)   # due_at < scheduled_at sin validar
+E   AssertionError: assert ('agent_support', True) == (None, False)                                 # assignee_type=user sin normalizar
+E   AssertionError: assert ['agent_suppo...nt_changelog'] == ['agent_suppo...nt_changelog']          # delegación sin filtrar
+FAILED test_task_repo.py::test_subtarea_omitida_vuelve_a_sus_defaults_como_en_la_api
+FAILED test_task_repo.py::test_subtarea_sin_titulo_es_error_de_validacion_no_integrity_error
+FAILED test_task_repo.py::test_subtarea_invalida_se_rechaza_con_validacion[bad0..bad5]
+FAILED test_task_repo.py::test_subtarea_de_usuario_normaliza_agente_y_ejecucion
+FAILED test_settings_profile_repo.py::test_delegacion_guarda_filter_level_allowed_como_la_api
+======================== 10 failed, 23 passed in 16.63s ========================
+```
+Verde:
+```
+$ pytest --no-cov -q tests/unit/repositories tests/unit/services
+============================= 111 passed in 29.28s =============================
+```
+Suite completa tras los ajustes:
+```
+$ cd cjhirashi-career-ai && TEST_DATABASE_URL=... pytest -q
+Required test coverage of 80% reached. Total coverage: 98.73%
+======================= 383 passed, 3 warnings in 36.50s =======================
+$ cd cjhirashi-career-ai && pytest -q            # sin BD
+================= 309 passed, 74 skipped, 3 warnings in 2.14s ==================
+FAIL Required test coverage of 80% not reached. Total coverage: 73.01%   # los tests de BD se saltan
+$ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai/tests   # raíz con BD: 383 passed; sin BD: 309 passed, 74 skipped (exit 1 por cobertura, conocido)
+```
+Cobertura de lo tocado: `schemas/bedrock_task.py` 98 %, `repositories/task_repo.py` 98 %, `repositories/profile_repo.py` 99 %, `services/agent_profiles.py` 99 %, `services/profile_catalog.py` 98 %.
+Compuerta: `bash .harness/gate/check.sh` (sin pipe) -> exit 0 (`31 ok · 3 warn · 0 error`, avisos conocidos de 005/006/009). `.coverage` de la raíz borrado. Contenedor `career-ai-test-pg-009e` detenido: `docker ps -a --filter name=career-ai-test-pg-009e` sin filas.
+
+### D-28 — evidencia
+
+Referencia de la API (solo lectura, no se importa): `cjhirashi-career-api/src/services/bedrock/agent_profiles.py:919-923` (`profile_can_search_knowledge`: con `allowed_tool_names` mira `search_knowledge_base`; sin él, `level == 2`). `search_knowledge_base` está en `_PDF_DESIGN_TOOL_NAMES` (l.123), `_VISUAL_TOOL_NAMES` (l.140), `_DOCUMENT_WRITING_TOOL_NAMES` (l.167), `_CONFIGURATION_TOOL_NAMES` (l.194), `_SETTINGS_TOOL_NAMES` (l.201); `_TASK_MANAGER_TOOL_NAMES` (l.145-154) no la tiene. Resultado: 12 de 20 perfiles leen (6 L2 sin conjunto propio + pdf_design, visual_design, cv_writing, cover_letter_writing, settings, configuration). La lista está copiada en `tests/unit/services/test_agent_profiles.py` (`_API_PUEDEN_BUSCAR_KB`) con la cita de líneas.
+
+Causa raíz: sin `search_knowledge_base` ya no hay tool marcadora (`get_career_record` también la tiene `agent_task_manager`), así que el criterio "tiene get_career_record" no reproduce la API. Solución: `_METHODOLOGY_READER_IDS` explícito (cv/cover/settings/configuration/pdf_design/visual_design) + exigir `list_career_record` y `get_career_record` en su conjunto; L2 sin conjunto propio, por nivel (igual que la API). Se añadieron `list_career_record`/`get_career_record` a `_PDF_DESIGN_TOOL_NAMES`, `_VISUAL_TOOL_NAMES`, `_CONFIGURATION_TOOL_NAMES` y `_SETTINGS_TOOL_NAMES`; `agent_task_manager` queda igual (sin lectura de metodologías). El texto del prompt (`methodology_assignment_block`) ya instruía `list_career_record`/`get_career_record` sobre `operational-methodologies`; ahora llega a esos cuatro perfiles. No se tocó `applies_to_caller` ni su ejecutor (T-086, bloque F). Nota: hasta T-086 la restricción a `operational-methodologies` de esas tools en los cuatro perfiles nuevos la impondrá el ejecutor; antes de F no hay ejecutor, así que no hay exposición.
+
+Rojo (antes de implementar), `pytest --no-cov -q tests/unit/services/test_agent_profiles.py tests/unit/services/test_prompt.py`:
+```
+FAILED test_agent_profiles.py::test_d28_lectura_de_metodologias_identica_a_la_api_en_los_20_perfiles
+FAILED test_agent_profiles.py::test_d28_cuatro_perfiles_ganan_lectura_con_tools_de_carrera[agent_pdf_design|agent_settings|agent_configuration|agent_visual_design]
+FAILED test_agent_profiles.py::test_d28_task_manager_no_gana_lectura_de_metodologias   (assert True is False)
+FAILED test_prompt.py::test_bloque_instruye_leer_metodologias_por_rest_sin_search_knowledge_base
+FAILED test_prompt.py::test_d28_perfiles_con_lectura_reciben_la_instruccion_rest_acotada
+=================== 8 failed, 18 passed, 3 skipped in 0.36s ====================
+```
+(El test de prompt existente usaba `agent_configuration` como perfil sin lectura; ahora usa `agent_task_manager`.)
+
+Verde:
+```
+$ pytest -q   (cjhirashi-career-ai/, con TEST_DATABASE_URL, postgres:15-alpine)
+TOTAL 1976 25 99% · Required test coverage of 80% reached. Total coverage: 98.73%
+391 passed, 3 warnings
+$ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai   (raíz, con BD): 391 passed (exit 1 por cobertura, conocido)
+$ pytest -q   (sin BD): 317 passed, 74 skipped · Total coverage: 73.03% (< 80 % porque los tests de BD se saltan)
+$ pytest -q -c cjhirashi-career-ai/pytest.ini cjhirashi-career-ai   (raíz, sin BD): 317 passed, 74 skipped (exit 1 por cobertura, conocido)
+```
+Compuerta: `bash .harness/gate/check.sh` (sin pipe) -> exit 0 (`31 ok · 3 warn · 0 error`, avisos conocidos de 005/006/009). `.coverage` de la raíz borrado. Contenedor `career-ai-test-pg-009e` detenido y eliminado: `docker ps -a --filter name=career-ai-test-pg-009e` sin filas (solo cabecera).

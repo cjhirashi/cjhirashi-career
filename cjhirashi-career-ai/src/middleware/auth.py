@@ -4,7 +4,7 @@ Valida el mismo `Authorization: Bearer <access_token>` que emite la API (SECRET_
 compartidos). No consulta la BD de usuarios ni llama a la API (riesgo R6 aceptado).
 
 - 401 (sin procesar la petición): sin header, esquema distinto de Bearer, firma inválida, expirado,
-  `type == "refresh"`, `sub` ausente, `role` desconocido.
+  `exp` o `sub` ausentes, `type` distinto de `access` (ausente = `access`, D-27), `role` desconocido.
 - 403: `role` agent o service (D-14: no usan chat ni gestión).
 - Sin claim `role` = `user` (compatibilidad con tokens previos).
 - Éxito: `Principal(user_id, token)` queda en `principal_scope` durante toda la request.
@@ -46,13 +46,20 @@ def _extract_bearer(request: Request) -> str:
 def authenticate_token(token: str) -> Principal:
     """Valida un access token de la API y devuelve el `Principal`. Lanza HTTPException 401/403."""
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+            options={"require": ["exp", "sub"]},  # D-27: sin `exp` o sin `sub` -> 401
+        )
     except jwt.ExpiredSignatureError:
         raise _unauthorized("Token has expired") from None
     except jwt.InvalidTokenError:
         raise _unauthorized("Invalid token") from None
 
-    if payload.get("type", "access") == "refresh":
+    # D-27: lista blanca. Ausente = access (tokens previos al despliegue); cualquier otro valor
+    # (`refresh`, `linkedin_oauth_state`, ...) no es un access token.
+    if payload.get("type", "access") != "access":
         raise _unauthorized("Invalid token type")
 
     user_id = payload.get("sub")

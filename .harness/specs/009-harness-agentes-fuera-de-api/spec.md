@@ -297,6 +297,16 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   excluye `refresh`. *Descartado:* paridad con la validación vigente (a); exigir `type`
   presente ya (cerraría las sesiones vigentes y los tokens de agente sin `type`; se puede
   hacer más adelante cuando caduquen todos).
+- **D-28 (usuario, 2026-10-14, Fase 4, tras el bloque E):** al retirar
+  `search_knowledge_base` (D-15), el acceso a metodologías mantiene **paridad exacta** con
+  la API: los perfiles que hoy pueden buscar en la KB (`profile_can_search_knowledge`,
+  incluidos `agent_pdf_design`, `agent_settings`, `agent_configuration` y
+  `agent_visual_design`) conservan la lectura de metodologías mediante las tools de
+  lectura de carrera restringidas a `operational-methodologies`, y `agent_task_manager`
+  no la gana. El filtro `applies_to_caller` (asignadas al perfil o compartidas; el
+  guardián ve todas), que hoy vive en `search_knowledge_base`, lo aplica el ejecutor de
+  esas tools en el harness (bloque F). *Descartado:* dejar a esos cuatro perfiles sin
+  metodologías; dar la lectura también a `agent_task_manager`.
 
 ## 7 · Requisitos no funcionales
 
