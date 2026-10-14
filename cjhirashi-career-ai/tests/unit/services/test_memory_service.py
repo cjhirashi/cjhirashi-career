@@ -408,6 +408,19 @@ async def test_carrera_integrity_error_devuelve_la_fila_existente(pg_db, monkeyp
     assert len(await _rows(pg_db)) == 1
 
 
+@pytest.mark.requisito("RF-022")
+async def test_delete_agent_note_solo_borra_kind_note(pg_db):
+    from services import memory_service as svc
+
+    async with pg_db() as s:
+        m = await svc.create_manual_memory(s, "usr-1", "hola")
+        n = await svc.create_agent_note(s, "usr-1", "A", "nota")
+        assert await svc.delete_agent_note(s, "usr-1", m["id"]) is False
+    assert m["id"] in {r.id for r in await _rows(pg_db)}
+    async with pg_db() as s:
+        assert await svc.delete_agent_note(s, "usr-1", n["id"]) is True
+
+
 # ---- frontera ---------------------------------------------------------------------------------
 
 def test_memory_service_no_importa_qdrant_ni_embeddings():

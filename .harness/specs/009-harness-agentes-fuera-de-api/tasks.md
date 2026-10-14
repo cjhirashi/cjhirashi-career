@@ -202,7 +202,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   `memory/manual`); sin imports de Qdrant. Rojo. **Ampliación D-30** (reentrega): reenviar
   la misma nota/memoria manual no duplica y devuelve la existente (clave `source_ref`
   determinista, función compartida con T-122).
-- [ ] **T-083** `[code]` (cubre RF-022, D-30) — `src/services/memory_service.py`. Verde T-082.
+  Delta T-083 (revisor): test de delete_agent_note limitado a kind note.
+- [x] **T-083** `[code]` (cubre RF-022, D-30) — `src/services/memory_service.py`. Verde T-082.
   Llamar a `memory_repo.add_memory(...)` por módulo (no `from ... import add_memory`): el test
   de carrera determinista de T-082 lo parchea así. Ante `IntegrityError` de
   `uq_bedrock_agent_memory_user_source_ref`: rollback y devolver la fila existente.
@@ -1506,3 +1507,31 @@ Postgres desechable 127.0.0.1:55433. `pytest tests/unit/services/test_memory_ser
 26 failed
 ```
 Resto de la suite (`--deselect` el archivo): `402 passed, 26 deselected`. Contenedor detenido: `docker ps -a` sin `career-ai-testdb`. Sin commit.
+
+### T-083 — memory_service.py (verde)
+Postgres desechable `career-ai-testdb` (127.0.0.1:55433, `postgres:15-alpine`). `pytest tests/unit/services/test_memory_service.py -q --no-cov`:
+```
+tests/unit/services/test_memory_service.py ..........................    [100%]
+============================= 26 passed in 12.16s ==============================
+```
+Suite completa con `--cov=services.memory_service --cov-report=term-missing`:
+```
+src/services/memory_service.py                  63      1    98%   71
+TOTAL                                         2083     26    99%
+Required test coverage of 80% reached. Total coverage: 98.75%
+======================= 428 passed, 3 warnings in 53.92s =======================
+```
+(402 previos + 26 nuevos, sin regresiones. Línea 71 sin cubrir: `raise` defensivo si tras el `IntegrityError` la fila existente no aparece.)
+Gate: `env -u TEST_DATABASE_URL bash .harness/gate/check.sh` -> `31 ok · 3 warn · 0 error`, compuerta abierta. Contenedor borrado: `docker ps -a --filter name=career-ai-testdb` sin filas. Test T-082 sin modificar. Sin commit.
+
+### T-083 (reentrega tras rechazo del revisor: delete_agent_note borraba cualquier kind)
+Test nuevo `test_delete_agent_note_solo_borra_kind_note` (RF-022). Postgres desechable 127.0.0.1:55433.
+ROJO (`pytest tests/unit/services/test_memory_service.py -q --no-cov`):
+```
+E   assert True is False
+FAILED tests/unit/services/test_memory_service.py::test_delete_agent_note_solo_borra_kind_note
+1 failed, 26 passed in 12.26s
+```
+Fix: `delete_agent_note` hace su propio DELETE con `id + user_id + kind='note'` (memory_repo intacto).
+VERDE: `27 passed in 12.83s`. Suite completa: `memory_service.py 65 1 98% 71`, `TOTAL 2085 26 99%`, `429 passed, 3 warnings in 54.29s`.
+Gate `env -u TEST_DATABASE_URL`: `31 ok · 3 warn · 0 error`, compuerta abierta. Contenedor borrado (`docker ps -a` sin filas). Sin commit.
