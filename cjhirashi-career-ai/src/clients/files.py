@@ -45,6 +45,11 @@ class FilesClient:
     async def get_raw(self, file_id: str) -> Tuple[bytes, str]:
         return await self._api.get_bytes(f"/files/{_check(file_id, _ID_RE, 'id')}/raw")
 
+    async def get_download_url(self, file_id: str) -> str:
+        """URL firmada de corta vida (`GET /files/{id}/download` -> `PresignedUrlResponse.url`)."""
+        out = await self._api.get_json(f"/files/{_check(file_id, _ID_RE, 'id')}/download")
+        return out["url"]
+
     async def set_visibility(self, file_id: str, is_public: bool) -> Dict[str, Any]:
         return await self._api.patch_json(
             f"/files/{_check(file_id, _ID_RE, 'id')}/visibility", json={"is_public": is_public}

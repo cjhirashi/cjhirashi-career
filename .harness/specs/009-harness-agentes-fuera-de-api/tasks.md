@@ -225,7 +225,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   (`build_user_content_blocks`): sin adjuntos → `[{"text": message}]`; adjunto inexistente
   (`Adjunto no encontrado: file_id=…`); demasiado grande (límite 5 MB de la API); bloque imagen; bloque
   documento; lectura del archivo vía `clients/files.py` con la credencial en contexto (D-10). Rojo.
-- [ ] **T-084b** `[code]` (cubre RF-005) — `src/services/attachments.py`. Verde T-084a.
+- [x] **T-084b** `[code]` (cubre RF-005) — `src/services/attachments.py`. Verde T-084a.
   Además añade a `src/clients/files.py` el método de `GET /files/{id}/download` (URL firmada,
   `PresignedUrlResponse.url` de `cjhirashi-career-api/src/routes/files.py:279-295`), test-first
   con su caso en los tests del cliente de archivos (ruta, método y credencial).
@@ -1596,3 +1596,39 @@ Validación: prototipo desechable fuera del repo (plugin de pytest en el scratch
 Rojo (archivo): `1 failed, 37 errors in 0.65s` (ModuleNotFoundError: No module named 'services.attachments').
 Suite SIN `--continue-on-collection-errors` (sin BD; estos tests no la usan, no se levantó Postgres): `1 failed, 323 passed, 108 skipped, 3 warnings, 181 errors in 8.91s` = los 144 rojos de `test_agent_loop.py` + los 38 de `test_attachments.py`; ya no hay `Interrupted: ... during collection`. Sin errores ajenos.
 Gate `env -u TEST_DATABASE_URL bash .harness/gate/check.sh`: `30 ok · 3 warn · 1 error` -> `cjhirashi-career-ai · tests FALLAN` (sólo rojos T-084/T-084a). Sin commit.
+
+### T-084b — services/attachments.py + FilesClient.get_download_url (verde)
+
+Test-first del cliente (`tests/unit/clients/test_files_sections.py::test_get_download_url_returns_the_signed_url_with_the_user_credential`), ROJO real antes del método:
+```
+>           assert await FilesClient(api).get_download_url("f-1") == "https://signed.test/x?sig=1"
+E           AttributeError: 'FilesClient' object has no attribute 'get_download_url'
+FAILED tests/unit/clients/test_files_sections.py::test_get_download_url_returns_the_signed_url_with_the_user_credential
+1 failed, 7 passed in 0.23s
+```
+VERDE tras `FilesClient.get_download_url` y `src/services/attachments.py`:
+```
+tests/unit/services/test_attachments.py: 38 passed in 0.24s
+tests/unit/clients/test_files_sections.py: 8 passed in 0.22s
+Suite ai completa (sin --continue-on-collection-errors), Postgres desechable 127.0.0.1:55433 (borrado): 470 passed, 3 warnings, 144 errors in 61.67s
+  (los 144 errors = test_agent_loop.py, rojos de T-084; sin BD: 362 passed, 108 skipped, 144 errors)
+Cobertura: src/services/attachments.py 49 stmts 0 miss 100% · src/clients/files.py 24 stmts 0 miss 100%
+Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> cjhirashi-career-ai · tests FALLAN (solo los 144 de T-084)
+```
+Nota: `attachments.py` descarga `/raw` también para tipos no soportados (paridad con la API, que leía antes de decidir). Sin commit.
+
+Delta (revisor): test_attachments_errors.py — solo 404 e id inseguro se traducen.
+ROJO real (antes del fix; `except ValueError` envolvía `files.get`):
+```
+>           raise ProviderError(f"Adjunto no encontrado: file_id={file_id}") from None
+E           providers.base.ProviderError: Adjunto no encontrado: file_id=f1
+FAILED tests/unit/services/test_attachments_errors.py::test_non_json_200_on_metadata_propagates_as_value_error_not_as_not_found
+1 failed, 1 passed
+```
+VERDE tras validar el id con `_check/_ID_RE` (reutilizados de `clients.career`) ANTES de la llamada y capturar solo `ApiError` 404:
+```
+test_attachments.py + test_attachments_errors.py + test_files_sections.py: 48 passed in 0.29s
+Suite ai completa con Postgres desechable 55433 (borrado): 472 passed, 3 warnings, 144 errors (solo test_agent_loop, T-084)
+Cobertura: attachments.py 52 stmts 0 miss 100% · clients/files.py 24 stmts 0 miss 100%
+Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN (364 passed, 108 skipped, 144 errors; solo T-084)
+```

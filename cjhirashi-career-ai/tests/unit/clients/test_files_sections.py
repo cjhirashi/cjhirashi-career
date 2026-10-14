@@ -58,6 +58,17 @@ async def test_list_get_raw_and_visibility():
         assert (rec.last.method, rec.last.url.path, rec.last_json()) == ("PATCH", "/files/f-1/visibility", {"is_public": False})
 
 
+async def test_get_download_url_returns_the_signed_url_with_the_user_credential():
+    api, rec = make_api(lambda r: httpx.Response(200, json={"url": "https://signed.test/x?sig=1"}))
+    with as_user():
+        assert await FilesClient(api).get_download_url("f-1") == "https://signed.test/x?sig=1"
+        with pytest.raises(ValueError):
+            await FilesClient(api).get_download_url("../x")
+    assert len(rec.requests) == 1
+    assert (rec.last.method, rec.last.url.path) == ("GET", "/files/f-1/download")
+    assert rec.last.headers["authorization"] == "Bearer user-jwt"
+
+
 async def test_files_rejects_unsafe_ids_and_propagates_errors():
     api, rec = make_api(lambda r: httpx.Response(404, json={"detail": "nope"}))
     c = FilesClient(api)
