@@ -220,12 +220,15 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   (`build_user_content_blocks`), `affected_resources` vía `invalidation_key` y limpieza de `seen_reads`,
   nivel 3 con historial, elección de modelo (débiles, último recurso), enganche de delegación, `max_tokens`
   desde config. Pendiente fuera de T-084: `report_error` ante fallo de tool (T-093).
-- [ ] **T-084a** `[test]` (cubre RF-005) — `tests/unit/services/test_attachments.py` (2.º rechazo de
+- [x] **T-084a** `[test]` (cubre RF-005) — `tests/unit/services/test_attachments.py` (2.º rechazo de
   T-084: el helper de adjuntos no tenía dueño). Traslado de `cjhirashi-career-api/src/services/bedrock/attachments.py`
   (`build_user_content_blocks`): sin adjuntos → `[{"text": message}]`; adjunto inexistente
   (`Adjunto no encontrado: file_id=…`); demasiado grande (límite 5 MB de la API); bloque imagen; bloque
   documento; lectura del archivo vía `clients/files.py` con la credencial en contexto (D-10). Rojo.
 - [ ] **T-084b** `[code]` (cubre RF-005) — `src/services/attachments.py`. Verde T-084a.
+  Además añade a `src/clients/files.py` el método de `GET /files/{id}/download` (URL firmada,
+  `PresignedUrlResponse.url` de `cjhirashi-career-api/src/routes/files.py:279-295`), test-first
+  con su caso en los tests del cliente de archivos (ruta, método y credencial).
 - [ ] **T-084c** `[test]` (cubre RF-005) — `tests/unit/services/test_section_profiles.py`: traslado de
   `resolve_recommended_model(page_context)` (`cjhirashi-career-api/src/services/bedrock/section_profiles.py:58`):
   sin contexto → modelo por defecto; ruta estática; `chat_profile`; `resource_key`; desconocido → defecto. Rojo.
@@ -373,7 +376,8 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   T-138. (Aún no se cambian los imports: eso es 3a.)
 - [ ] **T-141** `[test]` (cubre RF-003, RF-018) — `tests/unit/test_file_metadata_route.py`:
   `GET /files/{id}` devuelve `id`, `mime_type`, `original_filename`, tamaño y categoría en
-  el mismo formato que los elementos de `GET /files`; 404 si no existe o no es del usuario;
+  el mismo formato que los elementos de `GET /files`; 404 si no existe, no es del usuario o
+  `is_active` es falso (archivo borrado; como `list`/`count`/`categories` — revisor, T-084a);
   token `service` 200 (dentro de `/files`); `agent` 403 (D-25). Rojo. Luego `[code]`:
   `src/routes/files.py` (ruta nueva, aditiva; sin romper `/raw` ni `/visibility`). Verde.
   Desbloquea `store_uploaded_image` (T-088/T-089).
@@ -1583,3 +1587,12 @@ Suite con Postgres desechable `career-ai-testdb` (postgres:15-alpine, 127.0.0.1:
 - con el archivo: `431 passed, 3 warnings, 144 errors in 59.59s` (los 144 errores son los tests rojos).
 Contenedor borrado (`docker ps -a --filter name=career-ai-testdb -q | wc -l` = 0).
 Gate `env -u TEST_DATABASE_URL bash .harness/gate/check.sh`: `30 ok · 3 warn · 1 error` -> `cjhirashi-career-ai · tests FALLAN` (sólo por los tests rojos de T-084, esperado hasta T-085). Sin commit.
+
+### T-084a — test_attachments.py (rojo; reentrega tras rechazo del revisor)
+38 tests (RF-005) en `cjhirashi-career-ai/tests/unit/services/test_attachments.py`; interfaz esperada por T-084b en su docstring.
+Reentrega: el import de `services.attachments` es perezoso (fixture `attachments` con `importlib.import_module`, como `loop` en test_agent_loop.py), así el rojo queda en cada test y la recolección de la suite no se interrumpe. Añadidos: mensaje en blanco con adjunto sin `file_id` y sin otras partes (`[{"text": "   "}]`), y la credencial de la petición `/files/{id}/download` comprobada por separado.
+Cubren: sin adjuntos/`None`/`[]`, trim, mensaje vacío o en blanco, `file_id` ausente, inexistente (`Adjunto no encontrado: file_id=…`, `ProviderError`), id inseguro, fallo en un 2.º adjunto, otros errores de la API se propagan, sin credencial, 5 MB exacto OK / 5 MB+1 rechazado sin pedir `/raw`, imagen png/jpg/gif/webp, documento pdf/txt/md, nombre a 100, `text/*` y json en línea (8000), MIME no soportado con `download_url` o URL firmada, varios adjuntos, JWT en cada petición (D-10), `ServiceContext`, `user_id` no viaja.
+Validación: prototipo desechable fuera del repo (plugin de pytest en el scratchpad, nunca en `src/`): `38 passed in 0.23s`; salida -v en `/tmp/claude-1000/-mnt-disco2-cjhirashi-data-proyectos-cjhirashi-career/abae7dba-8248-55c7-9765-5a01e2d92ce4/scratchpad/t084a_prototype_run.txt`. Prototipo borrado.
+Rojo (archivo): `1 failed, 37 errors in 0.65s` (ModuleNotFoundError: No module named 'services.attachments').
+Suite SIN `--continue-on-collection-errors` (sin BD; estos tests no la usan, no se levantó Postgres): `1 failed, 323 passed, 108 skipped, 3 warnings, 181 errors in 8.91s` = los 144 rojos de `test_agent_loop.py` + los 38 de `test_attachments.py`; ya no hay `Interrupted: ... during collection`. Sin errores ajenos.
+Gate `env -u TEST_DATABASE_URL bash .harness/gate/check.sh`: `30 ok · 3 warn · 1 error` -> `cjhirashi-career-ai · tests FALLAN` (sólo rojos T-084/T-084a). Sin commit.
