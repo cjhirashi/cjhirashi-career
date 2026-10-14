@@ -1,7 +1,7 @@
 ---
 tipo: memoria
 subtipo: state
-actualizado: 2026-09-04
+actualizado: 2026-10-14
 ---
 
 # Estado del arnés — cjhirashi-career
@@ -95,7 +95,11 @@ actualizado: 2026-09-04
 - **[2026-10-13] 008** (4 textos descriptivos de vacante) implementada, revisor APPROVED,
   DESPLEGADA: `career_db` → `d8f2b5a13c97` (backup `…/backups/career_db_pre_008_20261013_170216.dump`);
   api+admin recreados; CRUD en vivo OK. Exclusión KB transitoria → la retira 009. Gate 4 OK + push.
-- **[2026-10-13] 009** (harness → `cjhirashi-career-ai`, sin KB/Qdrant): Gate 1 OK, en Fase 2.
+- **[2026-10-14] 009** (harness → `cjhirashi-career-ai`, sin KB/Qdrant): Gate 1 y Gate 2 OK,
+  **Fase 4**. Bloques 0, A–E hechos (T-001..T-071, revisor aprobado), punta `a191ae15`,
+  en `origin/main`. Decisiones de Fase 4 del usuario: D-26, D-27 (JWT: `exp` obligatorio,
+  `type` access/ausente), D-28 (metodologías con paridad exacta vía tools de lectura de
+  carrera; el filtro `applies_to_caller` lo aplica el ejecutor en el bloque F).
 
 ## Decisiones tomadas (esta sesión)
 
@@ -106,7 +110,7 @@ actualizado: 2026-09-04
 
 ## Próximo paso concreto
 
-- **008:** Gate 4 aprobado y en `origin/main`. **009:** revisar plan + ADR-029 → Gate 2.
+- **009:** Bloque F — empezar por T-080 (`tests/unit/repositories/test_memory_repo.py`).
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.
@@ -131,65 +135,14 @@ actualizado: 2026-09-04
   `en-US` en una UI en español (global, preexistente).
 - Deuda: `test_auth_integration.py` (hoy `skip`) contra el esquema de rutas actual;
   `cjhirashi-career-ai` sin suite; reescritura narrativa del arc42 sin el Canal 3 (ADR-023).
-- **[2026-09-04] Feature `002-generacion-imagenes-agente-visual` — CERRADA
-  (`verified`).** Commits `a3c322a6` (ADR-002 arnés) · `dc9aab10` (feature, 12
-  `RF-`) · `e78904bd` (anchor + verified). Gate `--full`: 24 ok · 0 warn · 0 error.
-  Detalle completo en el Session-End de `history.md` y en
-  `.harness/specs/002-generacion-imagenes-agente-visual/`.
-  **Falsa alarma corregida:** el "403 en `files.cjhirashi.com`" reportado durante
-  el cierre **no era un bug** — era Cloudflare bloqueando el User-Agent por
-  defecto de `urllib` de Python (`error code: 1010`, "browser signature banned").
-  Confirmado con `curl` y con un User-Agent de navegador real: ambos `200`. Las
-  imágenes generadas sí cargan para cualquier cliente normal (frontend, curl,
-  navegador). No se abre mensaje en `caddy.json` — no había nada que reportar.
-- **[2026-09-06] Feature `003` (frentes 1–3) — `verified`.** Override de herramientas por
-  agente (`bedrock_agent_profile_tools`, `GET/PUT /bedrock/agent-profiles/{id}/tools`) +
-  catálogo de tools read-only (`GET /bedrock/tools/catalog`) + editor. Commit `c855a19d`.
-  Migración `f7a8b9c0d1e2` aplicada. Detalle en `history.md`.
-- **[2026-09-07] Feature `003` — REABIERTA (Bloque F) y re-cerrada `verified`.** El Bloque F
-  ("adopción de metodologías") se había cerrado en falso con tests mockeados: en vivo el
-  agente seguía sin reconocer metodologías. **Causa raíz:** índice Qdrant `career_knowledge`
-  stale por una migración de IDs (enteros→`usr-2`/`opm-33`) nunca re-indexada — `_point_id`
-  deriva de `resource_key:record_id` → dos generaciones acumuladas; `search` filtra
-  `user_id` exacto y solo veía la minoría re-escrita (usr-2: 7 de 23 metodologías; +252
-  huérfanos). **Fix (RF-010..015):** `services/bedrock/knowledge_base.py::reindex_knowledge_base`
-  (idempotente, rebuild real), `POST /bedrock/knowledge-base/reindex` (operador, síncrono),
-  `qdrant_service.purge_orphans` + `prune_stale_points` + borrado del gemelo heredado en
-  `upsert_point`, `RESOURCE_VECTORIZE` vía `register_resource`, `set_agent_methodologies`
-  fuerza reindex, `scripts/check_kb_consistency.py`. API `394 passed`. **Verificado en vivo**
-  (contenedor reconstruido): reindex HTTP 200 → 265 career_record + 24 methodology, 0
-  huérfanos; `check_kb_consistency.py` EXIT 0 (todo cuadra); `search_knowledge_base
-  type=methodology` devuelve por perfil solo lo asignado + compartido, y ahora sí lo devuelve.
-- **[2026-09-07] Feature `003` — Bloque J (lectura selectiva de metodologías) `verified`.**
-  Con el índice sano, el agente recibía la metodología **truncada** (opm-61 = 15,6k > tope
-  tool-results 8k). Modelo correcto: "lee sólo la metodología que ocupa este trabajo,
-  entera". Fix (RF-016/017/018): `search_knowledge_base type=methodology` devuelve
-  **extractos** (`record_id`, `title`, `section`, `excerpt`≤800, `read_full`) — el payload
-  Qdrant de metodologías ahora lleva `title`/`section`; `get_career_record` sobre
-  `operational-methodologies` usa `BEDROCK_MAX_METHODOLOGY_RESULT_CHARS = 24000` (vs global
-  8000) → la metodología entra entera; el system prompt guía "buscar→leer, una por
-  trabajo". API `403 passed`. **Verificado en vivo:** search devuelve extractos sin `text`;
-  `get_career_record opm-61` → 15.611 chars sin truncar. 18 RF, cobertura completa.
-- **[2026-09-08] Feature `004` — herramientas y metodologías por sección (L2) — `verified`.**
-  ADR-027 (revisa parcialmente ADR-026, **sólo L2**). L2: herramientas **derivadas** de
-  sus secciones (`admin_sections.tools_for_section`), metodologías **ligadas**
-  (`operational_methodologies.section_ids`, `PUT /bedrock/sections/{id}/methodologies`);
-  set del L2 = unión de todas sus secciones, resuelto 1×/turno en `agent_loop`
-  (`profile_tools.resolve_effective_tools`). L1/L3 sin cambio (asignación directa).
-  `PUT /agent-profiles/{L2}/tools|methodologies` → **409**. `scope` en el catálogo de
-  tools; `admin_section_settings action=update` gana `views`. `applies_to_caller`
-  reemplaza a `applies_to_agent`. Migración **`b3d4e5f6a7c8`** (id previo `a1b2c3d4e5f6`
-  colisionaba) — aplicada en `career_db`: `section_ids` + limpieza de ids L2. API `441
-  passed`, admin `437 passed`. Verificado en vivo (api+admin redeployados). Detalle en
-  `.harness/specs/004-...` y `history.md`.
+- **002** (`verified`, 2026-09-04), **003** (`verified` 2026-09-06; reabierta bloques F y J,
+  re-cerrada 2026-09-07) y **004** (`verified`, 2026-09-08, ADR-027, migración
+  `b3d4e5f6a7c8`): detalle completo en `history.md` y en sus `.harness/specs/`.
+  Falsa alarma 002: el 403 de `files.cjhirashi.com` era Cloudflare bloqueando el
+  User-Agent de `urllib` (error 1010), no un bug.
 - **[2026-09-08] Acción pendiente del OPERADOR:** re-ligar las metodologías a sus
   secciones desde `/settings/sections/:id`. La migración quitó los vínculos a agentes L2;
   las que estaban asignadas a un L2 quedaron **compartidas** hasta que se re-liguen.
-- **[2026-09-08] Pendiente de git:** **5 commits de 004** sin `git push`
-  (`02110918` feature · `603b98b3`+`448d2c2b` anchor/state · `92ec40ed` fix baseline de
-  tools por sección (Directiva de Pausa) · commit de anchor→`92ec40ed`). 003 ya en
-  `origin/main` (`07cae9ff`). Código de 003 y 004 (incl. el fix) YA desplegado; migración
-  `b3d4e5f6a7c8` aplicada en `career_db` prod.
 - **[2026-09-08] 004 D-11 (Directiva de Pausa):** `search_knowledge_base` es baseline de
   TODA sección; las funcionales operativas de config declaran su meta-tool
   (`agent_catalog_settings`/`admin_section_settings`/`bedrock_global_settings`); métricas
