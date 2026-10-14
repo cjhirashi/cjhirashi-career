@@ -338,6 +338,12 @@ Revisa: ADR-025 (imágenes), specs 001–005 (agentes, metodologías por secció
   Diferencia aceptada respecto a la API, donde la lectura era de BD local y un fallo se
   propagaba. Un `agent_profile_id` inexistente (de sección u override) mantiene el
   comportamiento de la API. *Descartado:* propagar el fallo como evento `error`.
+- **D-32 (usuario, 2026-10-14, Fase 4, al revisar T-085):** las secciones (`GET /admin/sections`)
+  se leen **como máximo una vez por turno**, de forma perezosa (solo cuando hace falta: perfil
+  por ruta en el chat contextual sin override, o tools efectivas de un L2 vía
+  `profile_catalog.resolve_effective_tools`), y esa lectura se reutiliza. Si falla, aplica D-31
+  tal cual (orquestador L1 + un `warning`), también con `agent_profile_id` explícito. Si el turno
+  no la necesita (`chat_surface="general"`, override no L2), no se lee. *Descartado:* mantener el L2 con solo las tools de su override; propagar el error.
 
 ## 7 · Requisitos no funcionales
 

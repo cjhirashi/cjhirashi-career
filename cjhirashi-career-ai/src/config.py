@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     BEDROCK_MAX_OUTPUT_TOKENS: int = Field(default=8192, ge=1)
     BEDROCK_HISTORY_WINDOW: int = Field(default=20, ge=1)
     BEDROCK_MAX_ROUND_TRIPS: int = Field(default=6, ge=1)
+    BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3
     BEDROCK_DAILY_BUDGET_USD: float = Field(default=5.0, ge=0)
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""

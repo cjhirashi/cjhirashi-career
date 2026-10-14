@@ -234,7 +234,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   sin contexto → modelo por defecto; ruta estática; `chat_profile`; `resource_key`; desconocido → defecto. Rojo.
 - [x] **T-084d** `[code]` (cubre RF-005) — `src/services/section_profiles.py` (solo lo que usa el bucle).
   Verde T-084c.
-- [ ] **T-085** `[code]` (cubre RF-005) — `src/services/agent_loop.py` (trasladado,
+- [x] **T-085** `[code]` (cubre RF-005) — `src/services/agent_loop.py` (trasladado,
   inyección del provider). Verde T-084. Interfaz: ver docstring de `test_agent_loop.py`
   (`ChatTurnRequest`, `TurnContext`, `resolve_turn_context`, `chat_stream`, `run_single_turn_sync`).
   Además T-085 debe: (a) añadir `BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3` a `config.Settings`; (b) exponer en
@@ -253,6 +253,27 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
     o se expone por otra vía.
   - Streaming multi-`toolUse`: D-26 (corrección de `contentBlockIndex`); T-084 incluye un caso
     con dos `toolUse` en un mensaje en streaming.
+  - **Revisión (rechazo 1):** el bucle es port fiel, pero `resolve_turn_context` real no tiene
+    test (T-084 lo sustituye) y perdía las metodologías asignadas del prompt. Eso pasa a
+    T-085a/b. La rama `KeyError` de delegación a perfil desconocido (`{"error": "unknown agent
+    profile: …"}`) la fija T-090. `invalidation_key`/`run_specialist_sub_turn` son ganchos que
+    lanzan `NotImplementedError` hasta T-087/T-091: el bucle no es usable en producción antes.
+- [ ] **T-085a** `[test]` (cubre RF-005) — `test_turn_context.py`: `resolve_turn_context` real,
+  port de `cjhirashi-career-api/src/services/bedrock/prompt.py:246-289` con dobles de
+  `SectionsClient`, `MethodologiesClient` y repos. Fija: el prompt incluye el bloque de
+  metodologías asignadas (`profile_catalog.list_assigned_methodologies` con
+  `caller_section_ids`) y `section_labels` (`{id: label}` del mismo listado de secciones);
+  delegados por overrides; notas de memoria solo para perfiles `user_facing`; tools efectivas;
+  D-32 (lectura de secciones perezosa, como máximo una por turno y reutilizada, con test que
+  cuente las llamadas; si falla → D-31, también con `agent_profile_id` explícito;
+  `chat_surface="general"` y override no L2 no leen). Comprobar que `/admin/sections` trae
+  `label`. Compatible con T-084 (`test_general_surface_…` y `test_contextual_override_…` exigen
+  `list_calls == 0` al resolver el perfil): si algún test de T-084 choca, el delta lo hace esta
+  tarea `[test]`, no T-085b. Import perezoso. Rojo.
+- [ ] **T-085b** `[code]` (cubre RF-005) — verde T-085a: cablear `MethodologiesClient` (credencial
+  del llamante, D-10) hasta `resolve_turn_context` desde `chat_stream`/`run_single_turn_sync`,
+  `assigned`/`section_labels` a `compose_system_prompt`, y la lectura única de secciones (D-32).
+  Sin romper los 146 de T-084.
 - [ ] **T-086** `[test]` (cubre RF-003) — `test_tools_career_and_local.py`: tools
   de CRUD de carrera vía cliente simulado; `web_search`, `web_fetch`, GitHub (LOCAL) con
   `httpx.MockTransport`; `search_knowledge_base` **no existe** en el catálogo; `bulk_update`
@@ -278,8 +299,9 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 - [ ] **T-089** `[code]` (cubre RF-003, RF-021) — `src/services/tools_*.py` restantes.
   Verde T-088.
 - [ ] **T-090** `[test]` (cubre RF-005) — `test_delegation_and_images.py`: delegación
-  L1→L2/L3 hereda credencial; `generate_image` usa el provider y sube con `POST /files`.
-  Rojo.
+  L1→L2/L3 hereda credencial; `generate_image` usa el provider y sube con `POST /files`;
+  delegar a un perfil desconocido devuelve `{"error": "unknown agent profile: …"}` (rama de
+  `agent_loop`, ver revisión de T-085). Rojo.
 - [ ] **T-091** `[code]` (cubre RF-005) — `src/services/{delegation,image_service}.py`.
   Verde T-090.
 - [ ] **T-092** `[test]` (cubre RF-004, RF-020) — `test_task_scheduler.py` (reloj
@@ -557,7 +579,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
 | RF-002 | T-012, T-050, T-051, T-100 | test_auth (ai) · test_app_boot | |
 | RF-003 | T-030..T-040, T-141, T-070, T-086..T-089 | test_api_client · test_career · test_isolation · test_tools_* · test_file_metadata_route | |
 | RF-004 | T-030, T-031, T-084, T-092, T-093 | test_api_client · test_agent_loop · test_task_scheduler | |
-| RF-005 | T-020..T-026, T-084, T-084a..T-084d, T-085, T-090, T-091 | test_provider_contract · test_provider_boundary · test_bedrock_* · test_agent_loop · test_attachments · test_section_profiles | |
+| RF-005 | T-020..T-026, T-084, T-084a..T-084d, T-085, T-085a, T-085b, T-090, T-091 | test_provider_contract · test_provider_boundary · test_bedrock_* · test_agent_loop · test_attachments · test_section_profiles · test_turn_context | |
 | RF-006 | T-010..T-019, T-060..T-067 | test_schema_matches_contract · test_initial_migration · test_*_repo | |
 | RF-007 | T-004, T-120, T-121, T-122, T-161 | test_copy_from_career_db · evidencia en vivo | |
 | RF-008 | T-012, T-013, T-101, T-102, T-172, T-173 | test_chat_sse · test SSE Admin | |
@@ -1645,3 +1667,12 @@ Creado `cjhirashi-career-ai/src/services/section_profiles.py`: port fiel de la A
 `pytest tests/unit/services/test_section_profiles.py --cov=services.section_profiles`: `src/services/section_profiles.py 17 stmts 0 miss 100%` · `63 passed in 3.22s` (el FAIL de umbral 80 % global es por acotar --cov a un módulo).
 Suite ai completa (`env -u TEST_DATABASE_URL`): `427 passed, 108 skipped, 3 warnings, 144 errors` (solo test_agent_loop, T-084). Ruff no instalado en el repo (ni en venv): lint omitido.
 Gate (env -u TEST_DATABASE_URL): 30 ok · 3 warn · 1 error -> ai tests FALLAN solo por los 144 errores de T-084. Sin commit; pendiente revisor.
+
+### T-085 — services/agent_loop.py (verde)
+`cjhirashi-career-ai/src/services/agent_loop.py` (nuevo) + `BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3` en `src/config.py`. Port fiel de la API (textos, regex, `_TOOL_STATUS`), con `provider.converse()`, `tool_executor` inyectado, perfil por `SectionsClient.list()` (D-10; D-31: `httpx.ConnectError`/`ApiError` -> orquestador + 1 WARNING). Sin `report_error` (T-093).
+Alcance: `is_write_tool` = `name in tools_registry.WRITE_TOOLS` (una línea; el set ya vive en el registro; T-087 puede moverlo). `invalidation_key` y `run_specialist_sub_turn` son SOLO enganche (`NotImplementedError`) hasta T-087 / T-091. `resolve_turn_context` real no tiene test en T-084 (se sustituye): no carga metodologías asignadas (`assigned`/`section_labels`) por no recibir `MethodologiesClient`. **Resuelto en revisión:** pasa a T-085a/b (con D-32).
+Evidencia:
+  `pytest tests/unit/services/test_agent_loop.py` -> 146 passed
+  Suite ai con Postgres desechable 127.0.0.1:55433 (parado): 679 passed, 3 warnings; agent_loop.py 293 stmts, 24 miss, 92 % (300,305,310,324,360-381,657-659,734-735: enganches NotImplemented, resolve_turn_context real, ramas defensivas); TOTAL 97.96 % (umbral 80)
+  Suite ai sin BD (`env -u TEST_DATABASE_URL`): 571 passed, 108 skipped (cov 74.79 % por los skips de BD, no por esta tarea)
+  Gate `env -u TEST_DATABASE_URL`: 31 ok · 3 warn · 0 error -> Compuerta abierta.
