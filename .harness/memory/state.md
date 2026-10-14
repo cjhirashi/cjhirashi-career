@@ -110,7 +110,15 @@ actualizado: 2026-10-14
 
 ## Próximo paso concreto
 
-- **009:** Bloque F — T-078..T-080 hechos (D-29: FTS `spanish_unaccent`, ignora tildes); sigue T-081 (`memory_repo.py`, interfaz fijada por `test_memory_repo.py`). Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la fixture hace `DROP SCHEMA`).
+- **009:** Bloque F — T-078..T-081 hechos (D-29: FTS `spanish_unaccent`; `memory_repo.py` 100 %
+  cobertura); sigue T-082 (`test_memory_service.py`). Notas del revisor para T-082: acotar `limit`
+  si se expone a un agente; sanear byte NUL en la entrada (el driver lanza `DBAPIError`).
+  Tests de BD: Postgres desechable en `:55433`, **nunca `:55432`** (BD de otro proyecto; la
+  fixture hace `DROP SCHEMA`).
+- **[2026-10-14] Deuda (gate/tests ai):** con `TEST_DATABASE_URL` exportada y el Postgres de
+  pruebas caído, el gate cierra (85 errores `ConnectionRefused` en `pg_engine`): la fixture
+  `pg_url` sólo salta si falta la variable. Correr el gate con `unset TEST_DATABASE_URL` o con
+  el Postgres vivo. El README del ai cita `:55432` (choca con otro proyecto). Tarea aparte.
 - **[2026-09-04] Hazard CERRADO (no hubo pérdida de datos):** las tablas `admin_sections_l1/l2/l3`
   + `admin_views` de `career_db` son leftovers físicos de `origin/develop` (nunca
   fusionada a `main`, ADR-023 abandonada); el código de `main` no las referencia.

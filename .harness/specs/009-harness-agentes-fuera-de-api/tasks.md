@@ -194,7 +194,7 @@ L la **etapa 3a**; M la **etapa 3b** (plan §7).
   aislamiento por `user_id`, unicidad `user_id+source_ref`. Rojo. **Depende de T-079** (D-29:
   la búsqueda sin tilde encuentra con tilde; revisor rechazó la 1.ª entrega por ese assert,
   inalcanzable con `spanish` a secas).
-- [ ] **T-081** `[code]` (cubre RF-022) — `src/repositories/memory_repo.py` (el modelo
+- [x] **T-081** `[code]` (cubre RF-022) — `src/repositories/memory_repo.py` (el modelo
   `src/models/bedrock_agent_memory.py` ya existe desde T-015; la migración 0001 ya incluye la
   tabla, T-018/T-019). Verde T-080.
 - [ ] **T-082** `[test]` (cubre RF-022, RF-001) — `test_memory_service.py`: sustituye
@@ -1445,3 +1445,18 @@ T-080: comentario falso corregido; asserts intactos. Verificación directa en PG
  t | t | t | f
 ```
 Rojo legítimo: `8 failed` en test_memory_repo.py, todos `ImportError ... 'memory_repo' from 'repositories'`.
+
+### T-081 — `src/repositories/memory_repo.py` (RF-022)
+
+Postgres desechable `career-ai-testdb` (127.0.0.1:55433, postgres:15-alpine). `venv/bin/python -m pytest tests/unit/repositories/test_memory_repo.py -q --no-cov`:
+```
+tests/unit/repositories/test_memory_repo.py ........                     [100%]
+============================== 8 passed in 3.86s ===============================
+```
+Suite completa del ai (`pytest -q`, con TEST_DATABASE_URL):
+```
+src/repositories/memory_repo.py                 44      0   100%
+Required test coverage of 80% reached. Total coverage: 98.76%
+======================= 402 passed, 3 warnings in 42.81s =======================
+```
+Compuerta: `bash .harness/gate/check.sh` -> exit 0 (`31 ok · 3 warn · 0 error`). Contenedor detenido: `docker ps -a --filter name=career-ai-testdb` sin filas (solo cabecera). Test T-080 sin modificar. Sin commit.
