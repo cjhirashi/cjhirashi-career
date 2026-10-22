@@ -81,12 +81,18 @@ async def get_current_user(
         )
 
     # Dedicated agents must never become general-purpose API users. Their
-    # approved surface is career data, Bedrock chat, and the unauthenticated
+    # approved surface is career data, Bedrock chat, uploading a new public
+    # file (e.g. an agent-generated diagram), and the unauthenticated
     # /public portal (the latter is handled without this dependency).
+    # File upload is intentionally the *only* /files operation allowed -
+    # listing/visibility/download/delete stay admin-only so an agent token
+    # can never enumerate, toggle, or remove Carlos's other real uploads
+    # (resumes, certificates, ...) via that bucket.
     if user.access_role == "agent":
         career_path = request.url.path.startswith("/career/")
         bedrock_chat = request.url.path == "/bedrock/chat" and request.method == "POST"
-        if not career_path and not bedrock_chat:
+        file_upload = request.url.path == "/files" and request.method == "POST"
+        if not career_path and not bedrock_chat and not file_upload:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Agent token is not authorized for this endpoint",
