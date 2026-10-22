@@ -34,3 +34,6 @@ coverage
 # OS
 .DS_Store
 Thumbs.db
+
+# Archify local build output (diagramas se suben a MinIO, no se versionan)
+.archify/

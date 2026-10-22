@@ -683,6 +683,16 @@ textarea:focus-visible {
   cursor: grab;
 }
 
+.markdown-content .archify-diagram {
+  width: 100%;
+  /* Archify's own HTML handles its interactivity (pan/zoom/trace) inside
+     the frame, unlike the mermaid box above - just needs enough vertical
+     room to be usable, not a fixed viewport an external library fits into. */
+  height: 34rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+}
+
 .markdown-content .mermaid-diagram svg:active {
   cursor: grabbing;
 }

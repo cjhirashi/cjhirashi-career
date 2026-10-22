@@ -191,8 +191,59 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
   )
 }
 
+/** Only this host may be framed by a ```archify block - the API locks
+ * uploading a new file to the `agent` role (see `middleware/auth.py`'s
+ * `file_upload` check), but nothing stops this markdown field itself from
+ * being hand-edited with an arbitrary URL, so the iframe only ever loads
+ * from the one bucket host we actually trust. */
+const ARCHIFY_ALLOWED_HOST = 'files.cjhirashi.com'
+
+/** Renders a ```archify fenced block - its body is the public URL of an
+ * Archify-generated standalone HTML diagram (uploaded via `POST /files`) -
+ * as a sandboxed iframe instead of a plain code block. */
+const ArchifyDiagram: React.FC<{ url: string }> = ({ url }) => {
+  const trimmed = url.trim()
+  let isAllowed = false
+  try {
+    const parsed = new URL(trimmed)
+    isAllowed = parsed.protocol === 'https:' && parsed.hostname === ARCHIFY_ALLOWED_HOST
+  } catch {
+    isAllowed = false
+  }
+
+  if (!isAllowed) {
+    return (
+      <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-3">
+        Diagrama Archify con URL no válida (debe ser https://{ARCHIFY_ALLOWED_HOST}/...): {trimmed}
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-3">
+      <iframe
+        src={trimmed}
+        title="Diagrama interactivo"
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin"
+        className="archify-diagram"
+      />
+      <a
+        href={trimmed}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-text-secondary hover:text-primary transition mt-1 inline-block"
+      >
+        Abrir diagrama en pantalla completa ↗
+      </a>
+    </div>
+  )
+}
+
 /** ReactMarkdown's `pre` override: a ```mermaid block renders as a diagram
- * (via MermaidDiagram above) instead of a plain code block. */
+ * (via MermaidDiagram above) and a ```archify block as an embedded
+ * interactive diagram (via ArchifyDiagram above), instead of a plain code
+ * block. */
 const MarkdownPre = ({
   children,
   node: _node,
@@ -206,6 +257,9 @@ const MarkdownPre = ({
 
   if (language === 'mermaid') {
     return <MermaidDiagram code={extractText(children)} />
+  }
+  if (language === 'archify') {
+    return <ArchifyDiagram url={extractText(children)} />
   }
 
   return <pre {...props}>{children}</pre>
