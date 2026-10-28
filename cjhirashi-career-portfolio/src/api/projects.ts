@@ -7,8 +7,8 @@ export const projectsApi = {
     return response.data
   },
 
-  getProjectById: async (id: string): Promise<Project> => {
-    const response = await apiClient.get<Project>(`/public/projects/${id}`)
+  getProjectBySlug: async (slug: string): Promise<Project> => {
+    const response = await apiClient.get<Project>(`/public/projects/${slug}`)
     return response.data
   },
 }

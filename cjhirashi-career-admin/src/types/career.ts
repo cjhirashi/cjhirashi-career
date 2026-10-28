@@ -199,6 +199,7 @@ export interface Project {
   id: string
   user_id: string
   title: string
+  slug?: string | null
   category?: string | null
   industry?: string | null
   year?: number | null
@@ -220,6 +221,7 @@ export interface Project {
   results?: Record<string, unknown> | null
   github_url?: string | null
   demo_url?: string | null
+  notebook_url?: string | null
   repo_structure?: string | null
   evidence_sources?: string | null
   releases?: unknown[] | null
@@ -346,6 +348,23 @@ export interface TargetCompany {
   updated_at: ISODateTime
 }
 
+export interface SearchPlatform {
+  id: string
+  user_id: string
+  name: string
+  profile_url?: string | null
+  username?: string | null
+  account_email?: string | null
+  cv_version_id?: string | null
+  profile_headline?: string | null
+  profile_notes?: string | null
+  is_active: boolean
+  last_updated_at?: ISODate | null
+  notes?: string | null
+  created_at: ISODateTime
+  updated_at: ISODateTime
+}
+
 export type Evaluation = 'apply' | 'do_not_apply' | 'pending_review'
 
 export type ProcessStage =
@@ -375,10 +394,12 @@ export interface Vacancy {
   exact_role: string
   vacancy_url?: string | null
   source?: string | null
+  search_platform_id?: string | null
   found_date?: ISODate | null
   fit_percentage?: number | null
   track_category?: string | null
   recommended_cv_version?: string | null
+  cv_version_id?: string | null
   analysis_notes?: string | null
   company_overview?: string | null
   candidate_profile?: string | null
@@ -700,6 +721,64 @@ export interface SearchOverview {
     target_interviews: number
     target_offers: number
   } | null
+  applications_by_status: { label: string; count: number }[]
+  interviews_by_result: { label: string; count: number }[]
+  networking_activities_by_category: { label: string; count: number }[]
+  application_interactions_response_rate: RateMetric
+  contact_interactions_response_rate: RateMetric
+  contact_interactions_opportunity_rate: RateMetric
+  funnel_conversion_rates: KpiMetric[]
+  vacancy_kpis: KpiMetric[]
+  networking_kpis: KpiMetric[]
+  vacancies_by_platform: PlatformResult[]
+}
+
+/** Vacancy pipeline results sourced from one job-search platform/source -
+ * which channels actually produce outcomes, not just where vacancies come from. */
+export interface PlatformResult {
+  platform: string
+  vacancies: number
+  applications: number
+  interviews: number
+  offers: number
+  application_rate_percentage: number | null
+}
+
+/** One KPI card: a rate plus the raw numbers behind it. */
+export interface KpiMetric {
+  label: string
+  value_percentage: number | null
+  detail: string | null
+}
+
+/** A count out of a total, e.g. how many interactions got a response. */
+export interface RateMetric {
+  total: number
+  positive: number
+  rate_percentage: number | null
+}
+
+/** Portal traffic (anonymous portfolio visitors) - see
+ * `GET /career/portal-metrics/overview` (api/src/routes/portal_metrics.py).
+ * Computed live from `portal_events`, captured by the portfolio's own
+ * tracking calls against `POST /events/track`. */
+export interface PortalMetricsOverview {
+  total_pageviews: number
+  pageviews_in_window: number
+  /** Unique visits = distinct browser sessions, not raw pageview events -
+   * several pages viewed in one visit count once. Events captured before
+   * session tracking existed have none and are excluded. */
+  total_visits: number
+  visits_in_window: number
+  window_days: number
+  visits_by_day: { day: ISODate; count: number }[]
+  visits_by_country: { label: string; count: number }[]
+  visits_by_location: { city: string | null; country: string | null; latitude: number; longitude: number; count: number }[]
+  top_pages: { label: string; count: number }[]
+  duration_ms_min: number | null
+  duration_ms_avg: number | null
+  duration_ms_max: number | null
+  duration_sample_size: number
 }
 
 /** Any career-domain entity always has at least these two columns. */

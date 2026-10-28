@@ -10,11 +10,11 @@ export const useProjects = () => {
   })
 }
 
-export const useProjectById = (id: string) => {
+export const useProjectBySlug = (slug: string) => {
   return useQuery<Project>({
-    queryKey: ['project', id],
-    queryFn: () => projectsApi.getProjectById(id),
+    queryKey: ['project', slug],
+    queryFn: () => projectsApi.getProjectBySlug(slug),
     staleTime: 1000 * 60 * 60, // 1 hour
-    enabled: !!id,
+    enabled: !!slug,
   })
 }

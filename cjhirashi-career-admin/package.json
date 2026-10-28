@@ -29,12 +29,14 @@
     "react-dom": "^18.2.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.20.0",
+    "react-simple-maps": "^5.0.5",
     "recharts": "^2.15.0",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "svg-pan-zoom": "^3.6.2",
+    "world-atlas": "^2.0.2",
     "zustand": "^4.4.7"
   },
   "devDependencies": {

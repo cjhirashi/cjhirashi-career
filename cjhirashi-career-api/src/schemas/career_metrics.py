@@ -68,6 +68,37 @@ class SearchPlanMetric(BaseModel):
     target_offers: int = 0
 
 
+class RateMetric(BaseModel):
+    """A count out of a total, e.g. how many interactions got a response."""
+
+    total: int = 0
+    positive: int = 0
+    rate_percentage: Optional[float] = None
+
+
+class KpiMetric(BaseModel):
+    """One KPI card: a rate (not a raw count) plus the detail behind it,
+    e.g. {label: "Tasa de Aplicación", value_percentage: 40.0, detail: "12 de 30"}."""
+
+    label: str
+    value_percentage: Optional[float] = None
+    detail: Optional[str] = None
+
+
+class PlatformResult(BaseModel):
+    """Vacancy pipeline results sourced from one job-search platform (or
+    free-text `source` when the vacancy isn't linked to a tracked platform) -
+    which channels actually produce outcomes, not just where vacancies get
+    logged from."""
+
+    platform: str
+    vacancies: int = 0
+    applications: int = 0
+    interviews: int = 0
+    offers: int = 0
+    application_rate_percentage: Optional[float] = None
+
+
 # ============================================================================
 # Vista general de búsqueda — respuesta agregada
 # ============================================================================
@@ -90,4 +121,17 @@ class SearchOverviewResponse(BaseModel):
     companies_by_status: List[CountBreakdown]
     fit_scoring_factors: List[FitFactorMetric]
     active_search_plan: Optional[SearchPlanMetric] = None
+    applications_by_status: List[CountBreakdown] = []
+    interviews_by_result: List[CountBreakdown] = []
+    networking_activities_by_category: List[CountBreakdown] = []
+    application_interactions_response_rate: RateMetric = RateMetric()
+    contact_interactions_response_rate: RateMetric = RateMetric()
+    contact_interactions_opportunity_rate: RateMetric = RateMetric()
+    # Stage-to-stage conversion of the funnel above (Vacantes -> Aplicaciones
+    # -> Entrevistas -> Ofertas) and win rate, plus triage/outreach quality
+    # KPIs - the "¿se están cumpliendo los objetivos?" view, not just counts.
+    funnel_conversion_rates: List[KpiMetric] = []
+    vacancy_kpis: List[KpiMetric] = []
+    networking_kpis: List[KpiMetric] = []
+    vacancies_by_platform: List[PlatformResult] = []
     notes: Optional[str] = None

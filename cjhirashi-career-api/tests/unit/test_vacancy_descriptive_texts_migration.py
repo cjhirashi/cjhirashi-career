@@ -47,7 +47,9 @@ def test_revision_chain_and_single_head():
 
     cfg = Config()
     cfg.set_main_option("script_location", str(_ROOT / "alembic"))
-    assert ScriptDirectory.from_config(cfg).get_heads() == ["d8f2b5a13c97"]
+    # No pinning the exact head id: that breaks on every later migration. The
+    # actual invariant worth checking is a single linear chain (no branching).
+    assert len(ScriptDirectory.from_config(cfg).get_heads()) == 1
 
 
 @pytest.mark.requisito("RF-007")

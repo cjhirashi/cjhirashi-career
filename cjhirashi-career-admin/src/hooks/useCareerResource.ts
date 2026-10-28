@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { careerApi, ListParams } from '@/api/career'
-import { CareerEntity, SearchOverview, WeeklySearchMetrics } from '@/types/career'
+import { CareerEntity, PortalMetricsOverview, SearchOverview, WeeklySearchMetrics } from '@/types/career'
 
 /**
  * Generic React Query wrapper around `careerApi` for a single career-domain
@@ -82,5 +82,19 @@ export function useSearchOverview() {
   return useQuery<SearchOverview>({
     queryKey: careerQueryKey('metrics-search-overview'),
     queryFn: () => careerApi.searchOverview(),
+  })
+}
+
+/**
+ * Portal traffic snapshot (`GET /career/portal-metrics/overview`) - pageviews
+ * over time, visits by country, and top pages, computed live from
+ * `portal_events`. Powers the Métricas page. Polled like useNotifications
+ * (same 20s interval) so new visits show up without a manual refresh.
+ */
+export function usePortalMetricsOverview(days = 30) {
+  return useQuery<PortalMetricsOverview>({
+    queryKey: careerQueryKey('portal-metrics-overview', { days }),
+    queryFn: () => careerApi.portalMetricsOverview(days),
+    refetchInterval: 20_000,
   })
 }

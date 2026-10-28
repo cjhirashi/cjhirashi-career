@@ -47,10 +47,24 @@ class Vacancy(Base):
     exact_role = Column(String(255), nullable=False)
     vacancy_url = Column(String(500), unique=True, nullable=True)
     source = Column(String(50), nullable=True)
+    # FK a search_platforms: `source` sigue siendo texto libre (vacantes que
+    # vienen de una fuente sin perfil rastreado también se registran), pero
+    # cuando sí corresponde a una plataforma con perfil cargado, esto permite
+    # cruzar información de forma confiable (mismo patrón que target_company_id).
+    search_platform_id = Column(
+        String(20), ForeignKey("search_platforms.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     found_date = Column(Date, nullable=True)
     fit_percentage = Column(Integer, nullable=True, index=True)
     track_category = Column(String(50), nullable=True)
     recommended_cv_version = Column(String(100), nullable=True)
+    # FK a cv_versions: `recommended_cv_version` sigue siendo texto libre (útil
+    # para anotar una recomendación antes de que exista la versión formal),
+    # pero cuando ya hay una CVVersion real enviada a esta vacante, esto la
+    # vincula de forma confiable (mismo patrón que target_company_id).
+    cv_version_id = Column(
+        String(20), ForeignKey("cv_versions.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     analysis_notes = Column(Text, nullable=True)
     evaluation = Column(String(30), default="pending_review", nullable=True, index=True)
     is_active = Column(Boolean, default=True, nullable=True)

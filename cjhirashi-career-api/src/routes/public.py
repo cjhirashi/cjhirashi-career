@@ -98,10 +98,11 @@ def _project_tech_stack(p: Project, competency_names: dict) -> List[str]:
 
 def _project_card(p: Project, competency_names: dict) -> PublicProjectCard:
     return PublicProjectCard(
-        id=p.id, title=p.title, category=p.category, industry=p.industry, year=p.year,
+        id=p.id, title=p.title, slug=p.slug, category=p.category, industry=p.industry, year=p.year,
         card_summary=p.card_summary, tech_stack=_project_tech_stack(p, competency_names),
         metrics=_project_metrics(p),
         image_url=p.image_url, github_url=p.github_url, demo_url=p.demo_url,
+        notebook_url=p.notebook_url,
     )
 
 
@@ -330,10 +331,10 @@ async def list_projects(db: AsyncSession = Depends(get_db)):
     return [_project_detail(p, competency_names) for p in projects]
 
 
-@router.get("/projects/{project_id}", response_model=PublicProjectDetail)
-async def get_project(project_id: str, db: AsyncSession = Depends(get_db)):
+@router.get("/projects/{slug}", response_model=PublicProjectDetail)
+async def get_project(slug: str, db: AsyncSession = Depends(get_db)):
     project = (
-        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.id == project_id))
+        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.slug == slug))
     ).scalar_one_or_none()
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")

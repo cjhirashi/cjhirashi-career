@@ -8,11 +8,11 @@
     "declarala_external_en_tu_compose": true,
     "hosts": {
       "admin": "admin.cjhirashi.com",
-      "portafolio": "portafolio.cjhirashi.com",
+      "portafolio": "cjhirashi.com",
       "files": "files.cjhirashi.com"
     },
     "estado": "activo",
-    "ultima_sync": "2026-09-14"
+    "ultima_sync": "2026-10-22"
   },
   "servicios": [
     {

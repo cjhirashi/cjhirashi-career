@@ -31,6 +31,7 @@ from models.role_narrative import RoleNarrative
 from models.search_plan import SearchPlan
 from models.networking_contact import NetworkingContact
 from models.target_company import TargetCompany
+from models.search_platform import SearchPlatform
 from models.vacancy import Vacancy
 from models.cv_version import CVVersion
 from models.cover_letter_version import CoverLetterVersion
@@ -47,6 +48,7 @@ from models.github_profile import GitHubProfile
 from models.portal_home import PortalHome
 from models.portal_about import PortalAbout
 from models.portal_contact import PortalContact
+from models.portal_event import PortalEvent
 
 # Dominio 4: Soporte
 from models.tag import Tag

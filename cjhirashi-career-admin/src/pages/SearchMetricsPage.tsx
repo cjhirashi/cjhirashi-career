@@ -1,104 +1,10 @@
 import React from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from 'recharts'
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import { Target, TrendingUp, Handshake, Building2, Scale, ClipboardList } from 'lucide-react'
 import { useSearchOverview } from '@/hooks/useCareerResource'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
-
-/** Fixed palette reusing the app's theme tokens (adapts light/dark
- * automatically, same as badges elsewhere) plus a few neutral fallbacks for
- * breakdowns with more categories than semantic colors (e.g. 5 role
- * categories, 6+ track categories). */
-const CHART_COLORS = [
-  'var(--primary-color)',
-  'var(--success-text)',
-  'var(--warning-text)',
-  'var(--error-text)',
-  '#8b5cf6',
-  '#ec4899',
-  '#64748b',
-  '#0ea5e9',
-]
-
-const axisTickStyle = { fill: 'var(--text-secondary)', fontSize: 12 }
-
-const EmptyState: React.FC<{ message: string }> = ({ message }) => (
-  <p className="text-text-secondary text-sm text-center py-10">{message}</p>
-)
-
-interface Breakdown {
-  label: string
-  count: number
-}
-
-const BreakdownPie: React.FC<{ data: Breakdown[]; emptyMessage: string }> = ({ data, emptyMessage }) => {
-  if (data.length === 0) return <EmptyState message={emptyMessage} />
-  return (
-    <ResponsiveContainer width="100%" height={220}>
-      <PieChart>
-        <Pie data={data} dataKey="count" nameKey="label" cx="50%" cy="50%" outerRadius={80} label>
-          {data.map((entry, i) => (
-            <Cell key={entry.label} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-          ))}
-        </Pie>
-        <Legend wrapperStyle={{ fontSize: 12, color: 'var(--text-secondary)' }} />
-        <Tooltip contentStyle={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 8 }} />
-      </PieChart>
-    </ResponsiveContainer>
-  )
-}
-
-const BreakdownBar: React.FC<{ data: Breakdown[]; emptyMessage: string }> = ({ data, emptyMessage }) => {
-  if (data.length === 0) return <EmptyState message={emptyMessage} />
-  return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} layout="vertical" margin={{ left: 12, right: 12 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-        <XAxis type="number" allowDecimals={false} tick={axisTickStyle} />
-        <YAxis type="category" dataKey="label" width={110} tick={axisTickStyle} />
-        <Tooltip
-          contentStyle={{ background: 'var(--bg-glass)', border: '1px solid var(--border)', borderRadius: 8 }}
-          cursor={{ fill: 'var(--primary-light)' }}
-        />
-        <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-          {data.map((entry, i) => (
-            <Cell key={entry.label} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  )
-}
-
-const SectionCard: React.FC<{ title: string; subtitle?: string; icon: React.ElementType; children: React.ReactNode }> = ({
-  title,
-  subtitle,
-  icon: Icon,
-  children,
-}) => (
-  <div className="card">
-    <div className="card-header">
-      <h2 className="text-base font-semibold text-text flex items-center gap-2">
-        <Icon size={17} className="text-primary" aria-hidden="true" />
-        {title}
-      </h2>
-      {subtitle && <p className="text-text-secondary text-xs mt-1">{subtitle}</p>}
-    </div>
-    <div className="card-body">{children}</div>
-  </div>
-)
+import { CHART_COLORS, axisTickStyle, EmptyState, BreakdownPie, BreakdownBar, SectionCard } from '@/components/career/MetricsCharts'
 
 export const SearchMetricsPage: React.FC = () => {
   const { data, isLoading, isError, error } = useSearchOverview()

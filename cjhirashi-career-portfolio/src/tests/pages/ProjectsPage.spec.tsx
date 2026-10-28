@@ -53,7 +53,7 @@ describe('ProjectsPage', () => {
 
     await waitFor(() => {
       const link = screen.getByText(mockProjects[0].title).closest('a')
-      expect(link).toHaveAttribute('href', `/projects/${mockProjects[0].id}`)
+      expect(link).toHaveAttribute('href', `/projects/${mockProjects[0].slug}`)
     })
   })
 

@@ -23,6 +23,7 @@ class Project(Base):
 
     # --- Campos de negocio ---
     title = Column(String(255), nullable=False)
+    slug = Column(String(255), nullable=True)
     category = Column(String(50), nullable=True)
     industry = Column(String(100), nullable=True)
     year = Column(Integer, nullable=True)
@@ -50,6 +51,7 @@ class Project(Base):
     results = Column(JSONB, nullable=True)
     github_url = Column(String(500), nullable=True)
     demo_url = Column(String(500), nullable=True)
+    notebook_url = Column(String(500), nullable=True)
     repo_structure = Column(Text, nullable=True)
     evidence_sources = Column(Text, nullable=True)
     releases = Column(JSONB, nullable=True)

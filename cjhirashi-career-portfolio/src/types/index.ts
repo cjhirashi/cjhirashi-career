@@ -7,6 +7,7 @@
 export interface Project {
   id: string
   title: string
+  slug: string | null
   category: string | null
   industry: string | null
   year: number | null
@@ -16,6 +17,7 @@ export interface Project {
   image_url: string | null
   github_url: string | null
   demo_url: string | null
+  notebook_url: string | null
   detailed_summary: string | null
   problem: string | null
   solution: string | null
@@ -144,7 +146,7 @@ export interface ContactMessage {
 }
 
 // Event Tracking Types
-export type EventType = 'pageview' | 'click' | 'download' | 'form_submit' | 'scroll'
+export type EventType = 'pageview' | 'click' | 'download' | 'form_submit' | 'scroll' | 'page_duration'
 
 export interface TrackingEvent {
   type: EventType
@@ -154,6 +156,11 @@ export interface TrackingEvent {
   timestamp?: string
   userAgent?: string
   ip?: string
+  /** Id of the current browser tab/session (see `getOrCreateSessionId` in
+   * `hooks/useTracking.ts`) - groups pageviews server-side into one visit. */
+  sessionId?: string
+  /** Only set on `type: 'page_duration'` - ms spent on `page` before leaving. */
+  durationMs?: number
 }
 
 // API Response Types

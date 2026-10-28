@@ -1,104 +1,103 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '../utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor, fireEvent } from '../utils'
 import { MetricsPage } from '@/pages/MetricsPage'
+import { careerApi } from '@/api/career'
+import { PortalMetricsOverview } from '@/types/career'
+
+vi.mock('@/api/career')
+
+const mockedCareerApi = vi.mocked(careerApi)
+
+const baseOverview: PortalMetricsOverview = {
+  total_pageviews: 142,
+  pageviews_in_window: 58,
+  total_visits: 97,
+  visits_in_window: 41,
+  window_days: 30,
+  visits_by_day: [
+    { day: '2026-10-22', count: 20 },
+    { day: '2026-10-23', count: 38 },
+  ],
+  visits_by_country: [
+    { label: 'Mexico', count: 90 },
+    { label: 'United States', count: 52 },
+  ],
+  visits_by_location: [
+    { city: 'Mexico City', country: 'Mexico', latitude: 19.4326, longitude: -99.1332, count: 90 },
+    { city: 'Austin', country: 'United States', latitude: 30.2672, longitude: -97.7431, count: 52 },
+  ],
+  top_pages: [
+    { label: '/', count: 60 },
+    { label: '/projects', count: 40 },
+  ],
+  duration_ms_min: 1200,
+  duration_ms_avg: 45000,
+  duration_ms_max: 180000,
+  duration_sample_size: 58,
+}
 
 describe('MetricsPage', () => {
-  describe('rendering', () => {
-    it('should render page title', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText('Metrics')).toBeInTheDocument()
-    })
-
-    it('should render page description', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText(/Monitor your portfolio progress and activity/i)).toBeInTheDocument()
-    })
-
-    it('should render activity timeline section', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText('Activity Timeline')).toBeInTheDocument()
-    })
-
-    it('should display coming soon message', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText('Real-time metrics coming soon')).toBeInTheDocument()
-    })
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  describe('metrics cards', () => {
-    it('should render all metric cards', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText('Profile Completeness')).toBeInTheDocument()
-      expect(screen.getByText('Portal Views')).toBeInTheDocument()
-      expect(screen.getByText('Interactions')).toBeInTheDocument()
-      expect(screen.getByText('Agent Activity')).toBeInTheDocument()
-    })
-
-    it('should display metric values as 0', () => {
-      render(<MetricsPage />)
-      // 3 tarjetas muestran "0" y una "0%".
-      const zeroValues = screen.getAllByText(/^0%?$/)
-      expect(zeroValues.length).toBeGreaterThanOrEqual(4)
-    })
-
-    it('should display metric percentage for completeness', () => {
-      render(<MetricsPage />)
-      expect(screen.getByText('0%')).toBeInTheDocument()
-    })
-
-    it('should have Lucide icon for each metric stat card', () => {
-      const { container } = render(<MetricsPage />)
-      const statCards = container.querySelectorAll('.stat-card')
-      statCards.forEach((card) => {
-        expect(card.querySelector('svg')).toBeInTheDocument()
-      })
-    })
+  it('should render the page title and description', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue(baseOverview)
+    render(<MetricsPage />)
+    expect(screen.getByText('Métricas del Portafolio')).toBeInTheDocument()
+    await waitFor(() => expect(mockedCareerApi.portalMetricsOverview).toHaveBeenCalled())
   })
 
-  describe('layout structure', () => {
-    it('should use grid layout for metric cards', () => {
-      const { container } = render(<MetricsPage />)
-      const grid = container.querySelector('.grid')
-      expect(grid?.classList.contains('grid-cols-1')).toBe(true)
-      expect(grid?.classList.contains('md:grid-cols-2')).toBe(true)
-      expect(grid?.classList.contains('lg:grid-cols-4')).toBe(true)
-    })
-
-    it('should have proper card styling', () => {
-      const { container } = render(<MetricsPage />)
-      const cards = container.querySelectorAll('.card')
-      expect(cards.length).toBeGreaterThan(0)
-    })
-
-    it('should have proper spacing between sections', () => {
-      const { container } = render(<MetricsPage />)
-      // el encabezado va en un contenedor con `mb-8`
-      const title = container.querySelector('h1')
-      expect(title?.closest('.mb-8')).not.toBeNull()
-    })
+  it('should render the total and windowed unique-visit counts, distinct from raw pageviews', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue(baseOverview)
+    render(<MetricsPage />)
+    await waitFor(() => expect(screen.getByText('97')).toBeInTheDocument())
+    expect(screen.getByText('41')).toBeInTheDocument()
+    expect(screen.getByText(/142 páginas vistas en total/)).toBeInTheDocument()
+    expect(screen.getByText(/58 páginas vistas en la ventana/)).toBeInTheDocument()
   })
 
-  describe('styling consistency', () => {
-    it('should use slate colors', () => {
-      const { container } = render(<MetricsPage />)
-      const heading = container.querySelector('h1')
-      expect(heading?.className).toContain('text-slate-900')
-    })
+  it('should render the top country and top page stat cards', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue(baseOverview)
+    render(<MetricsPage />)
+    await waitFor(() => expect(screen.getByText('Mexico')).toBeInTheDocument())
+    expect(screen.getByText('/')).toBeInTheDocument()
+  })
 
-    it('should have proper typography', () => {
-      const { container } = render(<MetricsPage />)
-      const heading = container.querySelector('h1')
-      expect(heading?.className).toContain('text-3xl')
-      expect(heading?.className).toContain('font-bold')
-    })
+  it('should render one map bubble per visit location', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue(baseOverview)
+    render(<MetricsPage />)
+    const map = await screen.findByTestId('world-bubble-map')
+    expect(map.querySelectorAll('circle').length).toBe(2)
+  })
 
-    it('should have consistent card padding', () => {
-      const { container } = render(<MetricsPage />)
-      // Quick-stat tiles use the `.stat-card` variant (a `.card` with glass
-      // hover glow baked in via `@apply card p-6` in index.css) instead of
-      // the raw `.card.p-6` combo.
-      const metricCards = container.querySelectorAll('.stat-card')
-      expect(metricCards.length).toBeGreaterThan(0)
+  it('should show an empty state when there are no visits in the window', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue({
+      ...baseOverview,
+      visits_by_day: [],
+      visits_by_country: [],
+      visits_by_location: [],
+      top_pages: [],
     })
+    render(<MetricsPage />)
+    await waitFor(() =>
+      expect(screen.getAllByText('Aún no hay visitas registradas en esta ventana.').length).toBeGreaterThan(0)
+    )
+  })
+
+  it('should re-fetch with a new window when the range selector changes', async () => {
+    mockedCareerApi.portalMetricsOverview.mockResolvedValue(baseOverview)
+    render(<MetricsPage />)
+    await waitFor(() => expect(mockedCareerApi.portalMetricsOverview).toHaveBeenCalledWith(30))
+
+    fireEvent.change(screen.getByLabelText('Ventana de tiempo'), { target: { value: '7' } })
+
+    await waitFor(() => expect(mockedCareerApi.portalMetricsOverview).toHaveBeenCalledWith(7))
+  })
+
+  it('should show an error message when the request fails', async () => {
+    mockedCareerApi.portalMetricsOverview.mockRejectedValue(new Error('Network error'))
+    render(<MetricsPage />)
+    await waitFor(() => expect(screen.getByText(/Network error|error/i)).toBeInTheDocument())
   })
 })

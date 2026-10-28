@@ -29,6 +29,7 @@ import {
   Home,
   Layers,
   Lightbulb,
+  Link2,
   Linkedin,
   Mail,
   Map,
@@ -787,6 +788,13 @@ export const projectsConfig: ResourceConfig = {
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true },
+    {
+      name: 'slug',
+      label: 'Slug',
+      type: 'text',
+      placeholder: 'ej. sistema-de-gestion-de-carrera-con-ia',
+      helpText: 'Usado en el link público del proyecto (/projects/slug) en vez del id interno.',
+    },
     { name: 'category', label: 'Categoría', type: 'creatable-select' },
     { name: 'industry', label: 'Industria', type: 'creatable-select' },
     { name: 'year', label: 'Año', type: 'number' },
@@ -804,6 +812,7 @@ export const projectsConfig: ResourceConfig = {
     { name: 'image_url', label: 'URL de la imagen', type: 'text', fullWidth: true },
     { name: 'github_url', label: 'URL de GitHub', type: 'text' },
     { name: 'demo_url', label: 'URL de demo', type: 'text' },
+    { name: 'notebook_url', label: 'URL de notebook', type: 'text' },
     { name: 'card_summary', label: 'Resumen para tarjeta (máx. 500)', type: 'textarea', fullWidth: true },
     { name: 'detailed_summary', label: 'Resumen detallado', type: 'textarea', fullWidth: true },
     { name: 'problem', label: 'Problema', type: 'textarea', fullWidth: true },
@@ -1170,6 +1179,46 @@ export const vacancyStageBadgeColor = (value: unknown) => {
 export const vacancyStatusBadgeColor = (value: unknown) =>
   value === 'in_process' ? ('warning' as const) : ('slate' as const)
 
+export const searchPlatformsConfig: ResourceConfig = {
+  key: 'search-platforms',
+  label: 'Plataformas',
+  labelSingular: 'Plataforma',
+  genderFeminine: true,
+  description:
+    'Plataformas de búsqueda de empleo (LinkedIn, GetOnBoard, OCC, etc.) y el perfil que mantienes cargado en cada una. Vincula cada vacante a la plataforma de la que vino (campo "Plataforma" en Vacantes) para saber qué perfil generó cada oportunidad.',
+  columns: [
+    { key: 'name', label: 'Plataforma' },
+    { key: 'username', label: 'Usuario / handle' },
+    { key: 'account_email', label: 'Correo asociado' },
+    { key: 'is_active', label: 'Activa', format: 'boolean' },
+    { key: 'last_updated_at', label: 'Perfil actualizado', format: 'date' },
+  ],
+  fields: [
+    { name: 'name', label: 'Nombre de la plataforma', type: 'creatable-select', required: true, placeholder: 'LinkedIn, GetOnBoard, OCC...' },
+    { name: 'profile_url', label: 'URL del perfil', type: 'text', fullWidth: true },
+    { name: 'username', label: 'Usuario / handle', type: 'text' },
+    {
+      name: 'account_email',
+      label: 'Correo asociado',
+      type: 'text',
+      helpText: 'Con qué correo está registrado el perfil (gmail personal, cjhirashi.com, etc.) - de ahí sabe Paulina qué bandeja vigilar.',
+    },
+    { name: 'profile_headline', label: 'Titular del perfil', type: 'text', fullWidth: true },
+    {
+      name: 'cv_version_id',
+      label: 'CV cargado (vínculo)',
+      type: 'fk-select',
+      fkResource: 'cv-versions',
+      fkLabelField: 'title',
+      helpText: 'El CV que subiste al registrarte en esta plataforma.',
+    },
+    { name: 'is_active', label: 'Activa', type: 'boolean' },
+    { name: 'last_updated_at', label: 'Perfil actualizado el', type: 'date' },
+    { name: 'profile_notes', label: 'Notas del perfil', type: 'textarea', fullWidth: true, helpText: 'Qué versión de CV, foto o configuración tiene cargada esta plataforma.' },
+    { name: 'notes', label: 'Notas', type: 'textarea', fullWidth: true },
+  ],
+}
+
 export const vacanciesConfig: ResourceConfig = {
   key: 'vacancies',
   label: 'Vacantes',
@@ -1224,10 +1273,26 @@ export const vacanciesConfig: ResourceConfig = {
     { name: 'order_number', label: 'Número de orden', type: 'number' },
     { name: 'vacancy_url', label: 'URL de la vacante', type: 'text', fullWidth: true },
     { name: 'source', label: 'Fuente', type: 'creatable-select' },
+    {
+      name: 'search_platform_id',
+      label: 'Plataforma (vínculo)',
+      type: 'fk-select',
+      fkResource: 'search-platforms',
+      fkLabelField: 'name',
+      helpText: 'Opcional: si esta vacante vino del perfil que mantienes en una plataforma rastreada, vincúlala aquí.',
+    },
     { name: 'found_date', label: 'Fecha en que se encontró', type: 'date' },
     { name: 'fit_percentage', label: 'Porcentaje de fit (0-100)', type: 'number' },
     { name: 'track_category', label: 'Categoría de track', type: 'creatable-select' },
     { name: 'recommended_cv_version', label: 'Versión de CV recomendada', type: 'creatable-select' },
+    {
+      name: 'cv_version_id',
+      label: 'CV enviado (vínculo)',
+      type: 'fk-select',
+      fkResource: 'cv-versions',
+      fkLabelField: 'title',
+      helpText: 'Opcional: si ya existe la versión de CV real que enviaste para esta vacante, vincúlala aquí.',
+    },
     {
       name: 'evaluation',
       label: 'Evaluación',
@@ -2002,6 +2067,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
       'search-plans',
       'networking-contacts',
       'target-companies',
+      'search-platforms',
       'vacancies',
       'cv-versions',
       'cover-letter-versions',
@@ -2056,6 +2122,7 @@ export const CAREER_RESOURCE_ICONS: Record<string, LucideIcon> = {
   'search-plans': Map,
   'networking-contacts': Users,
   'target-companies': Building2,
+  'search-platforms': Link2,
   vacancies: Bookmark,
   'cv-versions': FileText,
   'cover-letter-versions': Mail,
@@ -2103,6 +2170,7 @@ export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   'search-plans': searchPlansConfig,
   'networking-contacts': networkingContactsConfig,
   'target-companies': targetCompaniesConfig,
+  'search-platforms': searchPlatformsConfig,
   vacancies: vacanciesConfig,
   'cv-versions': cvVersionsConfig,
   'cover-letter-versions': coverLetterVersionsConfig,

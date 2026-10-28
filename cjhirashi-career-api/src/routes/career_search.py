@@ -29,6 +29,7 @@ from models.role_narrative import RoleNarrative
 from models.search_plan import SearchPlan
 from models.networking_contact import NetworkingContact
 from models.target_company import TargetCompany
+from models.search_platform import SearchPlatform
 from models.vacancy import Vacancy
 from models.cv_version import CVVersion
 from models.cover_letter_version import CoverLetterVersion
@@ -45,6 +46,7 @@ from schemas.career_search import (
     SearchPlanCreate, SearchPlanUpdate, SearchPlanResponse,
     NetworkingContactCreate, NetworkingContactUpdate, NetworkingContactResponse,
     TargetCompanyCreate, TargetCompanyUpdate, TargetCompanyResponse,
+    SearchPlatformCreate, SearchPlatformUpdate, SearchPlatformResponse,
     VacancyCreate, VacancyUpdate, VacancyResponse,
     CVVersionCreate, CVVersionUpdate, CVVersionResponse,
     CoverLetterVersionCreate, CoverLetterVersionUpdate, CoverLetterVersionResponse,
@@ -102,6 +104,12 @@ router.include_router(build_crud_router(
     prefix="/target-companies", tags=["Career - Search"], model=TargetCompany,
     create_schema=TargetCompanyCreate, update_schema=TargetCompanyUpdate,
     response_schema=TargetCompanyResponse, entity_name="target company",
+))
+
+router.include_router(build_crud_router(
+    prefix="/search-platforms", tags=["Career - Search"], model=SearchPlatform,
+    create_schema=SearchPlatformCreate, update_schema=SearchPlatformUpdate,
+    response_schema=SearchPlatformResponse, entity_name="search platform",
 ))
 
 # ============================================================================

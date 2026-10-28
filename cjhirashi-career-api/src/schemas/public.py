@@ -17,6 +17,7 @@ from pydantic import BaseModel
 class PublicProjectCard(BaseModel):
     id: str
     title: str
+    slug: Optional[str] = None
     category: Optional[str] = None
     industry: Optional[str] = None
     year: Optional[int] = None
@@ -26,6 +27,7 @@ class PublicProjectCard(BaseModel):
     image_url: Optional[str] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
+    notebook_url: Optional[str] = None
 
 
 class PublicProjectDetail(PublicProjectCard):

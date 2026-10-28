@@ -6,6 +6,7 @@ import {
   JobDiscoverySaveResponse,
   JobListing,
   JobProviderStatus,
+  PortalMetricsOverview,
   SearchOverview,
   WeeklySearchMetrics,
 } from '@/types/career'
@@ -125,6 +126,13 @@ export const careerApi = {
     return response.data
   },
 
+  portalMetricsOverview: async (days = 30): Promise<PortalMetricsOverview> => {
+    const response = await axiosInstance.get<PortalMetricsOverview>('/career/portal-metrics/overview', {
+      params: { days },
+    })
+    return response.data
+  },
+
   listJobProviders: async (): Promise<JobProviderStatus[]> => {
     const response = await axiosInstance.get<JobProviderStatus[]>('/career/job-discoveries/providers')
     return response.data
@@ -169,6 +177,7 @@ export const careerApi = {
   ): Promise<{ blob: Blob; filename: string | null }> => {
     const response = await axiosInstance.post(`${basePath(resourceKey)}/${id}/pdf`, null, {
       responseType: 'blob',
+      timeout: 60000,
     })
     return {
       blob: response.data,

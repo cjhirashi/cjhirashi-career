@@ -588,6 +588,7 @@ ProjectStatusLiteral = Literal["active", "in_development", "archived"]
 
 class ProjectBase(BaseModel):
     title: str = Field(..., max_length=255)
+    slug: Optional[str] = Field(None, max_length=255)
     category: Optional[str] = Field(None, max_length=50)
     industry: Optional[str] = Field(None, max_length=100)
     year: Optional[int] = None
@@ -609,6 +610,7 @@ class ProjectBase(BaseModel):
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = Field(None, max_length=500)
     demo_url: Optional[str] = Field(None, max_length=500)
+    notebook_url: Optional[str] = Field(None, max_length=500)
     repo_structure: Optional[str] = None
     evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None
@@ -634,6 +636,7 @@ class ProjectCreate(ProjectBase):
 
 class ProjectUpdate(BaseModel):
     title: Optional[str] = Field(None, max_length=255)
+    slug: Optional[str] = None
     category: Optional[str] = None
     industry: Optional[str] = None
     year: Optional[int] = None
@@ -655,6 +658,7 @@ class ProjectUpdate(BaseModel):
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
+    notebook_url: Optional[str] = None
     repo_structure: Optional[str] = None
     evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None

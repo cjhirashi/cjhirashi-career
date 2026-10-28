@@ -4,6 +4,7 @@ export const mockProjects: Project[] = [
   {
     id: '1',
     title: 'E-Commerce Platform',
+    slug: 'e-commerce-platform',
     category: 'Systems',
     industry: 'Retail',
     year: 2023,
@@ -13,6 +14,7 @@ export const mockProjects: Project[] = [
     image_url: 'https://example.com/project1.jpg',
     github_url: 'https://github.com/example/project1',
     demo_url: 'https://example.com/project1',
+    notebook_url: 'https://example.com/project1.ipynb',
     detailed_summary: 'A full-featured e-commerce platform built with React and Node.js',
     problem: 'Manual order processing.',
     solution: 'Automated pipeline.',
@@ -25,6 +27,7 @@ export const mockProjects: Project[] = [
   {
     id: '2',
     title: 'SaaS Dashboard',
+    slug: 'saas-dashboard',
     category: 'ML Ops',
     industry: 'SaaS',
     year: 2023,
@@ -34,6 +37,7 @@ export const mockProjects: Project[] = [
     image_url: null,
     github_url: null,
     demo_url: 'https://example.com/project2',
+    notebook_url: null,
     detailed_summary: 'Analytics dashboard for SaaS applications',
     problem: null,
     solution: null,
@@ -46,6 +50,7 @@ export const mockProjects: Project[] = [
   {
     id: '3',
     title: 'Mobile App',
+    slug: null,
     category: 'Mobile',
     industry: null,
     year: 2024,
@@ -55,6 +60,7 @@ export const mockProjects: Project[] = [
     image_url: null,
     github_url: null,
     demo_url: null,
+    notebook_url: null,
     detailed_summary: null,
     problem: null,
     solution: null,

@@ -11,7 +11,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
 
   return (
     <Link
-      to={`/projects/${project.id}`}
+      to={`/projects/${project.slug ?? project.id}`}
       className="card group overflow-hidden hover:shadow-lg block"
       onClick={() => trackClick(`project-${project.id}`)}
     >

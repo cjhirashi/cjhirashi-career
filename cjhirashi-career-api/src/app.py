@@ -30,6 +30,8 @@ from routes import linkedin
 from routes import public
 from routes import notifications
 from routes import error_reports
+from routes import events
+from routes import portal_metrics
 from services import storage_service, linkedin_scheduler, task_scheduler
 from services.error_reporting import areport_error
 
@@ -277,6 +279,8 @@ app.include_router(files.router)
 app.include_router(linkedin.router)
 app.include_router(public.router)
 app.include_router(error_reports.router)
+app.include_router(events.router)
+app.include_router(portal_metrics.router)
 
 
 # ============================================================================

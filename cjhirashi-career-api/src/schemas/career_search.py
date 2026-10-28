@@ -294,6 +294,50 @@ class TargetCompanyResponse(TargetCompanyBase):
 
 
 # ============================================================================
+# SearchPlatform
+# ============================================================================
+
+class SearchPlatformBase(BaseModel):
+    name: str = Field(..., max_length=100)
+    profile_url: Optional[str] = Field(None, max_length=500)
+    username: Optional[str] = Field(None, max_length=255)
+    account_email: Optional[str] = Field(None, max_length=255)
+    cv_version_id: Optional[str] = None
+    profile_headline: Optional[str] = Field(None, max_length=500)
+    profile_notes: Optional[str] = None
+    is_active: bool = True
+    last_updated_at: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class SearchPlatformCreate(SearchPlatformBase):
+    pass
+
+
+class SearchPlatformUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+    profile_url: Optional[str] = None
+    username: Optional[str] = None
+    account_email: Optional[str] = None
+    cv_version_id: Optional[str] = None
+    profile_headline: Optional[str] = None
+    profile_notes: Optional[str] = None
+    is_active: Optional[bool] = None
+    last_updated_at: Optional[date] = None
+    notes: Optional[str] = None
+
+
+class SearchPlatformResponse(SearchPlatformBase):
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
 # Vacancy
 # ============================================================================
 
@@ -325,10 +369,12 @@ class VacancyBase(BaseModel):
     exact_role: str = Field(..., max_length=255)
     vacancy_url: Optional[str] = Field(None, max_length=500)
     source: Optional[str] = Field(None, max_length=50)
+    search_platform_id: Optional[str] = None
     found_date: Optional[date] = None
     fit_percentage: Optional[int] = Field(None, ge=0, le=100)
     track_category: Optional[str] = Field(None, max_length=50)
     recommended_cv_version: Optional[str] = Field(None, max_length=100)
+    cv_version_id: Optional[str] = None
     analysis_notes: Optional[str] = None
     evaluation: EvaluationLiteral = "pending_review"
     is_active: bool = True
@@ -361,10 +407,12 @@ class VacancyUpdate(BaseModel):
     exact_role: Optional[str] = Field(None, max_length=255)
     vacancy_url: Optional[str] = None
     source: Optional[str] = None
+    search_platform_id: Optional[str] = None
     found_date: Optional[date] = None
     fit_percentage: Optional[int] = Field(None, ge=0, le=100)
     track_category: Optional[str] = None
     recommended_cv_version: Optional[str] = None
+    cv_version_id: Optional[str] = None
     analysis_notes: Optional[str] = None
     evaluation: Optional[EvaluationLiteral] = None
     is_active: Optional[bool] = None

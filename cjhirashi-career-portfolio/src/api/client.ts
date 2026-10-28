@@ -51,6 +51,16 @@ class ApiClient {
     return this.instance.post<T>(url, data)
   }
 
+  /** Fire-and-forget POST that survives page unload/tab close, unlike a
+   * normal fetch/XHR which the browser can abort mid-flight. Used only for
+   * tracking calls sent from a `pagehide`/`visibilitychange` handler. Returns
+   * false (caller should ignore) if the browser couldn't queue it. */
+  postBeacon(url: string, data: unknown): boolean {
+    if (typeof navigator === 'undefined' || !navigator.sendBeacon) return false
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' })
+    return navigator.sendBeacon(`${this.instance.defaults.baseURL}${url}`, blob)
+  }
+
   put<T>(url: string, data?: unknown) {
     return this.instance.put<T>(url, data)
   }

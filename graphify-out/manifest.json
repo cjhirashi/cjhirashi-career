@@ -1,0 +1,5108 @@
+{
+  ".claude/settings.json": {
+    "mtime": 1792699072.093744,
+    "seen": 1792741554.5599022,
+    "ast_hash": "188433bd03fcc0fbe090fbd0945192b6",
+    "semantic_hash": ""
+  },
+  ".harness/gate/check.sh": {
+    "mtime": 1788503945.3933024,
+    "seen": 1792431679.8371153,
+    "ast_hash": "3aadbc16f409006544b3746e5799a50e",
+    "semantic_hash": ""
+  },
+  ".harness/specs/001-sidebar-contextual-por-seccion/contracts/admin-section-item.schema.json": {
+    "mtime": 1788503945.3943133,
+    "seen": 1792431679.8371186,
+    "ast_hash": "a915e1e22fcc1953aaadf6bb324e0d4f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/007-vacantes-etapa-y-estado/contracts/process-stage-catalog.json": {
+    "mtime": 1791849015.1050768,
+    "seen": 1792431679.837121,
+    "ast_hash": "0416aed6258a8524c445d4887698287d",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/contracts/agent-registry.json": {
+    "mtime": 1791910986.3974936,
+    "seen": 1792431679.8371232,
+    "ast_hash": "c2c0f537f3a1797ab4cf3159d0568fd0",
+    "semantic_hash": ""
+  },
+  "caddy.json": {
+    "mtime": 1792699072.093744,
+    "seen": 1792741554.559927,
+    "ast_hash": "03eb3ecfa624434ff247f2523683dece",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/.eslintrc.json": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8371272,
+    "ast_hash": "a368e78e745008289df442408a41f852",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/package.json": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8371289,
+    "ast_hash": "4e2873cf553eaaac328d699bd70a15db",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/postcss.config.js": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8371305,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/App.tsx": {
+    "mtime": 1788483999.008653,
+    "seen": 1792431679.8371322,
+    "ast_hash": "e4af8cf35937b906e4becaa7ffb57ae4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/adminSections.ts": {
+    "mtime": 1788483999.009933,
+    "seen": 1792431679.8371341,
+    "ast_hash": "f1c762dc60d9079656b8ebeffed28a24",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/agentTasks.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.837136,
+    "ast_hash": "d5ca82ca2063aae3054c1beddc0c4744",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/auth.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.837138,
+    "ast_hash": "33bead9988e1aa2cd02f0aee388f97bf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/bedrock.ts": {
+    "mtime": 1788860914.1296444,
+    "seen": 1792431679.8371394,
+    "ast_hash": "9efc1aac69ab9476488e9b5c785177f7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/career.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371413,
+    "ast_hash": "8034e56c98158dcb78ae83e925ad2801",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/client.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.837143,
+    "ast_hash": "308556bb724dd8915f3292401f02bfc9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/errorReports.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371449,
+    "ast_hash": "eed76d898c591e6cf582ec9b60300912",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/files.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371465,
+    "ast_hash": "4fb27d2bbbf86eb9e65bdff79a18ed79",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/linkedin.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371484,
+    "ast_hash": "36a9c0213d008749d6b049da73930b92",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/notifications.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371506,
+    "ast_hash": "b9e8c0463a271f1380fa8d00c5d9e538",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/pdfTemplateStyles.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371522,
+    "ast_hash": "7e0366e424825d49057f724b5b971555",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/api/pdfTemplates.ts": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371542,
+    "ast_hash": "a9918a6f36d4987e3638b1716d51e67c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/BucketImagePicker.tsx": {
+    "mtime": 1788483999.0100608,
+    "seen": 1792431679.8371563,
+    "ast_hash": "f95fa3f136f8dcab7fc80c20aa36ff29",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/ErrorBoundary.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371582,
+    "ast_hash": "68d1525695de3f10c595a6ae40d10396",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/Layout.tsx": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8371603,
+    "ast_hash": "41904af53caa29ed00808e3956451b30",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/LoadingSpinner.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371623,
+    "ast_hash": "9571c08734ae4632628e2965d40ad2b8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/MarkdownTable.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.837164,
+    "ast_hash": "63afff5c78959306f413cce7edf115f1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/Modal.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371658,
+    "ast_hash": "903831be62d808b16853aad804a14eee",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/Navbar.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371673,
+    "ast_hash": "c5e5bd57b59a28b07cfa6bf5cdff1faf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/NotificationBell.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371694,
+    "ast_hash": "f07a6c2ee823d9fd26aac7fd9054fbb8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/PersonAvatar.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371716,
+    "ast_hash": "5ae8b89e643d6578eb2e06867b570dbc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/PrivateRoute.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.837173,
+    "ast_hash": "541c58c0f290d0a4dbceac04c6e9f6fe",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/SectionViewTabs.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371751,
+    "ast_hash": "984f6750754828b61adc7aa8013134d8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/SelectCapsule.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371768,
+    "ast_hash": "101c40a85bdff595a8f15c0e4f39f28c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/Sidebar.tsx": {
+    "mtime": 1788977826.531236,
+    "seen": 1792431679.837179,
+    "ast_hash": "5b0c6ade91f7ee3497527e88b20d501a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/SidebarRight.tsx": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8371806,
+    "ast_hash": "0815ac89a2c7db4b9f91cce1422b6d1a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/StateCapsule.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371823,
+    "ast_hash": "3dd0d721afe6e34f3a640490facbe814",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/StatusIndicator.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.837184,
+    "ast_hash": "a12993351ab22125e92e2ea56783b2ca",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/ThemeToggle.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371856,
+    "ast_hash": "5e31ecd61ec53509dbf981770c3bcfe1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/ThemedMultiSelect.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371873,
+    "ast_hash": "d19fa598dcc9a3e90c7bb312fe397b37",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/ThemedSelect.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.837189,
+    "ast_hash": "3984d5b6969ebcb83fde76d95ef08960",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/ThemedSwitch.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371906,
+    "ast_hash": "b16d79d273d11c64abac32b3c95237f1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/BedrockCostPanel.tsx": {
+    "mtime": 1788483999.010652,
+    "seen": 1792431679.8371925,
+    "ast_hash": "70b062f59b2aac28aab3f8f4c7847311",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/ChatComposer.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.837196,
+    "ast_hash": "058568f0a773f6258f6043fede19504f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/ChatWindow.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.837198,
+    "ast_hash": "303997bd4700bcf0182780eee92c1482",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/ConversationHistory.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.8372,
+    "ast_hash": "b807cc7b361964e7c3ea19342c76ddcc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/MessageList.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.8372016,
+    "ast_hash": "f2582d869ca4064d30105fc50f7eb036",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/ModelSelector.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.8372035,
+    "ast_hash": "2b0e904fe9cf59397c87917ac27ec732",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/bedrock/PromptInput.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.8372052,
+    "ast_hash": "97cc613340db2358d0ad4d07cf254ae2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/BooleanField.tsx": {
+    "mtime": 1788483999.011814,
+    "seen": 1792431679.8372068,
+    "ast_hash": "47ac668f47f61801425045a7f488ded1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/CareerResourceView.tsx": {
+    "mtime": 1791850997.924169,
+    "seen": 1792431679.8372087,
+    "ast_hash": "2c5b4b7657e20d87e070527bff9e7d5d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/CreatableSelectField.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372107,
+    "ast_hash": "4c66473b2b12b2b82323e86957e7b443",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/FkMultiSelectField.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.837212,
+    "ast_hash": "6d9dfdf1a1e6f43297d862db49b4d469",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/FkSelectField.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.837214,
+    "ast_hash": "d4717b62eefbf3b40fb581853b89af16",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/GitHubReposPanel.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.837216,
+    "ast_hash": "e2d4ce7e5e0f6c2fc5635c32f992d158",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/JsonListField.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372178,
+    "ast_hash": "34c57f14e546bb31da27ef268e2009a4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/JsonListView.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372195,
+    "ast_hash": "5c7cd50fef1a8a6f8667429536066350",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/ResourceForm.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372216,
+    "ast_hash": "9eee30631d4ec10350003ddacf8ce80e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/ResourceListFilters.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372235,
+    "ast_hash": "ae45322047eb9702d8eb118bf3a9f297",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/SelectFieldHint.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372252,
+    "ast_hash": "36b233146c5289776c9a31923364e671",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/TableColumnSettings.tsx": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.837227,
+    "ast_hash": "3d930b0302067bcf8711f253be681682",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/careerFieldUtils.ts": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372288,
+    "ast_hash": "7a05aabded96fa89582c8fad80e49f35",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/career/jsonListUtils.ts": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8372307,
+    "ast_hash": "81e791371cc03e87a0349c749cfc8bdd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/SectionRecordView.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372324,
+    "ast_hash": "130dc78b445d2ba62d444eb653e4e707",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/SectionShell.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.837234,
+    "ast_hash": "6a1ed97bcfa4367b7578b57504cded37",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/SectionTable.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372357,
+    "ast_hash": "3758f7ced30b39887d99779403dea6d7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/SectionTableFooter.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372378,
+    "ast_hash": "8e3040791d2b9b3383e1fa5c7ffe9227",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/SectionToolbar.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372397,
+    "ast_hash": "9bd5baf3e83e04e089be048842891191",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/index.ts": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372416,
+    "ast_hash": "f1998fa2e0ff480c61e0e103ea59c398",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/templates/DetailSectionTemplate.tsx": {
+    "mtime": 1788483999.0132732,
+    "seen": 1792431679.8372433,
+    "ast_hash": "00c19eb21cb9aef9834279d9ddb843b9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/templates/TableSectionTemplate.tsx": {
+    "mtime": 1788483999.0135934,
+    "seen": 1792431679.8372457,
+    "ast_hash": "03f52c55a2a94537f2b63511119d82f9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskCalendarView.tsx": {
+    "mtime": 1788483999.0135934,
+    "seen": 1792431679.8372474,
+    "ast_hash": "02cea2f77edcfafe9a607496fa948cab",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskForm.tsx": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.8372493,
+    "ast_hash": "376dc04512d96b1e4b57c5089ca4cb5a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskGanttView.tsx": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.8372512,
+    "ast_hash": "0e64cb4f9c9f35616b05e4c825c5ccf9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskKanbanView.tsx": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.8372529,
+    "ast_hash": "0aa1bb2399ec6794a7d4c85a5010839d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskListView.tsx": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.8372548,
+    "ast_hash": "334d64d1a8ab03d26b790a66a8a0ac7b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/TaskRecordView.tsx": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.8372562,
+    "ast_hash": "6d8529f30b273b1349573b0ca7234e20",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/tasks/taskUtils.ts": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.837258,
+    "ast_hash": "a4d8d221d1441ac701e81831b48ca89b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/config/agentCatalogResource.ts": {
+    "mtime": 1788483999.0137234,
+    "seen": 1792431679.83726,
+    "ast_hash": "9dcd1a942b42448b157f2ae279fa8495",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/config/agentProfiles.ts": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.837262,
+    "ast_hash": "acd5868cab73e4c2493f7287b300cc97",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/config/careerResources.ts": {
+    "mtime": 1792699072.094744,
+    "seen": 1792741554.560129,
+    "ast_hash": "a2f15297d6eb6c88e0f64ad328d58ed7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/config/chatSectionProfiles.ts": {
+    "mtime": 1788483999.0141773,
+    "seen": 1792431679.8372657,
+    "ast_hash": "c5e391f0192b0229b7a3ca957ab803c6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/invalidateAdminDataViews.ts": {
+    "mtime": 1788483999.0141773,
+    "seen": 1792431679.8372674,
+    "ast_hash": "7d28356f9efed4a4a857b243f2fda151",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useAdminSections.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372693,
+    "ast_hash": "8ece7098eee13b62d962a8f2b07d9cef",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useAuth.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.837271,
+    "ast_hash": "7d0ae8a1396e22e4781bff99e62fe994",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useBedrockChat.ts": {
+    "mtime": 1788861017.7945418,
+    "seen": 1792431679.8372726,
+    "ast_hash": "382455252bd832122cf0f6915dd789f5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useCareerResource.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.837276,
+    "ast_hash": "31d085c162b1a43ef28c416caf45d51f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useChatPageContext.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372777,
+    "ast_hash": "fe20a00809d7a45b3fe1d9c6998f4fb1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useColumnOptions.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372798,
+    "ast_hash": "2220051ba121252aa3df73200b1d29db",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useErrorReports.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372817,
+    "ast_hash": "ae54015c31cb1729a2ee920eed97b03e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useFiles.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372836,
+    "ast_hash": "18616dac8f743d79688e4ce4e6277711",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useFkOptions.ts": {
+    "mtime": 1791592399.4793165,
+    "seen": 1792431679.8372853,
+    "ast_hash": "bad10f795f4a51d1e5b1175c5c0e7791",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useLinkedIn.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372872,
+    "ast_hash": "1e6d17657854f4a4b092419fbfbe3659",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useNotifications.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372886,
+    "ast_hash": "9729b9e867d41b417645e5ac9827965c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/usePageTitle.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8372905,
+    "ast_hash": "aa28807b1ea7a7ee71493dfd184496cb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/usePdfTemplateResource.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8373013,
+    "ast_hash": "c6f05d0bd4e33c1af159e5dd3cf3b2cd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/usePdfTemplateStyleResource.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8373048,
+    "ast_hash": "a55768e60d56f39e6108f6059a9cfd1a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useSectionTable.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.837307,
+    "ast_hash": "671b05e54f9ccea5f480188dd663142a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useSidebarCounts.ts": {
+    "mtime": 1788977848.7384279,
+    "seen": 1792431679.8373086,
+    "ast_hash": "71647839675710abdfb8f86e38aa3082",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/hooks/useVisibleTableColumns.ts": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8373108,
+    "ast_hash": "35d09ee794f03db2a85b06fcb2d7ff52",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/main.tsx": {
+    "mtime": 1788483999.014659,
+    "seen": 1792431679.8373125,
+    "ast_hash": "fdbc4d9195c82b4b9494884e6a179190",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AdminSectionsPage.tsx": {
+    "mtime": 1788883302.8615203,
+    "seen": 1792431679.8373144,
+    "ast_hash": "4f1f3431e973b717755093a0127e71f6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentAuditLogPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.837316,
+    "ast_hash": "bef415cdcfbeb16097ca0dfe32d74bd5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentCatalogPage.tsx": {
+    "mtime": 1788860990.8513086,
+    "seen": 1792431679.8373177,
+    "ast_hash": "c221906533d1af8c6024860f3bc2882e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentGeneralChatPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373194,
+    "ast_hash": "acc056a1d1f49985273a0e0751862a58",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentInstructionsPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373213,
+    "ast_hash": "90d98e3c897778fee43977c29aba0013",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentMemoryPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.837323,
+    "ast_hash": "4c1916bf7eaaae920d2551418614d596",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentMetricsPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.837325,
+    "ast_hash": "733829792d1129a26932429995b6f63f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentPdfTemplateStylesPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373268,
+    "ast_hash": "44f31bea09abaa08ee7221bd3f0fcb2b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentPdfTemplatesPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373287,
+    "ast_hash": "bba774679955354a3110d0fcf71ca172",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentPromptsSettingsPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.83733,
+    "ast_hash": "c28809d7e3a654cf5f5cdf3ea093b1a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentTasksPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.837332,
+    "ast_hash": "fd1ab81e0601aa8bfc0c022a9f54fe8f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/AgentToolsPage.tsx": {
+    "mtime": 1788658615.445994,
+    "seen": 1792431679.8373337,
+    "ast_hash": "8ea355f6e465777b2580550876c502e6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/CareerResourcePage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373353,
+    "ast_hash": "4f108f16ab9480d70e9fa2b8f9e0aa2f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/ChangePasswordPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373373,
+    "ast_hash": "bc536d50e72ac110312d99ebba41928e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/DashboardPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.837339,
+    "ast_hash": "0b7e21314405bb55121a06a0b755fd9a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/ErrorReportsPage.tsx": {
+    "mtime": 1788483999.0158591,
+    "seen": 1792431679.8373406,
+    "ast_hash": "318ef9dbfe0e015e24be146062461502",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/FilesPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373425,
+    "ast_hash": "47753168ed010a5a57056bbde623e9ff",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/JobDiscoveryPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373442,
+    "ast_hash": "b3ad82fe826bc4dbe3089631f463e009",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/LinkedInPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373458,
+    "ast_hash": "604a2613d933d6b1a7df156f7bb99035",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/LoginPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373475,
+    "ast_hash": "5e12ea196034c65fab359027423b3f30",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/MetricsPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373494,
+    "ast_hash": "6df635a98b95823e9e112e3e54f85648",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/ProfilePage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373508,
+    "ast_hash": "1b2d315fc8ef8a15714e1022bcc36e18",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/SearchMetricsPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373528,
+    "ast_hash": "0f59e994a492bd6baad4d46ff0b46902",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/pages/TasksPage.tsx": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373544,
+    "ast_hash": "ee55351a1fcbfe5a880eef621b2c972d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/stores/authStore.ts": {
+    "mtime": 1788483999.0162241,
+    "seen": 1792431679.8373563,
+    "ast_hash": "88a66d4513e490b7565aebf8f900da06",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/stores/bedrockChatStore.ts": {
+    "mtime": 1788483999.0175848,
+    "seen": 1792431679.837358,
+    "ast_hash": "38ae6857d4896414593d0f708a20f0e8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/stores/themeStore.ts": {
+    "mtime": 1788483999.0175848,
+    "seen": 1792431679.83736,
+    "ast_hash": "4e27c5d773a39d5e05331cf2e3b5ac80",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/api/client.test.ts": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8373613,
+    "ast_hash": "608284143ffba8da30db777aad30958e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/Layout.test.tsx": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8373632,
+    "ast_hash": "171988a9a5dcfb056be6c39bbb5a5afd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/LoadingSpinner.test.tsx": {
+    "mtime": 1788483999.0177138,
+    "seen": 1792431679.8373647,
+    "ast_hash": "57cb9cc7bcbdf7770ee5b5abe9d84b0c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/MessageList.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373663,
+    "ast_hash": "7a3b38bd15bdf1c71ad7ea82c2628d1e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/Navbar.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.837368,
+    "ast_hash": "e57a5a885474faa43677430075268698",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/PersonAvatar.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.83737,
+    "ast_hash": "47db62d848cefffa9d41ec65407f47e2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/SectionViewTabs.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373713,
+    "ast_hash": "031849e9696eddc2b071b09931a31461",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/Sidebar.test.tsx": {
+    "mtime": 1788977883.7297306,
+    "seen": 1792431679.837373,
+    "ast_hash": "a9ac1b74ee0c9345036faf52fceb9e00",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/SidebarRight.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8373747,
+    "ast_hash": "652300ddcf723c28ec431a80c15bde90",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/StateCapsule.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373764,
+    "ast_hash": "a999077e76210d01ff250d081ac29f05",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/StatusIndicator.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.837378,
+    "ast_hash": "a8d014ec0702b5aa5709f2628b1e7933",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/ThemeToggle.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373797,
+    "ast_hash": "dd6b9e487f41849c7ec29eb8da28f54c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/ThemedMultiSelect.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373811,
+    "ast_hash": "974426f6a2d63e03efebc863cb02f432",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/ThemedSelect.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373828,
+    "ast_hash": "686df5180bda3b859db55e91e61c1da7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/ThemedSwitch.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373845,
+    "ast_hash": "cca2b18845d044b826465a10b1bca503",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/career/CareerResourceView.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.837386,
+    "ast_hash": "0aaf6e326681336d81c716a996e29e2e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/career/VacancyBadges.test.tsx": {
+    "mtime": 1791850809.9029782,
+    "seen": 1792431679.8373878,
+    "ast_hash": "6e4d4adbf52e04d8164103ef6a1d6807",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/career/VacancyDescriptiveTexts.test.tsx": {
+    "mtime": 1791904477.4827886,
+    "seen": 1792431679.8373895,
+    "ast_hash": "27a2e113c76653ab8d69767f4f5ccbfa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/section/SectionShell.test.tsx": {
+    "mtime": 1788483999.0178528,
+    "seen": 1792431679.8373914,
+    "ast_hash": "5e20fd94556ac1a55f9251b0eaf11d4d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/components/section/SectionTable.test.tsx": {
+    "mtime": 1788483999.0189662,
+    "seen": 1792431679.8373928,
+    "ast_hash": "07b232c3260827810761a0f917bb7134",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/comprehensive-coverage.test.tsx": {
+    "mtime": 1788483999.0189662,
+    "seen": 1792431679.8373947,
+    "ast_hash": "426b01a6d5434395063bc78cd712c9cc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/config/agentProfiles.test.ts": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8373961,
+    "ast_hash": "09a3525369b6e874df55b7ee3d01d455",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/config/vacanciesConfig.test.ts": {
+    "mtime": 1791910714.2553835,
+    "seen": 1792431679.837398,
+    "ast_hash": "2a8d134b54087ad626ea9d01d87b84eb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/fixtures/mockData.ts": {
+    "mtime": 1788483999.0189662,
+    "seen": 1792431679.8373997,
+    "ast_hash": "74b1b8ed07cf5c1b9bda35422e8456ab",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/hooks/invalidateAdminDataViews.test.ts": {
+    "mtime": 1788483999.0189662,
+    "seen": 1792431679.8374014,
+    "ast_hash": "13e85988f776e47bcb752579effe8a31",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/hooks/useAuth.test.ts": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374033,
+    "ast_hash": "e4b41c687695ecc24e4145b2ddec2a89",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/hooks/useSidebarCounts.test.ts": {
+    "mtime": 1788483999.0192716,
+    "seen": 1792431679.8374054,
+    "ast_hash": "cc879572661d742dc3a688580c52998c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages-parametrized.test.tsx": {
+    "mtime": 1788483999.0192716,
+    "seen": 1792431679.8374074,
+    "ast_hash": "92f872efe785ca0f744c7f6f6554db83",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/AdminSectionsPage.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374088,
+    "ast_hash": "f671a39a338c9e7c582d4331bd2296e9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/AgentCatalogPage.test.tsx": {
+    "mtime": 1788861130.6745188,
+    "seen": 1792431679.8374104,
+    "ast_hash": "acf89c2894311eec26bc5375de16039a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/AgentPromptsSettingsPage.test.tsx": {
+    "mtime": 1788483999.0195103,
+    "seen": 1792431679.8374124,
+    "ast_hash": "7724637bdbe53c371e44216afb6c9edd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/CareerResourcePage.test.tsx": {
+    "mtime": 1788483999.0195103,
+    "seen": 1792431679.8374138,
+    "ast_hash": "8f7a4545951d18564be4023c010d86a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/DashboardPage.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374157,
+    "ast_hash": "79d1c8a4ed4e021ed028f9b5d2f02b47",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/FilesPage.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374171,
+    "ast_hash": "423d03f6ff52ceca6e89e3f6cdf90ad8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/JobDiscoveryPage.test.tsx": {
+    "mtime": 1788483999.0195103,
+    "seen": 1792431679.837419,
+    "ast_hash": "e2bac6c9cabb69697a926a21c2ee7327",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/LoginPage.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374205,
+    "ast_hash": "e51a744cfc6986766ff6604e65ff5032",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/MetricsPage.test.tsx": {
+    "mtime": 1788503945.395137,
+    "seen": 1792431679.8374224,
+    "ast_hash": "311c4805e8d22b573f871d9718e25c94",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/SearchMetricsPage.test.tsx": {
+    "mtime": 1788483999.0195103,
+    "seen": 1792431679.8374238,
+    "ast_hash": "56bfa701069cca959b4bc418c6faae7b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/pages/TasksPage.test.tsx": {
+    "mtime": 1788483999.0195103,
+    "seen": 1792431679.8374257,
+    "ast_hash": "2ae384852e1894895477a608ea4e8188",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/setup.ts": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.8374274,
+    "ast_hash": "339974b7b54645942f589740480e2dfd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/stores/authStore.test.ts": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.837429,
+    "ast_hash": "34d08f10764e47587d11032a54a1a192",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/stores/bedrockChatStore.test.ts": {
+    "mtime": 1788483999.0202231,
+    "seen": 1792431679.8374307,
+    "ast_hash": "55993f72ab13ffaba47c9728a119d265",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/stores/themeStore.test.ts": {
+    "mtime": 1788483999.0202231,
+    "seen": 1792431679.8374324,
+    "ast_hash": "3e7490198f45085830eb49562d983234",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/styles/badgeContrast.test.ts": {
+    "mtime": 1791852032.9454563,
+    "seen": 1792431679.8374364,
+    "ast_hash": "d19bfda1687582b468130a91814b644f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/utils.tsx": {
+    "mtime": 1788483999.0202231,
+    "seen": 1792431679.8374379,
+    "ast_hash": "c866656a4b1ab53dfaa60f115326b824",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/utils/chatReply.test.ts": {
+    "mtime": 1788483999.0202231,
+    "seen": 1792431679.8374398,
+    "ast_hash": "52ac0071183351e89fc3b5368dea4a10",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/utils/listFilters.test.ts": {
+    "mtime": 1788483999.0203907,
+    "seen": 1792431679.8374414,
+    "ast_hash": "0c355290ee6eb87e07d8717940fe111d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/utils/recordUrl.test.ts": {
+    "mtime": 1788483999.0203907,
+    "seen": 1792431679.837443,
+    "ast_hash": "8f93d13dca939351b7f342ef2d9d37e1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/tests/utils/tableColumns.test.ts": {
+    "mtime": 1788483999.0203907,
+    "seen": 1792431679.8374448,
+    "ast_hash": "e48b00bf27342c8c557178fb870b5654",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/adminSections.ts": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.8374467,
+    "ast_hash": "08d8e02bc07a9b21fabfc03fa023c2bf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/bedrock.ts": {
+    "mtime": 1788860897.1954978,
+    "seen": 1792431679.8374484,
+    "ast_hash": "bc1e846baefe2d41e532e06a994f9fac",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/career.ts": {
+    "mtime": 1792699072.094744,
+    "seen": 1792741554.5603666,
+    "ast_hash": "659b61907cb238b3b040b47d2288c30e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/errorReports.ts": {
+    "mtime": 1788483999.0206058,
+    "seen": 1792431679.8374517,
+    "ast_hash": "2f43c13b6bfda0fd32bd394f49d03a9c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/files.ts": {
+    "mtime": 1788483999.0206058,
+    "seen": 1792431679.8374536,
+    "ast_hash": "fd8c39da7547dc597eed3d67a29703e2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/index.ts": {
+    "mtime": 1788483999.0206058,
+    "seen": 1792431679.8374553,
+    "ast_hash": "3628159c26e81b688fd15ea5c3e4bb19",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/types/linkedin.ts": {
+    "mtime": 1788483999.0206058,
+    "seen": 1792431679.837457,
+    "ast_hash": "d2f566be7de3daf07e1ffed4fb551504",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/chatReply.ts": {
+    "mtime": 1788483999.0206058,
+    "seen": 1792431679.8374586,
+    "ast_hash": "ab4a672afa76ee5f48443e328e36eb9f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/constants.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374603,
+    "ast_hash": "68f9ce305c557273f9aa12f618604992",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/errors.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.837462,
+    "ast_hash": "794b440617c6b12b976ac89241a34770",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/formatters.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374636,
+    "ast_hash": "58fb35420244072c6d8f17d941379a22",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/listFilters.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374653,
+    "ast_hash": "7c2c9f0b9a231be4a094895fa27066c4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/logger.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.837467,
+    "ast_hash": "fe303e9a80fafee20511e40a0f433de5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/recordUrl.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374684,
+    "ast_hash": "556522d08fb0c966ea1fb41bd9390e49",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/reportClientError.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.83747,
+    "ast_hash": "290d1ca58fcc3601d501343774ee0f97",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/tableColumns.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374717,
+    "ast_hash": "bc65d2e52ba957058d666b366ab9fb48",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/utils/validators.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374736,
+    "ast_hash": "94d23bd76eb70cd48d72d3b72bb94cb9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/vite-env.d.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.837475,
+    "ast_hash": "4ad82f9efdb42032c30d1bc653a2320a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/tailwind.config.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.837477,
+    "ast_hash": "6363ba8945c3eae0787047173f9e045e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/tsconfig.json": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374784,
+    "ast_hash": "0da20b6b91e51dfa6d81c35ed110ae01",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/tsconfig.node.json": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374803,
+    "ast_hash": "767b2e9abe6452170cdc399ca052cfbc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/vite.config.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374817,
+    "ast_hash": "2d68aaf6238bbf0ff97dacd08d5f51ad",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/vitest.config.ts": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8374832,
+    "ast_hash": "6abafe54259ad600c834251640a22d5a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/alembic/env.py": {
+    "mtime": 1791924498.0354927,
+    "seen": 1792431679.837485,
+    "ast_hash": "ff4bccbc12dc2789c452da4ea918b4b7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/alembic/versions/0001_initial_harness_schema.py": {
+    "mtime": 1791960636.1727986,
+    "seen": 1792431679.8374865,
+    "ast_hash": "88d89bf992816357dca31a7b4ed3effa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/pyproject.toml": {
+    "mtime": 1791927429.5658395,
+    "seen": 1792431679.8374882,
+    "ast_hash": "b1dce2bda91cc7fd20aa3521a1fe5a99",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/__init__.py": {
+    "mtime": 1791924267.8235202,
+    "seen": 1792431679.8374896,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/app.py": {
+    "mtime": 1791924352.313244,
+    "seen": 1792431679.8374915,
+    "ast_hash": "aa180d2d18d9d1f34b6761277111f4a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/__init__.py": {
+    "mtime": 1791931095.6643882,
+    "seen": 1792431679.8374932,
+    "ast_hash": "3898e6ecd62a16536dbaa1431d8f1533",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/api_client.py": {
+    "mtime": 1791931370.8511717,
+    "seen": 1792431679.837495,
+    "ast_hash": "e1c8729f0c3be6bd7a3b255d71f80398",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/audit.py": {
+    "mtime": 1791931163.1259656,
+    "seen": 1792431679.8374965,
+    "ast_hash": "bc83bb2710961d6945d73b2541ab160d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/career.py": {
+    "mtime": 1791931103.2540033,
+    "seen": 1792431679.8374982,
+    "ast_hash": "b295f32b3ff7033641dcbc4b26bf0336",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/errors.py": {
+    "mtime": 1791931370.851321,
+    "seen": 1792431679.8374996,
+    "ast_hash": "7dbf51916c9bc44b05579271a19e2282",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/files.py": {
+    "mtime": 1792005535.9630866,
+    "seen": 1792431679.8375013,
+    "ast_hash": "f2cb9fbbd2be7d6148e21de562791e5f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/job_discovery.py": {
+    "mtime": 1791931148.1788375,
+    "seen": 1792431679.837503,
+    "ast_hash": "22fb90325c6ee1b3784227fc55571757",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/linkedin.py": {
+    "mtime": 1791931148.1718376,
+    "seen": 1792431679.8375049,
+    "ast_hash": "f83067b1bb3c34fc43e6c0b5b6a54a4c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/notifications.py": {
+    "mtime": 1791931163.1219654,
+    "seen": 1792431679.8375063,
+    "ast_hash": "6409ca8cb15f20e5a7f9be6b77cbf6d8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/pdf.py": {
+    "mtime": 1791931148.1758375,
+    "seen": 1792431679.8375082,
+    "ast_hash": "493b1503991a90459c04c59ea0a998f2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/clients/sections.py": {
+    "mtime": 1791931124.1786323,
+    "seen": 1792431679.8375096,
+    "ast_hash": "670ec8a1fa892d8303f3ad699987a9ac",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/config.py": {
+    "mtime": 1792006791.454242,
+    "seen": 1792431679.8375115,
+    "ast_hash": "ba8a90db89b3fa66e3c9d6843c84bcee",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/database.py": {
+    "mtime": 1791924352.309244,
+    "seen": 1792431679.837513,
+    "ast_hash": "b7e247a8f06cc44a2af10d9ffbf83ea1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/middleware/__init__.py": {
+    "mtime": 1791931095.6622298,
+    "seen": 1792431679.8375146,
+    "ast_hash": "ae16dda9e787a38b9da06bcb3bde8983",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/middleware/auth.py": {
+    "mtime": 1791934993.1909542,
+    "seen": 1792431679.8375163,
+    "ast_hash": "cf458337f12c938aacd79cad91327ccf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/middleware/principal.py": {
+    "mtime": 1791931370.8509822,
+    "seen": 1792431679.8375177,
+    "ast_hash": "9086b20481ef484dfe996836984d5fc1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/__init__.py": {
+    "mtime": 1791924427.834891,
+    "seen": 1792431679.8375196,
+    "ast_hash": "f746368539afd237f4ec66344c1f6ee0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_agent_delegation.py": {
+    "mtime": 1791924427.8208165,
+    "seen": 1792431679.837521,
+    "ast_hash": "7fe5bd228e641361bb24e5015cedfb65",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_agent_memory.py": {
+    "mtime": 1791960636.142802,
+    "seen": 1792431679.837523,
+    "ast_hash": "22d06c74ca1fd62f4a835d25512ab257",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_agent_profile_photo.py": {
+    "mtime": 1791924427.820891,
+    "seen": 1792431679.8375244,
+    "ast_hash": "44e9fb4105f6bf3947052d456ed3b6b5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_agent_profile_prompt.py": {
+    "mtime": 1791924427.8200154,
+    "seen": 1792431679.837526,
+    "ast_hash": "9d8366570e396c16d2ba199a7997a83c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_agent_profile_tool.py": {
+    "mtime": 1791924427.818891,
+    "seen": 1792431679.837528,
+    "ast_hash": "79e072bbf5879bbab3ddcf7f8f22a2a6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_conversation.py": {
+    "mtime": 1791924464.6175787,
+    "seen": 1792431679.8375297,
+    "ast_hash": "5e9a60c2e72e789a55f35929e5777cd0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_custom_tool.py": {
+    "mtime": 1791924464.617785,
+    "seen": 1792431679.837531,
+    "ast_hash": "d6fc6ba0470e102959b6804cd01fc248",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_settings.py": {
+    "mtime": 1791924427.8196256,
+    "seen": 1792431679.8375328,
+    "ast_hash": "2a3735c03d1f47f0952dd2f0f568700f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_task.py": {
+    "mtime": 1791924464.6178954,
+    "seen": 1792431679.8375344,
+    "ast_hash": "c5ada362918961fd38de7413cbcd9922",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_usage_log.py": {
+    "mtime": 1791924427.8216205,
+    "seen": 1792431679.837536,
+    "ast_hash": "ea077b903a0ca7980abeff04cf8c5b82",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/models/bedrock_usage_round_log.py": {
+    "mtime": 1791924427.8224466,
+    "seen": 1792431679.8375378,
+    "ast_hash": "d6093d436c36e891b4a46f5e6c86044b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/__init__.py": {
+    "mtime": 1791927302.7925744,
+    "seen": 1792431679.8375394,
+    "ast_hash": "cb0ab4fd66cba87abed90ad949758c94",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/base.py": {
+    "mtime": 1791934883.6867282,
+    "seen": 1792431679.837541,
+    "ast_hash": "f9bf54273da988eea8cf6a1160b7a06d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/__init__.py": {
+    "mtime": 1791927429.5846646,
+    "seen": 1792431679.8375428,
+    "ast_hash": "0ca10d21237327e4e5a3daae86f67910",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/client.py": {
+    "mtime": 1791927429.5816646,
+    "seen": 1792431679.8375444,
+    "ast_hash": "13aaa697fce6abb389c97e4884f38837",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/converse.py": {
+    "mtime": 1791934883.6927283,
+    "seen": 1792431679.8375463,
+    "ast_hash": "1c3faf067f124a009ca5df418e247bc6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/errors.py": {
+    "mtime": 1791927429.5766644,
+    "seen": 1792431679.8375478,
+    "ast_hash": "5507af2e568b8596adc5a51358f37636",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/images.py": {
+    "mtime": 1791927525.1934865,
+    "seen": 1792431679.8375492,
+    "ast_hash": "265cab08b632b3949b41e2e98b6928b4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/bedrock/pricing.py": {
+    "mtime": 1791927429.5796645,
+    "seen": 1792431679.837551,
+    "ast_hash": "bb611621d424160185efbf3874c1c39c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/providers/reply_text.py": {
+    "mtime": 1791927429.5718882,
+    "seen": 1792431679.8375525,
+    "ast_hash": "f3bd7fd9fc30d32c1ec7d0ea486e58f3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/__init__.py": {
+    "mtime": 1791934121.1452181,
+    "seen": 1792431679.8375542,
+    "ast_hash": "d0bd97874aa95c011ce44d8a6f2d1d00",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/conversation_repo.py": {
+    "mtime": 1791934686.2053854,
+    "seen": 1792431679.8375556,
+    "ast_hash": "49316bc34046d46640d54dee83a1f78a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/custom_tool_repo.py": {
+    "mtime": 1791934186.8967798,
+    "seen": 1792431679.8375576,
+    "ast_hash": "59adbebd7ea8c2cb42bab9e3fef3dc4a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/memory_repo.py": {
+    "mtime": 1791961514.6874714,
+    "seen": 1792431679.837559,
+    "ast_hash": "dfc0bfcd0b027b7d92558c0e33dbfc69",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/profile_repo.py": {
+    "mtime": 1791935428.6155624,
+    "seen": 1792431679.837561,
+    "ast_hash": "5c19b0d77cdaeee5b39b9133fc687344",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/settings_repo.py": {
+    "mtime": 1791934186.8927798,
+    "seen": 1792431679.8375623,
+    "ast_hash": "4231f2d1f516cc647b6fb33d2b396c79",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/task_repo.py": {
+    "mtime": 1791935428.6145506,
+    "seen": 1792431679.8375642,
+    "ast_hash": "c2c3f94f35f3711d85c68be8320f0e35",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/repositories/usage_repo.py": {
+    "mtime": 1791934265.0864477,
+    "seen": 1792431679.8375657,
+    "ast_hash": "f2138f2b50560405f9895754705023a0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/routes/__init__.py": {
+    "mtime": 1791924352.3002439,
+    "seen": 1792431679.8375676,
+    "ast_hash": "ef87aa128ac461c7a6fba2fa3cdfaafe",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/routes/health.py": {
+    "mtime": 1791924352.305244,
+    "seen": 1792431679.8375692,
+    "ast_hash": "8309fad071d11110e7fd6129a6eef1aa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/schemas/__init__.py": {
+    "mtime": 1791935428.5893788,
+    "seen": 1792431679.837571,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/schemas/bedrock_task.py": {
+    "mtime": 1791935428.597379,
+    "seen": 1792431679.8375723,
+    "ast_hash": "a4afe184a74683ac86d50e1a48502ea2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/__init__.py": {
+    "mtime": 1791924464.6002061,
+    "seen": 1792431679.8375742,
+    "ast_hash": "066d28e7017e7db592784484a8c6aaef",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/agent_loop.py": {
+    "mtime": 1792006785.607191,
+    "seen": 1792431679.8375757,
+    "ast_hash": "d4191f6e1bec552a55ce37523ead36e5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/agent_profiles.py": {
+    "mtime": 1791937173.8118155,
+    "seen": 1792431679.8375776,
+    "ast_hash": "46bc69d730774f60a352b8100f47d5fe",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/agent_registry.py": {
+    "mtime": 1791934417.327748,
+    "seen": 1792431679.837579,
+    "ast_hash": "12109a45266a4425f75689d1259e0b4c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/attachments.py": {
+    "mtime": 1792005991.8071244,
+    "seen": 1792431679.8375807,
+    "ast_hash": "a78d614829985c472f57fef7402aabf6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/id_generator.py": {
+    "mtime": 1791924464.6032062,
+    "seen": 1792431679.8375823,
+    "ast_hash": "2847c5e7d526142987dadeadccc834b6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/memory_service.py": {
+    "mtime": 1791993124.521144,
+    "seen": 1792431679.837584,
+    "ast_hash": "9ef1dc10c5543e69ef2333f52e6c564a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/profile_catalog.py": {
+    "mtime": 1791935464.8652449,
+    "seen": 1792431679.8375857,
+    "ast_hash": "42b13aa5578dd781413889bfc923a8b3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/prompt.py": {
+    "mtime": 1791934731.564549,
+    "seen": 1792431679.837587,
+    "ast_hash": "3f21e48fbd70bd623e97de495edeea06",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/section_profiles.py": {
+    "mtime": 1792006532.3299744,
+    "seen": 1792431679.837589,
+    "ast_hash": "0343b8bdb047b1e7b8aa7463117710e4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/settings_loader.py": {
+    "mtime": 1791934681.6860044,
+    "seen": 1792431679.8375905,
+    "ast_hash": "bbe0fd62367a059bef21dfe1f46b5870",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/tools_registry.py": {
+    "mtime": 1791934672.144923,
+    "seen": 1792431679.8375924,
+    "ast_hash": "2a3e50901feb14f64c1852a13ff69ecf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/src/services/usage_service.py": {
+    "mtime": 1791934891.44123,
+    "seen": 1792431679.837594,
+    "ast_hash": "12467dd3028989a734969cf5f08c0e3c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/__init__.py": {
+    "mtime": 1791924311.7708967,
+    "seen": 1792431679.8375957,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/conftest.py": {
+    "mtime": 1791960636.1731396,
+    "seen": 1792431679.8375971,
+    "ast_hash": "d53c4c2d8930a2d4e4e3525283367e05",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/contract/__init__.py": {
+    "mtime": 1791934410.761692,
+    "seen": 1792431679.8375988,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/contract/test_agent_registry_contract.py": {
+    "mtime": 1791934410.765692,
+    "seen": 1792431679.8376005,
+    "ast_hash": "2d4668000e1c6cdd911d2751e78ebe63",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/__init__.py": {
+    "mtime": 1791924311.7708967,
+    "seen": 1792431679.8376021,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/__init__.py": {
+    "mtime": 1791931061.6850972,
+    "seen": 1792431679.8376038,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/_helpers.py": {
+    "mtime": 1791931061.6900973,
+    "seen": 1792431679.8376057,
+    "ast_hash": "0d400c0dd7b86e155cb087ab9339bcbd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_api_client.py": {
+    "mtime": 1791931061.6940973,
+    "seen": 1792431679.8376074,
+    "ast_hash": "be436cd54766fa8537122682440fa048",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_career.py": {
+    "mtime": 1791931061.6980975,
+    "seen": 1792431679.837609,
+    "ast_hash": "e8a36f7dc1ed7a731c36421bdbeda815",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_files_sections.py": {
+    "mtime": 1792005526.0371084,
+    "seen": 1792431679.8376107,
+    "ast_hash": "42501ac4ce76979d2bd1a6168c5af05d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_hardening.py": {
+    "mtime": 1791931370.8507802,
+    "seen": 1792431679.8376126,
+    "ast_hash": "996b2849863feff70828aed94ed1128c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_linkedin_pdf_jobs_errors.py": {
+    "mtime": 1791931147.2308295,
+    "seen": 1792431679.837614,
+    "ast_hash": "92d572d8e8e307130fa8cbef896ebc4d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/clients/test_notifications_audit.py": {
+    "mtime": 1791931162.1899576,
+    "seen": 1792431679.8376157,
+    "ast_hash": "5577880b19cc027bcc3640fb81f6ff0f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/middleware/__init__.py": {
+    "mtime": 1791932759.6735961,
+    "seen": 1792431679.8376174,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/middleware/test_auth.py": {
+    "mtime": 1791933911.84243,
+    "seen": 1792431679.8376188,
+    "ast_hash": "7a73298646a7d0faa8fa9f1f1354c7a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/migrations/__init__.py": {
+    "mtime": 1791924485.3833842,
+    "seen": 1792431679.8376207,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/migrations/test_initial_migration.py": {
+    "mtime": 1791960620.9362898,
+    "seen": 1792431679.8376222,
+    "ast_hash": "4989299a5ca8f7044d258493c65f52f2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/models/__init__.py": {
+    "mtime": 1791924404.7226932,
+    "seen": 1792431679.8376238,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/models/test_schema_matches_contract.py": {
+    "mtime": 1791924404.7266932,
+    "seen": 1792431679.8376255,
+    "ast_hash": "4ccaf0ed203804ec4bed0a8e1fafd656",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/providers/__init__.py": {
+    "mtime": 1791927293.332493,
+    "seen": 1792431679.8376274,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/providers/test_bedrock_converse.py": {
+    "mtime": 1791927928.2229512,
+    "seen": 1792431679.8376288,
+    "ast_hash": "0ea111a10340e890b5aa0fc6901ae91a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/providers/test_bedrock_images.py": {
+    "mtime": 1791927508.1393397,
+    "seen": 1792431679.8376307,
+    "ast_hash": "27d5d4ff0b6c2d54d75e1b5aa326775f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/providers/test_provider_contract.py": {
+    "mtime": 1791927293.3404932,
+    "seen": 1792431679.8376322,
+    "ast_hash": "ccb1904ce3b28944ee92912e290d029d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/__init__.py": {
+    "mtime": 1791934090.7629585,
+    "seen": 1792431679.837634,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/test_conversation_repo.py": {
+    "mtime": 1791934585.452183,
+    "seen": 1792431679.8376355,
+    "ast_hash": "837f89257076195b069ed7354a924278",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/test_memory_repo.py": {
+    "mtime": 1791960642.2968347,
+    "seen": 1792431679.8376372,
+    "ast_hash": "22f2ca9280b9ad97275f133a6a1c37dd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/test_settings_profile_repo.py": {
+    "mtime": 1791935377.6929672,
+    "seen": 1792431679.8376389,
+    "ast_hash": "8ff64741438a2b68f1bf00c1d4e95665",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/test_task_repo.py": {
+    "mtime": 1791935377.6749444,
+    "seen": 1792431679.8376408,
+    "ast_hash": "3b6d153ed515748925467c847a013c97",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/repositories/test_usage_repo.py": {
+    "mtime": 1791934235.8981984,
+    "seen": 1792431679.8376422,
+    "ast_hash": "f962152f1dcd5ebd689663c4f2412e88",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/__init__.py": {
+    "mtime": 1791924455.007124,
+    "seen": 1792431679.837644,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_agent_loop.py": {
+    "mtime": 1792001994.7301617,
+    "seen": 1792431679.8376458,
+    "ast_hash": "6586013f76f06f8e241d8303190b6d9a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_agent_profiles.py": {
+    "mtime": 1791937165.5003033,
+    "seen": 1792431679.8376474,
+    "ast_hash": "ab457e3377c958be0fe621579f1f9ad2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_attachments.py": {
+    "mtime": 1792002809.6685722,
+    "seen": 1792431679.837649,
+    "ast_hash": "e178e32e1102f271ddfb0b41a2549a83",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_attachments_errors.py": {
+    "mtime": 1792005983.8201869,
+    "seen": 1792431679.8376508,
+    "ast_hash": "3241cae10872521e92a9ddf6d23a0321",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_id_generator.py": {
+    "mtime": 1791924455.014124,
+    "seen": 1792431679.8376524,
+    "ast_hash": "6b6f571ab6f2391ccbd3e903d69df869",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_memory_service.py": {
+    "mtime": 1791993101.181539,
+    "seen": 1792431679.837654,
+    "ast_hash": "6d8300e32b5dd50428f9a42ac40a3a17",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_profile_catalog.py": {
+    "mtime": 1791934764.3575695,
+    "seen": 1792431679.8376555,
+    "ast_hash": "a999b32e1659fc046488a925682d1449",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_prompt.py": {
+    "mtime": 1791937165.5254261,
+    "seen": 1792431679.837657,
+    "ast_hash": "82ac802063d5245b57c3e02021fd4f1d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_section_profiles.py": {
+    "mtime": 1792006362.229502,
+    "seen": 1792431679.837659,
+    "ast_hash": "1ddc1f29ddc027c9f439bad8925de04c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_settings_loader.py": {
+    "mtime": 1791934585.456183,
+    "seen": 1792431679.8376608,
+    "ast_hash": "5c6e96759a1d62cc96f126e59dbcc6c5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_tools_registry.py": {
+    "mtime": 1791934585.459183,
+    "seen": 1792431679.8376622,
+    "ast_hash": "5094cae95524f9ed5a5e14058337d0a4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_turn_context.py": {
+    "mtime": 1792007578.6357083,
+    "seen": 1792431679.837664,
+    "ast_hash": "8550f1fedf183d5607f995a0aaf886e8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/services/test_usage_service.py": {
+    "mtime": 1791934893.8810854,
+    "seen": 1792431679.8376656,
+    "ast_hash": "74398e91fd736ae45f65f1050cc0ab5b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_app_boot.py": {
+    "mtime": 1791924674.888397,
+    "seen": 1792431679.837667,
+    "ast_hash": "940a750f5f55e0b6594000a0ffb2ddaa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_config.py": {
+    "mtime": 1791960608.8012848,
+    "seen": 1792431679.8376687,
+    "ast_hash": "774849e021f79ec4d809eed95973092c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_database.py": {
+    "mtime": 1791924961.3259947,
+    "seen": 1792431679.8376703,
+    "ast_hash": "7c7f520ca068046317eaa1834ba2228c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_env_isolation.py": {
+    "mtime": 1791928043.7639446,
+    "seen": 1792431679.837672,
+    "ast_hash": "d5ee0eff78cbd752f3c2969657ab0685",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_isolation.py": {
+    "mtime": 1791931180.065833,
+    "seen": 1792431679.8376737,
+    "ast_hash": "9304ae66fe2c299cb909c5a0d22462df",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/tests/unit/test_provider_boundary.py": {
+    "mtime": 1791927935.9569533,
+    "seen": 1792431679.8376756,
+    "ast_hash": "3ed41b5b576d9c28f68f76976d245534",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/env.py": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.837677,
+    "ast_hash": "01af11c8c3f1e12a968f2027f4d3982f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/7e2f1a9c4b3d_add_syllabus_and_document_url_to_certifications.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.837679,
+    "ast_hash": "1cedeec5273826994dbe8236686317c2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/9c4d7e1f2a8b_add_status_to_certifications.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376803,
+    "ast_hash": "987402936340268176dce5e54b61c644",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a1b2c3d4e5f6_bedrock_local_harness.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376822,
+    "ast_hash": "2fb67927e3884fc594f1a0dadb7b5b35",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a2b3c4d5e6f7_vacancy_target_company_fk.py": {
+    "mtime": 1791592399.4793165,
+    "seen": 1792431679.8376837,
+    "ast_hash": "70994213286e12f1197dc5fac505c0be",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a6b7c8d9e0f1_admin_sections_and_delegation.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376856,
+    "ast_hash": "f9b8504128d4efdcf046395460d2b05a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a7b8c9d0e1f2_task_subtasks_notifications.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376875,
+    "ast_hash": "ee1b015d8d96577d009e69069adcc84c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a8b9c0d1e2f3_conversation_agent_profile.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376892,
+    "ast_hash": "babc2bf8e7b33d1b87c21eaed235375e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a9b1c2d3e4f5_portal_about_bio_fields.py": {
+    "mtime": 1791592399.4793165,
+    "seen": 1792431679.8376906,
+    "ast_hash": "860b9131e493080c9aa7074ae186b6f7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/a9b8c7d6e5f4_error_reports.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376925,
+    "ast_hash": "3f871f2f1b51602a2fee64c1753f4630",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b1c2d3e4f5a6_bedrock_cache_tokens.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376944,
+    "ast_hash": "d47cc0bcab7df526fbb0ad4da8c04878",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b2c3d4e5f6a7_admin_section_overrides_synthetic_pk.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8376963,
+    "ast_hash": "10715d58d7e3017980854844c8e81aad",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b3d4e5f6a7c8_methodology_section_ids.py": {
+    "mtime": 1788861388.3035383,
+    "seen": 1792431679.8376977,
+    "ast_hash": "bab2815db6e998f2dfce4d2af1228ace",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b4c5d6e7f8a9_identity_modality_availability.py": {
+    "mtime": 1791592399.4793165,
+    "seen": 1792431679.8376997,
+    "ast_hash": "1c6889b002d46f5dfb2c89118a86b63c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b7c8d9e0f1a2_job_discovery_target_company_boards.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377013,
+    "ast_hash": "64501facce3faffd4fbe0ec8cb82ba6b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/b8c9d0e1f2a3_agent_profile_photos.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377032,
+    "ast_hash": "692d3f4ad235bd81ad23c1893926640c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c2d3e4f5a6b7_bedrock_agent_profile_prompts.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.837705,
+    "ast_hash": "a7c94c645431c69a8f8b231b42252966",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c3d4e5f6a7b8_rename_agent_profile_ids.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377068,
+    "ast_hash": "c60b836b9b4ac10a4468f2193fce8f90",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c4d5e6f7a8b9_drop_admin_section_override_description.py": {
+    "mtime": 1788504828.3798666,
+    "seen": 1792431679.8377082,
+    "ast_hash": "f3e5d85d2cf791f8a702bfede861f654",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c5d6e7f8a9b0_methodology_drop_section_freeform.py": {
+    "mtime": 1788996326.031057,
+    "seen": 1792431679.8377101,
+    "ast_hash": "9cb643a788993d82cd32beb79729ffa2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c5d6e7f8a9b1_certification_completion_date.py": {
+    "mtime": 1791592399.4793165,
+    "seen": 1792431679.8377118,
+    "ast_hash": "489cd091f4ab2b54c78dd5129812e658",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c7e1a4d92b60_vacancy_process_stage.py": {
+    "mtime": 1791850261.749733,
+    "seen": 1792431679.8377135,
+    "ast_hash": "30c23bda4c753390dbc52f7a2ff9f001",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/c9d0e1f2a3b4_bedrock_global_rules.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377151,
+    "ast_hash": "b923271686be85ee976f29e001d4d22a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/ca159800797a_consolidate_cv_version_content.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.837717,
+    "ast_hash": "f1aa72bf0e088292e25db42c1f5e1fee",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/d0e1f2a3b4c5_project_tech_stack_to_competencies.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377187,
+    "ast_hash": "d2796765b90fd3b8c12f40f3ce25ddfc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/d1e2f3a4b5c6_prefixed_ids_and_notes.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377204,
+    "ast_hash": "048e1493027572809d1e50643d337182",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/d4e5f6a7b8c9_personal_profile.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377252,
+    "ast_hash": "0c2becf15e836612b9aa4c594f99a2f5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/d6e7f8a9b1c2_role_gap_target_date.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.8377268,
+    "ast_hash": "d23d6bc3a3f39e0545e20c4d20e8fdf8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/d8f2b5a13c97_vacancy_descriptive_texts.py": {
+    "mtime": 1791904335.993614,
+    "seen": 1792431679.8377285,
+    "ast_hash": "a6471b985c1f737d16e877fbcf4d17ab",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/e1f2a3b4c5d6_fix_file_upload_related_evidence_id_type.py": {
+    "mtime": 1788564733.3424494,
+    "seen": 1792431679.83773,
+    "ast_hash": "ac2fdffef7451dfe1b9218cbe22d1a47",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/e3f4a5b6c7d8_fix_system_table_user_ids.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377318,
+    "ast_hash": "1e5ef53b97dc75b4165f37f602a98d1b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/e5f6a7b8c9d0_methodology_agent_profile_ids.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377337,
+    "ast_hash": "4e57a708f1624ef7ffaf08109fbda730",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/e7f8a9b1c2d3_target_company_research_fields.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.8377354,
+    "ast_hash": "c6e85474f148f42447e5f3cf4bc6c043",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f4a5b6c7d8e9_pdf_template_styles.py": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8377368,
+    "ast_hash": "deb7d8570efb23bca2d31a7a1cb7d6ef",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f5b6c7d8e9f0_seed_pdf_design_methodology.py": {
+    "mtime": 1788483999.0222242,
+    "seen": 1792431679.8377388,
+    "ast_hash": "53c577c2b7af714d4db404fcbdff85d1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f6a7b8c9d0e1_scheduled_agent_tasks.py": {
+    "mtime": 1788483999.0222242,
+    "seen": 1792431679.8377407,
+    "ast_hash": "e1d08dd09ccebd2acf9cfba9e8d0bf62",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f7a8b9c0d1e2_agent_profile_tools.py": {
+    "mtime": 1788657578.4968276,
+    "seen": 1792431679.837742,
+    "ast_hash": "5ef78425ebf24f5764e10bca07c1ec14",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f8a9b0c1d2e3_user_access_roles.py": {
+    "mtime": 1789532614.2296023,
+    "seen": 1792431679.8377438,
+    "ast_hash": "e11232f76ba39b1b7d0b9bc1bd9566b4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f8a9b1c2d3e4_vacancy_detail_fields.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.8377454,
+    "ast_hash": "5e8b7913341561da7c6bd173133d90ca",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/f9a8b7c6d5e4_achievement_home_replaces_anchor.py": {
+    "mtime": 1788483999.0222242,
+    "seen": 1792431679.837747,
+    "ast_hash": "27314a6ce410b766ac0582e4703da4b7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/coverage.json": {
+    "mtime": 1788483999.0222242,
+    "seen": 1792431679.8377488,
+    "ast_hash": "2ef6bf6aea87d69354003ecfb9798bd7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/scripts/check_kb_consistency.py": {
+    "mtime": 1788802875.6642625,
+    "seen": 1792431679.8377504,
+    "ast_hash": "aad0cd1bd6a45b6bc6ced87fd260f332",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/scripts/import_vault.py": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.837752,
+    "ast_hash": "ef84de6212f86048d7cd4dcd4b34ec29",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/scripts/list_error_reports.sh": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.837754,
+    "ast_hash": "b831626a81d467367f0fdb94602be5a3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/scripts/resolve_error_report.sh": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.8377557,
+    "ast_hash": "e6e3d6e0d7c753221ea55ef155b1170d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/app.py": {
+    "mtime": 1788564570.7193184,
+    "seen": 1792431679.8377573,
+    "ast_hash": "a281791212ad566a63ff4512053163a8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/config.py": {
+    "mtime": 1788805316.0468533,
+    "seen": 1792431679.8377593,
+    "ast_hash": "e4cb3680bfb3377da05116004c3dea39",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/database.py": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.8377607,
+    "ast_hash": "2039594b1f3b4eafc93884104a8a9751",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/dependencies.py": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.8377626,
+    "ast_hash": "4d24544b98e241d835c202f04c79f279",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/middleware/__init__.py": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.837764,
+    "ast_hash": "712a3d69700fa9518aa285f5b886ca8d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/middleware/auth.py": {
+    "mtime": 1792644900.5046694,
+    "seen": 1792645032.1906385,
+    "ast_hash": "ecd21ed623215562902c427aa8a890e9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/__init__.py": {
+    "mtime": 1788657588.8127813,
+    "seen": 1792431679.8377674,
+    "ast_hash": "fbfa1c760f623c5f5da3cf25f8548584",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/achievement.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.837769,
+    "ast_hash": "bc8eacb91f8e14d515b1aaf120cff020",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/admin_section_override.py": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.8377707,
+    "ast_hash": "d031d037ce06d60a98eb0edcfec912c9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/application.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377726,
+    "ast_hash": "4bae3e1ecb8c53981fca84da6276ecd9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/application_interaction.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377743,
+    "ast_hash": "01c3615ee7af13f6afa7dbf7d201ca69",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/audit_log.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.837776,
+    "ast_hash": "3935e101320b1ee0c4315a477843bb98",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_agent_delegation.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377774,
+    "ast_hash": "7fe5bd228e641361bb24e5015cedfb65",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_agent_profile_photo.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.837779,
+    "ast_hash": "44e9fb4105f6bf3947052d456ed3b6b5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_agent_profile_prompt.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377807,
+    "ast_hash": "9d8366570e396c16d2ba199a7997a83c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_agent_profile_tool.py": {
+    "mtime": 1788657573.2597814,
+    "seen": 1792431679.8377824,
+    "ast_hash": "79e072bbf5879bbab3ddcf7f8f22a2a6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_conversation.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377838,
+    "ast_hash": "7c5cdc0721ac9e3c4f16a55aa6f39060",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_custom_tool.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377855,
+    "ast_hash": "e6369f0645a3fa6541a60b15e7d8a448",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_settings.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377872,
+    "ast_hash": "2a3735c03d1f47f0952dd2f0f568700f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_task.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377886,
+    "ast_hash": "153dafb3ed4afaecaf96616675b84f1e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_usage_log.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377905,
+    "ast_hash": "565ccb08eaf72394f35f0b237393d988",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/bedrock_usage_round_log.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.837792,
+    "ast_hash": "7254f6a1ff805e64857c1fd303cca878",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/career_review.py": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8377938,
+    "ast_hash": "69600600f12de885e97c4da4e89c8ddd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/certification.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.8377953,
+    "ast_hash": "7d0b8b5f5bf90fd067b3064be963ff8b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/competencies.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.837797,
+    "ast_hash": "103878afef1b146388ec89694de1d745",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/contact_interaction.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8377984,
+    "ast_hash": "1e76dd7e7f74d5cbdd01b4a4df9f59c0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/cover_letter_version.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378003,
+    "ast_hash": "9ff58fabb7baf85b56b81476e16df30f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/cv_version.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378017,
+    "ast_hash": "8055a64e1c64f5e420a079b34de2a471",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/differentiator.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378034,
+    "ast_hash": "4ad1e7bceac8555b4976e9fb20aec7aa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/error_report.py": {
+    "mtime": 1788486236.4197373,
+    "seen": 1792431679.8378048,
+    "ast_hash": "5b998d70090a9c71c6e6b4d9e2d68853",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/event.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378067,
+    "ast_hash": "b9dcb598baf764ce4ad1bb248c187de4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/file_upload.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378081,
+    "ast_hash": "26e56ca5d596ae64a42997eba72a6532",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/fit_scoring_factor.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378096,
+    "ast_hash": "d7de3fcc6c5e61328230eec45f54394c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/github_profile.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378115,
+    "ast_hash": "1d323c5dfb0e58c396a397a5fb290f1c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/identity.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.837813,
+    "ast_hash": "4408ece17581a4edf43b478fa91b4943",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/identity_reflection.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378146,
+    "ast_hash": "fcc578c10d5f7f10f7c08a3416efa1bc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/interview.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.837816,
+    "ast_hash": "a05fdbfbd5bbbc60209cb1e333e0bfc6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/linkedin_connection.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378177,
+    "ast_hash": "0300ae344b82fb08e6216dc84044b572",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/linkedin_post.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378193,
+    "ast_hash": "892edcf3a013bc889c98eac3812929f1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/linkedin_profile.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.837821,
+    "ast_hash": "268eb0a094012e5a18b5a0fd2ebb0349",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/market_segment.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378224,
+    "ast_hash": "f667818a498a50a9137aaa61a6f51147",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/metrics.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378243,
+    "ast_hash": "b634bca648f790fdc4121402d2dbc7b2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/networking_activity.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378258,
+    "ast_hash": "65cf05366a60d18e22a0c19d9a20d9ff",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/networking_contact.py": {
+    "mtime": 1788483999.0272243,
+    "seen": 1792431679.8378277,
+    "ast_hash": "d47ac3775e18271c9f0ab6fb22003f25",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/operational_methodology.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.837829,
+    "ast_hash": "07c58c834b373a72baf3aa573d803c0d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/pdf_output_template.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.837831,
+    "ast_hash": "837a5df3183dfcbcb23cf2288f6ef4cd",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/pdf_template_style.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378325,
+    "ast_hash": "594bfc358116d941d5eeb0f3013ad955",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/personal_profile.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378344,
+    "ast_hash": "632032b960e2578dc38729d0c0654219",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/portal_about.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.837836,
+    "ast_hash": "7913873a44c8dcf9af6e9c2f395c5a2c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/portal_contact.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378375,
+    "ast_hash": "97e86ef9178a21c531f13b2dd40227d8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/portal_home.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378391,
+    "ast_hash": "5ee64fdd064d5be27e394707ba618a8c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/project.py": {
+    "mtime": 1792699072.094744,
+    "seen": 1792741554.5609403,
+    "ast_hash": "291b8707e59286d1a398821e9e8f8830",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/publication.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378425,
+    "ast_hash": "a1020a993c34f74fecaf2157010ee438",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/refresh_token.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378441,
+    "ast_hash": "2d82d61dc18a6c525c45d06ad7981b63",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/role_gap_analysis.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.8378458,
+    "ast_hash": "0b6ff57333f1d4585a729cc348c98887",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/role_narrative.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378472,
+    "ast_hash": "4c16c4fb28679933e7705939b33d119d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/search_plan.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378491,
+    "ast_hash": "d0fb2474074081bd945bbdd1bcfdd9ea",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/star_story.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378506,
+    "ast_hash": "59cb1ef7aed1513bce0e93a559a3752a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/tag.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378525,
+    "ast_hash": "d92483179933363cb8f88e9a8c150b5c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/target_company.py": {
+    "mtime": 1791592399.4803166,
+    "seen": 1792431679.837854,
+    "ast_hash": "eeb6d67aa56d86eabb9c9fcdc3c681a9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/target_role.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378556,
+    "ast_hash": "486ae61465f9150a169df0416480389c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/user.py": {
+    "mtime": 1789532518.171767,
+    "seen": 1792431679.837857,
+    "ast_hash": "3217469bb846da1474744600b9d2d169",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/user_notification.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.837859,
+    "ast_hash": "248754c54eded15dc0fdc3383ced5ebb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/user_session.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378603,
+    "ast_hash": "7dd449074dc9202af6343a672796d4f0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/vacancy.py": {
+    "mtime": 1791904278.023806,
+    "seen": 1792431679.8378623,
+    "ast_hash": "f24547ccb6c229cbe7ffb75c7d9952b9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/work_history.py": {
+    "mtime": 1788483999.0282242,
+    "seen": 1792431679.8378637,
+    "ast_hash": "19f332d39ae2e4340b2512a2b6842f26",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/repositories/__init__.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.837865,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/repositories/base_repository.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.837867,
+    "ast_hash": "2352c3d2aaedf6be1d983cd6a66ab0b2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/repositories/career_repository.py": {
+    "mtime": 1791904314.6834743,
+    "seen": 1792431679.8378685,
+    "ast_hash": "a2e3812706727237089e2ec09c94e0b3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/repositories/user_repository.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.8378704,
+    "ast_hash": "7bad1c6acc2be4b7fe1be82a54e7b598",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/__init__.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.837872,
+    "ast_hash": "c65de8a35666ceff04be5f5636a3e271",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/admin_sections.py": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.8378737,
+    "ast_hash": "b161161e256e9309bb447990bb649641",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/auth_enhanced.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.8378754,
+    "ast_hash": "22c56117f6a90a395b42b1cb5946cab9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/bedrock.py": {
+    "mtime": 1791592399.4813166,
+    "seen": 1792431679.837877,
+    "ast_hash": "2f5f05b282209de55872b3c0110f600e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/bedrock_tasks.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.8378787,
+    "ast_hash": "d7c9026c0be367aefe0c32cd657352be",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_common.py": {
+    "mtime": 1791592399.4883165,
+    "seen": 1792431679.8378806,
+    "ast_hash": "78916f4fdbdbbb1321795467f0593266",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_digital.py": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.837882,
+    "ast_hash": "13793f6369c44214b85f7b049040f67d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_identity.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378842,
+    "ast_hash": "48e322176826ab5e7839d56cdaece829",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_methodologies.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378856,
+    "ast_hash": "b5bbcad9a20281e2664ae8079238ed2e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_metrics.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378875,
+    "ast_hash": "b544dfba20c0b6295aa5575dc0b0b5c3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_search.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.837889,
+    "ast_hash": "0b517a142c234aa863aa43731718276f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/career_support.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378909,
+    "ast_hash": "1e2edb82453f89a5329525837f7e0145",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/error_reports.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378925,
+    "ast_hash": "5a66905a3036841f806aecbc46258c7a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/files.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378944,
+    "ast_hash": "4165ed8d2be06b910a8e8fa3927c025d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/job_discovery.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378959,
+    "ast_hash": "977208df35eec96e1a0ce89dbc9013d2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/linkedin.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378978,
+    "ast_hash": "09849aad1ecf15e822863c9f5dd2925e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/notifications.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8378992,
+    "ast_hash": "3cbe6158dc50948f78f445993481d79e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/pdf_template_styles.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.837901,
+    "ast_hash": "09b9f8c10fba3e71d4733f39b9cef31b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/pdf_templates.py": {
+    "mtime": 1788801754.2235882,
+    "seen": 1792431679.8379025,
+    "ast_hash": "7f2a59e094ce3a140b03d70bb1ee3b03",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/public.py": {
+    "mtime": 1792699072.094744,
+    "seen": 1792741554.5610309,
+    "ast_hash": "07335fddcb4b31eb70cd6cc5724bf8be",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/__init__.py": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8379061,
+    "ast_hash": "4e560d9e5a9da89c1f29991b730e0d15",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/admin_sections.py": {
+    "mtime": 1788503945.396137,
+    "seen": 1792431679.837908,
+    "ast_hash": "efa79daa9bcbe13a6029e11485eeda27",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/bedrock.py": {
+    "mtime": 1791592399.4883165,
+    "seen": 1792431679.8379097,
+    "ast_hash": "08eeaeb51337497411b35d061592fe33",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/bedrock_task.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379116,
+    "ast_hash": "d873b00aa64bb7240231a61cf31360e5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_digital.py": {
+    "mtime": 1791592399.4883165,
+    "seen": 1792431679.837913,
+    "ast_hash": "1ba8672276e516e344f43187dd6edcd1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_identity.py": {
+    "mtime": 1792699072.094744,
+    "seen": 1792741554.5610454,
+    "ast_hash": "a2bea79040aeb5eaabdafe2cd41c76b2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_methodologies.py": {
+    "mtime": 1791592399.4883165,
+    "seen": 1792431679.8379164,
+    "ast_hash": "d678dbf7b26b4a3f5af30c31fa60d857",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_metrics.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.837918,
+    "ast_hash": "36d0620e486186fa4d32202824b6d473",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_search.py": {
+    "mtime": 1791904278.0235205,
+    "seen": 1792431679.8379197,
+    "ast_hash": "4beae257c2be2c21d34136f993200a05",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/career_support.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379214,
+    "ast_hash": "37af03357f2793524387541d9af051d6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/competencies.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.837923,
+    "ast_hash": "4f7b1e0f69a52f0db3784fa3bca5d60c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/error_reports.py": {
+    "mtime": 1788486232.836315,
+    "seen": 1792431679.837925,
+    "ast_hash": "058539c60dbef50c62990a66a7e3d44d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/file_upload.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379264,
+    "ast_hash": "000c6b0ff1a20a1eaa50208abb3ff4b2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/job_discovery.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379283,
+    "ast_hash": "bbfb60ca05dcb4170927ab191f3fb4a3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/linkedin.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379297,
+    "ast_hash": "76b4c8089a94bc5587546cc5ab3a61f7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/pdf_template.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379312,
+    "ast_hash": "5dac682530b48a3e4acd00cf00ab5261",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/public.py": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5610712,
+    "ast_hash": "904bb9da1e018ad0487b6b80b4351dea",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/user.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379347,
+    "ast_hash": "def4ea0e97ef6e67e3464a4aad4499a7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/user_notification.py": {
+    "mtime": 1788483999.0312243,
+    "seen": 1792431679.8379364,
+    "ast_hash": "e68a7376f6e98679cda1f0f22e9d80ed",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/__init__.py": {
+    "mtime": 1788483999.0322244,
+    "seen": 1792431679.837938,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/admin_sections.py": {
+    "mtime": 1788883257.9172971,
+    "seen": 1792431679.8379397,
+    "ast_hash": "0124c840376fc70759c01be89f6273b6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/auth_service.py": {
+    "mtime": 1788483999.0322244,
+    "seen": 1792431679.8379414,
+    "ast_hash": "8da70c399feba76e057f49f7ce1c4ec5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/__init__.py": {
+    "mtime": 1788483999.0322244,
+    "seen": 1792431679.837943,
+    "ast_hash": "aed63e41da1f6a1364a6014eeb231011",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/agent_loop.py": {
+    "mtime": 1788859344.0960414,
+    "seen": 1792431679.8379445,
+    "ast_hash": "5796115f350e54cb412db6cc859bc86f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/agent_profiles.py": {
+    "mtime": 1791592399.4893167,
+    "seen": 1792431679.8379464,
+    "ast_hash": "64a03954d1bdeea6c53b3ac9558f3d1b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/attachments.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.837948,
+    "ast_hash": "158a338bfd1e1baa65a408e070a0b9b7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/budget.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379498,
+    "ast_hash": "3ed7c00dce9ac1d2f5d8d5c0124ee4bf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/converse_client.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379514,
+    "ast_hash": "05040a5e40338da7981138bf7e164742",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/delegation.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.837953,
+    "ast_hash": "01a8535ba200d8e094ce7358bf6ba320",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/embeddings.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379545,
+    "ast_hash": "cb48e3c0c31bf9dedb1023c5c98a22ee",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/errors.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379562,
+    "ast_hash": "6cecd4b8a3455bbc979c2992c1fbeed5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/history_manager.py": {
+    "mtime": 1788558657.9068127,
+    "seen": 1792431679.8379579,
+    "ast_hash": "b285ab8eb6f639084705ae48e61a529d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/image_client.py": {
+    "mtime": 1788564336.8088923,
+    "seen": 1792431679.8379598,
+    "ast_hash": "e94e562f1913cf0ea7723912b7b53bca",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/image_pipeline.py": {
+    "mtime": 1788560310.7993786,
+    "seen": 1792431679.8379612,
+    "ast_hash": "f6317ca632049993a7d5c1eb55c032f5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/knowledge_base.py": {
+    "mtime": 1788803095.7254622,
+    "seen": 1792431679.837963,
+    "ast_hash": "f5e803a24796b162572a5bffda34e18f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/local_memory.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379645,
+    "ast_hash": "945f1542b3df6dba4cc2438e88695f6a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/profile_catalog.py": {
+    "mtime": 1791592399.4893167,
+    "seen": 1792431679.837966,
+    "ast_hash": "07ef2a8d60926d68fbf6fe455cb9bf40",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/profile_delegation.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379676,
+    "ast_hash": "68199da9c3de897c0772fd18d4fa45fb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/profile_photos.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.8379693,
+    "ast_hash": "43198bf1fca3559d5f6a1c9bdc0f675d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/profile_prompts.py": {
+    "mtime": 1788483999.0332243,
+    "seen": 1792431679.837971,
+    "ast_hash": "0cc5a0739a3d899f10e13cbc97fb1394",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/profile_tools.py": {
+    "mtime": 1788860047.7141373,
+    "seen": 1792431679.8379726,
+    "ast_hash": "dd3aae7ef8b10c29d3f4dc2bab1db803",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/prompt.py": {
+    "mtime": 1791592399.4893167,
+    "seen": 1792431679.8379743,
+    "ast_hash": "a7cbd7f0d825b5f3307e1d8acda90b38",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/reply_text.py": {
+    "mtime": 1788483999.0342243,
+    "seen": 1792431679.837976,
+    "ast_hash": "46f4a6bc59a046f82f39ff889ba6a743",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/section_profiles.py": {
+    "mtime": 1788483999.0342243,
+    "seen": 1792431679.837978,
+    "ast_hash": "a0f4c2c001df9fd1d27081872b29ccc3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/settings_loader.py": {
+    "mtime": 1788483999.0362244,
+    "seen": 1792431679.8379793,
+    "ast_hash": "d40802674bfa65805c6eefffc02f558f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/tool_results.py": {
+    "mtime": 1788805337.6269693,
+    "seen": 1792431679.8379812,
+    "ast_hash": "c669371f14607ce1722cfe10c5052976",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/tools.py": {
+    "mtime": 1788860103.38762,
+    "seen": 1792431679.837983,
+    "ast_hash": "78bded86088885c5739e586f334b369c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/usage_logger.py": {
+    "mtime": 1788483999.0362244,
+    "seen": 1792431679.8379846,
+    "ast_hash": "2606250987802bcc1ff566511b8a586d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock_service.py": {
+    "mtime": 1791592399.4893167,
+    "seen": 1792431679.8379862,
+    "ast_hash": "029b7dc58764f5c16bce8357d2c95066",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/error_report_service.py": {
+    "mtime": 1788483999.0362244,
+    "seen": 1792431679.837988,
+    "ast_hash": "358dc3fdf84e3ebee8f73e07cb041aa4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/error_reporting.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8379896,
+    "ast_hash": "1b8b131661c9d2cdf01a045f653ae44a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/github_service.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8379915,
+    "ast_hash": "aa3dd509c03a936aaa1c7f34e296a1bb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/id_generator.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.837993,
+    "ast_hash": "0c9c4c6163ed405f448aafe9dcd2d280",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/__init__.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8379948,
+    "ast_hash": "de07e9d6272563a7b4248a3d66281d13",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/adzuna.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8379962,
+    "ast_hash": "c41022d644b8b53ee2fcb24b565bf7a2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/base.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.837998,
+    "ast_hash": "85781aaf8a1c5baaee64966949d50c39",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/getonboard.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8379993,
+    "ast_hash": "2379c3ba560a437a875902d182b7a6db",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/greenhouse.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.838001,
+    "ast_hash": "d47251d0e8ceff407c1e06f1cf094440",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/http.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8380027,
+    "ast_hash": "6f0f14ab2cfeac485782cb7f578cf234",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/indeed.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.838004,
+    "ast_hash": "eedbab68f3f837282b50235237ee9d4c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/lever.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8380058,
+    "ast_hash": "27190877e768789ac73f32e45d8c3052",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/linkedin.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8380075,
+    "ast_hash": "3e0bd31eecad3d841a00252b62d0e24d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/preview_store.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.838009,
+    "ast_hash": "fe77589d70a009b0534f5cde8295e254",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/registry.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8380105,
+    "ast_hash": "974f75ace40b24aeb8dd6bbac6522573",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/remoteok.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.8380125,
+    "ast_hash": "2030295a9e0cf7b2722b798f6f9ded41",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/remotive.py": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.838014,
+    "ast_hash": "c37afe2be5891e622a3318f5269c441d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/service.py": {
+    "mtime": 1791593426.4682722,
+    "seen": 1792431679.8380156,
+    "ast_hash": "dca70bf92b50da6173250d7113d32230",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/types.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380172,
+    "ast_hash": "347f03fb1e50e462e8f3e9aa95b1ab39",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/url_import.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.838019,
+    "ast_hash": "28fa53ed6a85959924cb6780111d3c24",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/linkedin_scheduler.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380203,
+    "ast_hash": "35ce1c76620342c01a75f41612aa371e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/linkedin_service.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380222,
+    "ast_hash": "4f6c8b74cff2067b22db5de09e492423",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/methodology_scope.py": {
+    "mtime": 1791592399.4893167,
+    "seen": 1792431679.8380237,
+    "ast_hash": "4ef97ce6d28dba743dd4f2307fec4c62",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf/__init__.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380253,
+    "ast_hash": "dc5c2444312fb9a31b64cca606aa644e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf/html_template_generator.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.838027,
+    "ast_hash": "57266f3b13754138a57e5200a0be24c6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf/markdown_document_generator.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380284,
+    "ast_hash": "8e565e01a8bfcf051b7a2dbe502a8223",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf/markdown_document_template.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.83803,
+    "ast_hash": "b4ec14760b35187777a171b73f30faa6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf/worker.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380318,
+    "ast_hash": "36b8049807e97f9f5a26d2eb6000c7e8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf_service.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380334,
+    "ast_hash": "8aced4e75c0f1f1c0712bf3a9aaa298b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf_template_css.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.838035,
+    "ast_hash": "c77e288d8a084a6f13854f86a3f90ddb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/pdf_template_render.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380368,
+    "ast_hash": "7cd12daab2cad7dafe67e3baaa4e1c50",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/qdrant_service.py": {
+    "mtime": 1788802808.9006462,
+    "seen": 1792431679.8380384,
+    "ast_hash": "e091090feb3264653b4d03e06f85bd99",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/section_catalog.py": {
+    "mtime": 1788859744.4025083,
+    "seen": 1792431679.83804,
+    "ast_hash": "5af914a4c480175c7a8ff23ef9410636",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/storage_service.py": {
+    "mtime": 1788564560.3076437,
+    "seen": 1792431679.8380418,
+    "ast_hash": "f759895eff0c7a581f6d860b32fba3dc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/task_scheduler.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380437,
+    "ast_hash": "8b53a78c1ffe82635a9c73738bf73037",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/vacancy_stage.py": {
+    "mtime": 1791849682.6307814,
+    "seen": 1792431679.8380454,
+    "ast_hash": "f7c36e659b545653aa79c6772645a172",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/web_search_service.py": {
+    "mtime": 1788483999.0382245,
+    "seen": 1792431679.8380473,
+    "ast_hash": "752de4841933aa78d5d382fe5aaccea2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/utils/__init__.py": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8380487,
+    "ast_hash": "09cd6059dcf2528bde1abca862e0da4c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/utils/constants.py": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8380506,
+    "ast_hash": "fafd93d1d7633d908253a183f3c7dd64",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/__init__.py": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8380523,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/conftest.py": {
+    "mtime": 1788503945.397137,
+    "seen": 1792431679.838054,
+    "ast_hash": "f4e886532e2ffa77815f2ab8a481795c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/fixtures/__init__.py": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8380556,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/integration/__init__.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380573,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/integration/test_auth_integration.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8380587,
+    "ast_hash": "90fa8d166badada90b3280f1602c741e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/integration/test_auth_routes.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380606,
+    "ast_hash": "2edcd6be9b984a8362f4eab64cc4f616",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/__init__.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838062,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_admin_section_settings_views.py": {
+    "mtime": 1788860113.8157103,
+    "seen": 1792431679.838064,
+    "ast_hash": "a82f8fd74c908dc829fa9b6a52c59c9c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_agent_loop_messages.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380654,
+    "ast_hash": "5a05e30a15cf8eff8e557a7777a39637",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_agent_profiles_router.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838067,
+    "ast_hash": "18a1775f69e3452a84e98555a1feab4f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_bedrock_errors.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380687,
+    "ast_hash": "1d8e8d9e0f7b650e359b08be21c260b0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_budget_no_double_count.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380702,
+    "ast_hash": "84e00fb8ba01032ec6a47fb9e64e53ac",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_converse_cache_points.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838072,
+    "ast_hash": "83ad771715803389bb02eeae8f5ebe70",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_dedup_read_tools.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380735,
+    "ast_hash": "5d25588a860931d3ecf98f649fe5e2a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_generate_image_tool.py": {
+    "mtime": 1788564414.4316523,
+    "seen": 1792431679.8380756,
+    "ast_hash": "1f0a9d382ba84306fb2584eb9e25f2c9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_global_rules.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380775,
+    "ast_hash": "71e304d8b8c20808ff1645477419f845",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_history_manager.py": {
+    "mtime": 1788564476.6881814,
+    "seen": 1792431679.8380792,
+    "ast_hash": "553891c23d7c0c6526a9542f9ad9d606",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_image_client.py": {
+    "mtime": 1788564314.1613514,
+    "seen": 1792431679.838081,
+    "ast_hash": "58b64c065dbebb205a104f36d5b47139",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_image_pipeline_aspect_ratio.py": {
+    "mtime": 1788560368.7889054,
+    "seen": 1792431679.8380823,
+    "ast_hash": "9d78ac4c735970c13a218edae73bd9bc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_knowledge_base_reindex.py": {
+    "mtime": 1788803125.6609762,
+    "seen": 1792431679.838084,
+    "ast_hash": "9e9e36c5b42b67529b97be1c005ec29b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_knowledge_base_routes.py": {
+    "mtime": 1788801904.2721512,
+    "seen": 1792431679.8380857,
+    "ast_hash": "7ccac0f503af12c29f9855ac7d12bebc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_list_extra_fields.py": {
+    "mtime": 1788548938.5756905,
+    "seen": 1792431679.8380873,
+    "ast_hash": "ded62c0330d2c4e5b465204946af93a5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_max_tokens_truncation.py": {
+    "mtime": 1788548089.9464579,
+    "seen": 1792431679.838089,
+    "ast_hash": "e3b3f430a3caef2f5156b482c39b9442",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_methodology_snippets.py": {
+    "mtime": 1791592399.4903166,
+    "seen": 1792431679.8380904,
+    "ast_hash": "ae80afe2e72d666a3651c358e7ae97df",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_pdf_style_persist.py": {
+    "mtime": 1788544732.030265,
+    "seen": 1792431679.838092,
+    "ast_hash": "48445a8506be1d05969e4c60037c49a9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_profile_catalog.py": {
+    "mtime": 1788658127.8273253,
+    "seen": 1792431679.8380938,
+    "ast_hash": "75168cacd922cb66f294de229e95d122",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_profile_delegation.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8380957,
+    "ast_hash": "0cd3e3cd1ba75be84d037dfd83eba205",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_profile_prompts.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838097,
+    "ast_hash": "0b9acd83266e810d7185b9f8cde6840b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_profile_tool_persistence.py": {
+    "mtime": 1788860060.5648847,
+    "seen": 1792431679.838099,
+    "ast_hash": "6af5b668f3183c713f59ded9db1c6d16",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_profile_tools.py": {
+    "mtime": 1788860009.5168064,
+    "seen": 1792431679.8381004,
+    "ast_hash": "498c1076bb7aca21f06428a3e9da649d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_progress_nudge.py": {
+    "mtime": 1788547313.2103636,
+    "seen": 1792431679.8381023,
+    "ast_hash": "24e7c9a267f209a00a0dc4c9c8579205",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_prompt_methodology.py": {
+    "mtime": 1788859702.2171426,
+    "seen": 1792431679.838104,
+    "ast_hash": "bf1e7257d8f2a322b052d60308b8f8e6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_qdrant_orphan_purge.py": {
+    "mtime": 1788802846.7473707,
+    "seen": 1792431679.838106,
+    "ast_hash": "7b64228814bf2e931cf362844a8a56f6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_reply_text.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381073,
+    "ast_hash": "a059c571ab2702909cb5b7db58397ae8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_required_fields_validation.py": {
+    "mtime": 1788545565.5327458,
+    "seen": 1792431679.8381093,
+    "ast_hash": "4c02b02990a44395b95a2f02a3665919",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_section_profile_resolution.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8381107,
+    "ast_hash": "79bc7edce30afdfa3b520076f7ac9e61",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_section_routes.py": {
+    "mtime": 1788859877.6756635,
+    "seen": 1792431679.8381126,
+    "ast_hash": "37acb3387bfdd98dcec7dc0cce60b13b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_tool_results_truncation.py": {
+    "mtime": 1788805327.1081016,
+    "seen": 1792431679.8381143,
+    "ast_hash": "049180133d33a4efaf8dcb13c506436a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_tools_catalog_routes.py": {
+    "mtime": 1788860003.8777573,
+    "seen": 1792431679.8381162,
+    "ast_hash": "bc2fc96194c2d48133e7cecbf19005b7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_usage_cost_cache.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381176,
+    "ast_hash": "c84470778b52b5df9d959b46ad5ba6cf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/test_visual_delegation_prompts.py": {
+    "mtime": 1788564794.8866842,
+    "seen": 1792431679.8381195,
+    "ast_hash": "ee21e39a8e81a32b41dffbb90102c8ce",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/endpoints-parametrized.test.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838121,
+    "ast_hash": "51f86955b1bc8dd266534d41e83b3f41",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_admin_section_catalog.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8381226,
+    "ast_hash": "dc76934de331b289b1df8879c2f43f62",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_admin_section_migration.py": {
+    "mtime": 1788504845.4740164,
+    "seen": 1792431679.8381243,
+    "ast_hash": "41af71e4195019e3c5a3172df1ee5c86",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_admin_sections.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8381257,
+    "ast_hash": "86a619028173617865642ec3808aa311",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_admin_sections_migration_map.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381274,
+    "ast_hash": "801c986bfd4a64a478dcd415efae7b2f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_admin_sections_rekey_surfaces.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8381288,
+    "ast_hash": "2594c4335db3b1f381d5951cbb39b782",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_auth.py": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8381307,
+    "ast_hash": "527a9f8546bb43a8cb08774ae18bc259",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_career_distinct.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381321,
+    "ast_hash": "80d0cfb934bf50821c2c778e3029a585",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_config.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381338,
+    "ast_hash": "a443b60970b9f081e025dc698d7c8f52",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_database.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381352,
+    "ast_hash": "4a2eb76db7f6e16fd6725ae7d22b376f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_error_reporting.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381371,
+    "ast_hash": "8a75dbe2d65ad87699b47bc5159e6284",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_error_reports_rate_limit.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8381386,
+    "ast_hash": "5d7289d22b242ca562496ded785ad6d6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_file_upload_migration.py": {
+    "mtime": 1788564706.88356,
+    "seen": 1792431679.8381405,
+    "ast_hash": "c75c39e7155d4c922668b382096dc5b3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_github_service.py": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.838142,
+    "ast_hash": "8f25b7bc9e44dfe8143f818698063573",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_job_discovery.py": {
+    "mtime": 1791593408.9301128,
+    "seen": 1792431679.8381438,
+    "ast_hash": "270d1c74bd67e1097434de0d77750989",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_methodology_drop_section_migration.py": {
+    "mtime": 1788996298.8248208,
+    "seen": 1792431679.8381455,
+    "ast_hash": "5d2b4678926d2296baf9ef37e0c3cf0f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_methodology_indexing.py": {
+    "mtime": 1791592399.4903166,
+    "seen": 1792431679.8381472,
+    "ast_hash": "59c5a01474a23b5d676339af206f3dc2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_methodology_scope.py": {
+    "mtime": 1788859489.4933,
+    "seen": 1792431679.8381488,
+    "ast_hash": "3b875d49199c7764ef577351f2d47274",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_methodology_section_ids_migration.py": {
+    "mtime": 1788861397.9368322,
+    "seen": 1792431679.8381505,
+    "ast_hash": "cbe449e8288e2cbc48f1c87d04bab65d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_middleware.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381522,
+    "ast_hash": "e91c95ca51c285ce0c30dc822539535d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_middleware_extended.py": {
+    "mtime": 1788486226.7378187,
+    "seen": 1792431679.8381538,
+    "ast_hash": "8ac34d692b2492a58ff4cac65430b070",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_pdf_generation.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381555,
+    "ast_hash": "fd7757d040c6441cec35810a2fd1a2b8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_repositories.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381574,
+    "ast_hash": "03262af92d134f6a3a2bdd57138bcec2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_resource_registry.py": {
+    "mtime": 1788802002.8118916,
+    "seen": 1792431679.8381588,
+    "ast_hash": "54b573eb19c3751de7322ddeeb17d3ea",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_search_plan_schema.py": {
+    "mtime": 1791592399.4913166,
+    "seen": 1792431679.8381603,
+    "ast_hash": "3d80777927316576b3ed94ea32b5434f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_section_methodologies.py": {
+    "mtime": 1788859769.891729,
+    "seen": 1792431679.8381622,
+    "ast_hash": "11686262de4a7f65235072028c6e92e5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_section_tools_derivation.py": {
+    "mtime": 1788883279.1733167,
+    "seen": 1792431679.8381639,
+    "ast_hash": "3225931f3a8af4a7cab5fbbc45a4f7ff",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_system_readiness.py": {
+    "mtime": 1788564543.9667757,
+    "seen": 1792431679.8381655,
+    "ast_hash": "ba6c3b27174399a7c32b68e477435c4e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_task_scheduler.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381672,
+    "ast_hash": "b6d325d91a4bf3175dfc4ec9889c57ff",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_utils.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381689,
+    "ast_hash": "1276dc1444ba6aa13a19286040521e30",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_descriptive_texts.py": {
+    "mtime": 1791904306.0273657,
+    "seen": 1792431679.8381705,
+    "ast_hash": "08057ca45a9f7d2ef0434365fc2cbf16",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_descriptive_texts_migration.py": {
+    "mtime": 1791904351.5384524,
+    "seen": 1792431679.8381724,
+    "ast_hash": "2be6c8cfa36c45b7621596accd957c1e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_duplicate_url.py": {
+    "mtime": 1791592399.4913166,
+    "seen": 1792431679.8381739,
+    "ast_hash": "1bab87da228fb2c7980c75338f50098e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_process_stage.py": {
+    "mtime": 1791850238.9694128,
+    "seen": 1792431679.8381758,
+    "ast_hash": "4b1a0258bbaedcd5936ae3324aa8ed0c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_process_stage_migration.py": {
+    "mtime": 1791850223.821654,
+    "seen": 1792431679.8381774,
+    "ast_hash": "f9d193337733786a04d367f9f3bfbc59",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_vacancy_target_company_fk.py": {
+    "mtime": 1791592399.4913166,
+    "seen": 1792431679.838179,
+    "ast_hash": "8386946cde9c28e72932bd92dd09c745",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_web_search_service.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381808,
+    "ast_hash": "62d1784a1851654f5135216942ef1454",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/test_work_history_schema.py": {
+    "mtime": 1788483999.0412245,
+    "seen": 1792431679.8381824,
+    "ast_hash": "33010e424fbefb8cea54084bcdff48f3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/.eslintrc.json": {
+    "mtime": 1788483999.0438027,
+    "seen": 1792431679.8381839,
+    "ast_hash": "d0c931fb5f59a1c0d6a485983231c727",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/package.json": {
+    "mtime": 1792634613.0026202,
+    "seen": 1792635567.6814482,
+    "ast_hash": "f1e59860381a69141cbc107907c47fee",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/postcss.config.js": {
+    "mtime": 1788483999.0438027,
+    "seen": 1792431679.8381872,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/App.tsx": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5614548,
+    "ast_hash": "c3f386e79d8c29962bcfa4f2434c44f2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/about.ts": {
+    "mtime": 1788483999.0456607,
+    "seen": 1792431679.8381903,
+    "ast_hash": "6cf1bf2cd5f4ef532144bfc769230127",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/blog.ts": {
+    "mtime": 1788483999.045716,
+    "seen": 1792431679.838192,
+    "ast_hash": "fa29dfc03220bb04ccb0f2c0f468dfdb",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/client.ts": {
+    "mtime": 1788483999.045716,
+    "seen": 1792431679.8381937,
+    "ast_hash": "cb92d40c7295aef5d9a8dbf372f678c3",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/contact.ts": {
+    "mtime": 1788483999.045716,
+    "seen": 1792431679.838195,
+    "ast_hash": "1465bb7be7398405c7b23a4d0fa250b7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/home.ts": {
+    "mtime": 1788483999.045716,
+    "seen": 1792431679.838197,
+    "ast_hash": "d25390c60b53ef3fe05a9c635f648335",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/projects.ts": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.56147,
+    "ast_hash": "52d3934859fe716d92ede76b13f0a8e5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/api/tracking.ts": {
+    "mtime": 1788483999.045716,
+    "seen": 1792431679.8382,
+    "ast_hash": "95593b1048aac9774215f059fd9215ae",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/BlogCard.tsx": {
+    "mtime": 1788483999.0459623,
+    "seen": 1792431679.8382015,
+    "ast_hash": "75517bcc29ba8727cff358477f4b0ff0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/ErrorMessage.tsx": {
+    "mtime": 1788483999.0460691,
+    "seen": 1792431679.8382034,
+    "ast_hash": "0606d7f3a9b80ac1a1fce102c17c7917",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/LoadingSpinner.tsx": {
+    "mtime": 1788483999.0460691,
+    "seen": 1792431679.8382049,
+    "ast_hash": "068f2ce00ef93f685300bd245d12f1f7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/Markdown.tsx": {
+    "mtime": 1792645333.2723897,
+    "seen": 1792645783.6863825,
+    "ast_hash": "61a979fdebfe09e8ed2433e637facae1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/MetricChips.tsx": {
+    "mtime": 1788483999.0460691,
+    "seen": 1792431679.8382082,
+    "ast_hash": "64ded46e3939b240d16f24d4e64fc18f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/ProjectCard.tsx": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5614877,
+    "ast_hash": "ec82ff8002cb50ecfec7025af4c116a1",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Common/ThemeToggle.tsx": {
+    "mtime": 1788483999.0460691,
+    "seen": 1792431679.8382115,
+    "ast_hash": "9f9bcbb75e1a5517200f4901660df89c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Layout/Footer.tsx": {
+    "mtime": 1792629746.765423,
+    "seen": 1792629880.3948257,
+    "ast_hash": "effc455a8efdae75110624d8c8a464ce",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Layout/Header.tsx": {
+    "mtime": 1788483999.046416,
+    "seen": 1792431679.8382149,
+    "ast_hash": "d1e83f893f6cc93d472e8bcb6b140896",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/components/Layout/Layout.tsx": {
+    "mtime": 1788483999.046416,
+    "seen": 1792431679.8382165,
+    "ast_hash": "3bf7d313b46e7034746ec9140cd407ce",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useAbout.ts": {
+    "mtime": 1788483999.046416,
+    "seen": 1792431679.8382182,
+    "ast_hash": "a8821e5a431ce5d647679af1ea685424",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useBlog.ts": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.83822,
+    "ast_hash": "ee912f9fe22bc3c9a48ef416c6d43fe4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useContact.ts": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.8382213,
+    "ast_hash": "9a85a39fc8e7a8ffd8ccaf6f59ff1dba",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useHome.ts": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.8382232,
+    "ast_hash": "7c9270d5a10489b756ab92032c7b87ed",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useProjects.ts": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.56151,
+    "ast_hash": "dd2b044850a2519f517cb6370679878a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/hooks/useTracking.ts": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.838226,
+    "ast_hash": "f6423330ed06299997c06cb71a0db28b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/main.tsx": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.8382277,
+    "ast_hash": "2398baf90747a3d389e974eaa35ebce2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/AboutPage.tsx": {
+    "mtime": 1788483999.0465658,
+    "seen": 1792431679.8382294,
+    "ast_hash": "24283498f97f570ef7e24006abdf356a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/BlogPage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.838231,
+    "ast_hash": "820ef532aad78d77048a14b0065bebed",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/BlogPostPage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.8382328,
+    "ast_hash": "e31286d5502e479279d8f1b8437d0fd6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/ContactPage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.8382344,
+    "ast_hash": "b8db0b887c960e994d831c86a011b162",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/HomePage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.838236,
+    "ast_hash": "64df7aa3cfd796dd3776ec37fe40e25c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/NotFoundPage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.838238,
+    "ast_hash": "8575c4fb092a33ea09825ece6842f535",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/ProjectDetailPage.tsx": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5615325,
+    "ast_hash": "f682b8a555206c782374614fd5671f9d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/pages/ProjectsPage.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.8382416,
+    "ast_hash": "ebea3e8466bfade7396b603280cf317e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/stores/uiStore.ts": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.8382432,
+    "ast_hash": "78262d5092b38fd9bdf49457a9d6b1db",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components-parametrized.spec.tsx": {
+    "mtime": 1788483999.0470173,
+    "seen": 1792431679.8382452,
+    "ast_hash": "38223e337d86f1807ee707a895b0c031",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/BlogCard.spec.tsx": {
+    "mtime": 1788483999.0476224,
+    "seen": 1792431679.8382466,
+    "ast_hash": "4a44755f524a3ca8c1e7b7ae61545cfa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/ErrorMessage.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382485,
+    "ast_hash": "a0a7db6221cc327bd60608a344090f43",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/Footer.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382502,
+    "ast_hash": "2ddd74f6ddb2305241d690f34f9fbee4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/Header.extended.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.838252,
+    "ast_hash": "6f60c0ebd9e2ad2f924177aca3bbe3a9",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/Header.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382537,
+    "ast_hash": "77812ed0127563ab78c6b139eba95e65",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/Markdown.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382556,
+    "ast_hash": "9f87347a9ec492cd8a57153d11a4812f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/ProjectCard.spec.tsx": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.561558,
+    "ast_hash": "5ed27efb57306a76556e3874b06a3cba",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/components/ThemeToggle.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382595,
+    "ast_hash": "5e1e0e1f6398bfd6c13d0a55a7fc4eb6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/comprehensive-coverage.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382614,
+    "ast_hash": "096caf229ce69ed16ed8ac1519ef630c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/fixtures/mockData.ts": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5615654,
+    "ast_hash": "9a3aee9d2eac2047ea1f66bfbe8cd20f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/hooks/useTracking.spec.ts": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382645,
+    "ast_hash": "c21b587a570d470461716b4c2e8c5221",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/AboutPage.spec.tsx": {
+    "mtime": 1788483999.0477028,
+    "seen": 1792431679.8382664,
+    "ast_hash": "4a3fe9a76b3a742aeeec4d69f2f29da0",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/BlogPage.spec.tsx": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382678,
+    "ast_hash": "2f6a2950e46381d266266e49a5972690",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/ContactPage.spec.tsx": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382697,
+    "ast_hash": "e1d1e516141a57b56d9c8abbaf327b7f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/HomePage.spec.tsx": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382711,
+    "ast_hash": "0154adbdf60018516f2c5985df42c191",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/NotFoundPage.spec.tsx": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.838273,
+    "ast_hash": "3e259d12576d9b51ab9808c5b05c8bfe",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/pages/ProjectsPage.spec.tsx": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5615816,
+    "ast_hash": "697770e8293682f6162f0a6f7d37d93f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/setup.ts": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382761,
+    "ast_hash": "9cd007b5f3ac88fc54d9b1edcd8aa99d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/stores/uiStore.spec.ts": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382778,
+    "ast_hash": "f8ba35c19c157a7c2a5d1725cbbd3a24",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/testUtils.tsx": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382795,
+    "ast_hash": "12442ebd8684f72bb14dd6912a557bbf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/tests/utils/theme.spec.ts": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382812,
+    "ast_hash": "91c6f36b2ba029eddd8b9591a5c490cf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/types/index.ts": {
+    "mtime": 1792699072.095744,
+    "seen": 1792741554.5615938,
+    "ast_hash": "99513d69f2ed95be599fe79565f3e9db",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/utils/metrics.ts": {
+    "mtime": 1788483999.0484076,
+    "seen": 1792431679.8382845,
+    "ast_hash": "dec22dcbbd1910c3af28b6b5b7d3a5f8",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/utils/reportClientError.ts": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8382864,
+    "ast_hash": "fcb13ed333a100d94aa1fffc2677c879",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/utils/theme.ts": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.838288,
+    "ast_hash": "2aab821d630176de44c2cf9507f7cbef",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/src/vite-env.d.ts": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.83829,
+    "ast_hash": "a0bad96b2efdf6ff895fa5fd8e8617bf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/tailwind.config.ts": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8383017,
+    "ast_hash": "f4100f6998adddc1a560854aa4d94bf7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/tsconfig.json": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.838312,
+    "ast_hash": "9ae3daa8ec68127da29cea3f92b466cf",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/tsconfig.node.json": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.838314,
+    "ast_hash": "767b2e9abe6452170cdc399ca052cfbc",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/vite.config.ts": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8383157,
+    "ast_hash": "2d68aaf6238bbf0ff97dacd08d5f51ad",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/vitest.config.ts": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8383176,
+    "ast_hash": "412e296a2611a6c15d25ac97128300d4",
+    "semantic_hash": ""
+  },
+  ".claude/agents/README.md": {
+    "mtime": 1789019319.771813,
+    "seen": 1792431679.8383193,
+    "ast_hash": "53475936a42bdc5f51f7b187a59bd207",
+    "semantic_hash": ""
+  },
+  ".claude/agents/arquitecto.md": {
+    "mtime": 1792699072.093744,
+    "seen": 1792741554.5616212,
+    "ast_hash": "067996fa8fcd8f661d26fee47ea7a52e",
+    "semantic_hash": ""
+  },
+  ".claude/agents/autor-de-spec.md": {
+    "mtime": 1792699072.093744,
+    "seen": 1792741554.5616233,
+    "ast_hash": "4bc6a3f11af1749c612ec90353c339cc",
+    "semantic_hash": ""
+  },
+  ".claude/agents/experto-ux-ui.md": {
+    "mtime": 1789019213.5968955,
+    "seen": 1792431679.8383248,
+    "ast_hash": "d9568c322bf203da03e234d57a604822",
+    "semantic_hash": ""
+  },
+  ".claude/agents/explorador.md": {
+    "mtime": 1788503945.3933024,
+    "seen": 1792431679.8383265,
+    "ast_hash": "8f10e5854d674aa8aaf9e1caf4ca9297",
+    "semantic_hash": ""
+  },
+  ".claude/agents/implementador.md": {
+    "mtime": 1788503945.3933024,
+    "seen": 1792431679.8383281,
+    "ast_hash": "e8c1db5a934242b654e6cd6b0a6591cc",
+    "semantic_hash": ""
+  },
+  ".claude/agents/orquestador.md": {
+    "mtime": 1788503945.3933024,
+    "seen": 1792431679.8383296,
+    "ast_hash": "35fe1120a469cc51040b42776b2bc3ab",
+    "semantic_hash": ""
+  },
+  ".claude/agents/revisor.md": {
+    "mtime": 1788503945.3933024,
+    "seen": 1792431679.8383315,
+    "ast_hash": "e626c559eb56220950775ebd184aead9",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ci.yml": {
+    "mtime": 1788483999.0068996,
+    "seen": 1792431679.8383331,
+    "ast_hash": "f419eeac5f43782f0b0faf7bf3238b51",
+    "semantic_hash": ""
+  },
+  ".harness/constitution.md": {
+    "mtime": 1791919067.8113856,
+    "seen": 1792431679.8383348,
+    "ast_hash": "4aaa579f4cf65007a9b944e50446d9a7",
+    "semantic_hash": ""
+  },
+  ".harness/decisions/ADR-001-adopcion-arnes-sdd-anchored.md": {
+    "mtime": 1788483999.0071812,
+    "seen": 1792431679.8383365,
+    "ast_hash": "c12d0e925e0d5a700c0ab9226a182f23",
+    "semantic_hash": ""
+  },
+  ".harness/decisions/ADR-002-forzar-fase-1-y-gate-automatico.md": {
+    "mtime": 1788561321.802313,
+    "seen": 1792431679.8383381,
+    "ast_hash": "c7b7173c495e3726b4cbc8b2f81b1e2d",
+    "semantic_hash": ""
+  },
+  ".harness/decisions/ADR-003-especialista-ux-ui.md": {
+    "mtime": 1789019242.129141,
+    "seen": 1792431679.8383398,
+    "ast_hash": "8503a2b69392184b86e3de2dfff0ba99",
+    "semantic_hash": ""
+  },
+  ".harness/memory/history.md": {
+    "mtime": 1791917720.800989,
+    "seen": 1792431679.8383417,
+    "ast_hash": "9abf3c4e0bb0d1b9399d0be806fefb89",
+    "semantic_hash": ""
+  },
+  ".harness/memory/state.md": {
+    "mtime": 1792007856.6994176,
+    "seen": 1792431679.8383431,
+    "ast_hash": "e894d26648c51bcaa71d7aa7508a9341",
+    "semantic_hash": ""
+  },
+  ".harness/method.md": {
+    "mtime": 1792745116.7323527,
+    "seen": 1792745145.6488683,
+    "ast_hash": "ff6d588473541668fe688a6e338389e5",
+    "semantic_hash": ""
+  },
+  ".harness/specs/001-sidebar-contextual-por-seccion/contracts/put-admin-section.md": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8383465,
+    "ast_hash": "7d6feff6557f09f11b9de620a19b9249",
+    "semantic_hash": ""
+  },
+  ".harness/specs/001-sidebar-contextual-por-seccion/plan.md": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8383482,
+    "ast_hash": "924ad0b0e4a57297a145716af6eaf509",
+    "semantic_hash": ""
+  },
+  ".harness/specs/001-sidebar-contextual-por-seccion/spec.md": {
+    "mtime": 1788503945.3944232,
+    "seen": 1792431679.8383496,
+    "ast_hash": "aad002491d1cb6fa0230e7cf2f92003c",
+    "semantic_hash": ""
+  },
+  ".harness/specs/001-sidebar-contextual-por-seccion/tasks.md": {
+    "mtime": 1788505046.4287763,
+    "seen": 1792431679.8383512,
+    "ast_hash": "53430e776faf31143d1cb243ee3a8a0f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/002-generacion-imagenes-agente-visual/contracts/system-readiness.md": {
+    "mtime": 1788563689.9092348,
+    "seen": 1792431679.838353,
+    "ast_hash": "9fee660e73bd1cdf8f51fb14d43db1eb",
+    "semantic_hash": ""
+  },
+  ".harness/specs/002-generacion-imagenes-agente-visual/plan.md": {
+    "mtime": 1788565633.8493903,
+    "seen": 1792431679.8383546,
+    "ast_hash": "e5e98527c8ef14960c50de1e130a8cf5",
+    "semantic_hash": ""
+  },
+  ".harness/specs/002-generacion-imagenes-agente-visual/spec.md": {
+    "mtime": 1788565627.6556911,
+    "seen": 1792431679.8383563,
+    "ast_hash": "7ad39a6c053dbd946a9170549917d634",
+    "semantic_hash": ""
+  },
+  ".harness/specs/002-generacion-imagenes-agente-visual/tasks.md": {
+    "mtime": 1788565633.849735,
+    "seen": 1792431679.838358,
+    "ast_hash": "c1c6969c4431edf703ed236169663326",
+    "semantic_hash": ""
+  },
+  ".harness/specs/003-configuracion-agentes-desde-app/contracts/knowledge-base.md": {
+    "mtime": 1788801401.4913833,
+    "seen": 1792431679.8383598,
+    "ast_hash": "2e7239c6d4e0f196467cffb79293e6de",
+    "semantic_hash": ""
+  },
+  ".harness/specs/003-configuracion-agentes-desde-app/contracts/tools.md": {
+    "mtime": 1788658803.811656,
+    "seen": 1792431679.8383615,
+    "ast_hash": "8172b3cef11537951df388dc97acee47",
+    "semantic_hash": ""
+  },
+  ".harness/specs/003-configuracion-agentes-desde-app/plan.md": {
+    "mtime": 1788805848.4546087,
+    "seen": 1792431679.8383632,
+    "ast_hash": "0603898eefb9d8db86784c76e3ecf3f0",
+    "semantic_hash": ""
+  },
+  ".harness/specs/003-configuracion-agentes-desde-app/spec.md": {
+    "mtime": 1788835351.2875218,
+    "seen": 1792431679.8383648,
+    "ast_hash": "8d998ec522b6f801aaf7eebd57dbda8d",
+    "semantic_hash": ""
+  },
+  ".harness/specs/003-configuracion-agentes-desde-app/tasks.md": {
+    "mtime": 1788805848.4566116,
+    "seen": 1792431679.8383665,
+    "ast_hash": "0971c31dba915d156cd27d39c9c6c21f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/004-herramientas-metodologias-por-seccion/contracts/sections.md": {
+    "mtime": 1788860214.463583,
+    "seen": 1792431679.838368,
+    "ast_hash": "fa3348a6d4f2faaca332869d39bdac70",
+    "semantic_hash": ""
+  },
+  ".harness/specs/004-herramientas-metodologias-por-seccion/plan.md": {
+    "mtime": 1788861545.8842995,
+    "seen": 1792431679.8383698,
+    "ast_hash": "cdea929385095baaedb0fa97f6aad54f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/004-herramientas-metodologias-por-seccion/spec.md": {
+    "mtime": 1788883547.4058895,
+    "seen": 1792431679.8383713,
+    "ast_hash": "f766f0a29f91213a751a2a19f7c34c60",
+    "semantic_hash": ""
+  },
+  ".harness/specs/004-herramientas-metodologias-por-seccion/tasks.md": {
+    "mtime": 1788861545.8845177,
+    "seen": 1792431679.838373,
+    "ast_hash": "24513ab2bae55e15f7cc0dcef319993b",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/contracts/admin-section-field.md": {
+    "mtime": 1788994831.8490872,
+    "seen": 1792431679.8383746,
+    "ast_hash": "5ed823875bc4249f5de963daefb0f60f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/contracts/bedrock-section-detail.md": {
+    "mtime": 1788994851.8082604,
+    "seen": 1792431679.8383763,
+    "ast_hash": "94e98086a43a97379b7c12c49e52c326",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/contracts/methodology-schema.md": {
+    "mtime": 1788994820.4419882,
+    "seen": 1792431679.838378,
+    "ast_hash": "04067d78e6a1e2615a6bd1ad1c35afd3",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/contracts/search-knowledge-base-methodology.md": {
+    "mtime": 1788994842.1721768,
+    "seen": 1792431679.8383799,
+    "ast_hash": "70d8f39ca0383db5044f806c9e2415ca",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/plan.md": {
+    "mtime": 1788996778.3839848,
+    "seen": 1792431679.8383813,
+    "ast_hash": "641882a5f3ed476e1da476aacd3b89b7",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/spec.md": {
+    "mtime": 1788994923.5998836,
+    "seen": 1792431679.838383,
+    "ast_hash": "e8b28b4992f88e496491ac105ea7d3ac",
+    "semantic_hash": ""
+  },
+  ".harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/tasks.md": {
+    "mtime": 1788996436.3750148,
+    "seen": 1792431679.8383846,
+    "ast_hash": "180c9d64b5b3f8dc30edee916de0244d",
+    "semantic_hash": ""
+  },
+  ".harness/specs/006-career-tablas-y-frontends/plan.md": {
+    "mtime": 1791588681.5474648,
+    "seen": 1792431679.838386,
+    "ast_hash": "f802d5dee9ae94bb86b39c69847871e3",
+    "semantic_hash": ""
+  },
+  ".harness/specs/006-career-tablas-y-frontends/spec.md": {
+    "mtime": 1791849321.3387322,
+    "seen": 1792431679.8383877,
+    "ast_hash": "f07809acd38e9efcd759f27a2e0bc24f",
+    "semantic_hash": ""
+  },
+  ".harness/specs/006-career-tablas-y-frontends/tasks.md": {
+    "mtime": 1791588681.5474648,
+    "seen": 1792431679.8383894,
+    "ast_hash": "7700de10f1dbaab73b08465bee5a51e1",
+    "semantic_hash": ""
+  },
+  ".harness/specs/007-vacantes-etapa-y-estado/plan.md": {
+    "mtime": 1791856275.2927494,
+    "seen": 1792431679.838391,
+    "ast_hash": "76541ba3c9266c7ae51add1ca8d30c46",
+    "semantic_hash": ""
+  },
+  ".harness/specs/007-vacantes-etapa-y-estado/spec.md": {
+    "mtime": 1791856275.2924953,
+    "seen": 1792431679.8383925,
+    "ast_hash": "2da69be8a6ee5f3a4f4fdd058750effd",
+    "semantic_hash": ""
+  },
+  ".harness/specs/007-vacantes-etapa-y-estado/tasks.md": {
+    "mtime": 1791853332.3404384,
+    "seen": 1792431679.8383944,
+    "ast_hash": "71fc1b9fb7821939be733ec6ec45b26e",
+    "semantic_hash": ""
+  },
+  ".harness/specs/008-vacantes-descripcion-empresa-y-puesto/plan.md": {
+    "mtime": 1791911091.3106668,
+    "seen": 1792431679.838396,
+    "ast_hash": "86e813eb88825176fb4c2636fe39e312",
+    "semantic_hash": ""
+  },
+  ".harness/specs/008-vacantes-descripcion-empresa-y-puesto/spec.md": {
+    "mtime": 1791911111.9798818,
+    "seen": 1792431679.8383977,
+    "ast_hash": "34cf12bd264dc1956d4ed3e74369b367",
+    "semantic_hash": ""
+  },
+  ".harness/specs/008-vacantes-descripcion-empresa-y-puesto/tasks.md": {
+    "mtime": 1791911071.8309045,
+    "seen": 1792431679.8383992,
+    "ast_hash": "86c879da6d1655031c93074476246039",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/contracts/ai-routes.md": {
+    "mtime": 1791918055.5659022,
+    "seen": 1792431679.838401,
+    "ast_hash": "555a0fb93448a56f4b430ad986b59bd4",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/contracts/auth-jwt-service-account.md": {
+    "mtime": 1791933848.9998932,
+    "seen": 1792431679.8384025,
+    "ast_hash": "8204e50bba33d0a7c39bf1053929d714",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/contracts/harness-api-dependencies.md": {
+    "mtime": 1791922830.7005963,
+    "seen": 1792431679.8384042,
+    "ast_hash": "1517245fd3081c11423f0bbbb1700cf8",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/contracts/harness-db-schema.md": {
+    "mtime": 1791992257.2547984,
+    "seen": 1792431679.8384056,
+    "ast_hash": "646ce5db933b935948a64467a07ee5d4",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/plan.md": {
+    "mtime": 1791960558.991667,
+    "seen": 1792431679.8384073,
+    "ast_hash": "845c531509585f6894db38a7f41df21e",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/spec.md": {
+    "mtime": 1792007368.9136648,
+    "seen": 1792431679.8384087,
+    "ast_hash": "58418e8a225902ee6031dad77969c33e",
+    "semantic_hash": ""
+  },
+  ".harness/specs/009-harness-agentes-fuera-de-api/tasks.md": {
+    "mtime": 1792007856.694137,
+    "seen": 1792431679.8384101,
+    "ast_hash": "7eedf14f30514af940024e6e1ebb6d19",
+    "semantic_hash": ""
+  },
+  ".harness/specs/README.md": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8384118,
+    "ast_hash": "ad458d1d48f5d87bfcfba9e961b23910",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1789019344.4970272,
+    "seen": 1792431679.8384135,
+    "ast_hash": "a2a85ea3c63b9e7c01f4dfbda987655a",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1792699072.093744,
+    "seen": 1792741554.56176,
+    "ast_hash": "6c1c0fa8eb979af0f9419ac55c042ee1",
+    "semantic_hash": ""
+  },
+  "CV.html": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8384166,
+    "ast_hash": "5f89b72797d297ba0aa890255c735d73",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1788486180.992682,
+    "seen": 1792431679.8384185,
+    "ast_hash": "ef786cc8de82e94835ea846fb3feb62f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/README.md": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.83842,
+    "ast_hash": "0dc25de427baf0765b4d84c5accfbf52",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/docs/BEDROCK-CHAT.md": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8384218,
+    "ast_hash": "ab9a733128fc29f578346f0d6f64b849",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/index.html": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8384233,
+    "ast_hash": "13ea17e913c3d6061b972e0f3aac10a4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/src/components/section/README.md": {
+    "mtime": 1788483999.0122485,
+    "seen": 1792431679.8384252,
+    "ast_hash": "b70541f503a970d8ce1253e7fec74e98",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-ai/README.md": {
+    "mtime": 1791924267.8505204,
+    "seen": 1792431679.8384266,
+    "ast_hash": "22d7c376e7737b802b4e6012886f846d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/README.md": {
+    "mtime": 1788486325.2345107,
+    "seen": 1792431679.8384285,
+    "ast_hash": "d1ec2a924b7067716883645c7aaaa905",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/README.md": {
+    "mtime": 1788483999.0209694,
+    "seen": 1792431679.8384302,
+    "ast_hash": "b8ef78c314f9045bd9d22472843d1e73",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/README.md": {
+    "mtime": 1788483999.0212243,
+    "seen": 1792431679.8384318,
+    "ast_hash": "0bd008b3d062407c575653dd7b61a698",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/API.md": {
+    "mtime": 1788483999.0222242,
+    "seen": 1792431679.8384335,
+    "ast_hash": "11c1a5e9ba364eb22cafab230e84f7e6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/ARCHITECTURE.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384352,
+    "ast_hash": "ee50501e8c1b94005178b62238eb6682",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/BEDROCK-HARNESS.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384368,
+    "ast_hash": "4f333ce4a0d5771338f821c4ce7bcdfa",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/DATABASE.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384385,
+    "ast_hash": "9c566bf399345bdf4e1a681b2602c061",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/README.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.83844,
+    "ast_hash": "3bdc61d9cdcb679e8c0fbd948f55d090",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/SECURITY.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384416,
+    "ast_hash": "03cfb3caaabe10f9e35fe7f29c40e00f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/SETUP.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384433,
+    "ast_hash": "e92c6b7e9c3fbeaf24abb4acffd28e6d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/TESTING.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384447,
+    "ast_hash": "bd25abb3d79ac49cbcffdfd7b61389ec",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/TROUBLESHOOTING.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384466,
+    "ast_hash": "a2466463a8f9268bf395413956561a04",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/README.md": {
+    "mtime": 1788483999.0234792,
+    "seen": 1792431679.8384483,
+    "ast_hash": "07cd0c435b653cc862aa2052bd8f81ed",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/auth/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384502,
+    "ast_hash": "e7b8886a274cd09fbb0d06a38f9d328d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/bedrock-tasks/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384516,
+    "ast_hash": "e1f5ef1c332050ae614abecd22a02e15",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/bedrock/README.md": {
+    "mtime": 1788860222.7236545,
+    "seen": 1792431679.8384535,
+    "ast_hash": "884e4908eaef4f0429e788f107aea2f6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-digital/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384552,
+    "ast_hash": "19e81baf55b5b0797ff23d7c37a88c51",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-identity/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.838457,
+    "ast_hash": "56bd6f9524fce5112399de4dec5f80b6",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-methodologies/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384585,
+    "ast_hash": "fbd31853ec232ae57dee0080a762955a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-metrics/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384604,
+    "ast_hash": "0ec375c6a646ac0ca2bf7360a66e996e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-search/README.md": {
+    "mtime": 1791904712.6892226,
+    "seen": 1792431679.8384619,
+    "ast_hash": "d90307f99b593afb17360486699178d7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/career-support/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384635,
+    "ast_hash": "660a4a3107bca82fd792fe2aa1914d27",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/files/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384652,
+    "ast_hash": "e16d7704320bfb53adb8a90b160f14d7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/infrastructure/README.md": {
+    "mtime": 1788483999.0241203,
+    "seen": 1792431679.8384671,
+    "ast_hash": "8cfbad60e47cc575668c336c9eb50f6b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/job-discovery/README.md": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.8384686,
+    "ast_hash": "ae1b23f7e0407f3c04551fae50521e85",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/linkedin/README.md": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.8384705,
+    "ast_hash": "0c59b42b41c5f053114d19221ab23b9e",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/pdf-template-styles/README.md": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.838472,
+    "ast_hash": "067770291e264afeb7f89e1631623975",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/pdf-templates/README.md": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.8384736,
+    "ast_hash": "08a880663d6ad1efd9d29f67c9018e86",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/docs/sections/public/README.md": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.8384752,
+    "ast_hash": "e85f93f226f482bdebc0f9744dc946af",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/requirements.txt": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792431679.8384771,
+    "ast_hash": "e16b82d456121c5d871d5e9f68a48412",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/README.md": {
+    "mtime": 1788486221.2396538,
+    "seen": 1792431679.8384786,
+    "ast_hash": "c5fc81e1fb069e88ccf7e13cefe753d5",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/middleware/README.md": {
+    "mtime": 1788483999.0252242,
+    "seen": 1792431679.8384802,
+    "ast_hash": "d5e8da14d1ef077426073e10247e593c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/models/README.md": {
+    "mtime": 1788483999.0262244,
+    "seen": 1792431679.8384817,
+    "ast_hash": "31d702d1b4a68f820b3a9d7a87136be4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/repositories/README.md": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.8384836,
+    "ast_hash": "2d51e30a903ce8f0b02c6a0a90bcce8b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/routes/README.md": {
+    "mtime": 1788483999.0292244,
+    "seen": 1792431679.838485,
+    "ast_hash": "fe93f73ed93562ac2d71d21d4636f66f",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/schemas/README.md": {
+    "mtime": 1788483999.0302243,
+    "seen": 1792431679.8384864,
+    "ast_hash": "1238c82693a216192f3562e6ca566a38",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/README.md": {
+    "mtime": 1788861397.9393356,
+    "seen": 1792431679.8384883,
+    "ast_hash": "3fdae56c10bc7c4c206da0440a9e8f0b",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/bedrock/README.md": {
+    "mtime": 1788805506.813847,
+    "seen": 1792431679.83849,
+    "ast_hash": "020f2694c4c9532fda92cd8f09a11ab4",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/services/job_discovery/README.md": {
+    "mtime": 1788483999.0372243,
+    "seen": 1792431679.838492,
+    "ast_hash": "eb51be84c70afce4ebc74f7054d21c59",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/src/utils/README.md": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8384933,
+    "ast_hash": "63e38e4f052779eab6208c821a39c917",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/README.md": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.838495,
+    "ast_hash": "b34ef897af6a095d2964ec33bb54518c",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/fixtures/README.md": {
+    "mtime": 1788483999.0392244,
+    "seen": 1792431679.8384967,
+    "ast_hash": "6df34f5c8642a6973a62021bce14a309",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/integration/README.md": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8384984,
+    "ast_hash": "fee0c4a27ea4ba02f63006863d0a3033",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/README.md": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8385,
+    "ast_hash": "ad6d58fb6b2745340daaf30624e26428",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/tests/unit/bedrock/README.md": {
+    "mtime": 1788483999.040372,
+    "seen": 1792431679.8385017,
+    "ast_hash": "f37fffec349169522060cc083b48c3be",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/README.md": {
+    "mtime": 1788483999.0438027,
+    "seen": 1792431679.8385034,
+    "ast_hash": "0cb712ef5390024485b0bdf37d73b86a",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/docs/SETUP.md": {
+    "mtime": 1788483999.0438027,
+    "seen": 1792431679.838505,
+    "ast_hash": "dc06e3c3e36c70c4b40919b869968473",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/index.html": {
+    "mtime": 1792629236.4410121,
+    "seen": 1792629880.395567,
+    "ast_hash": "eb1c5eaf9593dceccd6b0dc23089db0d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/public/robots.txt": {
+    "mtime": 1788483999.0444713,
+    "seen": 1792431679.8385084,
+    "ast_hash": "85dc230e9b5a930be8041748ea38a79e",
+    "semantic_hash": ""
+  },
+  "docker-compose.yml": {
+    "mtime": 1788560338.4116373,
+    "seen": 1792431679.8385098,
+    "ast_hash": "9bac1a3b634e5a4c0da2de74ea52fb59",
+    "semantic_hash": ""
+  },
+  "docs/01-INTRODUCTION.md": {
+    "mtime": 1788486248.5435884,
+    "seen": 1792431679.8385117,
+    "ast_hash": "a32244dabb14a8ad2f4280767f9a080f",
+    "semantic_hash": ""
+  },
+  "docs/02-ARCHITECTURE-GOALS.md": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8385134,
+    "ast_hash": "9af1aebd3c25420ab6201ac01b088d18",
+    "semantic_hash": ""
+  },
+  "docs/03-STAKEHOLDERS.md": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8385155,
+    "ast_hash": "b3cef2cec6ea624d466d0a3728a0532d",
+    "semantic_hash": ""
+  },
+  "docs/04-SOLUTION-STRATEGY.md": {
+    "mtime": 1788486261.9267967,
+    "seen": 1792431679.838517,
+    "ast_hash": "abeb4bb4c7c99f6cbc661aa1f893020f",
+    "semantic_hash": ""
+  },
+  "docs/05-BUILDING-BLOCK-VIEW.md": {
+    "mtime": 1791851355.4120903,
+    "seen": 1792431679.8385189,
+    "ast_hash": "b800cb999f522120ad3a39c3efcd0614",
+    "semantic_hash": ""
+  },
+  "docs/06-RUNTIME-VIEW.md": {
+    "mtime": 1788483999.0495598,
+    "seen": 1792431679.8385203,
+    "ast_hash": "f4052aee2957d1293a26ac300beb10b2",
+    "semantic_hash": ""
+  },
+  "docs/07-DEPLOYMENT-VIEW.md": {
+    "mtime": 1788486369.10134,
+    "seen": 1792431679.8385222,
+    "ast_hash": "dbe5e215463db3b5019ca12a4fbdfe94",
+    "semantic_hash": ""
+  },
+  "docs/08-CROSSCUTTING-CONCEPTS.md": {
+    "mtime": 1788486289.5897884,
+    "seen": 1792431679.8385239,
+    "ast_hash": "ac210707e68d532748d31d0856f76b93",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/008-bedrock-harness-local.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385258,
+    "ast_hash": "22750749c0c1201081b9ddc6a578d559",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/009-bedrock-multi-agent-profiles.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385274,
+    "ast_hash": "8376595d2dcd73c12a9fe1be74c80786",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/010-bedrock-visual-pdf-agents.md": {
+    "mtime": 1788565050.9162583,
+    "seen": 1792431679.838529,
+    "ast_hash": "1f6471b65f427df6c2c5ce5e87907e3b",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/011-job-discovery-adapters.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385308,
+    "ast_hash": "13406fd817e2bd35923fad10a11425e6",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/012-bedrock-three-level-agents.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385324,
+    "ast_hash": "d8a5aa9e081c335a17c8ac3f339a024b",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/013-l3-web-and-github-agents.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.838534,
+    "ast_hash": "0de7816f62ab8d61f0ceead6ce6af93c",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/014-four-application-modules.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385358,
+    "ast_hash": "a6364e3b0e76a28de223b3db27816ead",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/015-scheduled-agent-tasks.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385375,
+    "ast_hash": "ea8b63973adfdf14ec2276ffade97b42",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/016-task-subtasks-orchestration.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385391,
+    "ast_hash": "a26fd91c921364476aec370f2dff645d",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/017-l2-agent-settings.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385408,
+    "ast_hash": "5fd2c349323617ec4228e9f982b83323",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/018-error-reports-registry.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385422,
+    "ast_hash": "0e14a840c54ccfb210c057eba46f2c10",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/019-bedrock-prompt-caching.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.838544,
+    "ast_hash": "e7fce6629e0350bb632d8441f18ce58c",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/020-admin-section-templates.md": {
+    "mtime": 1788483999.0502245,
+    "seen": 1792431679.8385456,
+    "ast_hash": "b4dcf3ca487750a4b902c03f62a68279",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/021-admin-sections-synthetic-pk.md": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8385475,
+    "ast_hash": "b8b1e293df5ee6a1217b6efe28eb4469",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/022-l2-split-configuration-vs-incidents.md": {
+    "mtime": 1788483999.0512245,
+    "seen": 1792431679.8385491,
+    "ast_hash": "16306088869c9de9465f570d41981957",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/023-retirar-mcp-server.md": {
+    "mtime": 1788486060.4063964,
+    "seen": 1792431679.838551,
+    "ast_hash": "45846df42c1685c0e03fb660ba394fd3",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/024-sidebar-contextual-por-seccion.md": {
+    "mtime": 1788503945.398137,
+    "seen": 1792431679.8385525,
+    "ast_hash": "5d00cf50307de775fb6cc6fa5fcae79f",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/025-migrar-generacion-imagenes-a-stability.md": {
+    "mtime": 1788565035.4271214,
+    "seen": 1792431679.8385546,
+    "ast_hash": "6c9c506f444673369afbf8036090a47b",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/026-configuracion-agentes-app.md": {
+    "mtime": 1788860199.004449,
+    "seen": 1792431679.8385565,
+    "ast_hash": "b741c424851ac90590ba1eb3f10db0c3",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/027-herramientas-metodologias-por-seccion.md": {
+    "mtime": 1788860181.4302964,
+    "seen": 1792431679.8385582,
+    "ast_hash": "7900055a53daa144aa765fcf55a1a1ac",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/028-contraste-tokens-semanticos-admin.md": {
+    "mtime": 1791852048.656032,
+    "seen": 1792431679.8385596,
+    "ast_hash": "29a967f4b5cc47714f07118be008cd55",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md": {
+    "mtime": 1791923090.7231479,
+    "seen": 1792431679.8385615,
+    "ast_hash": "af42fff3bf8f739604cb40243c541616",
+    "semantic_hash": ""
+  },
+  "docs/09-DECISIONS/README.md": {
+    "mtime": 1791919067.811155,
+    "seen": 1792431679.8385634,
+    "ast_hash": "0e325e0bf7db1a4fc0c8cc14de495273",
+    "semantic_hash": ""
+  },
+  "docs/10-QUALITY-SCENARIOS.md": {
+    "mtime": 1788486295.6875768,
+    "seen": 1792431679.838565,
+    "ast_hash": "80ecca87679613f98b466c55542baf4f",
+    "semantic_hash": ""
+  },
+  "docs/11-TECHNICAL-RISKS.md": {
+    "mtime": 1788483999.0512245,
+    "seen": 1792431679.838567,
+    "ast_hash": "d8b602108629c89752229e0f8d7bdc9d",
+    "semantic_hash": ""
+  },
+  "docs/12-GLOSSARY.md": {
+    "mtime": 1788486301.1583023,
+    "seen": 1792431679.8385684,
+    "ast_hash": "6148e0f93482ac48b2119f0f8c526af7",
+    "semantic_hash": ""
+  },
+  "docs/ADMIN_PANEL_SETUP.md": {
+    "mtime": 1786871499.9382625,
+    "seen": 1792431679.8385699,
+    "ast_hash": "6416ef1b6dde2ee953b8b5a06f1d747d",
+    "semantic_hash": ""
+  },
+  "docs/BEDROCK-SYSTEM.md": {
+    "mtime": 1788860231.7047324,
+    "seen": 1792431679.8385718,
+    "ast_hash": "99f7b7a44bd8b3054691535739c83236",
+    "semantic_hash": ""
+  },
+  "docs/ENVIRONMENT-SECURITY.md": {
+    "mtime": 1788483999.0512245,
+    "seen": 1792431679.8385732,
+    "ast_hash": "c6e83ccb3e1a90c8fc4dbf27d6b2b821",
+    "semantic_hash": ""
+  },
+  "docs/IMPLEMENTATION_PLAN.md": {
+    "mtime": 1788483999.0512245,
+    "seen": 1792431679.838575,
+    "ast_hash": "a9044a00c87268ec9ff0655c6ee57f3f",
+    "semantic_hash": ""
+  },
+  "prometheus.yml": {
+    "mtime": 1788331134.3377125,
+    "seen": 1792431679.8385766,
+    "ast_hash": "bf66f719bb1953d5618680693bf69508",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/public/favicon.svg": {
+    "mtime": 1788483999.0074732,
+    "seen": 1792431679.8385785,
+    "ast_hash": "ff78ae8569a9a1a15e71d921999e9f73",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/public/logo-dark.svg": {
+    "mtime": 1788483999.008653,
+    "seen": 1792431679.83858,
+    "ast_hash": "a6c55a21be51624ff097774dc897ac3d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-admin/public/logo-light.svg": {
+    "mtime": 1788483999.008653,
+    "seen": 1792431679.8385816,
+    "ast_hash": "62272a0a25db25934d1b44754e205116",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/public/favicon.svg": {
+    "mtime": 1788483999.0438027,
+    "seen": 1792431679.838583,
+    "ast_hash": "ff78ae8569a9a1a15e71d921999e9f73",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/public/logo-dark.svg": {
+    "mtime": 1788483999.0444713,
+    "seen": 1792431679.8385847,
+    "ast_hash": "a6c55a21be51624ff097774dc897ac3d",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-portfolio/public/logo-light.svg": {
+    "mtime": 1788483999.0444713,
+    "seen": 1792431679.8385863,
+    "ast_hash": "62272a0a25db25934d1b44754e205116",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/init.sql": {
+    "mtime": 1788483999.0242243,
+    "seen": 1792629880.3933015,
+    "ast_hash": "6376b5c1aa777de2afb15077d3f5dca2",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/1275560f7481_add_projects_notebook_url.py": {
+    "mtime": 1792656768.61633,
+    "seen": 1792741554.5606985,
+    "ast_hash": "f7f6281bcb880bc830ad653770d6fbe7",
+    "semantic_hash": ""
+  },
+  "cjhirashi-career-api/alembic/versions/ca4ad88923c6_add_projects_slug.py": {
+    "mtime": 1792698834.4436686,
+    "seen": 1792741554.5607598,
+    "ast_hash": "35579b1bfcee79663003971118e9c308",
+    "semantic_hash": ""
+  }
+}

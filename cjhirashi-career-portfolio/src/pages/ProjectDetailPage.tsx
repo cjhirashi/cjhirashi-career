@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { useProjectById } from '@/hooks/useProjects'
+import { useProjectBySlug } from '@/hooks/useProjects'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { MetricChips } from '@/components/Common/MetricChips'
@@ -14,8 +14,8 @@ const Section = ({ title, content }: { title: string; content: string }) => (
 )
 
 export const ProjectDetailPage = () => {
-  const { id } = useParams<{ id: string }>()
-  const { data: project, isLoading, error } = useProjectById(id ?? '')
+  const { slug } = useParams<{ slug: string }>()
+  const { data: project, isLoading, error } = useProjectBySlug(slug ?? '')
   const { trackClick } = useTrackClick()
 
   if (isLoading) return <LoadingSpinner />
@@ -51,28 +51,24 @@ export const ProjectDetailPage = () => {
         </div>
 
         <div className="flex gap-3 mb-10">
-          {project.demo_url && (
-            <a
-              href={project.demo_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackClick(`project-demo-${project.id}`)}
-              className="btn px-6 py-2 text-sm font-medium"
-            >
-              Ver demo
-            </a>
-          )}
-          {project.github_url && (
-            <a
-              href={project.github_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => trackClick(`project-github-${project.id}`)}
-              className="btn-secondary px-6 py-2 text-sm font-medium"
-            >
-              GitHub
-            </a>
-          )}
+          {[
+            project.demo_url && { href: project.demo_url, label: 'Ver demo', trackId: 'demo' },
+            project.notebook_url && { href: project.notebook_url, label: 'Ver notebook', trackId: 'notebook' },
+            project.github_url && { href: project.github_url, label: 'GitHub', trackId: 'github' },
+          ]
+            .filter((link): link is { href: string; label: string; trackId: string } => Boolean(link))
+            .map(link => (
+              <a
+                key={link.trackId}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackClick(`project-${link.trackId}-${project.id}`)}
+                className="btn px-6 py-2 text-sm font-medium"
+              >
+                {link.label}
+              </a>
+            ))}
         </div>
 
         {project.detailed_summary && <Section title="Resumen" content={project.detailed_summary} />}

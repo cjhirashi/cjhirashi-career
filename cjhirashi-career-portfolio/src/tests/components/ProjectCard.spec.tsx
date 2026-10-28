@@ -42,8 +42,16 @@ describe('ProjectCard Component', () => {
     expect(image.src).toContain(project.image_url)
   })
 
-  it('links to the project detail page', () => {
+  it('links to the project detail page using the slug', () => {
     const project = mockProjects[0]
+    render(<ProjectCard project={project} />)
+
+    const link = screen.getByText(project.title).closest('a')
+    expect(link).toHaveAttribute('href', `/projects/${project.slug}`)
+  })
+
+  it('falls back to the id when the project has no slug', () => {
+    const project = mockProjects.find(p => !p.slug)!
     render(<ProjectCard project={project} />)
 
     const link = screen.getByText(project.title).closest('a')

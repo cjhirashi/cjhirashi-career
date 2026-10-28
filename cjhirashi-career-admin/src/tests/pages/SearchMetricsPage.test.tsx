@@ -30,6 +30,16 @@ const baseOverview: SearchOverview = {
   companies_by_status: [{ label: 'TBD', count: 43 }],
   fit_scoring_factors: [{ factor_name: 'Alignment with Role', weight_percentage: 25 }],
   active_search_plan: null,
+  applications_by_status: [],
+  interviews_by_result: [],
+  networking_activities_by_category: [],
+  application_interactions_response_rate: { total: 0, positive: 0, rate_percentage: null },
+  contact_interactions_response_rate: { total: 0, positive: 0, rate_percentage: null },
+  contact_interactions_opportunity_rate: { total: 0, positive: 0, rate_percentage: null },
+  funnel_conversion_rates: [],
+  vacancy_kpis: [],
+  networking_kpis: [],
+  vacancies_by_platform: [],
 }
 
 describe('SearchMetricsPage', () => {
