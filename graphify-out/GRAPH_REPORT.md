@@ -1,29 +1,29 @@
-# Graph Report - cjhirashi-career  (2026-10-23)
+# Graph Report - cjhirashi-career  (2026-10-28)
 
 ## Corpus Check
-- 837 files · ~570,902 words
+- 857 files · ~578,229 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 30 file(s) not represented in the graph (top: (none) 16, .example 5, .ini 4)
 
 ## Summary
-- 9148 nodes · 20674 edges · 478 communities (371 shown, 107 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 2328 edges (avg confidence: 0.94)
+- 9266 nodes · 21030 edges · 462 communities (356 shown, 106 thin omitted)
+- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 2321 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2f16b8b8`
+- Built from commit: `6a3ff45d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - FilesPage.tsx
-- sqlalchemy
+- cjhirashi-career-api/src/models/__init__.py
 - types/bedrock.ts
 - User
-- CareerResourceView.tsx
+- sqlalchemy_ext_asyncio
 - get_current_user
-- json
-- ._create_token
+- sqlalchemy
+- AuthService
 - ref_vitest
 - test_agent_loop.py
 - AdminSectionsPage.tsx
@@ -38,19 +38,19 @@
 - test_turn_context.py
 - routes/career_search.py
 - import_vault.py
-- test_section_routes.py
+- test_tools_catalog_routes.py
 - JobListing
 - test_vacancy_process_stage.py
 - providers/base.py
 - routes/career_digital.py
-- useBedrockChat.ts
+- AgentCatalogPage.tsx
 - UserRepository
-- types/bedrock.ts
+- schemas/bedrock.py
 - AdminSectionsPage.tsx
 - routes/career_metrics.py
 - providers/base.py
 - test_bedrock_converse.py
-- chat_stream
+- usage_logger.py
 - profile_tools.py
 - test_section_profiles.py
 - pdf_template_styles.py
@@ -61,18 +61,18 @@
 - CareerRepository
 - asyncio
 - 📚 Glosario (A–W)
-- cjhirashi-career-admin/package.json
+- BedrockSettings
 - test_attachments.py
-- ._record_to_text
+- ._index_for_search
 - get_profile
 - json
-- lucide-react
-- test_profile_prompts.py
+- cjhirashi-career-admin/src/types/index.ts
+- bedrock/agent_profiles.py
 - cjhirashi-career-portfolio/src/App.tsx
 - test_methodology_scope.py
 - ApiClient
 - settings_repo.py
-- converse_tool_specs
+- tools.py
 - test_admin_sections_rekey_surfaces.py
 - bedrock/prompt.py
 - Portal Público - Read-Only React SPA
@@ -80,30 +80,30 @@
 - services/admin_sections.py
 - web_search_service.py
 - asyncio
-- ._index_for_search
+- qdrant_service.py
 - middleware/test_auth.py
 - typing
 - resolve_profile_for_turn
 - routes/files.py
 - BedrockTask
-- 012-bedrock-three-level-agents.md
+- 09-DECISIONS/README.md
 - Carrera — Búsqueda de Empleo
 - profile_prompts.py
 - careerResources.ts
-- careerFieldUtils.ts
+- formatters.ts
 - pdf_service.py
 - VacancyResponse
 - test_vacancy_descriptive_texts.py
 - test_prompt_methodology.py
-- SectionMethodologiesEditor
-- 6 · Implementación por RF
+- set_section_methodologies
+- test_knowledge_base_reindex.py
 - services/test_profile_catalog.py
 - profile_repo.py
 - truncate_tool_result
-- tools.py
+- bedrock_service.py
 - service.py
 - 6 · Implementación por RF
-- test_pdf_style_persist.py
+- bedrock/agent_loop.py
 - Portal Público — Setup Guide
 - routes/linkedin.py
 - routes/job_discovery.py
@@ -111,23 +111,23 @@
 - cjhirashi-career-portfolio/src/tests/fixtures/mockData.ts
 - 10 · Implementación por requisito
 - BedrockConversation
-- test_conversation_repo.py
+- re
 - init_db
 - Tareas (atómicas, TDD, test antes que código)
-- _serialize_definition
+- bedrock/profile_catalog.py
 - task_scheduler.py
 - Nivel 2 — `tools.py`
 - Nivel 2 — `history_manager.py`
-- fetch
+- web_search_service.py
 - Introducción y Contexto - cjhirashi-career
 - Módulos
 - AgentProfile
 - test_memory_service.py
 - build_crud_router
 - compilerOptions
-- Vacancy
+- ErrorReportsPage.tsx
 - OperationalMethodology
-- validation_exception_handler
+- cjhirashi-career-api/src/app.py
 - cjhirashi-career-ai/tests/unit/test_config.py
 - cjhirashi-career-admin/src/App.tsx
 - BD del harness (`career_ai_db`) y migración desde `career_db`
@@ -147,49 +147,48 @@
 - devDependencies
 - test_initial_migration.py
 - devDependencies
-- AuthService
+- error_reporting.py
 - fixture
 - 1 · Fronteras y archivos por capa
 - Settings
-- Módulos
-- usage_logger.py
+- Archivos — `/files`
+- geo_ip_service.py
 - _invalid_fields_error
-- 09-DECISIONS/README.md
 - Método del arnés — `.harness/`
 - badgeContrast.test.ts
 - .status
-- test_tools_registry.py
+- test_app_boot.py
 - Carrera (JWT)
 - TestConstants
 - Vista de Bloques de Construcción - cjhirashi-career
 - API REST — Referencia de endpoints
 - ADR-010: Agentes agent_pdf_design y agent_visual_design
 - TestEndpointsParametrized
-- JobDiscoveryHttpError
-- TestJWTTokenCreation
+- ADR-021: PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible)
+- Nivel 2 — `prompt.py`
 - Autenticación — `/auth`
 - test_task_repo.py
-- import_vault.py
+- _parse_sprint_project
 - Nivel 2 — `budget.py`
 - Nivel 2 — `usage_logger.py`
-- apiClient
+- pdf_template_styles.py
 - Nivel 2 — `local_memory.py`
 - test_vacancy_process_stage_migration.py
 - compilerOptions
 - cjhirashi-career-admin/.eslintrc.json
-- test_admin_section_settings_views.py
+- _run_admin_section_settings
 - cjhirashi-career-admin/src/utils/reportClientError.ts
 - dependencies
 - routes/error_reports.py
-- RefreshToken
-- tools_for_section
+- AuditLog
+- ADR-027: Herramientas y metodologías por sección (agentes L2)
 - Nivel 2 — `settings_loader.py`
 - Tareas (atómicas, TDD, test antes que código)
 - BedrockAgentMemory
 - PdfClient
 - usage_service.py
 - Agent Bedrock — Harness Converse
-- FilesPage.tsx
+- test_section_routes.py
 - preview_store.py
 - test_vacancy_descriptive_texts_migration.py
 - cjhirashi-career-portfolio/.eslintrc.json
@@ -197,10 +196,9 @@
 - properties
 - cjhirashi-career
 - API REST — Guía de Configuración Local
-- cjhirashi-career-admin/src/types/index.ts
 - image_pipeline.py
 - test_job_discovery.py
-- CareerClient
+- routes/portal_metrics.py
 - Vista de Tiempo de Ejecución - cjhirashi-career
 - 3 · Modelo de datos y contratos de E/S
 - constants.ts
@@ -213,25 +211,25 @@
 - BedrockCustomTool
 - test_settings_profile_repo.py
 - API REST — cjhirashi-career — Troubleshooting Guide
-- Nivel 2 — `errors.py`
+- greenhouse.py
 - test_methodology_snippets.py
 - converse
 - ADR-022: División del L2 `agent_settings` — Configuración vs. Incidencias/Bitácora
 - cjhirashi-career-portfolio/package.json
 - Settings
 - dataclasses
-- schemas/career_identity.py
+- test_get_db_rolls_back_and_reraises_on_error
 - services/prompt.py
 - env
 - cjhirashi-career-admin/src/tests/setup.ts
-- Decisión
+- Bitácora del arnés — cjhirashi-career
 - API REST — cjhirashi-career — Modelo de Seguridad
-- test_visual_delegation_prompts.py
+- test_knowledge_base_routes.py
 - ADR-019: Prompt caching de Bedrock + proyección de campos y truncado por campo
-- pathlib
+- test_methodology_section_ids_migration.py
 - TestJWTMiddleware
 - Estrategia de Solución - cjhirashi-career
-- cjhirashi-career-api/tests/conftest.py
+- config
 - tools_registry.py
 - cjhirashi-career-ai/tests/conftest.py
 - generate_html_template_pdf
@@ -254,7 +252,7 @@
 - dependencies
 - scripts
 - Vista de Despliegue - cjhirashi-career
-- HomePage.tsx
+- Markdown.tsx
 - Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral
 - MermaidDiagram
 - SubtaskInput
@@ -266,13 +264,13 @@
 - _HtmlTextExtractor
 - getonboard.py
 - test_methodology_drop_section_migration.py
-- Project
-- ADR-010: Agentes agent_pdf_design y agent_visual_design
+- Plan de implementación
+- MermaidDiagram
 - ADR-015: Tareas de primer nivel y ejecución autónoma de agentes
 - Admin Panel Setup Guide
 - ADR-016: Subtareas, orquestación por turno y notificaciones al usuario
 - Career: tablas, relaciones y frontends del checklist de Paulina
-- set_agent_sections
+- section_catalog.py
 - test_isolation.py
 - GitHubProfile
 - Nivel 2 — `section_profiles.py`
@@ -281,32 +279,33 @@
 - Tareas (atómicas, TDD, test antes que código)
 - Nivel 2 — `reply_text.py`
 - Nivel 2 — `tool_results.py`
+- Contrato — `PUT /admin/sections/{section_id}`
 - ⚠️ Correcciones del usuario (leer SIEMPRE — no borrar)
 - TestUserIsolation
 - TestTokenRefresh
 - TestAuthorizationHeader
 - ADR-012: Jerarquía de agentes en 3 niveles
-- Sidebar contextual configurable por sección del Admin
+- ADR-017: L2 `agent_settings` — Configuración (catálogo de agentes, secciones del Admin, prompts globales)
 - Escenarios de Calidad y Atributos - cjhirashi-career
 - Pages
 - Development Commands
 - AGENTS.md — mapa de cjhirashi-career
-- Tareas (atómicas, TDD, test antes que código)
+- section_tools
 - should_nudge_progress
 - test_settings_loader.py
 - test_usage_repo.py
 - Carrera — Identidad Profesional
 - Carrera — Métricas
 - Documentación por sección — API REST
-- generate_image_bytes
-- formatCellValue
+- ADR-028: Contraste de los tokens semánticos de texto del Admin (tema claro)
+- 5 · Implementación por requisito
 - Portal Público — `/public`
 - Registro de Decisiones Arquitectónicas (ADR) - cjhirashi-career
 - items
 - compilerOptions
 - services/settings_loader.py
 - Recorder
-- Estilos PDF — `/pdf-template-styles`
+- PersonalProfile
 - scripts
 - TestCORSHandling
 - compilerOptions
@@ -316,8 +315,8 @@
 - ADR-029: Harness de agentes fuera de la API (`cjhirashi-career-ai`) y sin indexación
 - admin-section-item.schema.json
 - logger.ts
-- CompetencyBase
-- sanitize_assistant_reply
+- Chat Admin — Harness local
+- ca4ad88923c6_add_projects_slug.py
 - API REST — Documentación
 - Carrera — Metodologías Operativas
 - Carrera — Soporte (Tags)
@@ -326,16 +325,15 @@
 - Navegación en el módulo API
 - pathlib
 - unittest_mock
-- format_bedrock_client_error
-- test_pdf_generation.py
+- BedrockError
 - Riesgos Técnicos y Mitigación - cjhirashi-career
-- set_agent_methodologies
+- Configuración de agentes desde la App (metodologías y herramientas)
 - ADR-001 · Adopción del arnés SDD Anchored (simplificado) + perfil de arquitectura
 - ADR-002 · Forzar la Fase 1 y el gate automático (corrección de diseño del arnés)
 - Tareas
 - cjhirashi-career-ai/src/services/id_generator.py
 - useTracking.ts
-- test_github_service.py
+- test_system_readiness.py
 - test_middleware_extended.py
 - ADR-003 · Especialista de UX/UI en el arnés
 - Contrato — Secciones del Admin de cara a los agentes (spec 004)
@@ -345,7 +343,7 @@
 - Nivel 2 — `__init__.py`
 - utils/README.md
 - tests/README.md
-- ApplicationInteraction
+- 🗄️ Base de Datos Detallada
 - implementador.md
 - orquestador.md
 - ADR-026: Configuración de agentes desde la App (metodologías y herramientas)
@@ -356,7 +354,7 @@
 - Testing
 - client.py
 - Contrato — Herramientas por agente y catálogo de tools
-- test_memory_repo.py
+- ADR-008: Bedrock Harness local (Converse API)
 - API Client
 - Troubleshooting
 - Docker
@@ -364,14 +362,15 @@
 - Testing
 - Getting Started
 - State Management
-- datetime
-- LinkedIn — `/linkedin`
-- WorkHistoryResponse
-- services/admin_sections.py
-- Nivel 3 — `generate_image_bytes`
+- Módulos
+- asyncio
+- d8f2b5a13c97_vacancy_descriptive_texts.py
+- Application
+- Tareas (atómicas, TDD, test antes que código)
+- FitScoringFactor
 - test_max_tokens_truncation.py
 - listings_from_adzuna_payload
-- 🖥️ Admin Panel Detallado
+- Interview
 - Nivel 2 — `delegation.py`
 - test_generate_image_tool.py
 - test_id_generator.py
@@ -388,11 +387,11 @@
 - cjhirashi-career-admin/src/vite-env.d.ts
 - cjhirashi-career-ai
 - Publication
-- tool_results.py
+- Tag
 - Arquitectura
 - Arquitectura
 - Nivel 2 — `profile_catalog.py`
-- ADR-024: El sidebar contextual del Admin lo gobierna la sección
+- run_task_now
 - cjhirashi-career-portfolio/src/vite-env.d.ts
 - Environment Variables
 - State Management
@@ -402,165 +401,135 @@
 - id
 - sidebar_has_chat
 - sidebar_has_instructions
-- Plantillas PDF — `/pdf-templates`
+- resolve_template_css
 - list_error_reports.sh
 - resolve_error_report.sh
-- ProjectBase
-- pdf_service.py
-- ADR-018: Registro centralizado de fallas del sistema (`error_reports`)
+- CLAUDE.md
+- unit/README.md
 - explorador.md
 - specs/README.md
 - cjhirashi-career-ai
 - @vitejs/plugin-react
-- Herramientas y metodologías por sección
+- 3 · Modelo de datos y contratos de E/S
 - Tareas — `/agent-tasks`
-- readiness_check
-- test_compose_injects_assigned_catalog
+- agent_record_id
+- Paquete `schemas/`
 - Contrato de rutas del harness (`/ai/`)
-- a7b8c9d0e1f2_task_subtasks_notifications.py
-- test_resource_registry.py
-- ErrorBoundary
-- b2c3d4e5f6a7_admin_section_overrides_synthetic_pk.py
 - WorkHistory
-- Arquitectura
-- IndeedAdapter
-- Contrato — `GET /system/readiness`
-- apiClient
-- make_api_executor
 - c3d4e5f6a7b8_rename_agent_profile_ids.py
-- c7e1a4d92b60_vacancy_process_stage.py
-- d1e2f3a4b5c6_prefixed_ids_and_notes.py
-- Achievement
+- career_repository.py
 - CareerReview
-- Certification
-- Competency
 - ContactInteraction
 - CoverLetterVersion
-- CVVersion
 - Differentiator
 - IdentityReflection
-- NetworkingActivity
 - RoleGapAnalysis
 - RoleNarrative
-- CertificationBase
-- CompetencyBase
-- DifferentiatorBase
-- IdentityReflectionBase
-- RoleGapAnalysisBase
-- StarStoryBase
-- areport_error
-- TestLogoutEndpoint
-- tailwindcss
 - versions/README.md
-- get_user_repository
 - Paquete `services/`
 
 ## God Nodes (most connected - your core abstractions)
-1. `User` - 158 edges
+1. `User` - 156 edges
 2. `get_profile()` - 109 edges
-3. `react` - 102 edges
+3. `react` - 105 edges
 4. `CareerRepository` - 82 edges
-5. `FakeProvider` - 70 edges
-6. `make_api()` - 70 edges
-7. `vitest` - 70 edges
+5. `vitest` - 71 edges
+6. `FakeProvider` - 70 edges
+7. `make_api()` - 70 edges
 8. `report_error()` - 57 edges
 9. `priced()` - 56 edges
-10. `CareerResourceView()` - 56 edges
+10. `getErrorMessage()` - 56 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `Implementación de RF-003 — campos retirados → 422 RFC 9457 (humano) / error (tool)` --references--> `validation_exception_handler()`  [INFERRED]
+  .harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/plan.md → cjhirashi-career-api/src/app.py
+- `Bloque C — Handler RFC 9457  (`plan.md §5.2·4`, §6 RF-003)` --references--> `validation_exception_handler()`  [INFERRED]
+  .harness/specs/005-metodologias-esquema-minimo-y-vinculo-seccion/tasks.md → cjhirashi-career-api/src/app.py
 - `5. Frontend (UI mínima — sin tocar el Frente A)` --references--> `AdminSection`  [INFERRED]
   docs/09-DECISIONS/021-admin-sections-synthetic-pk.md → cjhirashi-career-admin/src/types/adminSections.ts
 - `Capas` --references--> `AuthService`  [INFERRED]
   docs/05-BUILDING-BLOCK-VIEW.md → cjhirashi-career-api/src/services/auth_service.py
 - `🔐 Escenario 2 — Carlos Abre el Admin Panel` --references--> `AuthService`  [INFERRED]
   docs/06-RUNTIME-VIEW.md → cjhirashi-career-api/src/services/auth_service.py
-- `RF-001 — modelo Bedrock con acceso vigente` --references--> `PurposeSpec`  [INFERRED]
-  .harness/specs/002-generacion-imagenes-agente-visual/plan.md → cjhirashi-career-api/src/services/bedrock/image_pipeline.py
-- `Ventana de regresión entre el deploy de código y la migración (R2, code review)` --references--> `AdminViewSpec`  [INFERRED]
-  docs/09-DECISIONS/021-admin-sections-synthetic-pk.md → cjhirashi-career-api/src/services/admin_sections.py
 
 ## Import Cycles
 - 3-file cycle: `cjhirashi-career-api/src/services/bedrock/__init__.py -> cjhirashi-career-api/src/services/bedrock/agent_loop.py -> cjhirashi-career-api/src/services/bedrock/profile_tools.py -> cjhirashi-career-api/src/services/bedrock/__init__.py`
 - 3-file cycle: `cjhirashi-career-api/src/services/bedrock/__init__.py -> cjhirashi-career-api/src/services/bedrock/agent_loop.py -> cjhirashi-career-api/src/services/bedrock/prompt.py -> cjhirashi-career-api/src/services/bedrock/__init__.py`
 - 3-file cycle: `cjhirashi-career-api/src/repositories/career_repository.py -> cjhirashi-career-api/src/services/bedrock_service.py -> cjhirashi-career-api/src/routes/career_common.py -> cjhirashi-career-api/src/repositories/career_repository.py`
 
-## Communities (478 total, 107 thin omitted)
+## Communities (462 total, 106 thin omitted)
 
 ### Community 0 - "FilesPage.tsx"
-Cohesion: 0.05
-Nodes (74): errorReportsApi, TableColumnSettings(), `components/section/` — chrome compartido de las secciones del Admin, Cuerpo a medida → primitivos directos, Detalle (`:id`) → `DetailSectionTemplate` + `SectionRecordView`, Lista estándar → `TableSectionTemplate`, RecordFieldSpec, RecordGroupSpec (+66 more)
+Cohesion: 0.04
+Nodes (94): filesApi, UploadFileOptions, CareerResourceViewProps, recordNameLabel(), ResourceFormProps, TableColumnSettings(), Modal(), ModalProps (+86 more)
 
-### Community 1 - "sqlalchemy"
-Cohesion: 0.02
-Nodes (46): upgrade(), downgrade(), upgrade(), upgrade(), downgrade(), upgrade(), downgrade(), upgrade() (+38 more)
+### Community 1 - "cjhirashi-career-api/src/models/__init__.py"
+Cohesion: 0.04
+Nodes (4): CVVersion, register_id_listener(), _assign_id(), _seq_name()
 
 ### Community 2 - "types/bedrock.ts"
-Cohesion: 0.07
-Nodes (64): MarkdownTable(), MarkdownTableProps, StateCapsule(), StateCapsuleProps, TaskCalendarView(), TaskCalendarViewProps, WEEKDAYS, emptyForm (+56 more)
+Cohesion: 0.06
+Nodes (71): Bubble(), MessageList(), TypingIndicator(), MarkdownTable(), MarkdownTableProps, PersonChip(), StateCapsule(), StateCapsuleProps (+63 more)
 
 ### Community 3 - "User"
-Cohesion: 0.05
-Nodes (95): get_current_user_dependency(), User, add_manual_memory(), chat(), create_agent_memory_note(), create_tool(), delete_agent_memory_note(), delete_conversation() (+87 more)
-
-### Community 4 - "CareerResourceView.tsx"
-Cohesion: 0.04
-Nodes (106): ListFilters, BucketImagePicker(), BucketImagePickerProps, Badge(), CareerResourceView(), CodeBlockPre(), extractText(), fetchRecordByUrlSegment() (+98 more)
+Cohesion: 0.11
+Nodes (45): User, add_manual_memory(), chat(), create_agent_memory_note(), create_tool(), delete_agent_memory_note(), delete_conversation(), delete_tool() (+37 more)
 
 ### Community 5 - "get_current_user"
-Cohesion: 0.09
-Nodes (4): get_current_user(), get_optional_current_user(), TestGetCurrentUser, TestGetOptionalCurrentUser
+Cohesion: 0.08
+Nodes (6): get_current_user(), get_optional_current_user(), `auth.py` — Bearer JWT, `test_middleware.py`, TestGetCurrentUser, TestGetOptionalCurrentUser
 
-### Community 6 - "json"
-Cohesion: 0.12
-Nodes (9): upgrade(), _build_content(), downgrade(), upgrade(), upgrade(), _fake_response(), _reset_client_singleton(), test_error_message_includes_model_and_region() (+1 more)
+### Community 6 - "sqlalchemy"
+Cohesion: 0.02
+Nodes (76): upgrade(), downgrade(), upgrade(), downgrade(), upgrade(), downgrade(), upgrade(), downgrade() (+68 more)
 
-### Community 7 - "._create_token"
-Cohesion: 0.11
-Nodes (3): TestJWTTokenDecoding, Implementación de RF-019, Bloque I — API: cambios aditivos (etapa 1)
+### Community 7 - "AuthService"
+Cohesion: 0.05
+Nodes (11): change_password(), get_user_repository(), login(), refresh_token(), AuthService, `auth_service.py` — JWT y contraseñas, TestExtractUserIdFromToken, TestJWTTokenCreation (+3 more)
 
 ### Community 8 - "ref_vitest"
 Cohesion: 0.05
-Nodes (61): agentTasksApi, bedrockApi, careerApi, mockedCareerApi, render(), sampleItem, mockedCareerApi, render() (+53 more)
+Nodes (59): agentTasksApi, bedrockApi, careerApi, CAREER_RESOURCES, CareerResourcePage(), mockedCareerApi, render(), sampleItem (+51 more)
 
 ### Community 9 - "test_agent_loop.py"
-Cohesion: 0.10
-Nodes (83): ToolCall, _api_tool_status(), client_error(), converse_message(), delegate_call(), FakeProvider, FakeSections, _key() (+75 more)
+Cohesion: 0.09
+Nodes (84): ToolCall, _api_tool_status(), client_error(), converse_message(), delegate_call(), FakeProvider, FakeSections, _key() (+76 more)
 
 ### Community 10 - "AdminSectionsPage.tsx"
-Cohesion: 0.08
-Nodes (43): adminSectionsApi, CONTEXTUAL_CHAT_HIDDEN_ROUTES, isContextualChatHidden(), isDesktopViewport(), isXlViewport(), Layout(), LayoutProps, useSectionViewTabs() (+35 more)
+Cohesion: 0.07
+Nodes (49): adminSectionsApi, CONTEXTUAL_CHAT_HIDDEN_ROUTES, isContextualChatHidden(), isDesktopViewport(), isXlViewport(), Layout(), LayoutProps, useSectionViewTabs() (+41 more)
 
 ### Community 11 - "CareerResourceView.tsx"
 Cohesion: 0.03
-Nodes (84): ListParams, API_BASE_URL, axiosInstance, ADR-0018, notificationsApi, UserNotification, PdfOutputTemplate, PdfTemplatePayload (+76 more)
+Nodes (130): ListFilters, ListParams, PdfOutputTemplate, PdfTemplatePayload, pdfTemplatesApi, PdfTemplateStyle, pdfTemplateStylesApi, Badge() (+122 more)
 
 ### Community 12 - "agentProfiles.ts"
 Cohesion: 0.08
-Nodes (41): AGENT_CHANGELOG, AGENT_CONFIGURATION, AGENT_COVER_LETTER_WRITING, AGENT_CV_WRITING, AGENT_DIGITAL_PRESENCE, AGENT_GITHUB, AGENT_LINKEDIN_PUBLISHING, AGENT_METHODOLOGIES (+33 more)
+Nodes (42): AGENT_CHANGELOG, AGENT_CONFIGURATION, AGENT_COVER_LETTER_WRITING, AGENT_CV_WRITING, AGENT_DIGITAL_PRESENCE, AGENT_GITHUB, AGENT_LINKEDIN_PUBLISHING, AGENT_METHODOLOGIES (+34 more)
 
 ### Community 13 - "routes/public.py"
-Cohesion: 0.23
-Nodes (18): _achievement_detail(), get_about(), _hero_ctas(), _stats(), PublicAboutResponse, PublicAchievementDetail, PublicBlogPost, PublicCertification (+10 more)
+Cohesion: 0.12
+Nodes (33): Project, _achievement_detail(), _blog_post(), _competency_names_by_id(), get_about(), get_blog_post(), get_contact(), get_home() (+25 more)
 
 ### Community 14 - "routes/career_identity.py"
-Cohesion: 0.18
-Nodes (16): AchievementUpdate, CareerReviewBase, CareerReviewCreate, CareerReviewResponse, Config, CareerReviewUpdate, CertificationUpdate, CompetencyUpdate (+8 more)
+Cohesion: 0.06
+Nodes (69): AchievementBase, AchievementCreate, AchievementResponse, Config, AchievementUpdate, CareerReviewBase, CareerReviewCreate, CareerReviewResponse (+61 more)
 
 ### Community 15 - "pytest"
-Cohesion: 0.08
-Nodes (53): ApiError, as_user(), make_api(), test_204_returns_none_and_bytes_helpers(), test_auth_none_sends_no_authorization(), test_auth_service_uses_token_even_inside_a_user_turn(), test_client_errors_map_to_api_error_without_retry(), test_error_detail_falls_back_to_text_and_structured_detail() (+45 more)
+Cohesion: 0.05
+Nodes (57): ApiError, AuditClient, NotificationsClient, as_user(), make_api(), test_204_returns_none_and_bytes_helpers(), test_auth_none_sends_no_authorization(), test_auth_service_uses_token_even_inside_a_user_turn() (+49 more)
 
 ### Community 16 - ".vacancy_status"
-Cohesion: 0.05
-Nodes (47): badgeByStatusGeneric(), ProcessStage, vacancy_status_for(), 10 · Preguntas abiertas y riesgos, 1 · Diseño por capa, 2 · Fronteras y contratos, 3 · Migración `c7e1a4d92b60`, 4 · Secuenciación (tests antes que código) (+39 more)
+Cohesion: 0.06
+Nodes (38): vacancyStageLabel(), ProcessStage, VacancyStatus, vacancy_status_for(), async_client(), 10 · Preguntas abiertas y riesgos, 1 · Diseño por capa, 2 · Fronteras y contratos (+30 more)
 
 ### Community 17 - "Módulos"
-Cohesion: 0.08
-Nodes (25): _collection_exists(), delete_point(), _ensure_collection(), _get_client(), _point_id(), scroll_points(), search(), set_point_payload() (+17 more)
+Cohesion: 0.22
+Nodes (9): `bedrock_service.py` — Fachada del agente, `__init__.py`, `linkedin_scheduler.py`, Módulos, `pdf_template_css.py`, `pdf_template_render.py`, `section_catalog.py` (spec 004), `task_scheduler.py` (+1 more)
 
 ### Community 18 - "Evidencia (salida real pegada)"
-Cohesion: 0.04
-Nodes (51): token(), MissingCredentialError, ErrorsClient, authenticate_token(), _extract_bearer(), require_principal(), _unauthorized(), current_service_context() (+43 more)
+Cohesion: 0.08
+Nodes (27): MissingCredentialError, authenticate_token(), _extract_bearer(), require_principal(), _unauthorized(), current_service_context(), Principal, principal_scope() (+19 more)
 
 ### Community 19 - "test_turn_context.py"
 Cohesion: 0.06
@@ -568,315 +537,319 @@ Nodes (44): session_factory(), FakeDb, FakeMethodologies, FakeSections, lines_of
 
 ### Community 20 - "routes/career_search.py"
 Cohesion: 0.06
-Nodes (65): ApplicationBase, ApplicationCreate, ApplicationInteractionBase, ApplicationInteractionCreate, ApplicationInteractionResponse, Config, ApplicationInteractionUpdate, ApplicationResponse (+57 more)
+Nodes (72): ApplicationBase, ApplicationCreate, ApplicationInteractionBase, ApplicationInteractionCreate, ApplicationInteractionResponse, Config, ApplicationInteractionUpdate, ApplicationResponse (+64 more)
 
 ### Community 21 - "import_vault.py"
 Cohesion: 0.09
-Nodes (24): import_achievements(), import_career_reviews(), import_certifications(), import_competencies(), import_content_and_publications(), import_cover_letter_versions(), import_cv_versions(), import_digital_platforms() (+16 more)
+Nodes (31): _best_fit_role_id(), clean_multiline(), get_user_id(), import_achievements(), import_career_reviews(), import_certifications(), import_competencies(), import_contact_interactions() (+23 more)
 
-### Community 22 - "test_section_routes.py"
-Cohesion: 0.05
-Nodes (36): get_db(), test_get_db_rolls_back_and_reraises_on_error(), test_get_db_yields_session_and_closes_on_success(), test_lifespan_disposes_engine_on_shutdown(), _client(), _FakeDB, _FakeUser, _override_db() (+28 more)
+### Community 22 - "test_tools_catalog_routes.py"
+Cohesion: 0.14
+Nodes (13): _client(), _FakeDB, _FakeResult, _FakeScalars, _FakeUser, _override_db(), _override_user(), test_get_agent_tools_returns_state() (+5 more)
 
 ### Community 23 - "JobListing"
-Cohesion: 0.06
-Nodes (28): adzuna_configured(), search_adzuna(), JobBoardAdapter, GetOnBoardAdapter, listings_from_greenhouse_payload(), _parse_date(), search_greenhouse_board(), get_json() (+20 more)
+Cohesion: 0.07
+Nodes (21): adzuna_configured(), search_adzuna(), JobBoardAdapter, GetOnBoardAdapter, get_json(), IndeedAdapter, build_linkedin_search_urls(), LinkedInSearchAdapter (+13 more)
 
 ### Community 24 - "test_vacancy_process_stage.py"
-Cohesion: 0.08
-Nodes (43): prepare_vacancy_write(), stages_for_statuses(), _create(), _expected(), _same_instant(), seeded(), _stages(), test_catalog_matches_contract_values_and_order() (+35 more)
+Cohesion: 0.06
+Nodes (48): Vacancy, prepare_vacancy_write(), stages_for_statuses(), _create(), _expected(), http_env(), repo_env(), _same_instant() (+40 more)
 
 ### Community 25 - "providers/base.py"
 Cohesion: 0.07
-Nodes (18): ImageResult, ModelInfo, ModelProvider, ModelResponse, StreamEvent, estimate_cost(), list_models(), supports_prompt_cache() (+10 more)
+Nodes (15): ImageResult, ModelInfo, ModelProvider, ModelResponse, StreamEvent, cache_read_savings_usd(), estimate_cost(), list_models() (+7 more)
 
 ### Community 26 - "routes/career_digital.py"
-Cohesion: 0.10
+Cohesion: 0.13
 Nodes (30): GitHubProfileBase, GitHubProfileCreate, GitHubProfileResponse, Config, GitHubProfileUpdate, LinkedInProfileBase, LinkedInProfileCreate, LinkedInProfileResponse (+22 more)
 
-### Community 27 - "useBedrockChat.ts"
-Cohesion: 0.06
-Nodes (60): AttachmentPreview(), AttachmentPreviewProps, ChatComposer(), ChatComposerProps, ComposerAttachment, isImageMime(), revokePreview(), ChatWindow() (+52 more)
+### Community 27 - "AgentCatalogPage.tsx"
+Cohesion: 0.03
+Nodes (114): BedrockChatResult, BedrockChatStreamCallbacks, BedrockDelegationEndEvent, BedrockDelegationStartEvent, API_BASE_URL, AttachmentPreview(), AttachmentPreviewProps, ChatComposer() (+106 more)
 
 ### Community 28 - "UserRepository"
-Cohesion: 0.08
-Nodes (7): `user_repository.py` — Usuarios, UserRepository, get_user_repository(), login(), register(), `test_repositories.py`, TestUserRepository
-
-### Community 29 - "types/bedrock.ts"
 Cohesion: 0.06
-Nodes (46): BedrockChatResult, BedrockChatStreamCallbacks, BedrockDelegationEndEvent, BedrockDelegationStartEvent, ConversationHistory(), ConversationHistoryProps, relativeTime(), Bubble() (+38 more)
+Nodes (13): get_user_repository(), Arquitectura, `base_repository.py` — CRUD genérico, `career_repository.py` — Dominio carrera, `__init__.py`, Paquete `repositories/`, `user_repository.py` — Usuarios, UserRepository (+5 more)
+
+### Community 29 - "schemas/bedrock.py"
+Cohesion: 0.06
+Nodes (46): BedrockAgentCatalogItem, BedrockAgentCatalogMethodology, BedrockAgentCatalogSection, BedrockAgentDelegationTarget, BedrockAgentDelegationUpdateRequest, BedrockAgentMemoryResponse, BedrockAgentMethodologiesUpdateRequest, BedrockAgentNote (+38 more)
 
 ### Community 30 - "AdminSectionsPage.tsx"
-Cohesion: 0.07
-Nodes (47): BooleanField(), BooleanFieldProps, FieldParseError, CreatableSelectField(), CreatableSelectFieldProps, FkMultiSelectField(), FkMultiSelectFieldProps, splitValues() (+39 more)
+Cohesion: 0.06
+Nodes (53): BooleanField(), BooleanFieldProps, CreatableSelectField(), CreatableSelectFieldProps, FkMultiSelectField(), FkMultiSelectFieldProps, splitValues(), FkSelectField() (+45 more)
 
 ### Community 31 - "routes/career_metrics.py"
-Cohesion: 0.07
-Nodes (18): Application, FitScoringFactor, Interview, MarketSegment, NetworkingContact, SearchPlan, _count_by(), get_search_overview() (+10 more)
+Cohesion: 0.05
+Nodes (27): ApplicationInteraction, MarketSegment, NetworkingActivity, NetworkingContact, SearchPlan, SearchPlatform, TargetCompany, _boolean_rate() (+19 more)
 
 ### Community 32 - "providers/base.py"
-Cohesion: 0.06
-Nodes (21): get_provider(), ToolSpec, BedrockProvider, _block_index(), build_converse_kwargs(), cache_point(), consume_converse_stream(), _finish_tool_call() (+13 more)
+Cohesion: 0.07
+Nodes (18): ToolSpec, BedrockProvider, _block_index(), build_converse_kwargs(), cache_point(), consume_converse_stream(), _finish_tool_call(), iter_stream_events() (+10 more)
 
 ### Community 33 - "test_bedrock_converse.py"
-Cohesion: 0.11
-Nodes (35): ModelRequest, Usage, client_error(), fake_boto_client(), FakeStreamClient, make_settings(), provider_with(), test_assistant_text_is_sanitized_of_think_markup() (+27 more)
+Cohesion: 0.09
+Nodes (38): ModelRequest, Usage, BedrockError, format_bedrock_client_error(), client_error(), fake_boto_client(), FakeStreamClient, make_settings() (+30 more)
 
-### Community 34 - "chat_stream"
-Cohesion: 0.04
-Nodes (33): BedrockUsageLog, BedrockUsageRoundLog, add_round_log(), add_turn_log(), get_daily_spend_usd(), sum_cost_since(), usage_by_day(), usage_by_model() (+25 more)
+### Community 34 - "usage_logger.py"
+Cohesion: 0.08
+Nodes (21): BedrockUsageLog, BedrockUsageRoundLog, add_round_log(), add_turn_log(), get_daily_spend_usd(), sum_cost_since(), usage_by_day(), usage_by_model() (+13 more)
 
 ### Community 35 - "profile_tools.py"
 Cohesion: 0.07
-Nodes (31): default_tool_names(), effective_tool_names(), get_tool_override(), get_tool_state(), list_builtin_tool_catalog(), list_tool_overrides(), resolve_effective_tools(), set_tool_override() (+23 more)
+Nodes (33): BedrockAgentProfileTool, default_tool_names(), effective_tool_names(), get_tool_override(), get_tool_state(), list_builtin_tool_catalog(), list_tool_overrides(), resolve_effective_tools() (+25 more)
 
 ### Community 36 - "test_section_profiles.py"
-Cohesion: 0.08
-Nodes (28): resolve(), sp(), test_chat_profile_maps_to_profile_model(), test_chat_profile_wins_over_resource_key(), test_context_without_known_keys_returns_default(), test_default_is_read_from_settings_at_call_time(), test_does_not_mutate_page_context(), test_empty_chat_profile_falls_through_to_resource_key() (+20 more)
+Cohesion: 0.18
+Nodes (20): resolve(), sp(), test_chat_profile_maps_to_profile_model(), test_chat_profile_wins_over_resource_key(), test_context_without_known_keys_returns_default(), test_default_is_read_from_settings_at_call_time(), test_does_not_mutate_page_context(), test_empty_chat_profile_falls_through_to_resource_key() (+12 more)
 
 ### Community 37 - "pdf_template_styles.py"
-Cohesion: 0.08
-Nodes (23): POST /pdf-template-styles — Crear, POST /pdf-templates — Crear, create_style(), delete_style(), get_style(), list_styles(), update_style(), create_template() (+15 more)
+Cohesion: 0.15
+Nodes (16): POST /pdf-template-styles — Crear, create_template(), delete_template(), get_default_template(), get_template(), list_templates(), _normalize_style_id(), update_template() (+8 more)
 
 ### Community 39 - "test_usage_service.py"
 Cohesion: 0.18
 Nodes (7): test_ahorro_de_cache_se_deriva_de_estimate_cost_y_coincide_con_la_tabla_de_precios(), test_budget_exceeded_es_un_error_de_proveedor(), test_coste_y_ahorro_usan_el_provider_inyectado(), test_record_round_log_con_coste_fijo_y_sin_modelo(), test_record_turn_usage_calcula_coste_con_cache(), test_registro_de_uso_nunca_rompe_el_chat(), _usage()
 
 ### Community 40 - "schemas/user.py"
-Cohesion: 0.07
-Nodes (18): logout(), refresh_token(), update_profile(), `user.py` — Auth y perfil, LoginRequest, LoginResponse, LogoutResponse, PasswordChangeRequest (+10 more)
+Cohesion: 0.06
+Nodes (22): PATCH /auth/me, POST /auth/login, POST /auth/refresh, POST /auth/register, Request / Response, logout(), update_profile(), `user.py` — Auth y perfil (+14 more)
 
 ### Community 41 - "services/agent_loop.py"
-Cohesion: 0.08
-Nodes (22): chat_stream(), ChatTurnRequest, _effective_model(), _has_unstopped_progress_claim(), _has_usage(), invalidation_key(), is_write_tool(), _l2_write_profile_ids() (+14 more)
+Cohesion: 0.04
+Nodes (41): MethodologiesClient, SectionsClient, chat_stream(), ChatTurnRequest, _effective_model(), _has_unstopped_progress_claim(), _has_usage(), invalidation_key() (+33 more)
 
 ### Community 42 - "CareerRepository"
-Cohesion: 0.10
-Nodes (6): CareerRepository, _fire_and_forget(), test_as_bool_accepts_spanish_and_english(), test_as_bool_maps_each_multi_select_value(), test_contract_type_is_a_distinct_text_field(), test_duplicate_vacancy_url_raises_integrity_error()
+Cohesion: 0.09
+Nodes (7): Competency, CareerRepository, _fire_and_forget(), test_as_bool_accepts_spanish_and_english(), test_as_bool_maps_each_multi_select_value(), test_contract_type_is_a_distinct_text_field(), test_duplicate_vacancy_url_raises_integrity_error()
 
 ### Community 43 - "asyncio"
-Cohesion: 0.07
-Nodes (4): TestChangePasswordEndpoint, TestLoginEndpoint, TestRefreshEndpoint, TestRegisterEndpoint
+Cohesion: 0.06
+Nodes (5): TestChangePasswordEndpoint, TestLoginEndpoint, TestLogoutEndpoint, TestRefreshEndpoint, TestRegisterEndpoint
 
 ### Community 44 - "📚 Glosario (A–W)"
 Cohesion: 0.05
 Nodes (44): Admin Panel, Agent Bedrock, Aislamiento de Usuario (*User Isolation*), API REST, Arc42, Audit Log (`audit_logs`), Autenticación y Autorización, Canal (de entrada) (+36 more)
 
-### Community 45 - "cjhirashi-career-admin/package.json"
-Cohesion: 0.04
-Nodes (44): description, engines, node, autoprefixer, axios, clsx, date-fns, eslint (+36 more)
+### Community 45 - "BedrockSettings"
+Cohesion: 0.09
+Nodes (18): BedrockSettings, BedrockSettings, _instructions_response(), default_system_prompt(), default_global_rules(), default_system_prompt(), get_global_rules(), get_system_prompt() (+10 more)
 
 ### Community 46 - "test_attachments.py"
 Cohesion: 0.11
 Nodes (34): ProviderError, boom(), build(), Db, build(), Db, test_non_json_200_on_metadata_propagates_as_value_error_not_as_not_found(), test_unsafe_id_is_still_not_found_without_any_request() (+26 more)
 
-### Community 47 - "._record_to_text"
-Cohesion: 0.07
-Nodes (23): _methodology_snippet(), [2026-09-04] 001 · Sidebar contextual configurable por sección — verified, [2026-09-04] 002-generacion-imagenes-agente-visual — verified, [2026-09-04] Corrección de diseño del arnés — forzar Fase 1 y gate automático, [2026-09-04] Génesis del arnés — completada, [2026-09-04] Sesión — cerrar migración de red (MSG-0004), [2026-09-04] Sesión — resolver mensajes de `caddy.json`, [2026-09-04] Sesión — retirar el MCP Server (+15 more)
+### Community 47 - "._index_for_search"
+Cohesion: 0.04
+Nodes (42): _methodology_snippet(), test_index_for_search_includes_agent_profile_ids_for_methodology(), [2026-09-07] 003 (Bloque J) — lectura selectiva de metodologías — verified, 5 · Detalle por RF, RF-001 / RF-002 — override de tools reemplaza al default, RF-003 — el catálogo expone default/override/efectivo, RF-004 — tool desconocida → 400, RF-005 — `delegate_to_specialist` por nivel (+34 more)
 
 ### Community 48 - "get_profile"
-Cohesion: 0.10
-Nodes (37): can_delegate_to(), canonical_profile_id(), delegation_error(), get_profile(), resolve_agent_profile(), tools_for_profile(), resolved_tool_names(), all_tool_names() (+29 more)
+Cohesion: 0.11
+Nodes (34): get_profile(), resolve_agent_profile(), tools_for_profile(), resolved_tool_names(), all_tool_names(), test_agent_configuration_owns_config_tools(), test_agent_settings_owns_its_tools_only(), test_configuration_routes_resolve_to_agent_configuration() (+26 more)
 
 ### Community 49 - "json"
-Cohesion: 0.14
-Nodes (19): ImageOptions, BedrockError, generate_image_bytes(), validate_params(), body_of(), ExplodingClient, fake_image_client(), make_settings() (+11 more)
+Cohesion: 0.13
+Nodes (19): ImageOptions, generate_image_bytes(), validate_params(), body_of(), ExplodingClient, fake_image_client(), make_settings(), provider_with() (+11 more)
 
-### Community 50 - "lucide-react"
-Cohesion: 0.10
-Nodes (30): linkedinApi, Navbar(), NavbarProps, NotificationBell(), THEME_OPTIONS, ThemeOption, ThemeToggle(), linkedinPostsKey (+22 more)
+### Community 50 - "cjhirashi-career-admin/src/types/index.ts"
+Cohesion: 0.05
+Nodes (55): authApi, axiosInstance, ADR-0018, notificationsApi, UserNotification, Navbar(), NavbarProps, NotificationBell() (+47 more)
+
+### Community 51 - "bedrock/agent_profiles.py"
+Cohesion: 0.09
+Nodes (26): BedrockAgentDelegation, AgentProfile, can_delegate_to(), canonical_profile_id(), delegate_tool_description(), delegation_error(), delegation_targets(), list_profiles() (+18 more)
 
 ### Community 52 - "cjhirashi-career-portfolio/src/App.tsx"
-Cohesion: 0.18
-Nodes (22): App(), queryClient, ErrorMessage(), ErrorMessageProps, LoadingSpinner(), Markdown(), useAbout(), useBlogPostBySlug() (+14 more)
+Cohesion: 0.15
+Nodes (28): App(), queryClient, BlogCard(), ErrorMessage(), ErrorMessageProps, LoadingSpinner(), MetricChips(), MetricChipsProps (+20 more)
 
 ### Community 53 - "test_methodology_scope.py"
-Cohesion: 0.08
-Nodes (30): known_agent_profile_ids(), applies_to_agent(), applies_to_caller(), is_shared_methodology(), list_assigned_methodologies(), list_methodologies_for_catalog(), next_agent_profile_ids(), strip_l2_from_agent_ids() (+22 more)
+Cohesion: 0.04
+Nodes (51): OperationalMethodology, _normalize_agent_profile_ids(), OperationalMethodologyBase, OperationalMethodologyCreate, OperationalMethodologyResponse, Config, OperationalMethodologyUpdate, known_agent_profile_ids() (+43 more)
 
 ### Community 54 - "ApiClient"
-Cohesion: 0.10
-Nodes (5): ApiClient, _detail(), JobDiscoveryClient, NotificationsClient, test_default_client_uses_settings_and_closes()
+Cohesion: 0.09
+Nodes (6): token(), ApiClient, _detail(), ErrorsClient, JobDiscoveryClient, Bloque C (clientes REST) — evidencia
 
 ### Community 55 - "settings_repo.py"
 Cohesion: 0.31
 Nodes (7): get_global_rules_override(), get_settings(), get_system_prompt_override(), set_active_model_id(), set_global_rules(), set_system_prompt(), update_settings()
 
-### Community 56 - "converse_tool_specs"
-Cohesion: 0.18
-Nodes (12): _serialize_list_item(), converse_tool_specs(), test_converse_tool_specs_subset(), test_delegate_spec_lists_allowed_targets(), _competency(), test_list_career_record_schema_exposes_fields_param(), test_list_item_ignores_unknown_extra_field(), test_list_item_includes_requested_extra_field() (+4 more)
+### Community 56 - "tools.py"
+Cohesion: 0.14
+Nodes (17): FileType, PdfOutputTemplate, _default_pdf_template(), _execute_extended(), execute_tool(), invalidation_key(), _linkedin_connection(), _load_pdf_template() (+9 more)
 
 ### Community 58 - "test_admin_sections_rekey_surfaces.py"
-Cohesion: 0.07
-Nodes (29): AdminSectionItem, AdminSectionUpdateRequest, AdminSectionView, AdminSectionViewUpdate, overrides_db(), test_put_reset_via_empty_payload(), test_put_unknown_view_key_is_ignored(), test_route_get_and_put_section_by_sec_n() (+21 more)
+Cohesion: 0.09
+Nodes (25): AdminSectionItem, AdminSectionUpdateRequest, AdminSectionView, AdminSectionViewUpdate, overrides_db(), test_put_reset_via_empty_payload(), test_put_unknown_view_key_is_ignored(), test_route_get_and_put_section_by_sec_n() (+17 more)
 
 ### Community 59 - "bedrock/prompt.py"
 Cohesion: 0.11
-Nodes (21): BedrockGlobalRulesUpdateRequest, compose_system_prompt(), default_global_rules(), get_global_rules_override(), get_system_prompt_override(), settings_db_session(), test_compose_reads_global_rules_override_fresh_each_call(), test_compose_uses_default_global_rules_without_override() (+13 more)
+Nodes (20): compose_system_prompt(), default_global_rules(), get_global_rules_override(), get_system_prompt_override(), settings_db_session(), test_compose_reads_global_rules_override_fresh_each_call(), test_compose_uses_default_global_rules_without_override(), fake_global_rules_override() (+12 more)
 
 ### Community 60 - "Portal Público - Read-Only React SPA"
 Cohesion: 0.05
 Nodes (39): AboutPage, Accessibility, API Integration, BlogPage, Build, Code Quality, Code Quality Standards, Components (+31 more)
 
 ### Community 61 - "FilesClient"
-Cohesion: 0.09
-Nodes (7): get_api_client(), AuditClient, _check(), FilesClient, build_user_content_blocks(), _metadata(), T-084b — services/attachments.py + FilesClient.get_download_url (verde)
+Cohesion: 0.08
+Nodes (10): get_api_client(), CareerClient, _check(), LocalResourceError, FilesClient, build_user_content_blocks(), _metadata(), 9 · Riesgos (+2 more)
 
 ### Community 62 - "services/admin_sections.py"
-Cohesion: 0.09
-Nodes (26): get_section_by_system_name(), list_section_specs(), match_section(), test_career_sections_system_name_is_prefixed_resource_key(), test_defaults_are_l2_or_none(), test_every_section_serializes_without_override(), test_files_is_bucket_and_dashboard_is_metrics(), test_frozen_numbering_full_map() (+18 more)
+Cohesion: 0.10
+Nodes (30): AdminSectionSpec, AdminViewSpec, _career(), _crud_views(), get_section_by_system_name(), list_section_specs(), _main_view(), match_section() (+22 more)
 
 ### Community 63 - "web_search_service.py"
-Cohesion: 0.16
-Nodes (11): assert_public_http_url(), _blocked_ip(), _ddg_search(), _headers(), parse_ddg_html(), _strip_tags(), unwrap_ddg_href(), WebSearchError (+3 more)
+Cohesion: 0.21
+Nodes (5): assert_public_http_url(), _blocked_ip(), WebSearchError, test_ssrf_blocks_embedded_credentials(), test_ssrf_blocks_localhost_and_private_ips()
 
 ### Community 64 - "asyncio"
-Cohesion: 0.06
-Nodes (5): Identity, TestDatabaseCleanup, TestDatabaseConnection, TestDatabaseSession, TestDatabaseTransactions
+Cohesion: 0.05
+Nodes (7): Identity, test_user(), TestPasswordHashing, TestDatabaseCleanup, TestDatabaseConnection, TestDatabaseSession, TestDatabaseTransactions
 
-### Community 65 - "._index_for_search"
-Cohesion: 0.08
-Nodes (24): Qdrant (externo), BedrockKnowledgeBaseReindexResult, embed_text(), prune_stale_points(), purge_orphans(), upsert_point(), test_index_for_search_includes_agent_profile_ids_for_methodology(), Reapertura — 2026-09-07 (consistencia del knowledge base) (+16 more)
+### Community 65 - "qdrant_service.py"
+Cohesion: 0.09
+Nodes (29): _all_user_ids(), reindex_knowledge_base(), delete_agent_note(), _collection_exists(), delete_point(), _ensure_collection(), _get_client(), _point_id() (+21 more)
 
 ### Community 66 - "middleware/test_auth.py"
-Cohesion: 0.14
-Nodes (31): current_principal(), _assert_rejected(), client(), probe(), _get(), _no_network(), _sign(), test_algoritmo_none_401() (+23 more)
+Cohesion: 0.13
+Nodes (32): current_principal(), test_scopes_restore_previous_context(), _assert_rejected(), client(), probe(), _get(), _no_network(), _sign() (+24 more)
 
 ### Community 67 - "typing"
-Cohesion: 0.02
-Nodes (59): upgrade(), upgrade(), upgrade(), upgrade(), upgrade(), downgrade(), _existing(), upgrade() (+51 more)
+Cohesion: 0.04
+Nodes (23): list_notifications(), mark_all_read(), mark_read(), unread_count(), BedrockTaskBase, BedrockTaskResponse, Config, CompetencyBase (+15 more)
 
 ### Community 68 - "resolve_profile_for_turn"
-Cohesion: 0.09
-Nodes (23): resolve_profile_for_turn(), 0 · Enfoque, 5 · Secuenciación (test antes que código), 6 · Implementación por RF, 7 · § Impacto en documentación *(obligatorio, Art. 11)*, 8 · `covers` (fijado en el front-matter de `spec.md`), Plan de implementación (patrón por capas), RF-002 — PUT con agente no-L2 → 400 Problem (+15 more)
+Cohesion: 0.06
+Nodes (36): resolve_profile_for_turn(), [2026-09-04] 001 · Sidebar contextual configurable por sección — verified, 0 · Enfoque, 2 · Fronteras de salida, 5 · Secuenciación (test antes que código), 6 · Implementación por RF, 7 · § Impacto en documentación *(obligatorio, Art. 11)*, 8 · `covers` (fijado en el front-matter de `spec.md`) (+28 more)
 
 ### Community 69 - "routes/files.py"
 Cohesion: 0.05
-Nodes (28): Variables de entorno, FileType, FileUpload, count_files(), CountResponse, delete_file(), download_file(), get_download_url() (+20 more)
+Nodes (23): Variables de entorno, FileUpload, count_files(), delete_file(), download_file(), get_download_url(), _has_real_transparency(), _infer_file_type() (+15 more)
 
 ### Community 70 - "BedrockTask"
-Cohesion: 0.11
-Nodes (21): BedrockTask, BedrockTask, BedrockTaskCreate, _execute_result(), test_agent_ready_on_turn_without_schedule(), test_blocking_sibling_gates_later_subtask(), test_build_execution_prompt_includes_title(), test_claim_due_task_ids_skips_future_and_user_tasks() (+13 more)
+Cohesion: 0.12
+Nodes (20): BedrockTask, BedrockTask, BedrockTaskCreate, _execute_result(), test_agent_ready_on_turn_without_schedule(), test_blocking_sibling_gates_later_subtask(), test_build_execution_prompt_includes_title(), test_claim_due_task_ids_skips_future_and_user_tasks() (+12 more)
 
-### Community 71 - "012-bedrock-three-level-agents.md"
-Cohesion: 0.08
-Nodes (19): Chat Admin — Harness local, Historial por agente, Preferencias por sesión, Superficies y niveles (ADR-012), ADR-008: Bedrock Harness local (Converse API), Consecuencias, Contexto, Decisión (+11 more)
+### Community 71 - "09-DECISIONS/README.md"
+Cohesion: 0.22
+Nodes (3): ADR-009: Multi-agente — dos chats y delegación, Decisión, Estado
 
 ### Community 72 - "Carrera — Búsqueda de Empleo"
 Cohesion: 0.22
 Nodes (9): Archivos fuente, Arquitectura, Carrera — Búsqueda de Empleo, Ejemplo: generar PDF de CV, Ejemplo: listar vacantes pendientes, Esquema: `applications` / `application-interactions` / `interviews` (checklist Paulina #13), Etapa y estado de la vacante, Métricas (+1 more)
 
 ### Community 73 - "profile_prompts.py"
-Cohesion: 0.05
-Nodes (41): get_effective_suffix(), Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo (+33 more)
+Cohesion: 0.08
+Nodes (26): BedrockAgentProfilePrompt, BedrockAgentProfilePrompt, get_effective_suffix(), list_profile_prompts(), _overrides_map(), set_profile_prompt_suffix(), Ejemplo, Ejemplo (+18 more)
 
 ### Community 74 - "careerResources.ts"
-Cohesion: 0.04
-Nodes (59): AGENT_LINKS, menuItems, NavAccordion(), NavLink, PDF_LINKS, RecordCount(), SETTINGS_LINKS, Sidebar() (+51 more)
+Cohesion: 0.03
+Nodes (72): PromptInput(), SelectFieldHint(), AGENT_LINKS, menuItems, NavAccordion(), NavLink, PDF_LINKS, RecordCount() (+64 more)
 
-### Community 75 - "careerFieldUtils.ts"
-Cohesion: 0.17
-Nodes (27): fromFormValue(), toFormValue(), emit(), ItemIndex(), JsonListField(), JsonListFieldProps, RecordInput(), RemoveButton() (+19 more)
+### Community 75 - "formatters.ts"
+Cohesion: 0.06
+Nodes (44): linkedinApi, FieldParseError, formatCellValue(), fromFormValue(), toFormValue(), emit(), ItemIndex(), JsonListField() (+36 more)
 
 ### Community 76 - "pdf_service.py"
-Cohesion: 0.14
-Nodes (6): HtmlTemplateGenerator, MarkdownDocumentGenerator, render_html_template_pdf(), render_markdown_document_pdf(), TestHtmlCompose, TestWeasyPrintRender
+Cohesion: 0.09
+Nodes (8): HtmlTemplateGenerator, MarkdownDocumentGenerator, MarkdownDocumentTemplate, render_html_template_pdf(), render_markdown_document_pdf(), TestHtmlCompose, TestMarkdownTemplate, TestWeasyPrintRender
 
 ### Community 77 - "VacancyResponse"
-Cohesion: 0.07
-Nodes (31): Textos descriptivos de la vacante, _trim_or_none(), VacancyBase, VacancyResponse, Config, test_model_has_nullable_fk_to_target_companies(), test_schemas_expose_target_company_id(), Bloque B — API: modelo y schemas (+23 more)
+Cohesion: 0.09
+Nodes (25): Textos descriptivos de la vacante, _trim_or_none(), VacancyBase, VacancyResponse, Config, VacancyUpdate, test_model_has_nullable_fk_to_cv_versions(), test_schemas_expose_cv_version_id() (+17 more)
 
 ### Community 78 - "test_vacancy_descriptive_texts.py"
 Cohesion: 0.16
-Nodes (23): VacancyCreate, VacancyUpdate, _get(), _post(), test_blank_values_become_none_in_create_and_update(), test_create_and_update_accept_the_four_fields(), test_http_blank_on_create_is_null_and_text_is_trimmed(), test_http_each_field_alone_and_all_four() (+15 more)
+Nodes (22): VacancyCreate, _get(), _post(), repo_env(), test_blank_values_become_none_in_create_and_update(), test_create_and_update_accept_the_four_fields(), test_http_blank_on_create_is_null_and_text_is_trimmed(), test_http_each_field_alone_and_all_four() (+14 more)
 
 ### Community 79 - "test_prompt_methodology.py"
-Cohesion: 0.12
-Nodes (16): profile_can_search_knowledge(), _agent_memory_block(), methodology_assignment_block(), test_methodology_assignment_block_no_longer_repeats_the_rule(), test_assignment_block_empty_catalog_still_instructs_to_consult_future_ones(), test_assignment_block_lists_assigned_titles_not_hardcoded_section(), test_block_guides_search_then_read_one_methodology(), test_block_without_search_tool_unchanged_guidance() (+8 more)
+Cohesion: 0.09
+Nodes (16): _agent_memory_block(), _methodologies_grouped_by_section(), methodology_assignment_block(), test_methodology_assignment_block_no_longer_repeats_the_rule(), test_assignment_block_empty_catalog_still_instructs_to_consult_future_ones(), test_assignment_block_lists_assigned_titles_not_hardcoded_section(), test_block_guides_search_then_read_one_methodology(), test_block_without_search_tool_unchanged_guidance() (+8 more)
 
-### Community 80 - "SectionMethodologiesEditor"
+### Community 80 - "set_section_methodologies"
 Cohesion: 0.05
-Nodes (44): useBedrockSection(), useSectionMethodologiesUpdate(), SectionMethodologiesEditor(), strict(), known_section_ids(), Por cada tarea entregada, Salida, ADR-021: PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible) (+36 more)
+Nodes (42): ValidationError, _normalize_section_ids(), known_section_ids(), section_methodology_ids(), set_section_methodologies(), `test_config.py`, 0 · Enfoque, 2 · Fronteras de salida (+34 more)
 
-### Community 81 - "6 · Implementación por RF"
-Cohesion: 0.05
-Nodes (43): fetchFkRecords(), ValidationError, _normalize_agent_profile_ids(), _normalize_section_ids(), OperationalMethodologyBase, OperationalMethodologyCreate, OperationalMethodologyResponse, Config (+35 more)
+### Community 81 - "test_knowledge_base_reindex.py"
+Cohesion: 0.11
+Nodes (12): test_all_user_ids_reads_users_table(), execute(), test_legacy_record_id_none_when_resource_has_no_prefix(), test_reindex_for_user_empty_table_returns_zero(), test_reindex_for_user_noop_without_resource_key_or_vectorize(), test_reindex_for_user_pages_rows_in_batches(), test_reindex_is_idempotent(), test_reindex_prunes_non_vectorized_resources_to_empty() (+4 more)
 
 ### Community 82 - "services/test_profile_catalog.py"
-Cohesion: 0.12
-Nodes (12): MethodologiesClient, SectionsClient, _clients(), _session(), test_derived_tools_for_agent_une_las_secciones_que_posee(), test_get_catalog_item_incluye_todas_las_metodologias_con_su_asignacion(), test_list_assigned_l1_l3_por_agent_profile_ids_mas_compartidas_ordenadas_por_titulo(), test_list_assigned_l2_por_secciones_y_guardian_ve_todas() (+4 more)
+Cohesion: 0.26
+Nodes (9): _clients(), _session(), test_derived_tools_for_agent_une_las_secciones_que_posee(), test_get_catalog_item_incluye_todas_las_metodologias_con_su_asignacion(), test_list_assigned_l1_l3_por_agent_profile_ids_mas_compartidas_ordenadas_por_titulo(), test_list_assigned_l2_por_secciones_y_guardian_ve_todas(), test_list_catalog_aplica_override_de_delegacion_y_de_tools(), test_list_catalog_cruza_perfiles_secciones_metodologias_y_conversaciones() (+1 more)
 
 ### Community 83 - "profile_repo.py"
 Cohesion: 0.07
-Nodes (18): BedrockAgentDelegation, BedrockAgentProfilePhoto, BedrockAgentProfilePrompt, BedrockAgentProfileTool, get_delegation_override(), get_prompt_suffix(), get_tool_override(), list_delegation_overrides() (+10 more)
+Nodes (19): BedrockAgentDelegation, BedrockAgentProfilePhoto, BedrockAgentProfileTool, get_delegation_override(), get_prompt_suffix(), get_tool_override(), list_delegation_overrides(), list_prompt_overrides() (+11 more)
 
 ### Community 84 - "truncate_tool_result"
-Cohesion: 0.26
-Nodes (10): truncate_tool_result(), _len(), test_explicit_limit_overrides_global_setting(), test_isolated_field_gets_the_budget_and_a_terminal_marker(), test_large_json_field_is_capped_with_marker(), test_limit_none_uses_global_setting(), test_list_shaped_result_is_not_field_capped(), test_many_long_fields_still_too_big_fall_back_to_blind_preview() (+2 more)
+Cohesion: 0.16
+Nodes (13): _as_text(), _cap_record_fields(), _serialize_len(), truncate_tool_result(), _len(), test_explicit_limit_overrides_global_setting(), test_isolated_field_gets_the_budget_and_a_terminal_marker(), test_large_json_field_is_capped_with_marker() (+5 more)
 
-### Community 85 - "tools.py"
-Cohesion: 0.03
-Nodes (73): BedrockSettings, Dominio: archivos y analítica, AuditAction, AuditLog, BedrockCustomTool, BedrockSettings, Event, Metrics (+65 more)
+### Community 85 - "bedrock_service.py"
+Cohesion: 0.07
+Nodes (29): Qdrant (externo), _producer(), BedrockError, chat(), chat_stream(), delete_conversation(), delete_custom_tool(), embed_text() (+21 more)
 
 ### Community 86 - "service.py"
-Cohesion: 0.11
-Nodes (24): TargetCompany, TargetRole, Adaptadores de mercado, Arquitectura, `__init__.py`, Orquestación, Paquete `services/job_discovery/`, `registry.py` (+16 more)
+Cohesion: 0.13
+Nodes (24): TargetRole, Adaptadores de mercado, Arquitectura, `__init__.py`, Orquestación, Paquete `services/job_discovery/`, `registry.py`, `service.py` — Orquestador (+16 more)
 
 ### Community 87 - "6 · Implementación por RF"
-Cohesion: 0.09
-Nodes (23): check_connection(), upload_file(), 0 · Enfoque, 2 · Fronteras de salida, 4 · Estrategia de pruebas por capa, 5 · Secuenciación (test antes que código), 6 · Implementación por RF, 7 · `covers` definitivo (para el front-matter de `spec.md`) (+15 more)
+Cohesion: 0.06
+Nodes (31): generate_image_bytes(), _invoke(), _get_client(), check_connection(), upload_file(), Contrato — `GET /system/readiness`, Request, Response — alguna dependencia falla (+23 more)
 
-### Community 88 - "test_pdf_style_persist.py"
-Cohesion: 0.12
-Nodes (18): persist_nudge_text(), should_nudge_pdf_persist(), should_nudge_persist(), merge_writable_fields(), `test_pdf_style_persist.py`, test_merge_accepts_nested_fields(), test_merge_accepts_top_level_style_guide(), test_merge_ignores_unknown_and_action_keys() (+10 more)
+### Community 88 - "bedrock/agent_loop.py"
+Cohesion: 0.06
+Nodes (31): chat_stream(), ChatTurnRequest, _effective_model(), _l2_write_profile_ids(), persist_nudge_text(), run_single_turn_sync(), should_nudge_pdf_persist(), should_nudge_persist() (+23 more)
 
 ### Community 89 - "Portal Público — Setup Guide"
 Cohesion: 0.06
 Nodes (32): Accessibility, Adding a New Feature, API Connection Issues, API Integration, API Integration, Build Errors, Caching, Code Splitting (+24 more)
 
 ### Community 90 - "routes/linkedin.py"
-Cohesion: 0.04
-Nodes (41): Dominio: LinkedIn, Archivos fuente, Scheduler, lifespan(), LinkedInConnection, LinkedInPost, LinkedInPostStatus, callback() (+33 more)
+Cohesion: 0.08
+Nodes (25): Dominio: LinkedIn, LinkedInConnection, LinkedInPost, LinkedInPostStatus, callback(), cancel_scheduled_post(), connect(), create_post() (+17 more)
 
 ### Community 91 - "routes/job_discovery.py"
 Cohesion: 0.14
-Nodes (22): Tools internas (Converse), Agente Bedrock, Agente Bedrock, list_github_repos(), import_job_url(), run_job_discovery(), save_job_listings(), ImportUrlRequest (+14 more)
+Nodes (23): Tools internas (Converse), Agente Bedrock, Agente Bedrock, get_providers(), import_job_url(), run_job_discovery(), save_job_listings(), ImportUrlRequest (+15 more)
 
 ### Community 92 - "test_section_methodologies.py"
-Cohesion: 0.05
-Nodes (24): test_all_user_ids_reads_users_table(), execute(), test_legacy_record_id_none_when_resource_has_no_prefix(), test_reindex_for_user_empty_table_returns_zero(), test_reindex_for_user_noop_without_resource_key_or_vectorize(), test_reindex_for_user_pages_rows_in_batches(), test_reindex_is_idempotent(), test_reindex_prunes_non_vectorized_resources_to_empty() (+16 more)
+Cohesion: 0.07
+Nodes (20): get_section_spec(), tools_for_section(), test_set_agent_methodologies_forces_reindex_without_net_change(), execute(), scalars(), _DB, _Meth, _Result (+12 more)
 
 ### Community 93 - "cjhirashi-career-portfolio/src/tests/fixtures/mockData.ts"
-Cohesion: 0.18
-Nodes (17): trackingApi, renderReady(), mockAbout, mockBlogPosts, mockContact, mockContactMessage, mockFeaturedProjects, mockHome (+9 more)
+Cohesion: 0.14
+Nodes (19): aboutApi, trackingApi, renderReady(), mockAbout, mockBlogPosts, mockContact, mockContactMessage, mockFeaturedProjects (+11 more)
 
 ### Community 94 - "10 · Implementación por requisito"
-Cohesion: 0.11
-Nodes (19): 10 · Implementación por requisito, Implementación de RF-001, Implementación de RF-002, Implementación de RF-003, Implementación de RF-006, Implementación de RF-007, Implementación de RF-008, Implementación de RF-009 (+11 more)
+Cohesion: 0.10
+Nodes (21): 10 · Implementación por requisito, Implementación de RF-001, Implementación de RF-002, Implementación de RF-003, Implementación de RF-006, Implementación de RF-007, Implementación de RF-008, Implementación de RF-009 (+13 more)
 
 ### Community 95 - "BedrockConversation"
-Cohesion: 0.17
-Nodes (13): BedrockConversation, BedrockConversationMessage, append_message(), conversation_counts_by_profile(), conversation_title_from(), delete_conversation(), _find(), get_conversation_messages() (+5 more)
+Cohesion: 0.09
+Nodes (22): BedrockConversation, BedrockConversationMessage, append_message(), conversation_counts_by_profile(), conversation_title_from(), delete_conversation(), _find(), get_conversation_messages() (+14 more)
 
-### Community 96 - "test_conversation_repo.py"
-Cohesion: 0.15
-Nodes (3): test_get_or_create_crea_con_ids_prefijados(), test_mensajes_de_conversacion_en_orden_y_aislados(), test_titulo_se_deriva_del_primer_mensaje()
+### Community 96 - "re"
+Cohesion: 0.08
+Nodes (8): test_get_or_create_crea_con_ids_prefijados(), test_mensajes_de_conversacion_en_orden_y_aislados(), test_titulo_se_deriva_del_primer_mensaje(), test_inserta_nota_hecho_y_manual_con_id_prefijado(), test_unicidad_user_id_source_ref(), frontmatter_field(), _parse_company_bullets(), _parse_contact_bullets()
 
 ### Community 97 - "init_db"
-Cohesion: 0.09
-Nodes (23): Componentes principales, `src/app.py`, `src/config.py`, `src/database.py`, `src/middleware/auth.py`, `src/models/`, `src/repositories/`, `src/routes/` (+15 more)
+Cohesion: 0.07
+Nodes (30): Componentes principales, `src/app.py`, `src/config.py`, `src/database.py`, `src/middleware/auth.py`, `src/models/`, `src/repositories/`, `src/routes/` (+22 more)
 
 ### Community 98 - "Tareas (atómicas, TDD, test antes que código)"
-Cohesion: 0.09
-Nodes (22): async_client(), db_session(), Bloque C — API: repositorio (escritura, filtro, KB), Bloque D — API: ruta HTTP y job discovery, Bloque E — API: migración `c7e1a4d92b60`, Bloque F — Admin, Bloque G — Documentación, Bloque H — Fase 4: revisión y verificación real (+14 more)
+Cohesion: 0.17
+Nodes (11): db_session(), Bloque B — API: modelo, Bloque C — API: repositorio y KB, Bloque E — API: migración `d8f2b5a13c97`, Bloque F — Admin, Bloque G — Documentación, Bloque H — Fase 4: revisión y verificación real, Cobertura (el gate exige 100 %; `Estado` lo rellena el gate) (+3 more)
 
-### Community 99 - "_serialize_definition"
-Cohesion: 0.31
-Nodes (6): agent_record_id(), _serialize_definition(), test_get_profile_accepts_catalog_record_id(), test_pdf_design_lists_template_tables(), test_pdf_render_has_no_own_memory_or_tables(), test_serialize_definition_exposes_tool_state()
+### Community 99 - "bedrock/profile_catalog.py"
+Cohesion: 0.18
+Nodes (17): agent_record_id(), _attach_delegation(), _attach_sections(), _conversation_counts(), get_catalog_item(), list_catalog(), _methodology_entries(), _methodology_rows() (+9 more)
 
 ### Community 100 - "task_scheduler.py"
-Cohesion: 0.12
-Nodes (20): run_task_now(), advance_from_task(), build_execution_prompt(), claim_due_task_ids(), claim_task_for_user(), enqueue_advance(), execute_claimed_task(), group_children() (+12 more)
+Cohesion: 0.14
+Nodes (20): UserNotification, advance_from_task(), build_execution_prompt(), claim_due_task_ids(), claim_task_for_user(), enqueue_advance(), execute_claimed_task(), group_children() (+12 more)
 
 ### Community 101 - "Nivel 2 — `tools.py`"
 Cohesion: 0.07
@@ -886,45 +859,45 @@ Nodes (30): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entre
 Cohesion: 0.07
 Nodes (30): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega (+22 more)
 
-### Community 103 - "fetch"
-Cohesion: 0.25
-Nodes (8): `web_search_service.py`, _brave_search(), fetch(), parse_brave_payload(), search(), test_parse_brave_payload(), 🖥️ Nivel 2 — Descomposición del Admin Panel, 4 · Cambios del Admin (`cjhirashi-career-admin/`)
+### Community 103 - "web_search_service.py"
+Cohesion: 0.20
+Nodes (13): _brave_search(), _ddg_search(), fetch(), _headers(), parse_brave_payload(), parse_ddg_html(), search(), _strip_tags() (+5 more)
 
 ### Community 104 - "Introducción y Contexto - cjhirashi-career"
 Cohesion: 0.07
 Nodes (30): 1️⃣ Portal Público, 2️⃣ Admin Panel, 3️⃣ API REST, 4️⃣ Agent Bedrock (asistente interno del Admin Panel), 5️⃣ MCP Server (canal independiente para agentes de IA externos), 6️⃣ PostgreSQL, Acceso Restringido por Diseño, Agent Bedrock No Es un Canal, Es una Capacidad (+22 more)
 
 ### Community 105 - "Módulos"
-Cohesion: 0.18
-Nodes (11): JobStrategy, Arquitectura, `endpoints-parametrized.test.py`, Módulos, `test_auth.py`, `test_database.py`, `test_middleware_extended.py`, `test_middleware.py` (+3 more)
+Cohesion: 0.25
+Nodes (8): JobStrategy, `endpoints-parametrized.test.py`, Módulos, `test_auth.py`, `test_database.py`, `test_middleware_extended.py`, `test_models.py` / `test_models_extended.py`, `test_utils.py`
 
 ### Community 106 - "AgentProfile"
-Cohesion: 0.13
-Nodes (16): agent_record_id(), AgentProfile, can_delegate_to(), canonical_profile_id(), delegate_tool_description(), delegation_error(), delegation_targets(), filter_level_allowed() (+8 more)
+Cohesion: 0.14
+Nodes (15): AgentProfile, can_delegate_to(), canonical_profile_id(), delegate_tool_description(), delegation_error(), delegation_targets(), filter_level_allowed(), get_profile() (+7 more)
 
 ### Community 107 - "test_memory_service.py"
-Cohesion: 0.09
-Nodes (21): _count(), _msgs(), _rows(), test_dedup_contra_fila_importada_de_qdrant_devuelve_su_id(), test_delete_agent_note_solo_borra_kind_note(), test_events_acota_max_results(), test_events_aislados_por_usuario_e_inexistentes(), test_events_desde_mensajes_con_forma_de_la_api() (+13 more)
+Cohesion: 0.08
+Nodes (23): _count(), _msgs(), _rows(), test_carrera_integrity_error_devuelve_la_fila_existente(), add_con_rival(), test_dedup_contra_fila_importada_de_qdrant_devuelve_su_id(), test_delete_agent_note_solo_borra_kind_note(), test_events_acota_max_results() (+15 more)
 
 ### Community 108 - "build_crud_router"
-Cohesion: 0.08
-Nodes (23): build_crud_router(), count_items(), create_item(), list_items(), _parse_filters(), update_item(), `career_common.py` — `build_crud_router`, Factory CRUD (+15 more)
+Cohesion: 0.11
+Nodes (14): build_crud_router(), count_items(), create_item(), list_items(), _parse_filters(), update_item(), register_resource(), CountResponse (+6 more)
 
 ### Community 109 - "compilerOptions"
 Cohesion: 0.07
 Nodes (27): compilerOptions, allowSyntheticDefaultImports, alwaysStrict, esModuleInterop, isolatedModules, jsx, lib, module (+19 more)
 
-### Community 110 - "Vacancy"
-Cohesion: 0.11
-Nodes (7): Vacancy, http_env(), repo_env(), vacancy_session(), http_env(), repo_env(), vacancy_session()
+### Community 110 - "ErrorReportsPage.tsx"
+Cohesion: 0.15
+Nodes (22): errorReportsApi, KEY, useErrorReport(), useErrorReportDelete(), useErrorReports(), useErrorReportSummary(), useErrorReportUpdate(), ErrorReportDetailPage() (+14 more)
 
 ### Community 111 - "OperationalMethodology"
 Cohesion: 0.18
 Nodes (8): _repo(), test_index_for_search_passes_legacy_id_and_deletes_twin(), test_legacy_record_id_derivation(), test_no_twin_delete_when_id_has_no_numeric_suffix(), test_prune_stale_points_noop_when_collection_missing(), test_prune_stale_points_removes_rows_not_in_keep_set(), test_purge_orphans_deletes_only_non_current_users(), test_purge_orphans_noop_when_collection_missing()
 
-### Community 112 - "validation_exception_handler"
-Cohesion: 0.21
-Nodes (7): global_exception_handler(), http_exception_handler(), _request_context(), _should_skip_report(), validation_exception_handler(), Implementación de RF-003 — campos retirados → 422 RFC 9457 (humano) / error (tool), Bloque C — Handler RFC 9457  (`plan.md §5.2·4`, §6 RF-003)
+### Community 112 - "cjhirashi-career-api/src/app.py"
+Cohesion: 0.07
+Nodes (15): lifespan(), close_db(), global_exception_handler(), health_check(), http_exception_handler(), readiness_check(), _request_context(), root() (+7 more)
 
 ### Community 113 - "cjhirashi-career-ai/tests/unit/test_config.py"
 Cohesion: 0.27
@@ -932,35 +905,35 @@ Nodes (14): clean_env(), _settings(), test_agent_runtime_defaults_match_api(), t
 
 ### Community 114 - "cjhirashi-career-admin/src/App.tsx"
 Cohesion: 0.05
-Nodes (64): authApi, App(), JobDiscoveryPage, LegacyAgentCatalogRedirect(), PageTitleManager(), queryClient, SearchMetricsPage, axisTickStyle (+56 more)
+Nodes (84): App(), JobDiscoveryPage, LegacyAgentCatalogRedirect(), PageTitleManager(), queryClient, SearchMetricsPage, axisTickStyle, BedrockCostPanel() (+76 more)
 
 ### Community 115 - "BD del harness (`career_ai_db`) y migración desde `career_db`"
 Cohesion: 0.08
 Nodes (23): 1. Tablas (11 migradas + 1 nueva: `bedrock_agent_memory`), 2. Migraciones propias, 3. Copia de datos — `cjhirashi-career-ai/scripts/copy_from_career_db.py`, 4. Migración de la API que elimina las 11 tablas (RF-011), 5. Conteos de referencia (a rellenar en la operación, RNF-002), 6. Memoria del agente: Qdrant → Postgres (RF-022, D-15), 7. Qué NO se migra, BD del harness (`career_ai_db`) y migración desde `career_db` (+15 more)
 
 ### Community 116 - "cjhirashi-career-portfolio/src/types/index.ts"
-Cohesion: 0.11
-Nodes (20): aboutApi, contactApi, ProjectCardProps, AboutContent, ApiError, ApiResponse, CertificationEntry, ContactContent (+12 more)
+Cohesion: 0.07
+Nodes (32): blogApi, apiClient, getApiUrl(), contactApi, homeApi, projectsApi, BlogCardProps, ProjectCardProps (+24 more)
 
 ### Community 117 - "Header.tsx"
 Cohesion: 0.14
 Nodes (18): THEME_OPTIONS, ThemeOption, ThemeToggle(), Header(), NavLink, navLinks, initialResolvedTheme, initialTheme (+10 more)
 
 ### Community 118 - "_execute_extended"
-Cohesion: 0.27
-Nodes (16): connection_status(), get_file(), get_repo(), GitHubError, _headers(), list_contents(), list_public_repos(), list_repos() (+8 more)
+Cohesion: 0.21
+Nodes (18): list_github_repos(), connection_status(), get_file(), get_repo(), GitHubError, _headers(), list_contents(), list_public_repos() (+10 more)
 
 ### Community 119 - "test_task_scheduler.py"
-Cohesion: 0.18
-Nodes (4): BedrockTaskUpdate, _normalize_optional_str(), _TaskWriteValidation, test_partial_update_status_does_not_require_assignee()
+Cohesion: 0.15
+Nodes (5): BedrockTaskUpdate, _normalize_optional_str(), SubtaskInput, _TaskWriteValidation, test_partial_update_status_does_not_require_assignee()
 
 ### Community 120 - "budget.py"
-Cohesion: 0.23
-Nodes (4): _FakeResult, _FakeSession, test_daily_spend_runs_a_single_query_over_usage_logs(), test_daily_spend_zero_when_no_rows()
+Cohesion: 0.13
+Nodes (10): test_estimate_cost_is_sync_and_converse_is_coroutine(), get_usage_metrics(), assert_budget_available(), get_daily_spend_usd(), get_remaining_budget_usd(), _FakeResult, _FakeSession, test_budget_module_no_longer_imports_round_log() (+2 more)
 
 ### Community 121 - "Nivel 2 — `agent_loop.py`"
-Cohesion: 0.07
-Nodes (26): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Entrega (+18 more)
+Cohesion: 0.08
+Nodes (25): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega (+17 more)
 
 ### Community 122 - "Nivel 2 — `converse_client.py`"
 Cohesion: 0.08
@@ -975,12 +948,12 @@ Cohesion: 0.17
 Nodes (14): _apply_filters(), _apply_search(), _as_bool(), count_for_user(), create_for_user(), delete_for_user(), distinct_values_for_user(), get_for_user() (+6 more)
 
 ### Community 126 - "memory_service.py"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (12): _bound(), _clean(), create_agent_note(), _create_idempotent(), create_manual_memory(), delete_agent_note(), _find_by_ref(), list_agent_notes() (+4 more)
 
 ### Community 127 - "services/profile_catalog.py"
-Cohesion: 0.18
-Nodes (17): applies_to_caller(), _attach_delegation(), _attach_sections(), default_delegation_ids(), _delegation_state(), derived_tools_for_agent(), get_catalog_item(), is_shared_methodology() (+9 more)
+Cohesion: 0.21
+Nodes (15): applies_to_caller(), _attach_delegation(), _attach_sections(), _delegation_state(), get_catalog_item(), is_shared_methodology(), list_assigned_methodologies(), list_catalog() (+7 more)
 
 ### Community 128 - "Nivel 2 — `agent_profiles.py`"
 Cohesion: 0.08
@@ -998,81 +971,93 @@ Nodes (15): _fts_config_exists(), migrated(), _migrated_expression(), _sequences
 Cohesion: 0.09
 Nodes (23): devDependencies, autoprefixer, eslint, eslint-config-prettier, eslint-plugin-react-hooks, jsdom, postcss, prettier (+15 more)
 
-### Community 132 - "AuthService"
-Cohesion: 0.09
-Nodes (8): change_password(), Autenticación, `auth_enhanced.py` — `/auth`, AuthService, `auth_service.py` — JWT y contraseñas, test_user(), TestExtractUserIdFromToken, TestPasswordHashing
+### Community 132 - "error_reporting.py"
+Cohesion: 0.10
+Nodes (8): capture_errors(), _fingerprint(), _normalize(), TestCaptureErrors, TestFingerprint, TestNormalize, TestRecursionGuard, _boom()
 
 ### Community 133 - "fixture"
 Cohesion: 0.08
-Nodes (15): _create_prefix_sequences(), event_loop(), invalid_login_credentials(), test_competency(), test_db(), test_identity(), test_user_data(), valid_jwt_token() (+7 more)
+Nodes (16): _compile_jsonb_as_json_on_sqlite(), _create_prefix_sequences(), event_loop(), invalid_login_credentials(), test_competency(), test_db(), test_identity(), test_user_data() (+8 more)
 
 ### Community 134 - "1 · Fronteras y archivos por capa"
-Cohesion: 0.18
-Nodes (17): AdminSectionOverride, _row_is_empty(), _serialize(), _view_override(), _main_view(), test_multi_view_section_default_agent_is_l2(), test_row_is_empty(), test_serialize_agent_override_label() (+9 more)
+Cohesion: 0.28
+Nodes (11): _serialize(), _view_override(), _main_view(), test_multi_view_section_default_agent_is_l2(), test_row_is_empty(), test_serialize_agent_override_label(), test_serialize_without_override_shape(), test_view_override_equal_to_code_is_default() (+3 more)
 
-### Community 136 - "Módulos"
-Cohesion: 0.08
-Nodes (23): Archivos — `/files`, Archivos fuente, Arquitectura, Ejemplo, Endpoints, GET /files/{id}/download, POST /files — Upload, Visibilidad (+15 more)
+### Community 136 - "Archivos — `/files`"
+Cohesion: 0.13
+Nodes (13): Archivos — `/files`, Archivos fuente, Arquitectura, Ejemplo, Endpoints, GET /files/{id}/download, POST /files — Upload, Visibilidad (+5 more)
 
-### Community 137 - "usage_logger.py"
-Cohesion: 0.24
-Nodes (8): cache_read_savings_usd(), _estimate_cost(), test_cache_read_billed_at_ten_percent_of_input(), test_cache_read_savings_is_ninety_percent_of_input_price(), test_cache_tokens_helper_reads_converse_usage_keys(), test_cache_write_billed_at_125_percent_of_input(), test_estimate_cost_without_cache_matches_plain_rates(), test_unknown_model_is_free()
+### Community 137 - "geo_ip_service.py"
+Cohesion: 0.12
+Nodes (11): _client_ip(), track_event(), TrackEventIn, GeoInfo, _is_public_ip(), resolve_geo(), test_is_public_ip_accepts_public_address(), test_is_public_ip_rejects_private_and_loopback() (+3 more)
 
 ### Community 138 - "_invalid_fields_error"
-Cohesion: 0.12
-Nodes (20): _invalid_fields_error(), _competency_repo(), test_create_accepts_when_all_required_fields_present(), test_create_rejects_missing_required_field(), test_required_columns_excludes_nullable_and_id_fields(), test_required_columns_includes_not_null_without_default(), test_unknown_field_still_wins_over_missing_required(), test_update_does_not_require_all_fields() (+12 more)
+Cohesion: 0.13
+Nodes (19): _invalid_fields_error(), _competency_repo(), test_create_accepts_when_all_required_fields_present(), test_create_rejects_missing_required_field(), test_required_columns_excludes_nullable_and_id_fields(), test_required_columns_includes_not_null_without_default(), test_unknown_field_still_wins_over_missing_required(), test_update_does_not_require_all_fields() (+11 more)
 
 ### Community 140 - "Método del arnés — `.harness/`"
-Cohesion: 0.07
-Nodes (26): §0 · Qué es esto, §10 · Eficiencia de tokens (obligatorio), §11 · Procedencia, §1 · Génesis del proyecto  *(hecha — modo alineación)*, §2 · Rúbrica de decisión (Fase 0) — ¿entra al arnés?, §3 · Flujo de 5 fases (carril SDD), §4 · EARS — sintaxis de los criterios de aceptación, §5 · Reglas transversales (+18 more)
+Cohesion: 0.06
+Nodes (30): strict(), Por cada tarea entregada, Salida, §0 · Qué es esto, §10 · Eficiencia de tokens (obligatorio), §11 · Procedencia, §1 · Génesis del proyecto  *(hecha — modo alineación)*, §2 · Rúbrica de decisión (Fase 0) — ¿entra al arnés? (+22 more)
 
 ### Community 141 - "badgeContrast.test.ts"
 Cohesion: 0.09
 Nodes (16): VACANCY_STAGE_OPTIONS, VACANCY_STATUS_LABELS, BADGE_COLORS, contract, DESCRIPTIVE, mod, css, darkCard (+8 more)
 
 ### Community 142 - ".status"
-Cohesion: 0.10
-Nodes (12): LinkedInClient, attachments(), store(), Integraciones, Ejemplo, Entrega, Nivel 1 — Paquete `services/bedrock/`, Recibe (+4 more)
+Cohesion: 0.09
+Nodes (10): LinkedInClient, attachments(), store(), Integraciones, Ejemplo, Entrega, Nivel 1 — Paquete `services/bedrock/`, Recibe (+2 more)
+
+### Community 143 - "test_app_boot.py"
+Cohesion: 0.14
+Nodes (8): _router_modules(), test_app_does_not_swallow_import_errors(), test_every_router_module_imports_and_is_registered(), test_health_is_public_and_ok(), test_unknown_route_is_404(), test_unregistered_router_is_detected(), _unregistered(), routes_module()
 
 ### Community 144 - "Carrera (JWT)"
-Cohesion: 0.11
-Nodes (19): Agente y documentos, Arquitectura, `bedrock.py` — `/bedrock`, `bedrock_tasks.py` — `/agent-tasks`, `career_digital.py` — Presencia digital, `career_identity.py` — Identidad profesional, `career_methodologies.py` — Metodologías, `career_metrics.py` — `/career/metrics` (+11 more)
+Cohesion: 0.09
+Nodes (22): Agente y documentos, Arquitectura, `bedrock.py` — `/bedrock`, `bedrock_tasks.py` — `/agent-tasks`, `career_common.py` — `build_crud_router`, `career_digital.py` — Presencia digital, `career_identity.py` — Identidad profesional, `career_methodologies.py` — Metodologías (+14 more)
 
 ### Community 146 - "Vista de Bloques de Construcción - cjhirashi-career"
 Cohesion: 0.12
-Nodes (17): 🚀 API REST Detallada, Autenticación, 🗄️ Base de Datos Detallada, Capas, 📖 Cómo Leer Este Documento, 📦 Dependencias Externas, 🔗 Interfaces entre Módulos, 🧩 Nivel 1 — Sistema Completo (+9 more)
+Nodes (17): 🖥️ Admin Panel Detallado, 🚀 API REST Detallada, Arquitectura, Autenticación, Capas, 📖 Cómo Leer Este Documento, 📦 Dependencias Externas, Endpoints API Consumidos por el Admin Panel (+9 more)
 
 ### Community 147 - "API REST — Referencia de endpoints"
 Cohesion: 0.10
 Nodes (21): Agent Bedrock — `/bedrock`, API REST — Referencia de endpoints, Archivos — `/files`, Autenticación — `/auth`, Búsqueda (14 recursos), Carrera — CRUD genérico — `/career/{resource}`, Códigos HTTP comunes, Estilos PDF — `/pdf-template-styles` (+13 more)
 
 ### Community 148 - "ADR-010: Agentes agent_pdf_design y agent_visual_design"
-Cohesion: 0.18
-Nodes (9): ADR-010: Agentes agent_pdf_design y agent_visual_design, agent_digital_presence, agent_pdf_design, agent_visual_design, Bug corregido (2026-08-26), Dos flujos, dos tools, Estado, Por qué (+1 more)
+Cohesion: 0.10
+Nodes (19): ADR-010: Agentes agent_pdf_design y agent_visual_design, agent_digital_presence, agent_pdf_design, agent_visual_design, Bug corregido (2026-08-26), Dos flujos, dos tools, Estado, Por qué (+11 more)
+
+### Community 150 - "ADR-021: PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible)"
+Cohesion: 0.10
+Nodes (21): 1. `id` = PK sintético `sec-N`; `system_name` = el slug de antes, 2. Regla de numeración — CONGELADA, 3. Migración `b2c3d4e5f6a7`, 5. Frontend (UI mínima — sin tocar el Frente A), ADR-021: PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible), Alternativa 1: mantener el slug como PK, Alternativa 2: numeración por posición en la lista / autoincrement, Alternativa 3 (ELEGIDA): PK `sec-N` asignado a mano y congelado en código (+13 more)
+
+### Community 151 - "Nivel 2 — `prompt.py`"
+Cohesion: 0.10
+Nodes (20): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Entrega (+12 more)
 
 ### Community 152 - "Autenticación — `/auth`"
-Cohesion: 0.14
-Nodes (14): Aislamiento de datos, Archivos fuente, Arquitectura, Autenticación — `/auth`, Ejemplos curl, Endpoints, Flujo de login, PATCH /auth/me (+6 more)
+Cohesion: 0.22
+Nodes (9): Aislamiento de datos, Archivos fuente, Arquitectura, Autenticación — `/auth`, Ejemplos curl, Endpoints, Flujo de login, Relaciones (+1 more)
 
 ### Community 153 - "test_task_repo.py"
 Cohesion: 0.14
 Nodes (14): _mk(), test_borrar_el_padre_borra_las_hijas_en_cascada(), test_busqueda_ilike_sobre_columnas_de_texto(), test_crear_asigna_id_prefijado_y_fuerza_user_id(), test_filtros_igualdad_lista_booleano_y_claves_desconocidas(), test_get_update_delete_estan_acotados_al_usuario(), test_listado_ordena_por_id_desc_por_defecto_y_por_columna_valida(), test_padre_valido_y_reglas_de_jerarquia() (+6 more)
 
-### Community 154 - "import_vault.py"
-Cohesion: 0.11
-Nodes (19): _best_fit_role_id(), clean_multiline(), code_block_after(), frontmatter_field(), get_user_id(), import_contact_interactions(), import_differentiators(), import_fit_scoring_factors() (+11 more)
+### Community 154 - "_parse_sprint_project"
+Cohesion: 0.33
+Nodes (3): code_block_after(), _parse_sprint_project(), split_lines()
 
 ### Community 155 - "Nivel 2 — `budget.py`"
-Cohesion: 0.10
-Nodes (20): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Entrega (+12 more)
+Cohesion: 0.06
+Nodes (36): BedrockBudgetExceeded, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo, Ejemplo (+28 more)
 
 ### Community 156 - "Nivel 2 — `usage_logger.py`"
 Cohesion: 0.10
 Nodes (20): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Entrega (+12 more)
 
-### Community 157 - "apiClient"
-Cohesion: 0.13
-Nodes (11): blogApi, apiClient, getApiUrl(), projectsApi, recent, reportClientError(), ReportInput, Severity (+3 more)
+### Community 157 - "pdf_template_styles.py"
+Cohesion: 0.18
+Nodes (9): create_style(), delete_style(), get_style(), list_styles(), update_style(), PdfTemplateStyleUpdate, normalize_prefixed_id(), prefix_for_key() (+1 more)
 
 ### Community 158 - "Nivel 2 — `local_memory.py`"
 Cohesion: 0.10
@@ -1090,25 +1075,29 @@ Nodes (19): compilerOptions, allowImportingTsExtensions, isolatedModules, jsx, l
 Cohesion: 0.11
 Nodes (18): env, browser, es2020, node, extends, ignorePatterns, eslint:recommended, plugin:react-hooks/recommended (+10 more)
 
-### Community 162 - "test_admin_section_settings_views.py"
-Cohesion: 0.36
-Nodes (4): test_update_passes_views_to_section_catalog(), fake_update_section(), test_update_rejects_non_object_views(), test_update_still_accepts_agent_profile_id_alone()
+### Community 162 - "_run_admin_section_settings"
+Cohesion: 0.14
+Nodes (13): _run_admin_section_settings(), test_update_passes_views_to_section_catalog(), fake_update_section(), test_update_rejects_non_object_views(), test_update_still_accepts_agent_profile_id_alone(), Bloque A — Herramientas derivadas de la sección, Bloque F — Runtime: prompt + filtro de búsqueda, Bloque G — `admin_section_settings` escribe `views` (+5 more)
 
 ### Community 163 - "cjhirashi-career-admin/src/utils/reportClientError.ts"
-Cohesion: 0.24
-Nodes (8): ErrorBoundaryProps, ErrorBoundaryState, ClientErrorSeverity, recent, reportClientError(), ReportInput, shouldSkip(), ADR-0018
+Cohesion: 0.08
+Nodes (22): apiClient, ErrorBoundary, ErrorBoundaryProps, ErrorBoundaryState, ClientErrorSeverity, recent, reportClientError(), ReportInput (+14 more)
 
 ### Community 164 - "dependencies"
-Cohesion: 0.11
-Nodes (19): dependencies, axios, clsx, date-fns, immer, lucide-react, mermaid, react (+11 more)
+Cohesion: 0.10
+Nodes (21): dependencies, axios, clsx, date-fns, immer, lucide-react, mermaid, react (+13 more)
 
 ### Community 165 - "routes/error_reports.py"
 Cohesion: 0.10
 Nodes (26): ErrorReport, delete_error_report(), error_reports_summary(), get_error_report(), ingest_error_report(), list_error_reports(), purge_resolved_error_reports(), _rate_limited() (+18 more)
 
-### Community 167 - "tools_for_section"
-Cohesion: 0.18
-Nodes (12): tools_for_section(), test_functional_section_is_baseline_plus_related_tools(), test_monitoring_sections_have_only_the_baseline(), test_operative_config_sections_have_their_meta_tool(), test_search_knowledge_base_is_the_universal_baseline(), test_table_section_derives_full_crud_set(), ADR-027: Herramientas y metodologías por sección (agentes L2), Consecuencias (+4 more)
+### Community 166 - "AuditLog"
+Cohesion: 0.06
+Nodes (12): Dominio: archivos y analítica, ⚠️ Deuda Técnica de Seguridad, AuditAction, AuditLog, Event, EventType, Metrics, Núcleo y seguridad (+4 more)
+
+### Community 167 - "ADR-027: Herramientas y metodologías por sección (agentes L2)"
+Cohesion: 0.40
+Nodes (5): ADR-027: Herramientas y metodologías por sección (agentes L2), Consecuencias, Contexto, Estado, Migración
 
 ### Community 168 - "Nivel 2 — `settings_loader.py`"
 Cohesion: 0.11
@@ -1116,23 +1105,23 @@ Nodes (19): Ejemplo, Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Flujo
 
 ### Community 169 - "Tareas (atómicas, TDD, test antes que código)"
 Cohesion: 0.18
-Nodes (10): Bloque A — Servicio `profile_tools` (default/efectivo/override), Bloque B — Modelo + migración + persistencia, Bloque C — Rutas + schemas + catálogo read-only, Bloque D — Loop (plomado del override), Bloque E — Catálogo de agentes (serialización), Bloque F — Metodologías (verificación del invariante), Bloque G — Frontend admin, Bloque H — Documentación (+2 more)
+Nodes (10): Bloque A — Servicio `profile_tools` (default/efectivo/override), Bloque B — Modelo + migración + persistencia, Bloque C — Rutas + schemas + catálogo read-only, Bloque E — Catálogo de agentes (serialización), Bloque F — Metodologías (verificación del invariante), Bloque G — Frontend admin, Bloque H — Documentación, Bloque J — Lectura selectiva de metodologías (2ª reapertura, RF-016..RF-018) (+2 more)
 
 ### Community 170 - "BedrockAgentMemory"
-Cohesion: 0.17
-Nodes (7): BedrockAgentMemory, add_memory(), delete_memory(), list_memory(), _profile_filter(), search_memory(), T-082 (reentrega tras rechazo del revisor: D-1, D-2, R-1..R-3)
+Cohesion: 0.23
+Nodes (5): BedrockAgentMemory, delete_memory(), list_memory(), _profile_filter(), search_memory()
 
 ### Community 172 - "usage_service.py"
-Cohesion: 0.13
-Nodes (11): cache_read_savings_usd(), assert_budget_available(), BudgetExceeded, cache_read_savings_usd(), get_daily_spend_usd(), get_remaining_budget_usd(), get_usage_metrics(), _provider() (+3 more)
+Cohesion: 0.15
+Nodes (11): get_provider(), assert_budget_available(), BudgetExceeded, cache_read_savings_usd(), get_daily_spend_usd(), get_remaining_budget_usd(), get_usage_metrics(), _provider() (+3 more)
 
 ### Community 173 - "Agent Bedrock — Harness Converse"
 Cohesion: 0.11
 Nodes (18): Agent Bedrock — Harness Converse, Arquitectura, Auditoría, Chat (SSE), Configuración, Conversaciones, Docs, Documentación relacionada (+10 more)
 
-### Community 174 - "FilesPage.tsx"
-Cohesion: 0.15
-Nodes (20): filesApi, UploadFileOptions, Modal(), ModalProps, filesQueryKey, useFileCategories(), useFileMutations(), useFilesList() (+12 more)
+### Community 174 - "test_section_routes.py"
+Cohesion: 0.23
+Nodes (12): _client(), _FakeDB, _FakeUser, _override_db(), test_get_agent_tools_l2_has_by_section(), test_get_section_returns_derived_tools_and_methodologies(), test_put_agent_methodologies_l2_returns_409(), test_put_agent_tools_l2_returns_409() (+4 more)
 
 ### Community 175 - "preview_store.py"
 Cohesion: 0.20
@@ -1162,21 +1151,17 @@ Nodes (18): 1️⃣ **Portal Público** (8003), 2️⃣ **Admin Panel** (8002), 
 Cohesion: 0.12
 Nodes (17): API REST — Guía de Configuración Local, Con Docker, 🖥️ Configuración de IDE, Desarrollo (con recarga automática), ▶️ Ejecutar el Servidor, 🗄️ Inicializar la Base de Datos, 🚀 Instalación, Opción 1: PostgreSQL Local (+9 more)
 
-### Community 182 - "cjhirashi-career-admin/src/types/index.ts"
-Cohesion: 0.11
-Nodes (18): Achievement, ApiResponse, Competency, CompetencyCategory, Identity, InterviewAnswer, InterviewQuestion, JobApplication (+10 more)
-
 ### Community 183 - "image_pipeline.py"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (15): finalize_png(), PurposeSpec, resolve_purpose(), slug_name(), stability_aspect_ratio(), Recibe, test_result_is_always_a_valid_stability_ratio(), test_square_purpose_maps_to_1_1() (+7 more)
 
 ### Community 184 - "test_job_discovery.py"
 Cohesion: 0.25
 Nodes (12): _db_mock(), _empty_result(), test_company_board_results_survive_max_results_truncation(), test_failed_adapter_does_not_abort(), test_linkedin_adapter_returns_search_urls(), test_providers_include_indeed_and_linkedin(), test_run_assigns_refs_without_persisting(), test_run_does_not_persist() (+4 more)
 
-### Community 185 - "CareerClient"
-Cohesion: 0.21
-Nodes (4): CareerClient, LocalResourceError, 9 · Riesgos, Bloque C — AI: clientes REST hacia la API
+### Community 185 - "routes/portal_metrics.py"
+Cohesion: 0.18
+Nodes (5): PortalEvent, get_portal_metrics_overview(), DailyCount, LocationCount, PortalMetricsOverviewResponse
 
 ### Community 186 - "Vista de Tiempo de Ejecución - cjhirashi-career"
 Cohesion: 0.12
@@ -1211,8 +1196,8 @@ Cohesion: 0.12
 Nodes (15): 1 · Secuencia y dependencias, 2 · Implementación por requisito, 3 · Estrategia de pruebas, 4 · Reversión, 5 · Impacto en documentación, Plan de implementación, RF-001 · Search plans, RF-003 · Conflictos de vacancy URL (+7 more)
 
 ### Community 195 - "BedrockCustomTool"
-Cohesion: 0.35
-Nodes (6): BedrockCustomTool, create_custom_tool(), delete_custom_tool(), get_custom_tool(), list_custom_tools(), set_custom_tool_enabled()
+Cohesion: 0.23
+Nodes (8): BedrockCustomTool, create_custom_tool(), delete_custom_tool(), get_custom_tool(), list_custom_tools(), set_custom_tool_enabled(), BedrockCustomTool, create_custom_tool()
 
 ### Community 196 - "test_settings_profile_repo.py"
 Cohesion: 0.13
@@ -1222,85 +1207,85 @@ Nodes (3): test_custom_tools_crud_con_id_prefijado(), test_delegacion_guarda_fil
 Cohesion: 0.13
 Nodes (15): API REST — cjhirashi-career — Troubleshooting Guide, 📞 Cuándo Contactar Soporte, 🔴 Códigos de Error de la API, Debugger interactivo (Python), ❓ FAQ, Habilitar logging detallado, 🐛 Modo Debug, Problema: 401 Unauthorized (Credenciales Inválidas) (+7 more)
 
-### Community 199 - "Nivel 2 — `errors.py`"
-Cohesion: 0.13
-Nodes (15): Ejemplo, Ejemplo, Ejemplo, Entrega, Entrega, Entrega, Flujo, Flujo (+7 more)
+### Community 199 - "greenhouse.py"
+Cohesion: 0.20
+Nodes (8): listings_from_greenhouse_payload(), _parse_date(), search_greenhouse_board(), listings_from_lever_payload(), _parse_date(), search_lever_board(), CompanyBoard, test_greenhouse_and_lever_filter_by_query()
 
 ### Community 200 - "test_methodology_snippets.py"
 Cohesion: 0.26
 Nodes (8): _hit(), test_get_methodology_not_truncated_under_budget(), test_methodology_budget_covers_largest_and_beats_global(), test_methodology_excerpt_is_capped(), test_search_career_record_still_returns_raw_rows(), test_search_methodology_filtered_by_caller_sections_for_l2(), test_search_methodology_l3_uses_agent_profile_ids(), test_search_methodology_returns_excerpts_not_full_text()
 
 ### Community 201 - "converse"
-Cohesion: 0.14
-Nodes (11): _build_converse_kwargs(), _cache_point(), consume_converse_stream(), converse(), _supports_prompt_cache(), _kwargs(), test_kill_switch_disables_cache(), test_original_messages_not_mutated() (+3 more)
+Cohesion: 0.10
+Nodes (18): _build_converse_kwargs(), _cache_point(), consume_converse_stream(), converse(), _get_runtime_client(), parse_converse_response(), _supports_prompt_cache(), sanitize_assistant_reply() (+10 more)
 
 ### Community 202 - "ADR-022: División del L2 `agent_settings` — Configuración vs. Incidencias/Bitácora"
 Cohesion: 0.13
 Nodes (15): ADR-022: División del L2 `agent_settings` — Configuración vs. Incidencias/Bitácora, Alternativa 1: Dejar las cuatro áreas en `agent_settings`, Alternativa 2: Renombrar `agent_settings` → `agent_incident_log` y crear `agent_settings` nuevo para configuración, Alternativa 3 (ELEGIDA): Reusar el slot `agent_settings` para incidencias/bitácora y crear `agent_configuration` (`agent-20`) para la configuración, Alternativas Consideradas, Consecuencias, Contexto, Decisión (+7 more)
 
 ### Community 203 - "cjhirashi-career-portfolio/package.json"
-Cohesion: 0.08
-Nodes (23): description, engines, node, name, private, type, version, autoprefixer (+15 more)
+Cohesion: 0.07
+Nodes (35): description, engines, node, name, private, type, version, description (+27 more)
 
 ### Community 204 - "Settings"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (4): Settings, _env_file(), test_settings_does_not_read_an_explicit_dotenv_either(), test_settings_does_not_read_dotenv_from_cwd()
 
 ### Community 205 - "dataclasses"
-Cohesion: 0.23
+Cohesion: 0.26
 Nodes (9): known_profile_ids(), registry_entries(), RegistryEntry, _canon(), test_cada_perfil_conserva_el_nivel_canonico_y_su_record_id(), test_el_contrato_declara_veinte_perfiles(), test_registro_coincide_con_el_contrato_en_id_label_y_nivel(), test_registro_no_tiene_ids_duplicados() (+1 more)
 
-### Community 206 - "schemas/career_identity.py"
+### Community 206 - "test_get_db_rolls_back_and_reraises_on_error"
 Cohesion: 0.16
-Nodes (17): AchievementBase, AchievementCreate, AchievementResponse, Config, IdentityBase, IdentityCreate, IdentityResponse, Config (+9 more)
+Nodes (4): get_db(), test_get_db_rolls_back_and_reraises_on_error(), test_get_db_yields_session_and_closes_on_success(), test_lifespan_disposes_engine_on_shutdown()
 
 ### Community 207 - "services/prompt.py"
-Cohesion: 0.18
-Nodes (7): _agent_memory_block(), compose_system_prompt(), default_global_rules(), default_system_prompt(), _known_resource_keys(), _methodologies_grouped_by_section(), methodology_assignment_block()
+Cohesion: 0.21
+Nodes (6): _agent_memory_block(), compose_system_prompt(), default_global_rules(), _delegation_catalog_block(), _methodologies_grouped_by_section(), methodology_assignment_block()
 
 ### Community 209 - "cjhirashi-career-admin/src/tests/setup.ts"
 Cohesion: 0.29
 Nodes (3): localStorageMock, ResizeObserverMock, @testing-library/jest-dom
 
-### Community 210 - "Decisión"
-Cohesion: 0.33
-Nodes (6): 1. Tabla `error_reports` (PostgreSQL, IDs `err-N`), 4. Endpoints — `routes/error_reports.py`, 5. Tool de Bedrock `error_report_settings` (coherente con ADR-017), 6. Pantalla en el Admin — Settings → *Reportes de Falla*, 7. Agente `revisor-fallas` (`.claude/agents/006-revisor-fallas.md`), Decisión
+### Community 210 - "Bitácora del arnés — cjhirashi-career"
+Cohesion: 0.17
+Nodes (11): [2026-09-04] 002-generacion-imagenes-agente-visual — verified, [2026-09-04] Corrección de diseño del arnés — forzar Fase 1 y gate automático, [2026-09-04] Génesis del arnés — completada, [2026-09-04] Sesión — cerrar migración de red (MSG-0004), [2026-09-04] Sesión — resolver mensajes de `caddy.json`, [2026-09-04] Sesión — retirar el MCP Server, [2026-09-06] 003-configuracion-agentes-desde-app — verified, [2026-09-10] Especialista `experto-ux-ui` añadido al arnés — ADR-003 (+3 more)
 
 ### Community 211 - "API REST — cjhirashi-career — Modelo de Seguridad"
 Cohesion: 0.15
 Nodes (12): Configuración, Seguridad, 🧱 Aislamiento por Usuario, API REST — cjhirashi-career — Modelo de Seguridad, 🔐 Autenticación JWT, 📋 Checklist de Producción, 🌐 CORS, 🛡️ Prevención de SQL Injection (+4 more)
 
-### Community 212 - "test_visual_delegation_prompts.py"
-Cohesion: 0.47
-Nodes (3): test_delegating_profiles_state_purpose(), test_search_operations_no_longer_mentions_images(), test_visual_asks_when_purpose_ambiguous()
+### Community 212 - "test_knowledge_base_routes.py"
+Cohesion: 0.33
+Nodes (7): _client(), _FakeDB, _FakeUser, _override_db(), test_post_reindex_qdrant_down_returns_503(), test_post_reindex_requires_auth(), test_post_reindex_returns_counts()
 
 ### Community 213 - "ADR-019: Prompt caching de Bedrock + proyección de campos y truncado por campo"
-Cohesion: 0.15
-Nodes (13): 1. Prompt caching de Bedrock (`cachePoint`) — palanca principal, 2. Proyección de campos en `get_career_record`, 3. Truncado por cuota de campos (reemplaza el corte ciego), 4. Dedupe de lecturas idénticas dentro del turno, ADR-019: Prompt caching de Bedrock + proyección de campos y truncado por campo, Alternativas rechazadas, Consecuencias, Contexto (+5 more)
+Cohesion: 0.12
+Nodes (16): supports_prompt_cache(), is_write_tool(), 1. Prompt caching de Bedrock (`cachePoint`) — palanca principal, 2. Proyección de campos en `get_career_record`, 3. Truncado por cuota de campos (reemplaza el corte ciego), 4. Dedupe de lecturas idénticas dentro del turno, ADR-019: Prompt caching de Bedrock + proyección de campos y truncado por campo, Alternativas rechazadas (+8 more)
 
-### Community 214 - "pathlib"
-Cohesion: 0.17
-Nodes (8): _load_slug_to_pk(), test_migration_map_is_contiguous_sec_1_to_54(), test_migration_map_matches_code_registry_exactly(), _load(), test_downgrade_drops_column_if_exists(), test_model_has_section_ids_column(), test_revision_chains_from_003(), test_upgrade_adds_column_if_not_exists_and_strips_l2()
+### Community 214 - "test_methodology_section_ids_migration.py"
+Cohesion: 0.39
+Nodes (5): _load(), test_downgrade_drops_column_if_exists(), test_model_has_section_ids_column(), test_revision_chains_from_003(), test_upgrade_adds_column_if_not_exists_and_strips_l2()
 
 ### Community 216 - "Estrategia de Solución - cjhirashi-career"
 Cohesion: 0.14
 Nodes (14): 1. Tres canales independientes en lugar de uno único, 2. SPA en React para el Admin Panel, 3. PostgreSQL centralizado con nuevas tablas de métricas, eventos y auditoría, 4. API REST como orquestador único, 5. Agent Bedrock como asistente interno, no como canal, 6. MCP Server expuesto para agentes externos  ~~— REVERTIDA 2026-09-04 ([ADR-023](./09-DECISIONS/023-retirar-mcp-server.md))~~, ⚖️ Comparativa Frente a Alternativas Consideradas, 🧭 Decisiones Arquitectónicas de Alto Nivel (+6 more)
 
-### Community 217 - "cjhirashi-career-api/tests/conftest.py"
-Cohesion: 0.07
-Nodes (10): _do_run(), run_migrations_offline(), run_migrations_online(), _url(), upgrade(), lifespan(), close_db(), run_migrations_offline() (+2 more)
+### Community 217 - "config"
+Cohesion: 0.15
+Nodes (7): _do_run(), run_migrations_offline(), run_migrations_online(), _url(), run_migrations_offline(), run_migrations_online(), main()
 
 ### Community 218 - "tools_registry.py"
 Cohesion: 0.23
 Nodes (6): all_tool_names(), default_tool_names(), effective_tool_names(), list_builtin_tool_catalog(), tool_scope(), validate_tool_names()
 
 ### Community 219 - "cjhirashi-career-ai/tests/conftest.py"
-Cohesion: 0.15
-Nodes (8): _isolated_environment(), pg_db(), pg_engine(), pg_url(), test_carrera_integrity_error_devuelve_la_fila_existente(), add_con_rival(), T-078 / T-079 / T-080 (reentrega) — evidencia D-29, T-082 — test_memory_service.py (rojo)
+Cohesion: 0.10
+Nodes (16): add_memory(), _isolated_environment(), pg_db(), pg_engine(), pg_url(), Evidencia (salida real pegada), T-052/T-053 (D-27) — evidencia, T-078 / T-079 / T-080 (reentrega) — evidencia D-29 (+8 more)
 
 ### Community 220 - "generate_html_template_pdf"
-Cohesion: 0.16
-Nodes (9): Endpoint custom: PDF de CV, generate_cv_version_pdf(), render_pdf_template(), `career_search.py` — Operativa de búsqueda, generate_html_template_pdf(), generate_markdown_document(), PDFGeneratorError, render_template_html() (+1 more)
+Cohesion: 0.11
+Nodes (12): Endpoint custom: PDF de CV, generate_cv_version_pdf(), render_pdf_template(), generate_html_template_pdf(), generate_markdown_document(), _get_pool(), _new_pool(), PDFGeneratorError (+4 more)
 
 ### Community 221 - "Plan 009 — Harness de agentes fuera de la API"
 Cohesion: 0.17
@@ -1343,8 +1328,8 @@ Cohesion: 0.17
 Nodes (12): Arquitectura, Autenticación JWT, Base de datos, CareerRepository, Factory CRUD de carrera, IDs prefijados, Infraestructura compartida, Manejo de errores global (+4 more)
 
 ### Community 236 - "url_import.py"
-Cohesion: 0.26
-Nodes (11): get_text(), Boards de empresa e import URL, `greenhouse.py`, `lever.py`, `url_import.py`, import_url(), infer_source(), listing_from_html() (+3 more)
+Cohesion: 0.15
+Nodes (14): get_text(), _headers(), JobDiscoveryHttpError, Boards de empresa e import URL, `greenhouse.py`, `http.py`, `lever.py`, `url_import.py` (+6 more)
 
 ### Community 237 - "dependencies"
 Cohesion: 0.14
@@ -1358,17 +1343,17 @@ Nodes (12): scripts, build, build:types, dev, format, lint, lint:fix, preview (+
 Cohesion: 0.17
 Nodes (12): 🧪 Ambiente de Desarrollo, 🏭 Ambiente de Producción, 🔌 Caddy y Cloudflare Tunnel, 🔌 Contenedores y Puertos, 📖 Cómo Leer Este Documento, 🚀 Diagrama de Despliegue, 📄 docker-compose.yml — Especificación Objetivo, 🔍 Health Checks (+4 more)
 
-### Community 240 - "HomePage.tsx"
-Cohesion: 0.22
-Nodes (12): homeApi, BlogCard(), BlogCardProps, MetricChips(), MetricChipsProps, ProjectCard(), useHome(), HomePage() (+4 more)
+### Community 240 - "Markdown.tsx"
+Cohesion: 0.27
+Nodes (7): ArchifyDiagram(), extractText(), Markdown(), MarkdownPre(), MarkdownProps, MarkdownTable(), @testing-library/react
 
 ### Community 241 - "Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral"
-Cohesion: 0.17
-Nodes (11): 1 · Contexto del dominio, 2 · Alcance, 3 · Modelo de datos y contratos de E/S, 4 · Criterios de aceptación (EARS), 5 · Casos límite y errores, 6 · Registro de decisiones y descartes, 7 · Requisitos no funcionales, 8 · UX (Admin) (+3 more)
+Cohesion: 0.18
+Nodes (10): 1 · Contexto del dominio, 2 · Alcance, 3 · Modelo de datos y contratos de E/S, 4 · Criterios de aceptación (EARS), 5 · Casos límite y errores, 6 · Registro de decisiones y descartes, 7 · Requisitos no funcionales, En alcance (+2 more)
 
 ### Community 242 - "MermaidDiagram"
-Cohesion: 0.11
-Nodes (11): MermaidDiagram(), SvgPanZoomInstance, ArchifyDiagram(), extractText(), MarkdownPre(), MarkdownProps, MarkdownTable(), MermaidDiagram() (+3 more)
+Cohesion: 0.33
+Nodes (3): MermaidDiagram(), SvgPanZoomInstance, mermaid
 
 ### Community 244 - "test_schema_matches_contract.py"
 Cohesion: 0.27
@@ -1391,20 +1376,20 @@ Cohesion: 0.25
 Nodes (3): html_to_text(), _HtmlTextExtractor, test_html_to_text_strips_script()
 
 ### Community 250 - "getonboard.py"
-Cohesion: 0.33
+Cohesion: 0.29
 Nodes (5): _company_name(), _found_date(), listings_from_getonboard_payload(), _public_url(), test_getonboard_payload()
 
 ### Community 251 - "test_methodology_drop_section_migration.py"
 Cohesion: 0.36
 Nodes (6): _load(), _run_upgrade(), test_a_drops_freeform_columns_and_index_keeps_section_ids(), test_b_freeform_backup_table_populated_before_drop(), test_c_second_upgrade_is_idempotent(), test_d_revision_id_is_unique_and_chains_from_004()
 
-### Community 252 - "Project"
-Cohesion: 0.24
-Nodes (10): Project, _competency_names_by_id(), get_contact(), get_home(), get_project(), list_projects(), _project_card(), _project_detail() (+2 more)
+### Community 252 - "Plan de implementación"
+Cohesion: 0.18
+Nodes (10): 10 · Preguntas abiertas y riesgos, 1 · Diseño por capa, 2 · Fronteras y contratos, 3 · Migración `d8f2b5a13c97`, 4 · Secuenciación (tests antes que código), 7 · UX (spec §8) — aporta `experto-ux-ui` en esta Fase 2 y se revisa en Fase 4, 8 · Impacto en documentación (Art. 11), 9 · Operativa de datos y despliegue (+2 more)
 
-### Community 253 - "ADR-010: Agentes agent_pdf_design y agent_visual_design"
-Cohesion: 0.20
-Nodes (10): ADR-025: Migrar la generación de imágenes de Titan a Stability Stable Image Core, Alternativas consideradas, Consecuencias, Esperar habilitación de Nova Canvas en la consola AWS, Estado, Implicaciones, Mantener Titan e ignorar el error, Negativas / a asumir (+2 more)
+### Community 253 - "MermaidDiagram"
+Cohesion: 0.33
+Nodes (3): MermaidDiagram(), SvgPanZoomInstance, svg-pan-zoom
 
 ### Community 254 - "ADR-015: Tareas de primer nivel y ejecución autónoma de agentes"
 Cohesion: 0.18
@@ -1422,9 +1407,9 @@ Nodes (8): ADR-016: Subtareas, orquestación por turno y notificaciones al usuar
 Cohesion: 0.18
 Nodes (10): 1 · Contexto del dominio, 2 · Alcance, 3 · Modelo de datos y contratos, 4 · Criterios de aceptación (EARS), 5 · Casos límite y errores, 6 · Decisiones y descartes, 7 · Requisitos no funcionales, Career: tablas, relaciones y frontends del checklist de Paulina (+2 more)
 
-### Community 258 - "set_agent_sections"
-Cohesion: 0.23
-Nodes (12): derived_tools_for_agent(), _get_or_create_row(), list_sections(), _overrides_map(), sections_for_agent(), set_agent_sections(), 1. `id` = PK sintético `sec-N`; `system_name` = el slug de antes, 2. Regla de numeración — CONGELADA (+4 more)
+### Community 258 - "section_catalog.py"
+Cohesion: 0.11
+Nodes (27): AdminSectionOverride, get_admin_section(), list_admin_sections(), update_admin_section(), is_l2(), derived_tools_for_agent(), _get_or_create_row(), get_section() (+19 more)
 
 ### Community 259 - "test_isolation.py"
 Cohesion: 0.36
@@ -1443,8 +1428,8 @@ Cohesion: 0.20
 Nodes (10): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `attachments.py`, Nivel 3 — `build_user_content_blocks` (+2 more)
 
 ### Community 264 - "Tareas (atómicas, TDD, test antes que código)"
-Cohesion: 0.15
-Nodes (12): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `embeddings.py`, Nivel 3 — `embed_text` (+4 more)
+Cohesion: 0.20
+Nodes (10): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `embeddings.py`, Nivel 3 — `embed_text` (+2 more)
 
 ### Community 265 - "Nivel 2 — `reply_text.py`"
 Cohesion: 0.20
@@ -1454,6 +1439,10 @@ Nodes (10): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `reply
 Cohesion: 0.20
 Nodes (10): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `tool_results.py`, Nivel 3 — `truncate_tool_result` (+2 more)
 
+### Community 267 - "Contrato — `PUT /admin/sections/{section_id}`"
+Cohesion: 0.18
+Nodes (8): 200 OK — `AdminSectionItem`, Contrato — `PUT /admin/sections/{section_id}`, Errores — RFC 9457 (Problem Details, `application/problem+json`), Request, Contrato — Reindexado del knowledge base, Idempotencia, POST `/bedrock/knowledge-base/reindex`, Script operativo (no es endpoint)
+
 ### Community 268 - "⚠️ Correcciones del usuario (leer SIEMPRE — no borrar)"
 Cohesion: 0.18
 Nodes (10): [2026-09-02] El implementador (sobre todo con modelos flojos) fabrica evidencia, [2026-09-02] "FASE X 100%" editando estado no es verificar, [2026-09-02] La dev DB de Postgres no trackea Alembic del todo, [2026-09-02] No mezclar documentos del arnés con documentos del proyecto, [2026-09-04] El arnés no estaba forzando la Fase 1 al pedir "corrige esta falla", [2026-09-10] Toda feature de frontend pasa por el especialista `experto-ux-ui`, ⚠️ Correcciones del usuario (leer SIEMPRE — no borrar), Decisiones tomadas (esta sesión) (+2 more)
@@ -1462,9 +1451,9 @@ Nodes (10): [2026-09-02] El implementador (sobre todo con modelos flojos) fabric
 Cohesion: 0.20
 Nodes (10): ADR-012: Jerarquía de agentes en 3 niveles, Alternativas rechazadas, Consecuencias, Contexto, Costos, Decisión, Estado, Por qué (+2 more)
 
-### Community 273 - "Sidebar contextual configurable por sección del Admin"
-Cohesion: 0.18
-Nodes (10): 1 · Contexto del dominio, 2 · Alcance, 4 · Criterios de aceptación (EARS), 5 · Casos límite y manejo de errores, 6 · Registro de decisiones y descartes, 7 · Requisitos no funcionales, En alcance, Fuera de alcance (+2 more)
+### Community 273 - "ADR-017: L2 `agent_settings` — Configuración (catálogo de agentes, secciones del Admin, prompts globales)"
+Cohesion: 0.29
+Nodes (7): ADR-017: L2 `agent_settings` — Configuración (catálogo de agentes, secciones del Admin, prompts globales), Alternativas rechazadas, Consecuencias, Costos, Estado, Positivas, Referencias
 
 ### Community 274 - "Escenarios de Calidad y Atributos - cjhirashi-career"
 Cohesion: 0.20
@@ -1482,9 +1471,9 @@ Nodes (10): Build for Production, Code Formatting, Development Commands, Generat
 Cohesion: 0.22
 Nodes (8): AGENTS.md — mapa de cjhirashi-career, Antes de empezar (en orden), Bindings de herramienta — `.claude/agents/`, Comandos por subproyecto, Convenciones, Hazards conocidos, Mapa de documentación (producto), Qué es el sistema
 
-### Community 278 - "Tareas (atómicas, TDD, test antes que código)"
-Cohesion: 0.15
-Nodes (12): section_tools(), test_section_tools_funcional_solo_related_tools_y_monitoreo_vacio(), test_section_tools_tabla_con_resource_key_trae_el_crud_sin_search_knowledge_base(), Bloque A — Herramientas derivadas de la sección, Bloque B — Sección ↔ agente: unión de herramientas, Bloque C — `profile_tools`: rama L2 + `scope`, Bloque G — `admin_section_settings` escribe `views`, Bloque H — Frontend admin (+4 more)
+### Community 278 - "section_tools"
+Cohesion: 0.25
+Nodes (6): derived_tools_for_agent(), section_tools(), test_section_tools_funcional_solo_related_tools_y_monitoreo_vacio(), test_section_tools_tabla_con_resource_key_trae_el_crud_sin_search_knowledge_base(), Bloque B — Sección ↔ agente: unión de herramientas, Bloque C — `profile_tools`: rama L2 + `scope`
 
 ### Community 279 - "should_nudge_progress"
 Cohesion: 0.21
@@ -1499,8 +1488,8 @@ Cohesion: 0.31
 Nodes (7): test_add_round_log_persiste_campos_granulares(), test_add_turn_log_persiste_una_fila(), test_agregado_por_dia_respeta_la_ventana(), test_agregado_por_modelo_ordenado_por_coste(), test_gasto_diario_no_cuenta_los_round_logs(), test_gasto_diario_suma_solo_hoy_y_solo_del_usuario(), _turn()
 
 ### Community 282 - "Carrera — Identidad Profesional"
-Cohesion: 0.13
-Nodes (12): Dominio: carrera — identidad, Agente Bedrock, Archivos fuente, Arquitectura, Carrera — Identidad Profesional, Ejemplo: crear competencia, Ejemplo: listar logros, Notas (+4 more)
+Cohesion: 0.22
+Nodes (9): Agente Bedrock, Archivos fuente, Arquitectura, Carrera — Identidad Profesional, Ejemplo: crear competencia, Ejemplo: listar logros, Notas, Portal público (+1 more)
 
 ### Community 283 - "Carrera — Métricas"
 Cohesion: 0.22
@@ -1510,17 +1499,17 @@ Nodes (9): Archivos fuente, Arquitectura, Carrera — Métricas, Ejemplo, Endpoi
 Cohesion: 0.22
 Nodes (9): Agente IA y documentos, Arquitectura, Autenticación y acceso, Cómo leer cada README, Documentación por sección — API REST, Dominio Carrera (JWT requerido), Implementación (paquetes `src/`), Integraciones y almacenamiento (+1 more)
 
-### Community 285 - "generate_image_bytes"
-Cohesion: 0.14
-Nodes (12): generate_image_bytes(), _invoke(), _get_client(), 3 · Contratos y gates de CI, Bloque B — Tool `generate_image` (`tools.py`), Bloque C — Sesión del agente (`history_manager.py`), Bloque E — Migración `related_evidence_id`, Bloque F — Contrato de delegación (prompts) (+4 more)
+### Community 285 - "ADR-028: Contraste de los tokens semánticos de texto del Admin (tema claro)"
+Cohesion: 0.29
+Nodes (6): ADR-028: Contraste de los tokens semánticos de texto del Admin (tema claro), Alternativas descartadas, Consecuencias, Contexto, Decisión, Estado
 
-### Community 286 - "formatCellValue"
-Cohesion: 0.22
-Nodes (13): formatCellValue(), vacancyStageBadgeColor(), vacancyStageLabel(), vacancyStatusBadgeColor(), vacancyStatusLabel(), VacancyStatus, formatDate(), truncate() (+5 more)
+### Community 286 - "5 · Implementación por requisito"
+Cohesion: 0.08
+Nodes (25): vacancyStageBadgeColor(), 5 · Implementación por requisito, Implementación de RF-001, Implementación de RF-002, Implementación de RF-003, Implementación de RF-005, Implementación de RF-006, Implementación de RF-007 (+17 more)
 
 ### Community 287 - "Portal Público — `/public`"
 Cohesion: 0.15
-Nodes (11): Archivos fuente, Arquitectura, Ejemplo, Endpoints, Fuentes de datos (escritura), GET /public/about, GET /public/blog, GET /public/projects/{project_id} (+3 more)
+Nodes (11): Archivos fuente, Arquitectura, Ejemplo, Endpoints, Fuentes de datos (escritura), GET /public/blog, GET /public/home, GET /public/projects/{project_id} (+3 more)
 
 ### Community 288 - "Registro de Decisiones Arquitectónicas (ADR) - cjhirashi-career"
 Cohesion: 0.22
@@ -1535,12 +1524,12 @@ Cohesion: 0.25
 Nodes (7): compilerOptions, allowSyntheticDefaultImports, composite, module, moduleResolution, skipLibCheck, include
 
 ### Community 291 - "services/settings_loader.py"
-Cohesion: 0.48
+Cohesion: 0.39
 Nodes (4): get_active_model_id(), get_runtime_settings(), HarnessRuntimeSettings, test_contra_bd_real()
 
-### Community 293 - "Estilos PDF — `/pdf-template-styles`"
-Cohesion: 0.29
-Nodes (7): Archivos fuente, Arquitectura, Campos, Ejemplo, Endpoints, Estilos PDF — `/pdf-template-styles`, Integraciones
+### Community 293 - "PersonalProfile"
+Cohesion: 0.33
+Nodes (3): Dominio: carrera — identidad, Recursos (13), PersonalProfile
 
 ### Community 294 - "scripts"
 Cohesion: 0.17
@@ -1574,13 +1563,13 @@ Nodes (7): additionalProperties, $comment, description, required, $schema, title
 Cohesion: 0.33
 Nodes (6): formatMessage(), formatTimestamp(), LOG_LEVELS, logger, LogLevel, performance
 
-### Community 303 - "CompetencyBase"
-Cohesion: 0.17
-Nodes (6): CompetencyBase, CompetencyCreate, CompetencyListResponse, CompetencyResponse, Config, CompetencyUpdate
+### Community 303 - "Chat Admin — Harness local"
+Cohesion: 0.40
+Nodes (4): Chat Admin — Harness local, Historial por agente, Preferencias por sesión, Superficies y niveles (ADR-012)
 
-### Community 304 - "sanitize_assistant_reply"
-Cohesion: 0.25
-Nodes (6): parse_converse_response(), sanitize_assistant_reply(), test_keeps_inner_text_when_entire_reply_is_wrapped(), test_parse_converse_response_drops_thinking_markup(), test_strips_think_aliases_and_unclosed_blocks(), test_strips_thinking_block_and_keeps_visible_answer()
+### Community 304 - "ca4ad88923c6_add_projects_slug.py"
+Cohesion: 0.60
+Nodes (3): downgrade(), _slugify(), upgrade()
 
 ### Community 305 - "API REST — Documentación"
 Cohesion: 0.29
@@ -1607,24 +1596,24 @@ Cohesion: 0.29
 Nodes (7): Acceso, persistencia e infraestructura, Agente, Cómo leer este documento, Dominio que ejecutan las tools, Navegación en el módulo API, Paquete `services/bedrock/`, Índice
 
 ### Community 311 - "pathlib"
-Cohesion: 0.52
-Nodes (4): _load(), test_downgrade_readds_description_nullable(), test_revision_chains_linearly(), test_upgrade_drops_only_description_idempotently()
+Cohesion: 0.24
+Nodes (7): _load(), test_downgrade_readds_description_nullable(), test_revision_chains_linearly(), test_upgrade_drops_only_description_idempotently(), _load_slug_to_pk(), test_migration_map_is_contiguous_sec_1_to_54(), test_migration_map_matches_code_registry_exactly()
 
 ### Community 312 - "unittest_mock"
-Cohesion: 0.16
-Nodes (7): test_append_message_accepts_plain_id(), _load(), test_downgrade_reverts_to_integer(), test_revision_chains_linearly(), test_upgrade_changes_column_to_varchar(), test_not_ready_when_minio_fails(), test_ready_when_minio_ok()
+Cohesion: 0.15
+Nodes (7): test_append_message_accepts_plain_id(), _load(), test_downgrade_reverts_to_integer(), test_revision_chains_linearly(), test_upgrade_changes_column_to_varchar(), test_connection_status_without_token(), test_search_code_requires_token()
 
-### Community 313 - "format_bedrock_client_error"
-Cohesion: 0.31
-Nodes (6): format_bedrock_client_error(), _client_error(), test_access_denied_mentions_iam(), test_resource_not_found_shows_model_unavailable(), test_validation_conversation_must_start_with_user(), test_validation_other_shows_validation_label()
+### Community 313 - "BedrockError"
+Cohesion: 0.11
+Nodes (12): BedrockError, format_bedrock_client_error(), _client_error(), test_access_denied_mentions_iam(), test_resource_not_found_shows_model_unavailable(), test_validation_conversation_must_start_with_user(), test_validation_other_shows_validation_label(), _fake_response() (+4 more)
 
 ### Community 315 - "Riesgos Técnicos y Mitigación - cjhirashi-career"
 Cohesion: 0.29
 Nodes (7): 📖 Cómo Leer Este Documento, 🧭 Matriz de Priorización, 🎯 Orden de Atención Recomendado, 🔍 Riesgos Adicionales del Código Heredado, ⚠️ Riesgos del Nuevo Alcance, Riesgos Técnicos y Mitigación - cjhirashi-career, 📋 Tabla de Contenidos
 
-### Community 316 - "set_agent_methodologies"
-Cohesion: 0.07
-Nodes (30): register_resource(), _all_user_ids(), reindex_knowledge_base(), set_agent_methodologies(), 1. Resumen, 2. Tres niveles y dos superficies de chat, 3. Perfiles, 4. Knowledge base: reindexado y consistencia (+22 more)
+### Community 316 - "Configuración de agentes desde la App (metodologías y herramientas)"
+Cohesion: 0.12
+Nodes (16): 2 · Alcance, 3.1 Herramientas — nueva tabla `bedrock_agent_profile_tools`, 3.2 Contrato de API, 3.3 Resolución en runtime, 3.4 Metodologías — invariante de adopción, 3.5 Catálogo de herramientas (read-only), 3 · Modelo de datos y contratos de E/S, 4 · Criterios de aceptación (EARS) (+8 more)
 
 ### Community 317 - "ADR-001 · Adopción del arnés SDD Anchored (simplificado) + perfil de arquitectura"
 Cohesion: 0.29
@@ -1643,8 +1632,8 @@ Cohesion: 0.40
 Nodes (3): register_id_listener(), _assign_id(), _seq_name()
 
 ### Community 321 - "useTracking.ts"
-Cohesion: 0.33
-Nodes (7): Footer(), WhatsAppIcon(), Layout(), LayoutProps, useContact(), useTrackDownload(), useTrackPageview()
+Cohesion: 0.29
+Nodes (9): Footer(), WhatsAppIcon(), Layout(), LayoutProps, useContact(), generateId(), getOrCreateSessionId(), useTrackDownload() (+1 more)
 
 ### Community 324 - "ADR-003 · Especialista de UX/UI en el arnés"
 Cohesion: 0.33
@@ -1673,6 +1662,10 @@ Nodes (4): Arquitectura, `constants.py`, `__init__.py`, Paquete `utils/`
 ### Community 331 - "tests/README.md"
 Cohesion: 0.40
 Nodes (4): Arquitectura, `test_auth_integration.py`, `test_auth_routes.py`, Tests de integración (`tests/integration/`)
+
+### Community 332 - "🗄️ Base de Datos Detallada"
+Cohesion: 0.40
+Nodes (5): 🗄️ Base de Datos Detallada, Relaciones e Índices Clave, Tabla de Auditoría, Tablas de Gestión de Carrera, Tablas de Observabilidad
 
 ### Community 333 - "implementador.md"
 Cohesion: 0.40
@@ -1714,6 +1707,10 @@ Nodes (4): _build(), get_image_client(), get_runtime_client(), reset_clients()
 Cohesion: 0.40
 Nodes (4): Contrato — Herramientas por agente y catálogo de tools, GET `/bedrock/agent-profiles/{profile_id}/tools`, GET `/bedrock/tools/catalog`, PUT `/bedrock/agent-profiles/{profile_id}/tools`
 
+### Community 343 - "ADR-008: Bedrock Harness local (Converse API)"
+Cohesion: 0.40
+Nodes (5): ADR-008: Bedrock Harness local (Converse API), Consecuencias, Contexto, Decisión, Estado
+
 ### Community 344 - "API Client"
 Cohesion: 0.50
 Nodes (4): API Client, Axios Configuration, Making API Calls, Using React Query
@@ -1742,25 +1739,21 @@ Nodes (4): Development, Getting Started, Installation, Prerequisites
 Cohesion: 0.50
 Nodes (4): State Management, Using Auth Hook, Using Auth State, Zustand Store (`authStore`)
 
-### Community 351 - "datetime"
-Cohesion: 0.05
-Nodes (21): Tag, UserNotification, list_notifications(), mark_all_read(), mark_read(), unread_count(), BedrockTaskBase, BedrockTaskResponse (+13 more)
+### Community 351 - "Módulos"
+Cohesion: 0.10
+Nodes (22): POST /linkedin/posts, TagBase, TagCreate, TagResponse, Config, TagUpdate, LinkedInConnectResponse, LinkedInPostResponse (+14 more)
 
-### Community 352 - "LinkedIn — `/linkedin`"
-Cohesion: 0.20
-Nodes (10): Agente Bedrock, Arquitectura, DELETE /linkedin/posts/{post_id}, Ejemplo, Endpoints, Flujo OAuth, GET /linkedin/status, LinkedIn — `/linkedin` (+2 more)
+### Community 352 - "asyncio"
+Cohesion: 0.09
+Nodes (15): Agente Bedrock, Archivos fuente, Arquitectura, DELETE /linkedin/posts/{post_id}, Ejemplo, Endpoints, Flujo OAuth, GET /linkedin/status (+7 more)
 
-### Community 353 - "WorkHistoryResponse"
-Cohesion: 0.31
-Nodes (8): WorkHistoryBase, WorkHistoryCreate, WorkHistoryResponse, Config, _payload(), test_response_accepts_null_key_metrics(), test_response_accepts_object_key_metrics(), test_response_accepts_string_key_metrics()
+### Community 353 - "d8f2b5a13c97_vacancy_descriptive_texts.py"
+Cohesion: 0.83
+Nodes (3): downgrade(), _existing(), upgrade()
 
-### Community 354 - "services/admin_sections.py"
-Cohesion: 0.42
-Nodes (8): AdminSectionSpec, AdminViewSpec, _career(), _crud_views(), _main_view(), _view(), view_for(), RF-001 / RF-004 — `agent_profile_id` y `default_agent_profile_id` siempre L2 o null
-
-### Community 355 - "Nivel 3 — `generate_image_bytes`"
-Cohesion: 0.22
-Nodes (9): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `image_client.py`, Nivel 3 — `generate_image_bytes` (+1 more)
+### Community 355 - "Tareas (atómicas, TDD, test antes que código)"
+Cohesion: 0.10
+Nodes (18): Ejemplo, Ejemplo, Entrega, Entrega, Flujo, Flujo, Nivel 2 — `image_client.py`, Nivel 3 — `generate_image_bytes` (+10 more)
 
 ### Community 357 - "test_max_tokens_truncation.py"
 Cohesion: 0.24
@@ -1769,10 +1762,6 @@ Nodes (5): should_retry_max_tokens(), test_converse_kwargs_carry_the_configured_
 ### Community 358 - "listings_from_adzuna_payload"
 Cohesion: 0.40
 Nodes (4): listings_from_adzuna_payload(), _parse_date(), _salary(), test_adzuna_payload_maps_to_indeed_source()
-
-### Community 359 - "🖥️ Admin Panel Detallado"
-Cohesion: 0.40
-Nodes (5): 🖥️ Admin Panel Detallado, Arquitectura, Endpoints API Consumidos por el Admin Panel, Funcionalidades por Sección, Tecnologías
 
 ### Community 360 - "Nivel 2 — `delegation.py`"
 Cohesion: 0.20
@@ -1822,29 +1811,17 @@ Nodes (3): Building, Development Build, Preview Build
 Cohesion: 0.67
 Nodes (3): Colors, Components, Design System
 
-### Community 377 - "Publication"
-Cohesion: 0.31
-Nodes (6): Publication, _blog_post(), get_blog_post(), list_blog_posts(), _parse_lines(), _publication_card()
-
-### Community 378 - "tool_results.py"
-Cohesion: 0.33
-Nodes (3): _as_text(), _cap_record_fields(), _serialize_len()
-
 ### Community 379 - "Arquitectura"
 Cohesion: 0.22
 Nodes (9): Arquitectura, `test_agent_loop_messages.py`, `test_agent_profiles_router.py`, `test_bedrock_errors.py`, `test_profile_catalog.py`, `test_profile_prompts.py`, `test_prompt_methodology.py`, `test_reply_text.py` (+1 more)
 
 ### Community 380 - "Arquitectura"
-Cohesion: 0.50
-Nodes (4): Arquitectura, `auth.py` — Bearer JWT, `__init__.py`, Paquete `middleware/`
+Cohesion: 0.67
+Nodes (3): Arquitectura, `__init__.py`, Paquete `middleware/`
 
 ### Community 381 - "Nivel 2 — `profile_catalog.py`"
 Cohesion: 0.67
 Nodes (3): Entrega, Nivel 2 — `profile_catalog.py`, Recibe
-
-### Community 382 - "ADR-024: El sidebar contextual del Admin lo gobierna la sección"
-Cohesion: 0.22
-Nodes (9): ADR-024: El sidebar contextual del Admin lo gobierna la sección, Consecuencias, Contexto, Decisión, Estado, Negativas / a vigilar, Por qué reutilizar el campo y no añadir uno nuevo, Por qué sin siembra en la migración (+1 more)
 
 ### Community 385 - "Environment Variables"
 Cohesion: 0.67
@@ -1878,117 +1855,53 @@ Nodes (3): sidebar_has_chat, description, type
 Cohesion: 0.67
 Nodes (3): sidebar_has_instructions, description, type
 
-### Community 393 - "Plantillas PDF — `/pdf-templates`"
-Cohesion: 0.25
-Nodes (8): Archivos fuente, Arquitectura, Ejemplo, Endpoints, Integraciones, Plantillas PDF — `/pdf-templates`, POST /pdf-templates/{id}/render, Tipos de documento
+### Community 393 - "resolve_template_css"
+Cohesion: 0.10
+Nodes (18): Archivos fuente, Arquitectura, Campos, Ejemplo, Endpoints, Estilos PDF — `/pdf-template-styles`, Integraciones, Archivos fuente (+10 more)
 
-### Community 405 - "ProjectBase"
-Cohesion: 0.25
-Nodes (4): ProjectBase, ProjectCreate, ProjectResponse, Config
+### Community 406 - "CLAUDE.md"
+Cohesion: 0.50
+Nodes (3): Diagramas: Archify + Diagram Design, graphify, Reglas duras (no negociables, aplican SIEMPRE — también a "arregla esto"/"corrige X")
 
-### Community 406 - "pdf_service.py"
-Cohesion: 0.43
-Nodes (4): _get_pool(), _new_pool(), _reset_pool(), _run_in_pool()
-
-### Community 407 - "ADR-018: Registro centralizado de fallas del sistema (`error_reports`)"
-Cohesion: 0.25
-Nodes (8): ADR-018: Registro centralizado de fallas del sistema (`error_reports`), Alternativas rechazadas, Consecuencias, Contexto, Costos / riesgos, Estado, Positivas, Referencias
-
-### Community 434 - "Herramientas y metodologías por sección"
-Cohesion: 0.12
-Nodes (15): 2 · Alcance, 3.1 Herramientas de sección — derivadas en código, 3.2 Metodologías — `section_ids` + `agent_profile_ids`, 3.3 Contrato de API, 3.4 Resolución en runtime, 3.5 `scope` en el catálogo de tools, 3.6 `admin_section_settings` — edición de `views`, 3 · Modelo de datos y contratos de E/S (+7 more)
+### Community 434 - "3 · Modelo de datos y contratos de E/S"
+Cohesion: 0.29
+Nodes (7): 3.1 Herramientas de sección — derivadas en código, 3.2 Metodologías — `section_ids` + `agent_profile_ids`, 3.3 Contrato de API, 3.4 Resolución en runtime, 3.5 `scope` en el catálogo de tools, 3.6 `admin_section_settings` — edición de `views`, 3 · Modelo de datos y contratos de E/S
 
 ### Community 435 - "Tareas — `/agent-tasks`"
 Cohesion: 0.29
 Nodes (7): Archivos fuente, Arquitectura, Campos, Ejemplo, Endpoints, Tareas — `/agent-tasks`, Uso en Admin Panel
 
-### Community 436 - "readiness_check"
-Cohesion: 0.29
-Nodes (3): health_check(), readiness_check(), root()
-
 ### Community 438 - "Contrato de rutas del harness (`/ai/`)"
 Cohesion: 0.29
 Nodes (6): `/agent-tasks/*` (8), `/bedrock/*` (39), Contrato de rutas del harness (`/ai/`), Errores, Pruebas de paridad (RF-001), Rutas nuevas del harness (no parte de la paridad)
 
-### Community 439 - "a7b8c9d0e1f2_task_subtasks_notifications.py"
-Cohesion: 0.53
-Nodes (5): _column_names(), downgrade(), _fk_names(), _index_names(), upgrade()
-
-### Community 440 - "test_resource_registry.py"
-Cohesion: 0.47
-Nodes (3): test_known_vectorize_flags(), test_register_resource_sets_both_maps(), test_vectorize_flag_covers_every_registered_resource()
-
-### Community 442 - "b2c3d4e5f6a7_admin_section_overrides_synthetic_pk.py"
-Cohesion: 0.60
-Nodes (3): downgrade(), _rekey(), upgrade()
-
-### Community 444 - "Arquitectura"
-Cohesion: 0.40
-Nodes (5): Arquitectura, `base_repository.py` — CRUD genérico, `career_repository.py` — Dominio carrera, `__init__.py`, Paquete `repositories/`
-
-### Community 445 - "IndeedAdapter"
-Cohesion: 0.70
-Nodes (3): IndeedAdapter, `test_job_discovery.py`, test_indeed_disabled_without_keys()
-
-### Community 446 - "Contrato — `GET /system/readiness`"
-Cohesion: 0.40
-Nodes (4): Contrato — `GET /system/readiness`, Request, Response — alguna dependencia falla, Response — todo listo
-
 ### Community 449 - "c3d4e5f6a7b8_rename_agent_profile_ids.py"
 Cohesion: 0.83
 Nodes (3): downgrade(), _rewrite(), upgrade()
-
-### Community 450 - "c7e1a4d92b60_vacancy_process_stage.py"
-Cohesion: 0.83
-Nodes (3): _columns(), downgrade(), upgrade()
-
-### Community 464 - "CertificationBase"
-Cohesion: 0.50
-Nodes (4): CertificationBase, CertificationCreate, CertificationResponse, Config
-
-### Community 465 - "CompetencyBase"
-Cohesion: 0.50
-Nodes (4): CompetencyBase, CompetencyCreate, CompetencyResponse, Config
-
-### Community 466 - "DifferentiatorBase"
-Cohesion: 0.50
-Nodes (4): DifferentiatorBase, DifferentiatorCreate, DifferentiatorResponse, Config
-
-### Community 467 - "IdentityReflectionBase"
-Cohesion: 0.50
-Nodes (4): IdentityReflectionBase, IdentityReflectionCreate, IdentityReflectionResponse, Config
-
-### Community 468 - "RoleGapAnalysisBase"
-Cohesion: 0.50
-Nodes (4): RoleGapAnalysisBase, RoleGapAnalysisCreate, RoleGapAnalysisResponse, Config
-
-### Community 469 - "StarStoryBase"
-Cohesion: 0.50
-Nodes (4): StarStoryBase, StarStoryCreate, StarStoryResponse, Config
 
 ### Community 476 - "Paquete `services/`"
 Cohesion: 0.67
 Nodes (3): Arquitectura, Paquete `services/`, Subpaquetes
 
 ## Knowledge Gaps
-- **66 isolated node(s):** `ADR-0027`, `ADR-0018`, `RFC-5987`, `RFC-9457`, `ADR-0018` (+61 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3943 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **107 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **17 isolated node(s):** `immer`, `RFC-5987`, `ADR-0027`, `ADR-0018`, `RFC-9457` (+12 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3950 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **106 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `get_current_user()` connect `get_current_user` to `sqlalchemy`, `User`, `._create_token`, `_invalid_fields_error`, `.status`, `Módulos`, `Evidencia (salida real pegada)`, `routes/career_search.py`, `Autenticación — `/auth``, `routes/career_metrics.py`, `routes/error_reports.py`, `pdf_template_styles.py`, `Navegación en el módulo API`, `test_admin_sections_rekey_surfaces.py`, `Constitución — cjhirashi-career`, `._index_for_search`, `routes/files.py`, `6 · Implementación por RF`, `API REST — cjhirashi-career — Modelo de Seguridad`, `routes/linkedin.py`, `routes/job_discovery.py`, `Conceptos Transversales - cjhirashi-career`, `init_db`, `Módulos`, `build_crud_router`, `Arquitectura`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Are the 114 inferred relationships involving `User` (e.g. with `main()` and `get_user_id()`) actually correct?**
-  _`User` has 114 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `ADR-0027`, `ADR-0018`, `RFC-5987` to the rest of the system?**
-  _66 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `get_current_user()` connect `get_current_user` to `User`, `sqlalchemy_ext_asyncio`, `AuthService`, `_invalid_fields_error`, `Contrato — `PUT /admin/sections/{section_id}``, `.status`, `Carrera (JWT)`, `routes/career_search.py`, `Autenticación — `/auth``, `routes/career_digital.py`, `pdf_template_styles.py`, `AdminSectionsPage.tsx`, `routes/career_metrics.py`, `routes/error_reports.py`, `pdf_template_styles.py`, `Navegación en el módulo API`, `routes/portal_metrics.py`, `Constitución — cjhirashi-career`, `qdrant_service.py`, `typing`, `API REST — cjhirashi-career — Modelo de Seguridad`, `routes/linkedin.py`, `routes/job_discovery.py`, `cjhirashi-career-ai/tests/conftest.py`, `Conceptos Transversales - cjhirashi-career`, `init_db`?**
+  _High betweenness centrality (0.058) - this node is a cross-community bridge._
+- **Are the 111 inferred relationships involving `User` (e.g. with `main()` and `get_user_id()`) actually correct?**
+  _`User` has 111 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `immer`, `RFC-5987`, `ADR-0027` to the rest of the system?**
+  _17 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `FilesPage.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.052349336057201226 - nodes in this community are weakly interconnected._
-- **Why does `report_error()` connect `routes/linkedin.py` to `sqlalchemy`, `User`, `._create_token`, `.status`, `Evidencia (salida real pegada)`, `pdf_service.py`, `ADR-018: Registro centralizado de fallas del sistema (`error_reports`)`, `generate_image_bytes`, `providers/base.py`, `chat_stream`, `routes/error_reports.py`, `CareerRepository`, `ErrorBoundary`, `._index_for_search`, `typing`, `converse`, `SectionMethodologiesEditor`, `areport_error`, `routes/job_discovery.py`, `generate_html_template_pdf`, `datetime`, `Conceptos Transversales - cjhirashi-career`, `task_scheduler.py`, `_execute_extended`?**
-  _High betweenness centrality (0.048) - this node is a cross-community bridge._
-- **Should `sqlalchemy` be split into smaller, more focused modules?**
-  _Cohesion score 0.019721300597213005 - nodes in this community are weakly interconnected._
-- **Why does `User` connect `User` to `sqlalchemy`, `AuthService`, `get_current_user`, `routes/career_search.py`, `import_vault.py`, `UserRepository`, `routes/career_metrics.py`, `routes/error_reports.py`, `pdf_template_styles.py`, `schemas/user.py`, `CareerRepository`, `set_agent_methodologies`, `asyncio`, `typing`, `routes/files.py`, `tools.py`, `routes/linkedin.py`, `routes/job_discovery.py`, `generate_html_template_pdf`, `datetime`, `task_scheduler.py`, `build_crud_router`, `Vacancy`?**
-  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+  _Cohesion score 0.04191895668374476 - nodes in this community are weakly interconnected._
+- **Why does `1 · Fronteras y archivos por capa` connect `section_catalog.py` to `init_db`, `resolve_profile_for_turn`, `1 · Fronteras y archivos por capa`, `AdminSectionsPage.tsx`, `agentProfiles.ts`, `cjhirashi-career-admin/src/types/index.ts`, `ApiClient`, `test_admin_sections_rekey_surfaces.py`, `services/admin_sections.py`?**
+  _High betweenness centrality (0.047) - this node is a cross-community bridge._
+- **Should `cjhirashi-career-api/src/models/__init__.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.040246064018350534 - nodes in this community are weakly interconnected._
+- **Why does `ResourceForm()` connect `AdminSectionsPage.tsx` to `careerResources.ts`, `formatters.ts`, `CareerResourceView.tsx`, `build_crud_router`, `AdminSectionsPage.tsx`, `._index_for_search`, `set_section_methodologies`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
