@@ -26,7 +26,7 @@ from routes import bedrock_tasks
 from routes import admin_sections
 from routes import pdf_templates, pdf_template_styles
 from routes import files
-from routes import linkedin
+from routes import linkedin, career_linkedin
 from routes import public
 from routes import notifications
 from routes import error_reports
@@ -266,6 +266,7 @@ app.include_router(career_identity.router)
 app.include_router(career_search.router)
 app.include_router(job_discovery.router)
 app.include_router(career_digital.router)
+app.include_router(career_linkedin.router)
 app.include_router(career_support.router)
 app.include_router(career_metrics.router)
 app.include_router(career_methodologies.router)
