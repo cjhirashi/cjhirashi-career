@@ -23,7 +23,6 @@ Esquema PostgreSQL de cjhirashi-career: gestión de carrera, Agent Bedrock, inte
 - [Dominio: carrera — presencia digital](#dominio-carrera--presencia-digital)
 - [Dominio: soporte y metodologías](#dominio-soporte-y-metodologías)
 - [Dominio: Agent Bedrock](#dominio-agent-bedrock)
-- [Dominio: LinkedIn](#dominio-linkedin)
 - [Dominio: archivos y analítica](#dominio-archivos-y-analítica)
 - [Vistas SQL](#vistas-sql)
 - [Migraciones Alembic](#migraciones-alembic)
@@ -63,7 +62,6 @@ Todas las tablas de carrera y usuarios usan **VARCHAR(20)** como PK con formato 
 | `cvv` | cv_versions | `cvv-3` |
 | `pdt` | pdf_output_templates | `pdt-1` |
 | `bco` | bedrock_conversations | `bco-12` |
-| `lnp` | linkedin_posts | `lnp-3` |
 | … | (ver `TABLE_PREFIXES` en código) | |
 
 **FK `user_id`:** VARCHAR(20) referenciando `users(id)` con `ON DELETE CASCADE` en tablas de carrera y telemetría.
@@ -81,8 +79,6 @@ erDiagram
     users ||--o{ projects : owns
     users ||--o{ bedrock_conversations : owns
     users ||--o{ file_uploads : owns
-    users ||--o| linkedin_connections : has
-    users ||--o{ linkedin_posts : owns
     users ||--o{ refresh_tokens : has
 
     vacancies ||--o{ applications : tracks
@@ -227,15 +223,6 @@ Migración harness local: `a1b2c3d4e5f6_bedrock_local_harness.py`
 
 ---
 
-## Dominio: LinkedIn
-
-Documentación API: [sections/linkedin/README.md](./sections/linkedin/README.md)
-
-| Tabla | Modelo | Propósito |
-|-------|--------|-----------|
-| `linkedin_connections` | `LinkedInConnection` | Tokens OAuth, expiry |
-| `linkedin_posts` | `LinkedInPost` | Cola publicados/programados |
-
 ---
 
 ## Dominio: archivos y analítica
@@ -364,7 +351,6 @@ Ajustar usuario/BD según `.env` del proyecto (`POSTGRES_USER`, `POSTGRES_DB`).
 | operational_methodologies | [career-methodologies](./sections/career-methodologies/README.md) |
 | bedrock_* , pdf_output_templates | [bedrock](./sections/bedrock/README.md), [pdf-templates](./sections/pdf-templates/README.md) |
 | bedrock_tasks | [bedrock-tasks](./sections/bedrock-tasks/README.md) |
-| linkedin_* | [linkedin](./sections/linkedin/README.md) |
 | file_uploads | [files](./sections/files/README.md) |
 | portal + projects (lectura) | [public](./sections/public/README.md) |
 

@@ -69,7 +69,6 @@ Cada dominio tiene su README detallado en [`docs/sections/`](docs/sections/READM
 | Plantillas PDF | `/pdf-templates` | [pdf-templates](docs/sections/pdf-templates/README.md) |
 | Estilos PDF | `/pdf-template-styles` | [pdf-template-styles](docs/sections/pdf-template-styles/README.md) |
 | Archivos (MinIO) | `/files` | [files](docs/sections/files/README.md) |
-| LinkedIn | `/linkedin` | [linkedin](docs/sections/linkedin/README.md) |
 | Portal público | `/public` | [public](docs/sections/public/README.md) |
 | Infraestructura compartida | — | [infrastructure](docs/sections/infrastructure/README.md) |
 

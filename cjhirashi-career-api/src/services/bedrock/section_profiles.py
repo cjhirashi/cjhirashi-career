@@ -46,7 +46,6 @@ _STATIC_ROUTE_PROFILE = {
     "/metrics": "read_light",
     "/search-metrics": "read_light",
     "/files": "agent_admin",
-    "/linkedin": "digital_presence",
     "/agent/chat": "read_light",
 }
 

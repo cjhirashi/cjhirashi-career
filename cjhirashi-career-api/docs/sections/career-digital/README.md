@@ -61,11 +61,10 @@ flowchart TB
 
 ## Agente Bedrock
 
-Perfil L2 **`agent_digital_presence`** — CRUD de publicaciones, perfiles sociales y portal. Publicación LinkedIn la ejecuta el L3 **`agent_linkedin_publishing`**. Imágenes: L3 `agent_visual_design`.
+Perfil L2 **`agent_digital_presence`** — CRUD de publicaciones, perfiles sociales y portal. Imágenes: L3 `agent_visual_design`.
 
 - CRUD en `publications`, perfiles sociales, portal
 - `generate_image`, `attach_image_to_record` (vía `agent_visual_design`)
-- `create_linkedin_post`, `list_linkedin_posts` (vía `agent_linkedin_publishing`)
 
 El chat contextual en secciones de Presencia Digital enruta a este perfil.
 
@@ -98,4 +97,4 @@ curl -s -X PUT http://localhost:8001/career/portal-home/phm-1 \
   }'
 ```
 
-Ver también: [linkedin](../linkedin/README.md), [public](../public/README.md)
+Ver también: [public](../public/README.md)

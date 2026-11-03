@@ -16,7 +16,7 @@ flowchart LR
     Services --> Repos[repositories/]
     Repos --> Models[models/]
     Models --> PG[(PostgreSQL)]
-    Services --> Ext[MinIO / Qdrant / Bedrock / LinkedIn]
+    Services --> Ext[MinIO / Qdrant / Bedrock]
     App --> Config[config.py]
     App --> DB[database.py]
 ```
@@ -31,17 +31,17 @@ Punto de entrada de uvicorn (`uvicorn app:app`).
 
 | Responsabilidad | Detalle |
 |-----------------|---------|
-| Lifecycle | `lifespan`: `init_db()`, `storage_service.ensure_bucket()`, loops `linkedin_scheduler` y `task_scheduler` |
+| Lifecycle | `lifespan`: `init_db()`, `storage_service.ensure_bucket()`, loop `task_scheduler` |
 | CORS | Orígenes de Admin (8002) y Portal (8003) |
 | Errores | `RequestValidationError` → 422; excepción no capturada → 500 |
-| Routers | 15 routers de dominio (auth, career, bedrock, files, linkedin, public, …) |
+| Routers | 15 routers de dominio (auth, career, bedrock, files, public, …) |
 | Sistema | `GET /health`, `GET /` |
 
 ### `config.py` — Settings
 
 `Settings` (pydantic-settings) leído de `.env`. Singleton `settings`.
 
-Agrupa: `DATABASE_URL`, JWT (`SECRET_KEY`, expiración), CORS, MinIO, Bedrock (región, modelos, presupuesto), Qdrant, LinkedIn OAuth, Adzuna, PDF generator, rate limit y paginación.
+Agrupa: `DATABASE_URL`, JWT (`SECRET_KEY`, expiración), CORS, MinIO, Bedrock (región, modelos, presupuesto), Qdrant, Adzuna, PDF generator, rate limit y paginación.
 
 ### `database.py` — SQLAlchemy async
 

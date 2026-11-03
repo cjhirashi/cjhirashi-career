@@ -1,8 +1,8 @@
 """
-Tools Converse — schemas y ejecución (CRUD, LinkedIn, PDF, imágenes, web, GitHub).
+Tools Converse — schemas y ejecución (CRUD, PDF, imágenes, web, GitHub).
 
 Tier 1: career CRUD (delegado a bedrock_service._execute_tool).
-Tier 2: LinkedIn, plantillas PDF, estilos CSS, imágenes, vacantes, consulta web, GitHub, delegación.
+Tier 2: plantillas PDF, estilos CSS, imágenes, vacantes, consulta web, GitHub, delegación.
 Ver api/docs/BEDROCK-HARNESS.md.
 """
 import io
@@ -13,8 +13,6 @@ from typing import Any, Dict, List, Optional, Set
 from sqlalchemy import desc, select
 
 from config import settings
-from models.linkedin_connection import LinkedInConnection
-from models.linkedin_post import LinkedInPost, LinkedInPostStatus
 from models.pdf_output_template import PdfOutputTemplate
 from models.pdf_template_style import PdfTemplateStyle
 from repositories.career_repository import CareerRepository
@@ -108,10 +106,6 @@ _RAW_TOOLS: List[Dict[str, Any]] = [
         },
     },
     {"name": "delete_career_record", "description": "Elimina registro.", "schema": {"type": "object", "properties": {"resource_key": _RESOURCE_KEY_PARAM, "record_id": _RECORD_ID_PARAM}, "required": ["resource_key", "record_id"]}},
-    {"name": "get_linkedin_status", "description": "Estado conexión LinkedIn.", "schema": {"type": "object", "properties": {}}},
-    {"name": "list_linkedin_posts", "description": "Cola e historial posts LinkedIn.", "schema": {"type": "object", "properties": {"limit": {"type": "integer"}}}},
-    {"name": "create_linkedin_post", "description": "Publicar ahora (sin scheduled_at) o programar (ISO futuro).", "schema": {"type": "object", "properties": {"text": {"type": "string"}, "image_url": {"type": "string"}, "scheduled_at": {"type": "string"}}, "required": ["text"]}},
-    {"name": "delete_scheduled_linkedin_post", "description": "Elimina post status=scheduled.", "schema": {"type": "object", "properties": {"post_id": {"type": "string", "description": "ID prefijado, ej. lnp-3"}}, "required": ["post_id"]}},
     {"name": "pdf_template", "description": "CRUD de pdf_output_templates (HTML, IDs pdt-N). No edita CSS. action=list|get|create|update. create requiere slug, document_type, title, html_template. update requiere template_id y los campos a cambiar (html_template, style_id, variables, …) en el nivel superior o en fields. Escribir HTML en el chat NO guarda.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "slug": {"type": "string"}, "document_type": {"type": "string"}, "title": {"type": "string"}, "html_template": {"type": "string"}, "style_id": {"type": "string", "description": "ID del estilo CSS, ej. pds-1"}, "variables": {"type": "string"}, "default_only": {"type": "boolean"}, "fields": {"type": "object", "description": "Opcional en update; también se aceptan html_template/style_id/variables en el nivel superior"}}, "required": ["action"]}},
     {"name": "pdf_style", "description": "CRUD de pdf_template_styles (CSS reutilizable, IDs pds-N). No edita HTML. action=list|get|create|update. create requiere slug, title, css_content. update requiere style_id y al menos un campo (style_guide, css_content, title, …) en el nivel superior o en fields. Escribir Markdown en el chat NO guarda style_guide.", "schema": {"type": "object", "properties": {"action": {"type": "string", "enum": ["list", "get", "create", "update"]}, "style_id": {"type": "string", "description": "ID prefijado, ej. pds-1"}, "slug": {"type": "string"}, "title": {"type": "string"}, "css_content": {"type": "string"}, "style_guide": {"type": "string", "description": "Markdown de clases/etiquetas. En update puede ir aquí (nivel superior) o en fields.style_guide"}, "description": {"type": "string"}, "fields": {"type": "object", "description": "Opcional en update; también se acepta style_guide/css_content en el nivel superior"}}, "required": ["action"]}},
     {"name": "generate_pdf", "description": "Genera PDF desde plantilla HTML (template_id) con variables. Preview de diseño, no a partir de un registro de carrera.", "schema": {"type": "object", "properties": {"template_id": {"type": "string", "description": "ID prefijado, ej. pdt-1"}, "variables": {"type": "object"}, "title": {"type": "string"}}, "required": ["template_id"]}},
@@ -318,7 +312,6 @@ _WRITE_TOOLS = {
     "update_career_record",
     "bulk_update_career_record",
     "delete_career_record",
-    "create_linkedin_post",
     "pdf_template",
     "pdf_style",
     "generate_pdf",
@@ -453,14 +446,6 @@ def converse_tool_specs(
 # ============================================================================
 # Tools de integración
 # ============================================================================
-
-async def _linkedin_connection(db, user_id: str) -> Optional[LinkedInConnection]:
-    result = await db.execute(select(LinkedInConnection).where(LinkedInConnection.user_id == user_id))
-    conn = result.scalar_one_or_none()
-    if conn and conn.expires_at > datetime.now(timezone.utc):
-        return conn
-    return None
-
 
 async def _run_pdf_template(db, user_id: str, action: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
     """CRUD de pdf_output_templates (HTML)."""
@@ -960,83 +945,6 @@ async def _execute_extended(db, user_id: str, name: str, tool_input: Dict[str, A
             "error_count": len(errors),
             "errors": errors,
         }
-
-    if name == "get_linkedin_status":
-        conn = await _linkedin_connection(db, user_id)
-        if not conn:
-            return {"connected": False}
-        return {"connected": True, "member_name": conn.member_name, "expires_at": str(conn.expires_at)}
-
-    if name == "list_linkedin_posts":
-        limit = min(tool_input.get("limit", 20), 50)
-        result = await db.execute(
-            select(LinkedInPost).where(LinkedInPost.user_id == user_id).order_by(desc(LinkedInPost.created_at)).limit(limit)
-        )
-        posts = result.scalars().all()
-        return {
-            "items": [
-                {"id": p.id, "text": p.text[:200], "status": p.status, "scheduled_at": str(p.scheduled_at) if p.scheduled_at else None}
-                for p in posts
-            ]
-        }
-
-    if name == "create_linkedin_post":
-        from services import linkedin_service
-
-        conn = await _linkedin_connection(db, user_id)
-        if not conn:
-            return {"error": "LinkedIn not connected"}
-        text = tool_input["text"]
-        scheduled_at = tool_input.get("scheduled_at")
-        image_url = tool_input.get("image_url")
-        image_bytes = None
-        if image_url:
-            import httpx
-
-            async with httpx.AsyncClient(timeout=30) as client:
-                r = await client.get(image_url)
-                r.raise_for_status()
-                image_bytes = r.content
-
-        scheduled_dt = None
-        if scheduled_at:
-            scheduled_dt = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
-            if scheduled_dt.tzinfo is None:
-                scheduled_dt = scheduled_dt.replace(tzinfo=timezone.utc)
-
-        if scheduled_dt and scheduled_dt > datetime.now(timezone.utc):
-            post = LinkedInPost(user_id=user_id, text=text, image_url=image_url, status=LinkedInPostStatus.SCHEDULED, scheduled_at=scheduled_dt)
-            db.add(post)
-            await db.commit()
-            await db.refresh(post)
-            return {"scheduled": True, "post_id": post.id, "scheduled_at": str(scheduled_dt)}
-
-        try:
-            image_urn = None
-            if image_bytes:
-                image_urn = await linkedin_service.upload_image(conn.access_token, conn.member_sub, image_bytes)
-            post_urn = await linkedin_service.create_post(conn.access_token, conn.member_sub, text, image_urn)
-        except Exception as e:
-            return {"error": str(e)}
-        post = LinkedInPost(
-            user_id=user_id, text=text, image_url=image_url, status=LinkedInPostStatus.PUBLISHED,
-            linkedin_post_urn=post_urn, published_at=datetime.now(timezone.utc),
-        )
-        db.add(post)
-        await db.commit()
-        return {"published": True, "linkedin_post_urn": post_urn}
-
-    if name == "delete_scheduled_linkedin_post":
-        post_id = normalize_prefixed_id("linkedin_posts", tool_input["post_id"])
-        result = await db.execute(select(LinkedInPost).where(LinkedInPost.id == post_id, LinkedInPost.user_id == user_id))
-        post = result.scalar_one_or_none()
-        if not post:
-            return {"error": "not_found"}
-        if post.status != LinkedInPostStatus.SCHEDULED:
-            return {"error": "only_scheduled_can_be_deleted"}
-        await db.delete(post)
-        await db.commit()
-        return {"deleted": True}
 
     if name == "pdf_template" or name in _PDF_TEMPLATE_ALIASES:
         action = tool_input.get("action") or _PDF_TEMPLATE_ALIASES.get(name)

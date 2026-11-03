@@ -18,10 +18,10 @@ from services import section_catalog
 from services.bedrock.agent_profiles import AGENT_CONFIGURATION, AGENT_ORCHESTRATOR
 from services.bedrock.tools import _run_admin_section_settings
 
-# linkedin-publish: su agente por defecto es AGENT_DIGITAL_PRESENCE (feature 001),
+# job-discovery: su agente por defecto es AGENT_SEARCH_OPERATIONS,
 # así que asignarla a otro L2 (Configuración) crea de verdad una fila de override.
-_SEC = "sec-6"
-_SEC_SYSTEM_NAME = "linkedin-publish"
+_SEC = "sec-7"
+_SEC_SYSTEM_NAME = "job-discovery"
 _OTHER_L2 = AGENT_CONFIGURATION
 
 

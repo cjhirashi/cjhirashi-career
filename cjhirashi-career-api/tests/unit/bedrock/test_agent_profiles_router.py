@@ -2,7 +2,6 @@
 from services.bedrock.agent_profiles import (
     AGENT_CHANGELOG,
     AGENT_DIGITAL_PRESENCE,
-    AGENT_LINKEDIN_PUBLISHING,
     AGENT_ORCHESTRATOR,
     AGENT_PDF_DESIGN,
     AGENT_PDF_RENDER,
@@ -41,7 +40,7 @@ def test_resolve_digital_route():
     profile = resolve_agent_profile(
         chat_surface="contextual",
         agent_profile_id=None,
-        page_context={"route": "/linkedin", "resource_key": "linkedin-posts"},
+        page_context={"route": "/career/publications", "resource_key": "publications"},
     )
     assert profile.id == AGENT_DIGITAL_PRESENCE
 
@@ -55,24 +54,9 @@ def test_general_chat_is_orchestrator():
 def test_digital_tools_include_delegate_to_l3():
     names = tools_for_profile(get_profile(AGENT_DIGITAL_PRESENCE), all_tool_names())
     assert "delegate_to_specialist" in names
-    assert "create_linkedin_post" not in names
-    assert "list_linkedin_posts" not in names
     assert "run_job_discovery" not in names
     assert "generate_pdf" not in names
     assert "list_recent_changes" not in names
-
-
-def test_linkedin_publishing_is_l3():
-    profile = get_profile(AGENT_LINKEDIN_PUBLISHING)
-    assert profile.level == 3
-    assert not profile.user_facing
-    names = tools_for_profile(profile, all_tool_names())
-    assert "create_linkedin_post" in names
-    assert "list_linkedin_posts" in names
-    assert "get_linkedin_status" in names
-    assert "delete_scheduled_linkedin_post" in names
-    assert "delegate_to_specialist" not in names
-    assert "create_career_record" not in names
 
 
 def test_search_route_and_job_tools():
@@ -279,7 +263,6 @@ def test_delegation_is_downward_only():
     assert can_delegate_to(l1, l2)
     assert can_delegate_to(l1, l3)
     assert can_delegate_to(l2, l3)
-    assert can_delegate_to(get_profile(AGENT_DIGITAL_PRESENCE), get_profile(AGENT_LINKEDIN_PUBLISHING))
     assert can_delegate_to(search, get_profile(AGENT_VACANCY_SEARCH))
     assert can_delegate_to(search, get_profile(AGENT_CV_WRITING))
     assert can_delegate_to(search, get_profile(AGENT_COVER_LETTER_WRITING))
@@ -306,7 +289,6 @@ def test_user_facing_profiles_exclude_l3():
     assert AGENT_VISUAL_DESIGN not in facing
     assert AGENT_CHANGELOG not in facing
     assert AGENT_TASK_MANAGER not in facing
-    assert AGENT_LINKEDIN_PUBLISHING not in facing
     assert AGENT_VACANCY_SEARCH not in facing
     assert AGENT_CV_WRITING not in facing
     assert AGENT_COVER_LETTER_WRITING not in facing

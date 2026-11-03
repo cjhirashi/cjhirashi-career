@@ -77,7 +77,6 @@ Docs y README **dentro de `api/`** que este paquete usa pero no sustituye. Si el
 | Plantillas HTML → PDF | [sections/pdf-templates](../../../docs/sections/pdf-templates/README.md) |
 | Estilos CSS PDF | [sections/pdf-template-styles](../../../docs/sections/pdf-template-styles/README.md) |
 | Upload MinIO, `file_id`, URLs | [sections/files](../../../docs/sections/files/README.md) |
-| OAuth y posts LinkedIn | [sections/linkedin](../../../docs/sections/linkedin/README.md) |
 | Portafolio público (lectura) | [sections/public](../../../docs/sections/public/README.md) |
 
 ---
@@ -650,7 +649,7 @@ Catálogo de tools Converse (`_RAW_TOOLS`) y dispatcher. El modelo **no** ejecut
 Dos tiers:
 
 - **Legacy (carrera):** `list/get/create/update/delete_career_record`, `count_career_records`, `search_knowledge_base`, schema, auditoría → `bedrock_service._execute_tool`. Recursos: [identidad/proyectos](../../../docs/sections/career-identity/README.md), [búsqueda/vacantes](../../../docs/sections/career-search/README.md), [digital](../../../docs/sections/career-digital/README.md), [tags](../../../docs/sections/career-support/README.md), [metodologías](../../../docs/sections/career-methodologies/README.md). Vector search: [Qdrant](../../../docs/sections/infrastructure/README.md).
-- **Extended:** [LinkedIn](../../../docs/sections/linkedin/README.md), [plantillas PDF](../../../docs/sections/pdf-templates/README.md) (`pdf_template`) y [estilos PDF](../../../docs/sections/pdf-template-styles/README.md) (`pdf_style`), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), consulta web (`web_search` / `web_fetch`), GitHub solo lectura, `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
+- **Extended:** [plantillas PDF](../../../docs/sections/pdf-templates/README.md) (`pdf_template`) y [estilos PDF](../../../docs/sections/pdf-template-styles/README.md) (`pdf_style`), imágenes ([MinIO](../../../docs/sections/files/README.md)), [vacantes/discovery](../../../docs/sections/job-discovery/README.md) ([adaptadores](../job_discovery/README.md)), consulta web (`web_search` / `web_fetch`), GitHub solo lectura, `delegate_to_specialist` (la ejecución de delegación está en `agent_loop`, no aquí).
 
 Todo resultado pasa por `truncate_tool_result`.
 
@@ -677,7 +676,6 @@ flowchart TD
     SVC --> TR[truncate_tool_result]
     EXT --> TR
     TR --> LOOP
-    EXT --> LI[LinkedIn PG]
     EXT --> PDF[plantillas + estilos PDF]
     EXT --> IMG[image_client + MinIO]
     EXT --> JOB[job discovery]
@@ -725,7 +723,7 @@ Lista `[{toolSpec: {name, description, inputSchema: {json}}}]`.
 
 ### Ejemplo
 
-`agent_digital_presence` → specs de CRUD + `delegate_to_specialist`, **sin** tools de LinkedIn ni `run_job_discovery`. Publicación LinkedIn: `agent_linkedin_publishing`.
+`agent_digital_presence` → specs de CRUD + `delegate_to_specialist`, **sin** `run_job_discovery`.
 
 ### Flujo
 
@@ -776,7 +774,7 @@ flowchart TD
 
 ### Entrega
 
-`bool` — si está en `_WRITE_TOOLS` (create/update/delete, LinkedIn, PDF, imagen, `save_job_listings`).
+`bool` — si está en `_WRITE_TOOLS` (create/update/delete, PDF, imagen, `save_job_listings`).
 
 ### Ejemplo
 
@@ -1003,7 +1001,7 @@ Config **estática** de perfiles en 3 niveles (`AgentProfile.level`). Espejo use
 
 **L1:** `agent_orchestrator` (solo `delegate_to_specialist`).
 **L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`.
-**L3 (sin chat):** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github`.
+**L3 (sin chat):** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github`.
 
 ### Recibe
 
@@ -1065,7 +1063,7 @@ Un perfil o la lista completa. ID desconocido → `KeyError` (la ruta lo mapea a
 
 ### Ejemplo
 
-`get_profile("agent_digital_presence")` → perfil con LinkedIn + publicaciones.
+`get_profile("agent_digital_presence")` → perfil de publicaciones y portal.
 
 ### Flujo
 
@@ -1093,7 +1091,7 @@ Router de especialista.
 ### Ejemplo
 
 `chat_surface="general"` ignora la página y el `agent_profile_id`.  
-Contextual con `route="/linkedin"` → `agent_digital_presence`.  
+Contextual con `route="/career/publications"` → `agent_digital_presence`.  
 Contextual con `resource_key="achievements"` → `agent_professional_identity`.
 
 > feature 001: el turno de chat **contextual** ya no pasa por aquí. Lo resuelve
@@ -1131,7 +1129,7 @@ Filtra el catálogo global al subset del perfil.
 
 ### Ejemplo
 
-`agent_professional_identity` no recibe `create_linkedin_post`. `agent_vacancy_search` sí recibe `run_job_discovery`; `agent_search_operations` no (delega).
+`agent_vacancy_search` sí recibe `run_job_discovery`; `agent_search_operations` no (delega).
 
 ### Flujo
 

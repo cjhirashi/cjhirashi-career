@@ -103,15 +103,15 @@ def test_build_execution_prompt_includes_title():
     task = BedrockTask(
         id="btk-1",
         user_id="usr-1",
-        title="Publicar en LinkedIn",
+        title="Buscar vacantes",
         description="Texto del post",
         status="pending",
         assignee_type="agent",
-        agent_profile_id="agent_linkedin_publishing",
+        agent_profile_id="agent_vacancy_search",
         priority="high",
     )
     prompt = task_scheduler.build_execution_prompt(task)
-    assert "Publicar en LinkedIn" in prompt
+    assert "Buscar vacantes" in prompt
     assert "btk-1" in prompt
     assert "no está en sesión" in prompt
 

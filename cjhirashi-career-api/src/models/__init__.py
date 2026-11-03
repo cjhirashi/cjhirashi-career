@@ -74,13 +74,6 @@ from models.pdf_output_template import PdfOutputTemplate
 from models.pdf_template_style import PdfTemplateStyle
 
 # ----------------------------------------------------------------------------
-# LinkedIn Integration
-# ----------------------------------------------------------------------------
-
-from models.linkedin_connection import LinkedInConnection
-from models.linkedin_post import LinkedInPost
-
-# ----------------------------------------------------------------------------
 # Base System (v1) - unchanged
 # ----------------------------------------------------------------------------
 
@@ -156,9 +149,6 @@ __all__ = [
     "ErrorReport",
     "PdfOutputTemplate",
     "PdfTemplateStyle",
-    # LinkedIn integration
-    "LinkedInConnection",
-    "LinkedInPost",
     # Security
     "RefreshToken",
     # Files

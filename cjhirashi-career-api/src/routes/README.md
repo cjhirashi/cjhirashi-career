@@ -20,7 +20,6 @@ flowchart TB
     App --> Tasks[bedrock_tasks]
     App --> PDF[pdf_templates + styles]
     App --> Files[files /files]
-    App --> LI[linkedin /linkedin]
     App --> Public[public /public]
     Identity --> Factory[career_common.build_crud_router]
     Search --> Factory
@@ -132,10 +131,6 @@ CRUD de estilos CSS reutilizables (`style_id` en plantillas). Tool del agente: `
 ### `files.py` — `/files`
 
 Upload a MinIO con re-encode de imágenes (JPEG 85 / PNG con alpha, lado máximo 1920). Listado, visibilidad pública/privada, download presigned, stream raw, delete. Lectura pública de objetos `public/` no pasa por JWT.
-
-### `linkedin.py` — `/linkedin`
-
-OAuth (status, connect, **callback sin JWT** — identidad en `state` firmado), disconnect, cola de posts (list/create/delete). Publicación inmediata o `scheduled_at` (el scheduler en `linkedin_scheduler` publica después).
 
 ### `public.py` — `/public`
 

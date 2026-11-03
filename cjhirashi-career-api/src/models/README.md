@@ -13,7 +13,7 @@ flowchart TB
     Base --> Search[Búsqueda — 14 modelos]
     Base --> Digital[Digital — portal / publications / perfiles]
     Base --> Support[tag / operational_methodology]
-    Base --> Agent[bedrock_* / pdf_* / linkedin_*]
+    Base --> Agent[bedrock_* / pdf_*]
     Core --> PG[(PostgreSQL)]
     Identity --> PG
     Search --> PG
@@ -111,11 +111,3 @@ flowchart TB
 
 ---
 
-## LinkedIn integración
-
-| Módulo | Contenido |
-|--------|-----------|
-| `linkedin_connection.py` | Token OAuth “Share on LinkedIn” |
-| `linkedin_post.py` | Cola + historial de posts (`scheduled` / publicado) |
-
-Esquema SQL: [docs/DATABASE.md](../../docs/DATABASE.md).

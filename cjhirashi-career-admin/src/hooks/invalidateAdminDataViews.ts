@@ -2,7 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 
 /**
  * Query-key prefixes for every Admin Panel view that reads a table
- * (career CRUD, PDF styles/templates, LinkedIn, files, agent tasks, …).
+ * (career CRUD, PDF styles/templates, files, agent tasks, …).
  *
  * After Agent Bedrock writes, the open screen must refetch immediately —
  * `staleTime` on the root QueryClient would otherwise keep showing the
@@ -13,7 +13,6 @@ export const ADMIN_DATA_QUERY_PREFIXES = [
   ['pdf-templates'],
   ['pdf-template-styles'],
   ['fk-options'],
-  ['linkedin'],
   ['files'],
   ['agent-tasks'],
   ['github-repos'],

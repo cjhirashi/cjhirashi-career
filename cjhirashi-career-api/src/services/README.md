@@ -1,6 +1,6 @@
 # Paquete `services/`
 
-Lógica de negocio e integraciones externas. Las rutas no hablan con AWS, MinIO, LinkedIn ni Qdrant directamente: pasan por estos módulos.
+Lógica de negocio e integraciones externas. Las rutas no hablan con AWS, MinIO ni Qdrant directamente: pasan por estos módulos.
 
 ## Arquitectura
 
@@ -11,13 +11,11 @@ flowchart TB
     Routes --> Storage[storage_service]
     Routes --> PDF[pdf_service]
     Routes --> GH[github_service]
-    Routes --> LI[linkedin_service]
     Routes --> IDs[id_generator]
     Routes --> Qdrant[qdrant_service]
     BedrockS --> Harness[bedrock/]
     Routes --> JD[job_discovery/]
     Routes --> TaskSched[task_scheduler]
-    LI --> Sched[linkedin_scheduler]
     TaskSched --> Harness
     PDF --> Render[pdf_template_render]
     PDF --> CSS[pdf_template_css]
@@ -25,8 +23,6 @@ flowchart TB
     Storage --> MinIO[(MinIO)]
     Qdrant --> Q[(Qdrant)]
     JD --> Boards[Adzuna / Getonboard / …]
-    Sched --> LIAPI[LinkedIn API]
-    LI --> LIAPI
 ```
 
 ---
@@ -120,22 +116,6 @@ Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`) para
 ### `web_search_service.py`
 
 Consulta web del L3 `agent_web_search`: `search` (Brave si hay `BRAVE_SEARCH_API_KEY`, si no DuckDuckGo HTML) y `fetch` de URLs públicas con bloqueo SSRF. No toca PostgreSQL.
-
-### `linkedin_service.py` — OAuth y Posts API
-
-| Función | Uso |
-|---------|-----|
-| `build_state_token` / `decode_state_token` | Firma el `user_id` para el callback |
-| `build_authorize_url` | Redirect OAuth “Share on LinkedIn” |
-| `exchange_code_for_token` | Token de acceso |
-| `fetch_userinfo` | Nombre, email, foto |
-| `upload_image` / `create_post` | Imagen + UGC post |
-
-LinkedIn no programa posts: `scheduled_at` lo cumple `linkedin_scheduler`.
-
-### `linkedin_scheduler.py`
-
-Task asyncio en el lifespan de `app.py`. Cada 60 s publica filas `linkedin_posts` con `status=scheduled` y `scheduled_at <= now`. Un solo worker uvicorn → sin carrera entre procesos.
 
 ### `task_scheduler.py`
 

@@ -27,15 +27,6 @@ from services.bedrock.agent_profiles import (
 _SEC_RE = re.compile(r"^sec-[1-9]\d*$")
 
 
-def test_linkedin_is_functional_owned_by_digital_presence():
-    spec = get_section_by_system_name("linkedin-publish")
-    assert spec.section_type == SECTION_FUNCTIONAL
-    # feature 001: el L3 agent_linkedin_publishing ya no es dueño de sección;
-    # el chat contextual de LinkedIn lo atiende el L2 de Presencia Digital.
-    assert spec.default_agent_profile_id == AGENT_DIGITAL_PRESENCE
-    assert "get_linkedin_status" in spec.related_tools
-
-
 def test_job_discovery_is_functional():
     spec = get_section_by_system_name("job-discovery")
     assert spec.section_type == SECTION_FUNCTIONAL
@@ -52,7 +43,7 @@ def test_defaults_are_l2_or_none():
 
 
 def test_l1_l3_sections_remapped():
-    """RF-004: re-mapeo de las 11 secciones que apuntaban a L1/L3."""
+    """RF-004: re-mapeo de las secciones que apuntaban a L1/L3."""
     by_id = {s.id: s.default_agent_profile_id for s in list_section_specs()}
     assert by_id["sec-1"] is None
     assert by_id["sec-2"] is None
@@ -60,7 +51,6 @@ def test_l1_l3_sections_remapped():
     assert by_id["sec-5"] is None
     assert by_id["sec-10"] is None
     assert by_id["sec-11"] is None
-    assert by_id["sec-6"] == AGENT_DIGITAL_PRESENCE
     assert by_id["sec-7"] == AGENT_SEARCH_OPERATIONS
     assert by_id["sec-12"] == AGENT_CONFIGURATION
     assert by_id["sec-13"] == AGENT_CONFIGURATION
@@ -150,7 +140,6 @@ _FROZEN_MAP = {
     "sec-3": "search-metrics",
     "sec-4": "agent-metrics",
     "sec-5": "files",
-    "sec-6": "linkedin-publish",
     "sec-7": "job-discovery",
     "sec-8": "pdf-templates",
     "sec-9": "pdf-styles",
@@ -218,8 +207,8 @@ def test_numbering_is_monotonic_without_integer_collisions():
     assert len(nums) == len(set(nums)), "entero sec-N repetido en el registro"
     assert min(nums) >= 1
     assert max(nums) <= 54, "sec-N por encima del high-water actual"
-    # Hoy la asignación es contigua 1..54 (sin huecos todavía).
-    assert sorted(nums) == list(range(1, 55))
+    # sec-6 (LinkedIn · Publicar) se retiró: su número no se reutiliza (ADR-021).
+    assert sorted(nums) == [n for n in range(1, 55) if n != 6]
 
 
 def test_lookup_unknown_keys_raise_keyerror():

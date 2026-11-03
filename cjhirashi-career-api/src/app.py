@@ -2,7 +2,7 @@
 Punto de entrada de la aplicación FastAPI.
 
 Responsabilidades:
-- Lifecycle (startup/shutdown): BD, MinIO, scheduler LinkedIn y tareas de agentes
+- Lifecycle (startup/shutdown): BD, MinIO, tareas de agentes
 - Middleware CORS y manejadores globales de errores
 - Registro de todos los routers (auth, career, bedrock, public, …)
 - Endpoints de sistema: /health, /
@@ -26,13 +26,12 @@ from routes import bedrock_tasks
 from routes import admin_sections
 from routes import pdf_templates, pdf_template_styles
 from routes import files
-from routes import linkedin, career_linkedin
 from routes import public
 from routes import notifications
 from routes import error_reports
 from routes import events
 from routes import portal_metrics
-from services import storage_service, linkedin_scheduler, task_scheduler
+from services import storage_service, task_scheduler
 from services.error_reporting import areport_error
 
 # ============================================================================
@@ -80,16 +79,13 @@ async def lifespan(app: FastAPI):
             e,
         )
 
-    linkedin_task = asyncio.create_task(linkedin_scheduler.scheduler_loop())
     agent_task_loop = asyncio.create_task(task_scheduler.scheduler_loop())
-    logger.info("LinkedIn post scheduler started")
     logger.info("Agent task scheduler started")
 
     yield
 
     # Shutdown
     logger.info("Shutting down API server...")
-    linkedin_task.cancel()
     agent_task_loop.cancel()
     await close_db()
 
@@ -266,7 +262,6 @@ app.include_router(career_identity.router)
 app.include_router(career_search.router)
 app.include_router(job_discovery.router)
 app.include_router(career_digital.router)
-app.include_router(career_linkedin.router)
 app.include_router(career_support.router)
 app.include_router(career_metrics.router)
 app.include_router(career_methodologies.router)
@@ -277,7 +272,6 @@ app.include_router(admin_sections.router)
 app.include_router(pdf_templates.router)
 app.include_router(pdf_template_styles.router)
 app.include_router(files.router)
-app.include_router(linkedin.router)
 app.include_router(public.router)
 app.include_router(error_reports.router)
 app.include_router(events.router)

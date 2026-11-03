@@ -16,7 +16,7 @@ flowchart LR
     Schema --> Auth[user.py]
     Schema --> Career[career_*.py]
     Schema --> Agent[bedrock.py / bedrock_task.py]
-    Schema --> Other[files / linkedin / public / pdf]
+    Schema --> Other[files / public / pdf]
 ```
 
 ---
@@ -76,10 +76,6 @@ Plantillas HTML (`PdfOutputTemplate*`), estilos CSS (`PdfTemplateStyle*`), `PdfT
 ### `file_upload.py`
 
 `FileUploadResponse` (id, categoría, visibilidad, URL, MIME, tamaño).
-
-### `linkedin.py`
-
-`LinkedInStatusResponse`, `LinkedInConnectResponse` (`authorize_url`), `LinkedInPostResponse`.
 
 ### `public.py`
 

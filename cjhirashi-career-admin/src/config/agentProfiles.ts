@@ -24,7 +24,6 @@ export const AGENT_PDF_RENDER = 'agent_pdf_render'
 export const AGENT_VISUAL_DESIGN = 'agent_visual_design'
 export const AGENT_CHANGELOG = 'agent_changelog'
 export const AGENT_TASK_MANAGER = 'agent_task_manager'
-export const AGENT_LINKEDIN_PUBLISHING = 'agent_linkedin_publishing'
 export const AGENT_VACANCY_SEARCH = 'agent_vacancy_search'
 export const AGENT_CV_WRITING = 'agent_cv_writing'
 export const AGENT_COVER_LETTER_WRITING = 'agent_cover_letter_writing'
@@ -54,7 +53,6 @@ export const ALL_AGENT_PROFILES: AgentProfileOption[] = [
   { id: AGENT_VISUAL_DESIGN, label: 'Agente Visual', level: 3 },
   { id: AGENT_CHANGELOG, label: 'Gestor de bitácora', level: 3 },
   { id: AGENT_TASK_MANAGER, label: 'Gestor de tareas', level: 3 },
-  { id: AGENT_LINKEDIN_PUBLISHING, label: 'Control de publicación LinkedIn', level: 3 },
   { id: AGENT_VACANCY_SEARCH, label: 'Control de búsqueda de vacantes', level: 3 },
   { id: AGENT_CV_WRITING, label: 'Redacción de CVs', level: 3 },
   { id: AGENT_COVER_LETTER_WRITING, label: 'Redacción de cover letters', level: 3 },
@@ -92,7 +90,6 @@ export function l2AgentSelectOptions(): { value: string; label: string }[] {
 
 /** Mirror of `_ROUTE_TO_PROFILE` in agent_profiles.py */
 const ROUTE_TO_PROFILE: Record<string, string> = {
-  '/linkedin': AGENT_DIGITAL_PRESENCE,
   '/job-discovery': AGENT_SEARCH_OPERATIONS,
   '/career/publications': AGENT_DIGITAL_PRESENCE,
   '/career/operational-methodologies': AGENT_METHODOLOGIES,

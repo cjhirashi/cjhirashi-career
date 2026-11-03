@@ -52,7 +52,7 @@ _L1_ORCHESTRATION_RULE = (
 _L2_DOMAIN_RULE = (
     "Nivel 2: opera solo tu dominio. No llames a otro L2 ni al orquestador. "
     "Tareas transversales (bitácora, PDF de un registro, imágenes, plan de tareas, "
-    "publicación LinkedIn, discovery de vacantes, redacción de CV o cover letter, "
+    "discovery de vacantes, redacción de CV o cover letter, "
     "consulta web, repos GitHub) se delegan a L3. "
     "Si piden listar TODO un recurso de tu dominio, usa list_career_record con limit=100 y pagina mientras "
     "has_more sea true. "

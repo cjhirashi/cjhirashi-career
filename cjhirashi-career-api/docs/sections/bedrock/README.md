@@ -142,7 +142,7 @@ Bloqueo: si gasto UTC del día ≥ `BEDROCK_DAILY_BUDGET_USD`, el chat retorna e
 | `POST` | `/bedrock/agent-profiles/{profile_id}/memory/notes` | Añade nota de memoria propia |
 | `DELETE` | `/bedrock/agent-profiles/{profile_id}/memory/notes/{note_id}` | Elimina una nota |
 
-**Jerarquía de 3 niveles (ADR-012 / ADR-013):** L1 `agent_orchestrator`; L2 `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`; L3 `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github` (sin chat).
+**Jerarquía de 3 niveles (ADR-012 / ADR-013):** L1 `agent_orchestrator`; L2 `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`; L3 `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search`, `agent_github` (sin chat).
 
 Definidos en `services/bedrock/agent_profiles.py`.
 
@@ -212,7 +212,6 @@ Ejecutadas en `services/bedrock/tools.py` → `bedrock_service._execute_tool`:
 | CRUD carrera | `list/get/create/update/delete_career_record`, `count_career_records` |
 | Conocimiento | `search_knowledge_base`, `describe_resource_schema` |
 | Auditoría | `list_recent_changes`, `restore_deleted_record` |
-| LinkedIn | `get_linkedin_status`, `create_linkedin_post`, … (L3 `agent_linkedin_publishing`) |
 | PDF | `pdf_template` / `pdf_style` (L2 `agent_pdf_design`); `generate_pdf` / `render_record_pdf` (L3 `agent_pdf_render`) |
 | Imágenes | `generate_image`, `attach_image_to_record` (L3 `agent_visual_design`) |
 | Vacantes | `run_job_discovery`, `import_job_url`, `save_job_listings` (L3 `agent_vacancy_search`) |
@@ -292,4 +291,3 @@ Solo docs y README **dentro de `api/`**.
 | Plantillas PDF | [pdf-templates](../pdf-templates/README.md) |
 | Estilos PDF | [pdf-template-styles](../pdf-template-styles/README.md) |
 | MinIO / `file_id` | [files](../files/README.md) |
-| LinkedIn | [linkedin](../linkedin/README.md) |

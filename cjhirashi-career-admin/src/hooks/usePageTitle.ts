@@ -13,7 +13,6 @@ const STATIC_TITLES: Record<string, string> = {
   '/job-discovery': 'Descubrir vacantes',
   '/files': 'Archivos',
   '/tasks': 'Tareas',
-  '/linkedin': 'LinkedIn',
   '/profile': 'Perfil',
   '/change-password': 'Cambiar contraseña',
   '/agent/chat': 'Chat General',

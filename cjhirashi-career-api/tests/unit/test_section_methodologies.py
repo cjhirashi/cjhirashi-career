@@ -13,19 +13,19 @@ from services import section_catalog
 @pytest.mark.asyncio
 @pytest.mark.requisito("RF-002")
 async def test_derived_tools_for_agent_is_union_of_its_sections():
-    # L2 que posee sec-32 (tabla projects) y sec-6 (funcional LinkedIn)
+    # L2 que posee sec-32 (tabla projects) y sec-7 (funcional vacantes)
     async def fake_sections_for_agent(db, profile_id):
-        return [{"id": "sec-32"}, {"id": "sec-6"}]
+        return [{"id": "sec-32"}, {"id": "sec-7"}]
 
     with patch.object(section_catalog, "sections_for_agent", new=fake_sections_for_agent):
         tools = await section_catalog.derived_tools_for_agent(db=None, profile_id="agent_professional_identity")
 
     from services.admin_sections import get_section_spec, tools_for_section
 
-    expected = tools_for_section(get_section_spec("sec-32")) | tools_for_section(get_section_spec("sec-6"))
+    expected = tools_for_section(get_section_spec("sec-32")) | tools_for_section(get_section_spec("sec-7"))
     assert tools == expected
     assert "list_career_record" in tools  # de sec-32
-    assert "get_linkedin_status" in tools  # de sec-6
+    assert "run_job_discovery" in tools  # de sec-7
 
 
 @pytest.mark.asyncio

@@ -13,7 +13,7 @@ flowchart TB
     Sections --> Infra[infrastructure]
     Sections --> Career[career-*]
     Sections --> Agent[bedrock / bedrock-tasks]
-    Sections --> Integ[files / linkedin / pdf / public]
+    Sections --> Integ[files / pdf / public]
     Index --> Guides[API / ARCHITECTURE / DATABASE / SECURITY / SETUP]
     Career --> Src[src/routes + models]
     Agent --> Harness[src/services/bedrock]
@@ -42,7 +42,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | Plantillas PDF | [sections/pdf-templates/README.md](sections/pdf-templates/README.md) |
 | Estilos PDF | [sections/pdf-template-styles/README.md](sections/pdf-template-styles/README.md) |
 | Archivos (MinIO) | [sections/files/README.md](sections/files/README.md) |
-| LinkedIn | [sections/linkedin/README.md](sections/linkedin/README.md) |
 | Portal público | [sections/public/README.md](sections/public/README.md) |
 
 ---
@@ -79,7 +78,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `pdf_templates` | `/pdf-templates` | JWT |
 | `pdf_template_styles` | `/pdf-template-styles` | JWT |
 | `files` | `/files` | JWT |
-| `linkedin` | `/linkedin` | JWT (+ callback público) |
 | `public` | `/public` | Ninguna |
 
 **OpenAPI interactivo:** `http://localhost:8001/docs`
@@ -109,7 +107,7 @@ READMEs de implementación (función de cada módulo Python), distintos de los d
 
 | Cliente | Puerto host | Endpoints típicos |
 |---------|-------------|-------------------|
-| Admin Panel | 8002 | `/auth`, `/career/*`, `/bedrock`, `/files`, `/linkedin` |
+| Admin Panel | 8002 | `/auth`, `/career/*`, `/bedrock`, `/files` |
 | Portal Público | 8003 | `/public/*` |
 | MCP Server | 8004 | `/auth`, `/career/*`, `/bedrock` (según tools) |
 

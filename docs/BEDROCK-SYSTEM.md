@@ -29,7 +29,7 @@ contextual y el turno degrada al orquestador.
 
 **L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`
 
-**L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_linkedin_publishing`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`
+**L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`
 
 Definidos en `cjhirashi-career-api/src/services/bedrock/agent_profiles.py`.
 

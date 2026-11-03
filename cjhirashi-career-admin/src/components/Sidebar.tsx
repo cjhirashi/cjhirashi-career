@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   BarChart3,
   FolderOpen,
-  Linkedin,
   LineChart,
   Search,
   Bot,
@@ -47,7 +46,6 @@ const menuItems = [
   { label: 'Tareas', path: '/tasks', icon: ClipboardList, table: true as const, countKey: 'tasks' as const },
 ]
 
-const LINKEDIN_DOMAIN_KEY = 'digital'
 const SEARCH_METRICS_DOMAIN_KEY = 'search'
 const AGENT_DOMAIN_KEY = 'agent'
 const PDF_DOMAIN_KEY = 'pdf'
@@ -308,15 +306,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                         />
                       )
                     })}
-                    {domain.key === LINKEDIN_DOMAIN_KEY && (
-                      <SidebarSubLink
-                        to="/linkedin"
-                        label="LinkedIn · Publicar"
-                        icon={Linkedin}
-                        active={isActive('/linkedin')}
-                        onClick={closeMobileDrawer}
-                      />
-                    )}
                   </div>
                 )}
               </div>

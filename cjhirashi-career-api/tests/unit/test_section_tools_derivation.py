@@ -29,18 +29,18 @@ def test_table_section_derives_full_crud_set():
     assert spec.section_type == "table" and spec.resource_key == "projects"
     tools = tools_for_section(spec)
     assert _TABLE_CRUD <= tools
-    assert "get_linkedin_status" not in tools
+    assert "run_job_discovery" not in tools
     assert "pdf_template" not in tools
 
 
 @pytest.mark.requisito("RF-001")
 def test_functional_section_is_baseline_plus_related_tools():
-    # sec-6 = LinkedIn · Publicar (funcional operativa)
-    spec = get_section_spec("sec-6")
+    # sec-7 = Descubrir vacantes (funcional operativa)
+    spec = get_section_spec("sec-7")
     assert spec.section_type == "functional"
     tools = tools_for_section(spec)
     assert tools == {"search_knowledge_base"} | set(spec.related_tools)
-    assert "get_linkedin_status" in tools
+    assert "run_job_discovery" in tools
     assert "list_career_record" not in tools
 
 

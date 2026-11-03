@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import {
   AGENT_CHANGELOG,
   AGENT_DIGITAL_PRESENCE,
-  AGENT_LINKEDIN_PUBLISHING,
   AGENT_ORCHESTRATOR,
   AGENT_PDF_DESIGN,
   AGENT_PDF_RENDER,
@@ -53,7 +52,7 @@ describe('resolveAgentProfileId', () => {
     expect(
       resolveAgentProfileId({
         chatSurface: 'contextual',
-        pageContext: { route: '/linkedin', resource_key: 'linkedin-posts' },
+        pageContext: { route: '/career/publications', resource_key: 'publications' },
       })
     ).toBe(AGENT_DIGITAL_PRESENCE)
   })
@@ -172,14 +171,12 @@ describe('resolveAgentProfileId', () => {
     expect(ids).not.toContain(AGENT_PDF_RENDER)
     expect(ids).not.toContain(AGENT_VISUAL_DESIGN)
     expect(ids).not.toContain(AGENT_CHANGELOG)
-    expect(ids).not.toContain(AGENT_LINKEDIN_PUBLISHING)
     expect(ids).not.toContain(AGENT_VACANCY_SEARCH)
     expect(ids).not.toContain(AGENT_CV_WRITING)
     expect(ids).not.toContain(AGENT_COVER_LETTER_WRITING)
     expect(ids).not.toContain(AGENT_WEB_SEARCH)
     expect(ids).not.toContain(AGENT_GITHUB)
     expect(getAgentProfileLabel(AGENT_PDF_RENDER)).toBe('Renderizado PDF')
-    expect(getAgentProfileLabel(AGENT_LINKEDIN_PUBLISHING)).toBe('Control de publicación LinkedIn')
     expect(getAgentProfileLabel(AGENT_VACANCY_SEARCH)).toBe('Control de búsqueda de vacantes')
     expect(getAgentProfileLabel(AGENT_CV_WRITING)).toBe('Redacción de CVs')
     expect(getAgentProfileLabel(AGENT_COVER_LETTER_WRITING)).toBe('Redacción de cover letters')

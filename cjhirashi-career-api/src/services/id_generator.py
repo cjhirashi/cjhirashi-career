@@ -39,8 +39,6 @@ TABLE_PREFIXES: dict[str, str] = {
     "personal_profile":           "psp",
     "identity_reflections":       "idr",
     "interviews":                 "ivw",
-    "linkedin_connections":       "lnc",
-    "linkedin_posts":             "lnp",
     "linkedin_profile":           "lnr",
     "market_segments":            "mks",
     "networking_activities":      "nwa",

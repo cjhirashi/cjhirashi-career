@@ -11,7 +11,6 @@ const STATIC_PAGE_TITLES: Record<string, string> = {
   '/job-discovery': 'Descubrir vacantes',
   '/files': 'Archivos',
   '/tasks': 'Tareas',
-  '/linkedin': 'LinkedIn · Publicar',
   '/agent/chat': 'Chat General',
   '/settings/agents': 'Catálogo de Agentes',
   '/settings/sections': 'Secciones del Admin',

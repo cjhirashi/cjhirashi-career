@@ -4,7 +4,7 @@
 
 **Última actualización:** 2026-08-24
 
-Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock, MinIO, Qdrant y LinkedIn.
+Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock, MinIO, y Qdrant.
 
 ---
 
@@ -33,7 +33,7 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 - CRUD de 37 recursos de carrera profesional
 - Agent Bedrock (Harness local Converse API)
 - Job discovery multi-proveedor
-- Archivos (MinIO), LinkedIn OAuth, plantillas PDF
+- Archivos (MinIO), plantillas PDF
 - Endpoints públicos read-only para el Portal
 
 **Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock) · Qdrant client
@@ -64,7 +64,6 @@ graph TD
         MinIO[(MinIO)]
         Qdrant[(Qdrant)]
         AWS[AWS Bedrock]
-        LI[LinkedIn API]
         GH[GitHub API]
     end
 
@@ -101,7 +100,7 @@ Internet → Caddy/Cloudflare → Admin (8002) / Portal (8003) / MCP (8004)
 
 | Cliente | Auth | Endpoints típicos |
 |---------|------|-------------------|
-| Admin Panel | JWT | `/auth`, `/career/*`, `/bedrock`, `/files`, `/linkedin` |
+| Admin Panel | JWT | `/auth`, `/career/*`, `/bedrock`, `/files` |
 | Portal Público | Ninguna | `/public/*` |
 | MCP Server | JWT | `/career/*`, `/bedrock` (según tools MCP) |
 
@@ -111,14 +110,14 @@ Internet → Caddy/Cloudflare → Admin (8002) / Portal (8003) / MCP (8004)
 
 ### `src/app.py`
 
-- Lifespan: `init_db()`, MinIO bucket, schedulers LinkedIn y tareas de agentes
+- Lifespan: `init_db()`, MinIO bucket y scheduler de tareas de agentes
 - CORS, exception handlers globales
 - Registra 14 routers (ver [API.md](./API.md))
 - Health check `/health`
 
 ### `src/config.py`
 
-`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, Qdrant, LinkedIn, CORS, portal público.
+`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, Qdrant, CORS, portal público.
 
 ### `src/database.py`
 
@@ -142,7 +141,6 @@ Engine async, `AsyncSessionLocal`, `get_db()` dependency, `init_db()` / `close_d
 | `pdf_templates.py` | Plantillas HTML (`pdf_template`) |
 | `pdf_template_styles.py` | Estilos CSS (`pdf_style`) |
 | `files.py` | Upload MinIO |
-| `linkedin.py` | OAuth + posts |
 | `public.py` | Portal read-only |
 
 Documentación por sección: [sections/README.md](./sections/README.md)
@@ -156,7 +154,6 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 | `bedrock_service.py` | Fachada + CRUD tools del agente |
 | `job_discovery/` | Proveedores Indeed, LinkedIn, Remotive, etc. |
 | `storage_service.py` | MinIO upload/presigned URLs |
-| `linkedin_service.py` | OAuth + publicación LinkedIn |
 | `qdrant_service.py` | Indexación y búsqueda vectorial |
 | `pdf_service.py` | Generación PDF |
 | `id_generator.py` | IDs prefijados (`ach-17`, `usr-1`) |
@@ -200,7 +197,6 @@ graph LR
 
     subgraph Integrations["Integraciones"]
         Files[MinIO]
-        LI[LinkedIn]
         PDF[PDF Templates]
     end
 
@@ -283,7 +279,6 @@ sequenceDiagram
 | MinIO | Archivos, imágenes IA | `MINIO_*` |
 | Qdrant | Knowledge base Bedrock | `QDRANT_*` |
 | AWS Bedrock | Converse, Embeddings, Titan Image | `AWS_*`, `BEDROCK_*` |
-| LinkedIn API | OAuth, posts | `LINKEDIN_*` |
 | GitHub API | Repos públicos | Sin key (API pública) |
 
 ---

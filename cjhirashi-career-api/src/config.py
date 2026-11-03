@@ -185,14 +185,6 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION: str = "career_knowledge"
 
     # -------------------------------------------------------------------------
-    # LinkedIn OAuth — publicación y conexión de cuenta
-    # -------------------------------------------------------------------------
-    LINKEDIN_CLIENT_ID: str = ""
-    LINKEDIN_CLIENT_SECRET: str = ""
-    LINKEDIN_REDIRECT_URI: str = ""
-    LINKEDIN_FRONTEND_URL: str = ""
-
-    # -------------------------------------------------------------------------
     # Job discovery — agregadores externos (Adzuna, boards públicos, etc.)
     # -------------------------------------------------------------------------
     ADZUNA_APP_ID: str = ""

@@ -53,7 +53,6 @@ AGENT_PDF_RENDER = "agent_pdf_render"
 AGENT_VISUAL_DESIGN = "agent_visual_design"
 AGENT_CHANGELOG = "agent_changelog"
 AGENT_TASK_MANAGER = "agent_task_manager"
-AGENT_LINKEDIN_PUBLISHING = "agent_linkedin_publishing"
 AGENT_VACANCY_SEARCH = "agent_vacancy_search"
 AGENT_CV_WRITING = "agent_cv_writing"
 AGENT_COVER_LETTER_WRITING = "agent_cover_letter_writing"
@@ -77,7 +76,6 @@ _AGENT_RECORD_IDS: dict[str, str] = {
     AGENT_VISUAL_DESIGN: "agent-10",
     AGENT_CHANGELOG: "agent-11",
     AGENT_TASK_MANAGER: "agent-12",
-    AGENT_LINKEDIN_PUBLISHING: "agent-13",
     AGENT_VACANCY_SEARCH: "agent-14",
     AGENT_CV_WRITING: "agent-15",
     AGENT_COVER_LETTER_WRITING: "agent-16",
@@ -103,13 +101,6 @@ _L2_BASE_TOOL_NAMES = {
     "update_career_record",
     "bulk_update_career_record",
     "delete_career_record",
-}
-
-_LINKEDIN_TOOL_NAMES = {
-    "get_linkedin_status",
-    "list_linkedin_posts",
-    "create_linkedin_post",
-    "delete_scheduled_linkedin_post",
 }
 
 _JOB_DISCOVERY_TOOL_NAMES = {
@@ -157,8 +148,6 @@ _TASK_MANAGER_TOOL_NAMES = {
     "bulk_update_career_record",
     "delete_career_record",
 }
-
-_LINKEDIN_PUBLISHING_TOOL_NAMES = set(_LINKEDIN_TOOL_NAMES)
 
 _VACANCY_SEARCH_TOOL_NAMES = set(_JOB_DISCOVERY_TOOL_NAMES)
 
@@ -298,14 +287,13 @@ _ORCHESTRATOR_SUFFIX = (
     "globales) → agent_configuration.\n"
     "- Reportes de falla / bitácora de cambios del agente → agent_settings.\n"
     "- Tarea transversal → L3 (agent_pdf_render, agent_visual_design, agent_changelog, "
-    "agent_task_manager, agent_linkedin_publishing, agent_vacancy_search, "
+    "agent_task_manager, agent_vacancy_search, "
     "agent_cv_writing, agent_cover_letter_writing, agent_web_search, agent_github).\n"
     "Resume en español claro para Carlos solo lo que devolvieron los especialistas. "
     "Discovery de vacantes → agent_vacancy_search (preview refs L1, L2…; no guarda "
     "hasta que Carlos autorice). Pipeline de vacantes/apps → agent_search_operations. "
     "Redactar un CV → agent_cv_writing. Cover letter → agent_cover_letter_writing. "
     "PDF de un registro ya redactado → agent_pdf_render. "
-    "Publicar o programar en LinkedIn → agent_linkedin_publishing. "
     "Consulta web (buscar o leer una URL) → agent_web_search. "
     "Repos GitHub en vivo → agent_github. Nunca inventes vacantes."
 )
@@ -360,17 +348,6 @@ _PDF_RENDER_SUFFIX = (
     "Para preview de plantilla: generate_pdf (template_id + variables). "
     "Devuelve pdf_url, filename y el registro tocado. No afirmes que generaste un archivo "
     "hasta que la tool devuelva la URL."
-)
-
-_LINKEDIN_PUBLISHING_SUFFIX = (
-    "Eres el controlador L3 de publicación LinkedIn. No hablas con el usuario ni editas "
-    "perfiles, portal ni publicaciones del portafolio. "
-    "Tools: get_linkedin_status, list_linkedin_posts, create_linkedin_post, "
-    "delete_scheduled_linkedin_post. "
-    "Publica ahora (sin scheduled_at) o programa (ISO futuro) solo si la tarea trae el texto. "
-    "No inventes copy. Si falta conexión, llama get_linkedin_status y reporta el error. "
-    "Devuelve ids, estado (published|scheduled|failed) y scheduled_at. "
-    "No afirmes que publicaste hasta que la tool lo confirme."
 )
 
 _VACANCY_SEARCH_SUFFIX = (
@@ -501,7 +478,7 @@ _PROFILES: dict[str, AgentProfile] = {
         methodology_sections=["Presencia Digital"],
         system_prompt_suffix=(
             "Especialista L2 en presencia digital, publicaciones del portal y perfiles sociales. "
-            "No publicas ni programas posts de LinkedIn: delega a agent_linkedin_publishing. "
+            "No gestionas posts de LinkedIn: esa integración no existe. "
             "Repos, archivos o estado de GitHub en vivo → agent_github "
             "(github-profile es ficha CRUD, no la API). "
             "Consulta web → agent_web_search. "
@@ -636,17 +613,6 @@ _PROFILES: dict[str, AgentProfile] = {
         allowed_tool_names=_TASK_MANAGER_TOOL_NAMES,
         level=3,
     ),
-    AGENT_LINKEDIN_PUBLISHING: AgentProfile(
-        id=AGENT_LINKEDIN_PUBLISHING,
-        label="Control de publicación LinkedIn",
-        domain_keys=["digital"],
-        resource_keys=None,
-        methodology_sections=["Presencia Digital"],
-        system_prompt_suffix=_LINKEDIN_PUBLISHING_SUFFIX,
-        default_model_id="amazon.nova-lite-v1:0",
-        allowed_tool_names=_LINKEDIN_PUBLISHING_TOOL_NAMES,
-        level=3,
-    ),
     AGENT_VACANCY_SEARCH: AgentProfile(
         id=AGENT_VACANCY_SEARCH,
         label="Control de búsqueda de vacantes",
@@ -736,7 +702,6 @@ _PROFILES: dict[str, AgentProfile] = {
 # ============================================================================
 
 _ROUTE_TO_PROFILE = {
-    "/linkedin": AGENT_DIGITAL_PRESENCE,
     "/job-discovery": AGENT_SEARCH_OPERATIONS,
     "/career/publications": AGENT_DIGITAL_PRESENCE,
     "/career/operational-methodologies": AGENT_METHODOLOGIES,

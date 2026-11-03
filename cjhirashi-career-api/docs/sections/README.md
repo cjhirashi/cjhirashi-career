@@ -27,7 +27,6 @@ flowchart TB
     end
     subgraph Ext
         Files[files]
-        LI[linkedin]
         Public[public]
     end
     Auth --> Carrera
@@ -77,7 +76,6 @@ flowchart TB
 | Sección | Descripción |
 |---------|-------------|
 | [files](files/README.md) | Upload, presigned URLs, MinIO |
-| [linkedin](linkedin/README.md) | OAuth, publicación y programación de posts |
 
 ---
 

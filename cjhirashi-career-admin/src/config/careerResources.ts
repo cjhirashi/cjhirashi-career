@@ -1756,9 +1756,8 @@ export const publicationsConfig: ResourceConfig = {
   ],
 }
 
-// LinkedIn *profile* content (headline/about/experience/education/...) - not
-// to be confused with the "LinkedIn" posting/OAuth tool at /linkedin (see
-// Sidebar.tsx), which is a separate standalone page, not a career resource.
+// LinkedIn *profile* content (headline/about/experience/education/...), a career
+// resource. There is no LinkedIn posting tool anymore: only the portfolio blog publishes.
 export const linkedinProfileConfig: ResourceConfig = {
   key: 'linkedin-profile',
   label: 'Perfil de LinkedIn',
@@ -2080,9 +2079,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     key: 'digital',
     label: 'Presencia Digital',
     icon: Globe,
-    // Publicaciones deliberately goes last, right before the LinkedIn
-    // posting tool spliced in below (Sidebar.tsx) - both are "publish
-    // content" actions (portfolio blog vs. LinkedIn), kept together.
+    // Publicaciones (portfolio blog) deliberately goes last in this group.
     resourceKeys: ['linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact', 'publications'],
   },
   {

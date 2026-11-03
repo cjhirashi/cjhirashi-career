@@ -41,7 +41,6 @@ _TOOL_STATUS = {
     "delete_career_record": "Eliminando el registro...",
     "list_recent_changes": "Consultando la bitácora...",
     "restore_deleted_record": "Restaurando el registro...",
-    "create_linkedin_post": "Publicando en LinkedIn...",
     "generate_image": "Generando imagen...",
     "delegate_to_specialist": "Consultando especialista...",
     "list_job_providers": "Revisando portales de vacantes...",

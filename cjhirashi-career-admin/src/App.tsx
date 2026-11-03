@@ -17,7 +17,6 @@ import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
 import { FilesPage } from '@/pages/FilesPage'
-import { LinkedInPage } from '@/pages/LinkedInPage'
 import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
 import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
 import { AgentPromptsSettingsPage } from '@/pages/AgentPromptsSettingsPage'
@@ -135,17 +134,6 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <TasksPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/linkedin"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <LinkedInPage />
                 </Layout>
               </PrivateRoute>
             }

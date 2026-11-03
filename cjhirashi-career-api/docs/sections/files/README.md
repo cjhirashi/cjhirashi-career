@@ -128,4 +128,4 @@ curl -s "http://localhost:8001/files?category=images&limit=20" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Ver también: [bedrock](../bedrock/README.md), [linkedin](../linkedin/README.md)
+Ver también: [bedrock](../bedrock/README.md)

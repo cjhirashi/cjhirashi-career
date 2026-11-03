@@ -203,22 +203,6 @@ CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in
 
 ---
 
-## LinkedIn — `/linkedin`
-
-→ [sections/linkedin/README.md](sections/linkedin/README.md)
-
-| Método | Path | Auth |
-|--------|------|------|
-| GET | `/linkedin/status` | Sí |
-| GET | `/linkedin/connect` | Sí |
-| GET | `/linkedin/callback` | No |
-| DELETE | `/linkedin/disconnect` | Sí |
-| GET | `/linkedin/posts` | Sí |
-| POST | `/linkedin/posts` | Sí |
-| DELETE | `/linkedin/posts/{id}` | Sí |
-
----
-
 ## Portal público — `/public`
 
 → [sections/public/README.md](sections/public/README.md)
@@ -246,7 +230,7 @@ CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in
 | 401 | Token ausente/inválido |
 | 404 | Recurso no encontrado |
 | 422 | Error de validación Pydantic |
-| 502 | Error servicio externo (Bedrock, LinkedIn) |
+| 502 | Error servicio externo (Bedrock) |
 | 503 | Servicio no configurado |
 
 ---

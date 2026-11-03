@@ -56,8 +56,8 @@ async def test_update_still_accepts_agent_profile_id_alone():
             db=None,
             tool_input={
                 "action": "update",
-                "section_id": "sec-6",
-                "agent_profile_id": "agent_digital_presence",
+                "section_id": "sec-7",
+                "agent_profile_id": "agent_search_operations",
             },
         )
     assert "error" not in out

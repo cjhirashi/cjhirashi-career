@@ -1,7 +1,7 @@
 """Registro en código de las secciones del Admin Panel.
 
 Una sección es una pantalla (o grupo de vistas) que un agente puede dominar:
-tabla CRUD, área funcional (p. ej. API LinkedIn), métricas o bucket de archivos.
+tabla CRUD, área funcional (p. ej. descubrir vacantes), métricas o bucket de archivos.
 Los overrides editables viven en PostgreSQL (`admin_section_overrides`).
 
 Identificadores (ADR-021):
@@ -249,29 +249,6 @@ _SECTIONS: List[AdminSectionSpec] = [
         ),
         group="Almacenamiento",
         sort_order=20,
-    ),
-    AdminSectionSpec(
-        id="sec-6",
-        system_name="linkedin-publish",
-        label="LinkedIn · Publicar",
-        path="/linkedin",
-        section_type=SECTION_FUNCTIONAL,
-        default_agent_profile_id=AGENT_DIGITAL_PRESENCE,
-        description="Integración API de LinkedIn: OAuth, publicar y programar posts.",
-        views=_main_view(
-            "LinkedIn · Publicar",
-            "Publicación y programación vía API de LinkedIn.",
-            "Conecta LinkedIn (OAuth), redacta o programa posts y revisa el estado de la "
-            "conexión. No es la ficha del perfil (eso vive en Perfil de LinkedIn).",
-        ),
-        related_tools=(
-            "get_linkedin_status",
-            "list_linkedin_posts",
-            "create_linkedin_post",
-            "delete_scheduled_linkedin_post",
-        ),
-        group="Presencia Digital",
-        sort_order=30,
     ),
     AdminSectionSpec(
         id="sec-7",

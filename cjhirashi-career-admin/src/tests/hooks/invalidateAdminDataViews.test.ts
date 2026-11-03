@@ -3,14 +3,13 @@ import { QueryClient } from '@tanstack/react-query'
 import { ADMIN_DATA_QUERY_PREFIXES, invalidateAdminDataViews } from '@/hooks/invalidateAdminDataViews'
 
 describe('invalidateAdminDataViews', () => {
-  it('covers career, PDF, LinkedIn, files and agent table prefixes', () => {
+  it('covers career, PDF, files and agent table prefixes', () => {
     const keys = ADMIN_DATA_QUERY_PREFIXES.map((prefix) => prefix.join('/'))
     expect(keys).toEqual(
       expect.arrayContaining([
         'career',
         'pdf-templates',
         'pdf-template-styles',
-        'linkedin',
         'files',
         'agent-tasks',
       ])
