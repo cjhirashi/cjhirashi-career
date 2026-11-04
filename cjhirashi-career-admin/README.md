@@ -39,7 +39,8 @@ admin/
 │   │   ├── PrivateRoute.tsx # Auth protection
 │   │   ├── LoadingSpinner.tsx
 │   │   ├── Navbar.tsx
-│   │   └── Sidebar.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── career/portal/   # Paneles del tablero de métricas (controles, KPIs, gráfica, desglose, metas, recorridos, calidad)
 │   ├── pages/              # Page components
 │   │   ├── LoginPage.tsx
 │   │   ├── DashboardPage.tsx
@@ -49,16 +50,19 @@ admin/
 │   │   ├── JobStrategiesPage.tsx
 │   │   ├── NetworkingPage.tsx
 │   │   ├── InterviewsPage.tsx
-│   │   └── MetricsPage.tsx
+│   │   └── MetricsPage.tsx   # Tablero de analítica del portafolio (SPEC-0010)
 │   ├── hooks/              # Custom React hooks
-│   │   └── useAuth.ts
+│   │   ├── useAuth.ts
+│   │   └── usePortalAnalytics.ts   # un hook por endpoint de /career/portal-metrics
 │   ├── stores/             # Zustand state stores
 │   │   └── authStore.ts
 │   ├── api/                # API client and endpoints
 │   │   ├── client.ts       # Axios instance with interceptors
-│   │   └── auth.ts         # Auth endpoints
+│   │   ├── auth.ts         # Auth endpoints
+│   │   └── portalAnalytics.ts  # Cliente de /career/portal-metrics/*
 │   ├── types/              # TypeScript interfaces
-│   │   └── index.ts
+│   │   ├── index.ts
+│   │   └── portalAnalytics.ts  # Respuestas de la analítica
 │   ├── tests/              # Test files
 │   │   ├── components/
 │   │   ├── hooks/
@@ -78,6 +82,16 @@ admin/
 └── README.md               # This file
 ```
 
+
+## Tablero de métricas del portafolio (`/metrics`)
+
+Lee `/career/portal-metrics/*` (SPEC-0010). Arranca en los últimos 30 días, sin comparar, con **bots y mis visitas excluidos**.
+
+- **Controles:** rango (7/30/90 días o fechas exactas), comparación (periodo anterior, año anterior, mismos días de la semana), filtros combinables (canal, país, dispositivo) y los interruptores de exclusión. Las listas de filtros se piden sin filtros para que elegir uno no vacíe las demás.
+- **Arriba:** KPIs con cambio contra el periodo comparado (en el rebote bajar es mejorar), minigráfica y «visitantes ahora» (se actualiza cada 20 s; el resto cada minuto).
+- **Gráfica:** visitas por día con el tramo en curso punteado, el periodo comparado y las anotaciones.
+- **Paneles:** desglose por pestañas (fuentes, páginas, ubicación con mapa, dispositivos; cada pestaña pide sus datos solo al abrirse), metas y embudo, recorridos y retención semanal, y calidad de los datos (muestra, porcentaje de bots y aviso si hay pocas visitas).
+- **Pruebas:** `src/tests/pages/MetricsPage.test.tsx`, `src/tests/api/portalAnalytics.test.ts`, `src/tests/components/portal/format.test.ts`.
 ## Getting Started
 
 ### Prerequisites

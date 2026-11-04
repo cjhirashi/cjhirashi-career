@@ -545,8 +545,45 @@ DAILY_DIMENSIONS = {
 }
 
 
+async def _lock_daily(db: AsyncSession, site: PortalSite) -> None:
+    """Serializa el recalculo del resumen de un sitio hasta el fin de la transaccion.
+
+    El tablero pide varios endpoints a la vez y todos pueden encontrar el mismo dia viejo:
+    sin esto dos recalculos borran y reescriben a la vez y chocan con la unicidad de `portal_daily`.
+    """
+    await db.execute(select(func.pg_advisory_xact_lock(func.hashtext(f"portal_daily:{site.id}"))))
+
+
+async def _stale_days(db: AsyncSession, q: MetricsQuery) -> List[date]:
+    """Dias CERRADOS del rango cuyo resumen falta o quedo viejo respecto de las visitas."""
+    tz = q.site.timezone or "America/Mexico_City"
+    today = datetime.now(q.tz).date()
+    last = min(q.until, today - timedelta(days=1))
+    if last < q.since:
+        return []
+    day_col = func.date_trunc("day", func.timezone(tz, PortalVisit.started_at))
+    activity = dict(
+        (await db.execute(
+            select(day_col, func.max(PortalVisit.updated_at)).where(
+                PortalVisit.user_id == q.user_id, PortalVisit.site_id == q.site.id,
+                PortalVisit.started_at >= q.start, PortalVisit.started_at < q.end)
+            .group_by(day_col)
+        )).all()
+    )
+    computed = dict(
+        (await db.execute(
+            select(PortalDaily.day, func.min(PortalDaily.computed_at)).where(
+                PortalDaily.site_id == q.site.id, PortalDaily.dimension == "total",
+                PortalDaily.day >= q.since, PortalDaily.day <= last).group_by(PortalDaily.day)
+        )).all()
+    )
+    return sorted(d.date() for d, updated in activity.items()
+                  if d.date() <= last and (computed.get(d.date()) is None or computed[d.date()] < updated))
+
+
 async def rebuild_daily(db: AsyncSession, user_id: str, site: PortalSite, since: date, until: date) -> Dict[str, int]:
     """Recalcula `portal_daily` para [since, until]. Borra y reescribe esos días."""
+    await _lock_daily(db, site)
     q = MetricsQuery(user_id, site, since, until)
     tz = site.timezone or "America/Mexico_City"
     day_col = func.date_trunc("day", func.timezone(tz, PortalVisit.started_at)).label("day")
@@ -609,35 +646,18 @@ async def rebuild_daily(db: AsyncSession, user_id: str, site: PortalSite, since:
 
 
 async def ensure_daily_fresh(db: AsyncSession, q: MetricsQuery) -> int:
-    """Recalcula los días CERRADOS del rango cuyo resumen falta o quedó viejo respecto de las visitas."""
-    tz = q.site.timezone or "America/Mexico_City"
-    today = datetime.now(q.tz).date()
-    last = min(q.until, today - timedelta(days=1))
-    if last < q.since:
+    """Recalcula los dias CERRADOS del rango cuyo resumen falta o quedo viejo respecto de las visitas."""
+    if not await _stale_days(db, q):
         return 0
-    day_col = func.date_trunc("day", func.timezone(tz, PortalVisit.started_at))
-    activity = dict(
-        (await db.execute(
-            select(day_col, func.max(PortalVisit.updated_at)).where(
-                PortalVisit.user_id == q.user_id, PortalVisit.site_id == q.site.id,
-                PortalVisit.started_at >= q.start, PortalVisit.started_at < q.end)
-            .group_by(day_col)
-        )).all()
-    )
-    computed = dict(
-        (await db.execute(
-            select(PortalDaily.day, func.min(PortalDaily.computed_at)).where(
-                PortalDaily.site_id == q.site.id, PortalDaily.dimension == "total",
-                PortalDaily.day >= q.since, PortalDaily.day <= last).group_by(PortalDaily.day)
-        )).all()
-    )
-    stale = sorted(d.date() for d, updated in activity.items()
-                   if d.date() <= last and (computed.get(d.date()) is None or computed[d.date()] < updated))
+    # Quien llega segundo espera el bloqueo y, al obtenerlo, ve el trabajo ya hecho y no lo repite.
+    await _lock_daily(db, q.site)
+    stale = await _stale_days(db, q)
     if not stale:
+        await db.commit()  # libera el bloqueo
         return 0
     # Recalcula en un solo tramo continuo: simple y suficiente a esta escala.
     await rebuild_daily(db, q.user_id, q.site, stale[0], stale[-1])
-    await db.commit()  # el resumen es caché derivada: se conserva entre peticiones
+    await db.commit()  # el resumen es cache derivada: se conserva entre peticiones
     return len(stale)
 
 
