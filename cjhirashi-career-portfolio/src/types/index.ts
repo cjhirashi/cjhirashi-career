@@ -146,7 +146,17 @@ export interface ContactMessage {
 }
 
 // Event Tracking Types
-export type EventType = 'pageview' | 'click' | 'download' | 'form_submit' | 'scroll' | 'page_duration'
+export type EventType =
+  | 'pageview'
+  | 'click'
+  | 'download'
+  | 'form_submit'
+  | 'scroll'
+  | 'page_duration'
+  | 'outbound'
+  | 'project_open'
+  | 'web_vitals'
+  | 'page_leave'
 
 export interface TrackingEvent {
   type: EventType
@@ -156,11 +166,29 @@ export interface TrackingEvent {
   timestamp?: string
   userAgent?: string
   ip?: string
-  /** Id of the current browser tab/session (see `getOrCreateSessionId` in
-   * `hooks/useTracking.ts`) - groups pageviews server-side into one visit. */
+  /** Id of the current browser tab/session (see `getSessionId` in
+   * `utils/tracker.ts`) - groups pageviews server-side into one visit. */
   sessionId?: string
-  /** Only set on `type: 'page_duration'` - ms spent on `page` before leaving. */
+  /** Wall-clock ms spent on `page` (kept for v1 compatibility). */
   durationMs?: number
+
+  /** Public key of the measured site; added by `trackingApi`. */
+  siteKey?: string
+  /** Pseudonymous visitor id (localStorage, or a per-tab id under DNT/GPC). */
+  visitorId?: string
+  title?: string
+  targetUrl?: string
+  referrer?: string
+  utm?: Record<string, string>
+  clickIds?: Record<string, string>
+  /** Max scroll depth reached on `page`, 0-100. */
+  scrollPct?: number
+  /** Ms with the tab visible and recent interaction. */
+  activeMs?: number
+  screen?: string
+  ownerToken?: string
+  props?: Record<string, unknown>
+  vitals?: Partial<Record<'lcp' | 'inp' | 'cls' | 'fcp' | 'ttfb', number>>
 }
 
 // API Response Types

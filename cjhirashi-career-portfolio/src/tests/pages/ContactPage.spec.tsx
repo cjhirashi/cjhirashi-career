@@ -98,6 +98,16 @@ describe('ContactPage', () => {
     )
   })
 
+  it('does not put the visitor name or email in the analytics event', async () => {
+    const user = userEvent.setup()
+    await renderReady()
+    await fillAndSubmit(user)
+
+    const event = vi.mocked(trackingApi.trackEvent).mock.calls.map(([e]) => e).find(e => e.type === 'form_submit')
+    expect(JSON.stringify(event)).not.toContain(mockContactMessage.name)
+    expect(JSON.stringify(event)).not.toContain(mockContactMessage.email)
+  })
+
   it('tracks the submit button click', async () => {
     const user = userEvent.setup()
     await renderReady()

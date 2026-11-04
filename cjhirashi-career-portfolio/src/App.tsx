@@ -9,6 +9,7 @@ import { BlogPage } from '@/pages/BlogPage'
 import { BlogPostPage } from '@/pages/BlogPostPage'
 import { ContactPage } from '@/pages/ContactPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { PrivacyPage } from '@/pages/PrivacyPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ function App() {
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Layout>

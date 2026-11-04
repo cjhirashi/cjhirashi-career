@@ -13,7 +13,7 @@ const renderReady = async () => {
   vi.mocked(contactApi.getContact).mockResolvedValue(mockContact)
   render(<Footer />)
   await waitFor(() => {
-    expect(screen.getByText('GitHub')).toBeInTheDocument()
+    expect(screen.getByLabelText('GitHub')).toBeInTheDocument()
   })
 }
 
@@ -32,10 +32,10 @@ describe('Footer Component', () => {
   it('renders social links from real contact data', async () => {
     await renderReady()
 
-    expect(screen.getByText('GitHub').closest('a')).toHaveAttribute('href', mockContact.github_url!)
-    expect(screen.getByText('LinkedIn').closest('a')).toHaveAttribute('href', mockContact.linkedin_url!)
-    expect(screen.getByText('Email').closest('a')).toHaveAttribute('href', `mailto:${mockContact.contact_email}`)
-    expect(screen.getByText('WhatsApp').closest('a')).toHaveAttribute(
+    expect(screen.getByLabelText('GitHub').closest('a')).toHaveAttribute('href', mockContact.github_url!)
+    expect(screen.getByLabelText('LinkedIn').closest('a')).toHaveAttribute('href', mockContact.linkedin_url!)
+    expect(screen.getByLabelText('Email').closest('a')).toHaveAttribute('href', `mailto:${mockContact.contact_email}`)
+    expect(screen.getByLabelText('WhatsApp').closest('a')).toHaveAttribute(
       'href',
       expect.stringContaining('wa.me')
     )
@@ -44,7 +44,7 @@ describe('Footer Component', () => {
   it('social links open in a new tab', async () => {
     await renderReady()
 
-    const githubLink = screen.getByText('GitHub').closest('a')!
+    const githubLink = screen.getByLabelText('GitHub').closest('a')!
     expect(githubLink).toHaveAttribute('target', '_blank')
     expect(githubLink).toHaveAttribute('rel', 'noopener noreferrer')
   })
@@ -53,7 +53,7 @@ describe('Footer Component', () => {
     const user = userEvent.setup()
     await renderReady()
 
-    await user.click(screen.getByText('GitHub'))
+    await user.click(screen.getByLabelText('GitHub'))
 
     expect(trackingApi.trackEvent).toHaveBeenCalledWith(expect.objectContaining({ target: 'social-github' }))
   })

@@ -1,9 +1,18 @@
 import { apiClient } from './client'
 import { TrackingEvent } from '@/types'
+import { getCommonFields, getVisitorId, resetVisitorId } from '@/utils/tracker'
 
 export const trackingApi = {
+  /** Borra del servidor todo lo asociado al id de este navegador y genera uno nuevo (RF-053). */
+  forgetMe: async (): Promise<void> => {
+    const { siteKey } = getCommonFields()
+    await apiClient.post('/events/forget', { siteKey, visitorId: getVisitorId() })
+    resetVisitorId()
+  },
+
   trackEvent: async (event: Omit<TrackingEvent, 'timestamp' | 'userAgent'>): Promise<void> => {
     const trackingEvent: TrackingEvent = {
+      ...getCommonFields(),
       ...event,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
@@ -23,6 +32,7 @@ export const trackingApi = {
    * mid-flight when the page unloads). Used for `page_duration` events. */
   trackEventBeacon: (event: Omit<TrackingEvent, 'timestamp' | 'userAgent'>): void => {
     const trackingEvent: TrackingEvent = {
+      ...getCommonFields(),
       ...event,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
