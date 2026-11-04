@@ -6,7 +6,6 @@ import {
   JobDiscoverySaveResponse,
   JobListing,
   JobProviderStatus,
-  PortalMetricsOverview,
   SearchOverview,
   WeeklySearchMetrics,
 } from '@/types/career'
@@ -123,13 +122,6 @@ export const careerApi = {
 
   searchOverview: async (): Promise<SearchOverview> => {
     const response = await axiosInstance.get<SearchOverview>('/career/metrics/search-overview')
-    return response.data
-  },
-
-  portalMetricsOverview: async (days = 30): Promise<PortalMetricsOverview> => {
-    const response = await axiosInstance.get<PortalMetricsOverview>('/career/portal-metrics/overview', {
-      params: { days },
-    })
     return response.data
   },
 
