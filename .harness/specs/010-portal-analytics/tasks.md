@@ -30,8 +30,8 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 ### C · Ingesta
 - [x] C1 Esquema `schemas/events.py` v2 compatible con v1 (RF-001).
 - [x] C2 `services/portal_ingest.py`: bloqueo consultivo, resolver visitante y visita con corte de 30 min, `seq`, contadores, `is_engaged`, `converted`, vinculación a postulación, dueño (RF-002, 003, 008, 010).
-- [ ] C3 `routes/events.py`: usar el servicio, validar `siteKey` y origen, límite de ritmo, 204 ante error (RF-011, 013). Sin persistir IP (RF-005, prueba que ninguna columna ni log la contiene).
-- [ ] C4 `POST /events/forget` (RF-012).
+- [x] C3 `routes/events.py`: usar el servicio, validar `siteKey` y origen, límite de ritmo, 204 ante error (RF-011, 013). Sin persistir IP (RF-005, prueba que ninguna columna ni log la contiene).
+- [x] C4 `POST /events/forget` (RF-012).
 
 ### D · Lectura y métricas
 - [ ] D1 `build_readonly_router` y registro de `portal-sites`, `portal-visitors`, `portal-visits`, `portal-events`, `portal-daily`; `portal-sites` sin claves (RF-030). Prueba: escritura devuelve 405.
@@ -68,3 +68,4 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 - Correcciones de AIRA a la entrega de Haiku: dueño del sitio tomado de `PUBLIC_PORTAL_USER_ID` (Haiku usaba el primer usuario), JSONB con `CAST` (Haiku usaba `sa.json.dumps`, inexistente), sin `conn.commit()` dentro de Alembic, reglas de canal completas (faltaban referrers sociales y de búsqueda), reconstrucción A4 (no entregada).
 - Bloque B: 55 pruebas en verde (`test_portal_channels/bots/device/geo.py`) ejecutadas por AIRA; `ua-parser[regex]==1.0.2` fijado. Corrección de AIRA: `cf-ipcountry` en minúsculas ("xx") ya se trata como desconocido. Haiku reportó 76 pruebas sumando regresiones y pegó una salida con erratas; la cifra verificada es 55 nuevas.
 - Bloque C1-C2: 52 pruebas en verde (24 de ingesta con Postgres real, 36 de esquema v2 y goal_matches). Haiku entregó el servicio con las pruebas de base de datos sin ejecutar y varias comprobando el defecto («con reglas vacías el canal debe ser Unknown»). Correcciones de AIRA: carga de reglas de canal desde `portal_channel_rules`, vinculación a `applications`, `visit_count` por visita (Haiku lo sumaba por evento), cabecera `User-Agent` como respaldo, marca de dueño sobre la visita vigente, sitio predeterminado con varios sitios; prueba de concurrencia real con 5 ingestas simultáneas, verificada por mutación (sin el bloqueo consultivo falla con violación de unicidad).
+- Bloque C3-C4 (escrito por AIRA, sin subagente: pegamento con peso en seguridad): `routes/events.py` v2 con validación de Origin (403), límite de ritmo por visitante e IP (429), 204 ante error interno y `POST /events/forget` autoservicio (204 siempre, no permite sondear ids). 14 pruebas en verde con Postgres real, incluida la comprobación de que ninguna columna de ninguna tabla `portal_*` contiene la IP.

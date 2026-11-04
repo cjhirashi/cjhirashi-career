@@ -58,6 +58,20 @@ class UnknownSite(Exception):
     pass
 
 
+class ForbiddenOrigin(Exception):
+    """Raised when the request Origin is not one of the site's allowed hosts."""
+
+    pass
+
+
+def origin_allowed(origin_host: str | None, allowed_hosts: list[str] | None) -> bool:
+    """Sin cabecera Origin no se puede imponer nada; con ella, debe ser un host permitido."""
+    if not origin_host or not allowed_hosts:
+        return True
+    host = origin_host.lower()
+    return any(host == a.lower() or host.endswith("." + a.lower()) for a in allowed_hosts)
+
+
 def goal_matches(
     goal_type: str,
     match: dict,
@@ -111,6 +125,7 @@ async def ingest_event(
     headers: Mapping[str, str],
     ip: str | None,
     now: datetime | None = None,
+    origin_host: str | None = None,
 ) -> PortalEvent:
     """
     Ingest a single event into the portal analytics system.
@@ -158,6 +173,9 @@ async def ingest_event(
         site = site_row.scalar_one_or_none()
         if not site:
             raise UnknownSite("No active default portal site found")
+
+    if not origin_allowed(origin_host, site.allowed_hosts):
+        raise ForbiddenOrigin(origin_host)
 
     user_id = site.user_id
 
