@@ -1,13 +1,21 @@
 """
-Portal geo detection service.
-
-Resolves geographic location from Cloudflare headers and external IP geolocation
-service.
+Geografía de una visita, solo desde las cabeceras `cf-*` que Cloudflare añade
+(Managed Transform «Add visitor location headers»). No hay respaldo por IP ni
+servicio externo: sin cabeceras la visita queda sin ubicación, y la IP nunca se
+usa ni se guarda (RF-005).
 """
+from dataclasses import dataclass
 from typing import Mapping, Optional
 
-from config import settings
-from services.geo_ip_service import GeoInfo, resolve_geo
+
+@dataclass
+class GeoInfo:
+    country: Optional[str]
+    region: Optional[str]
+    city: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    timezone: Optional[str] = None
 
 
 # Mapping of ISO-2 country codes to country names
@@ -117,41 +125,3 @@ def geo_from_headers(headers: Mapping[str, str]) -> Optional[GeoInfo]:
         longitude=longitude,
         timezone=timezone,
     )
-
-
-async def resolve_request_geo(
-    headers: Mapping[str, str],
-    ip: Optional[str],
-) -> Optional[GeoInfo]:
-    """
-    Resolve geographic information for a request.
-
-    Behavior depends on settings.GEO_SOURCE:
-    - "cf": Only use Cloudflare headers, never call resolve_geo
-    - "ipapi": Only call resolve_geo(ip)
-    - "auto": Try Cloudflare headers first; if valid, use them; otherwise call resolve_geo
-
-    Never raises an exception.
-
-    Args:
-        headers: HTTP headers mapping
-        ip: IP address (for ipapi fallback)
-
-    Returns:
-        GeoInfo or None
-    """
-    geo_source = settings.GEO_SOURCE.lower()
-
-    try:
-        if geo_source == "cf":
-            return geo_from_headers(headers)
-        elif geo_source == "ipapi":
-            return await resolve_geo(ip)
-        else:
-            # auto (default)
-            cf_geo = geo_from_headers(headers)
-            if cf_geo:
-                return cf_geo
-            return await resolve_geo(ip)
-    except Exception:
-        return None

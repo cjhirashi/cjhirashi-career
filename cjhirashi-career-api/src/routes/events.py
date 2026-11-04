@@ -67,7 +67,7 @@ async def track_event(event: TrackEventIn, request: Request, db: AsyncSession = 
 
     try:
         await ingest_event(
-            db, payload=event, headers=request.headers, ip=ip, origin_host=_origin_host(request)
+            db, payload=event, headers=request.headers, origin_host=_origin_host(request)
         )
         await db.commit()
     except (UnknownSite, ForbiddenOrigin) as exc:
