@@ -87,7 +87,7 @@ Referencias estudiadas (2026-11-04): esquemas de Umami y Plausible, modelo de Ma
 
 ### Conservación
 - **RF-020** El sistema no debe borrar eventos, visitas ni visitantes automáticamente.
-- **RF-021** El sistema debe exportar cada mes los eventos del mes anterior a `/mnt/disco1/openclaw-backup/portal-analytics/AAAA-MM.jsonl.gz`.
+- **RF-021** El sistema debe exportar cada mes los eventos del mes anterior a `/mnt/disco2/cjhirashi-data/backups/portal-analytics/AAAA-MM.jsonl.gz`.
 - **RF-022** Cuando se reglasifican canales o cambian definiciones, el sistema debe poder recalcular `portal_visits` y `portal_daily` desde `portal_events` sin perder datos.
 
 ### API para agentes (rutas bajo `/career/`)
@@ -131,5 +131,5 @@ Referencias estudiadas (2026-11-04): esquemas de Umami y Plausible, modelo de Ma
 5. Modelos de ejecución: diseño y revisión con Sonnet (AIRA); implementación con Haiku, en serie.
 
 ## 8 · Preguntas abiertas
-- Mecanismo del respaldo mensual (RF-021): `crontab` del host o automatización de AIRA; se decide inspeccionando lo que ya respalda `/mnt/disco1/openclaw-backup`.
+- Mecanismo del respaldo mensual (RF-021): `crontab` del host o automatización de AIRA; se decide inspeccionando lo que ya respalda `/mnt/disco2/cjhirashi-data/backups`.
 - Que las cabeceras `cf-ip*` lleguen al origen a través del túnel y Caddy está sin verificar (RF-004); el respaldo de ipapi.co cubre el caso.

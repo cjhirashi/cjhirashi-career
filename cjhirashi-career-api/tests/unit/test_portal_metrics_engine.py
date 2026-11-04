@@ -221,3 +221,37 @@ async def test_funnel_requires_steps_in_order(db_session, seeded):
     steps = await pm.funnel(db_session, query(site), funnel)
     # V1 llegó a /projects/x pero no vio ninguna página DESPUÉS: el orden cuenta.
     assert [s["visits"] for s in steps] == [1, 0]
+
+
+@pytest.mark.requisito("RF-022")
+async def test_rebuild_visits_reclassifies_channel_and_recounts(db_session, seeded):
+    from models import PortalChannelRule
+    site, _ = seeded
+    # Una regla nueva: todo referrer de blog.example.org pasa a "Referral"; V1 vino de Google.
+    v1 = (await db_session.execute(select(PortalVisit).where(PortalVisit.channel == "Organic Search"))).scalar_one()
+    v1.referrer_domain = "blog.example.org"
+    v1.pageviews = 99          # contador dañado a propósito: el crudo debe corregirlo
+    v1.is_engaged, v1.is_bounce = False, True
+    db_session.add(PortalChannelRule(user_id=UID, site_id=site.id, priority=0, channel="Referral",
+                                     conditions={"referrer_domain_in": ["blog.example.org"]}))
+    await db_session.flush()
+    count = await pm.rebuild_visits(db_session, UID, site, SINCE, UNTIL)
+    await db_session.refresh(v1)
+    assert count == 7  # V1-V6 y V8 caen en el rango (bots y dueño incluidos); V7 es del día 8
+    assert v1.channel == "Referral" and v1.pageviews == 2 and v1.is_engaged is True and v1.active_ms == 20000
+    events = (await db_session.execute(select(PortalEvent))).scalars().all()
+    assert len(events) == 12  # el crudo no cambia
+
+
+@pytest.mark.requisito("RF-020")
+def test_only_forget_deletes_raw_analytics_rows():
+    """Ninguna ruta ni servicio borra eventos, visitas o visitantes salvo /events/forget."""
+    import re
+    from pathlib import Path
+    deleters = set()
+    for path in Path(__file__).resolve().parents[2].joinpath("src").rglob("*.py"):
+        text = path.read_text()
+        if re.search(r"delete\(\s*Portal(Event|Visit|Visitor)\b", text) or re.search(r"DELETE\s+FROM\s+portal_(events|visits|visitors)\b", text, re.I) \
+                or re.search(r"session\.delete\(|db\.delete\(", text) and re.search(r"Portal(Event|Visit|Visitor)", text) and "portal" in path.name:
+            deleters.add(path.name)
+    assert deleters == {"events.py"}, deleters

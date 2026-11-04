@@ -182,5 +182,6 @@ class FunnelResponse(BaseModel):
 
 class RebuildResponse(BaseModel):
     site_id: str
+    visits_recomputed: int = 0
     days_recomputed: int
     rows_written: int

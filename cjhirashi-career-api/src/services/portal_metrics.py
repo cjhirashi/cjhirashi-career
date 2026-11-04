@@ -637,3 +637,60 @@ async def ensure_daily_fresh(db: AsyncSession, q: MetricsQuery) -> int:
     await rebuild_daily(db, q.user_id, q.site, stale[0], stale[-1])
     await db.commit()  # el resumen es caché derivada: se conserva entre peticiones
     return len(stale)
+
+
+# ----------------------------------------------------------------------------
+# Reconstrucción de visitas desde el crudo (RF-022): reglas de canal nuevas,
+# contadores y banderas se recalculan; el evento y el referrer crudo no cambian.
+# ----------------------------------------------------------------------------
+async def rebuild_visits(db: AsyncSession, user_id: str, site: PortalSite, since: date, until: date) -> int:
+    from models.portal_channel_rule import PortalChannelRule
+    from services.portal_channels import classify_channel
+    from services.portal_device import parse_device
+    from services.portal_ingest import goal_matches
+
+    q = MetricsQuery(user_id, site, since, until, exclude_bots=False, exclude_owner=False)
+    rules = [
+        {"priority": r.priority, "channel": r.channel, "conditions": r.conditions or {}}
+        for r in (await db.execute(
+            select(PortalChannelRule).where(PortalChannelRule.site_id == site.id).order_by(PortalChannelRule.priority)
+        )).scalars().all()
+    ]
+    key_goals = (await db.execute(
+        select(PortalGoal).where(PortalGoal.site_id == site.id, PortalGoal.is_key_event.is_(True))
+    )).scalars().all()
+
+    visits = (await db.execute(select(PortalVisit).where(*q.visit_conditions()))).scalars().all()
+    for visit in visits:
+        events = (await db.execute(
+            select(PortalEvent).where(PortalEvent.visit_id == visit.id).order_by(PortalEvent.seq, PortalEvent.id)
+        )).scalars().all()
+        pageviews = [e for e in events if e.event_type == "pageview"]
+        visit.events_count = len(events)
+        visit.pageviews = len(pageviews)
+        if pageviews:
+            visit.exit_page = pageviews[-1].page
+        if events:
+            visit.last_activity_at = max(e.created_at for e in events)
+        visit.active_ms = sum(
+            min(e.active_ms if e.active_ms is not None else (e.duration_ms or 0), MAX_ACTIVE_MS)
+            for e in events if e.event_type in ("page_duration", "page_leave")
+        )
+        visit.max_scroll_pct = max([e.scroll_pct or 0 for e in events] + [0])
+        visit.converted = any(
+            goal_matches(g.type, g.match or {}, event_type=e.event_type, page=e.page, target_url=e.target_url)
+            for e in events for g in key_goals
+        )
+        visit.is_engaged = visit.active_ms > 10000 or visit.pageviews >= 2 or visit.converted
+        visit.is_bounce = not visit.is_engaged
+        visit.channel = classify_channel(
+            rules, referrer_domain=visit.referrer_domain, utm_source=visit.utm_source,
+            utm_medium=visit.utm_medium, own_domains=site.allowed_hosts or [],
+        )
+        if visit.device_type is None and events and events[0].user_agent:
+            info = parse_device(events[0].user_agent)
+            visit.device_type, visit.browser, visit.browser_version = info["device_type"], info["browser"], info["browser_version"]
+            visit.os, visit.os_version = info["os"], info["os_version"]
+        visit.updated_at = datetime.now(timezone.utc)
+    await db.flush()
+    return len(visits)

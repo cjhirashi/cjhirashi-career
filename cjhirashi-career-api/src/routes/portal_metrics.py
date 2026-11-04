@@ -313,8 +313,14 @@ async def get_funnel(funnel_id: str, q: pm.MetricsQuery = Depends(_common), db: 
 
 
 @router.post("/rebuild", response_model=RebuildResponse)
-async def rebuild(q: pm.MetricsQuery = Depends(_common), db: AsyncSession = Depends(get_db)):
-    """Recalcula `portal_daily` del rango desde el crudo (no pierde ni modifica eventos)."""
+async def rebuild(
+    include_visits: bool = Query(False, description="Recalcular también las visitas (canal, contadores, banderas) desde los eventos"),
+    q: pm.MetricsQuery = Depends(_common),
+    db: AsyncSession = Depends(get_db),
+):
+    """Recalcula lo derivado del rango desde el crudo: `portal_daily` y, con `include_visits`,
+    las visitas (por ejemplo tras cambiar las reglas de canal). No modifica ni pierde eventos."""
+    visits = await pm.rebuild_visits(db, q.user_id, q.site, q.since, q.until) if include_visits else 0
     result = await pm.rebuild_daily(db, q.user_id, q.site, q.since, q.until)
     await db.commit()
-    return {"site_id": q.site.id, **result}
+    return {"site_id": q.site.id, "visits_recomputed": visits, **result}
