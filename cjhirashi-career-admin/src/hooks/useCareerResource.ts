@@ -29,6 +29,8 @@ export function useCareerCount(resource: string, params: Pick<ListParams, 'searc
   })
 }
 
+const PORTAL_CONFIG_RESOURCES = new Set(['portal-goals', 'portal-funnels', 'portal-annotations'])
+
 export function useCareerMutations<T = CareerEntity>(resource: string) {
   const queryClient = useQueryClient()
 
@@ -40,6 +42,13 @@ export function useCareerMutations<T = CareerEntity>(resource: string) {
     // right away instead of waiting out useFkOptions's staleTime.
     if (resource === 'projects') {
       queryClient.invalidateQueries({ queryKey: ['fk-options', 'career', 'competencies'] })
+    }
+    // Metas, embudos y anotaciones cambian lo que muestra el tablero de métricas; sin esto
+    // se vería la versión anterior hasta que caduque la caché (5 min) o llegue el refresco.
+    if (PORTAL_CONFIG_RESOURCES.has(resource)) {
+      queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === 'career' && String(query.queryKey[1]).startsWith('portal-analytics-'),
+      })
     }
   }
 

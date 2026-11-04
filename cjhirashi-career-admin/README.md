@@ -50,7 +50,8 @@ admin/
 │   │   ├── JobStrategiesPage.tsx
 │   │   ├── NetworkingPage.tsx
 │   │   ├── InterviewsPage.tsx
-│   │   └── MetricsPage.tsx   # Tablero de analítica del portafolio (SPEC-0010)
+│   │   ├── MetricsPage.tsx   # Tablero de analítica del portafolio (SPEC-0010)
+│   │   └── PortalSettingsPage.tsx  # Metas, embudos y anotaciones de la analítica (/metrics/settings)
 │   ├── hooks/              # Custom React hooks
 │   │   ├── useAuth.ts
 │   │   └── usePortalAnalytics.ts   # un hook por endpoint de /career/portal-metrics
@@ -91,7 +92,8 @@ Lee `/career/portal-metrics/*` (SPEC-0010). Arranca en los últimos 30 días, si
 - **Arriba:** KPIs con cambio contra el periodo comparado (en el rebote bajar es mejorar), minigráfica y «visitantes ahora» (se actualiza cada 20 s; el resto cada minuto).
 - **Gráfica:** visitas por día con el tramo en curso punteado, el periodo comparado y las anotaciones.
 - **Paneles:** desglose por pestañas (fuentes, páginas, ubicación con mapa, dispositivos; cada pestaña pide sus datos solo al abrirse), metas y embudo, recorridos y retención semanal, y calidad de los datos (muestra, porcentaje de bots y aviso si hay pocas visitas).
-- **Pruebas:** `src/tests/pages/MetricsPage.test.tsx`, `src/tests/api/portalAnalytics.test.ts`, `src/tests/components/portal/format.test.ts`.
+- **Configuración (`/metrics/settings`, enlazada desde el tablero):** crea, edita y elimina metas, embudos y anotaciones. El usuario escribe valores simples (ruta, texto, segundos) y `configModel.ts` los traduce al diccionario `match` del servidor y los valida (un embudo necesita nombre y al menos 2 pasos). Al guardar se invalidan las consultas del tablero, que de otro modo mostraría la versión anterior hasta 5 minutos.
+- **Pruebas:** `src/tests/pages/MetricsPage.test.tsx`, `src/tests/api/portalAnalytics.test.ts`, `src/tests/components/portal/format.test.ts`, `src/tests/pages/PortalSettingsPage.test.tsx`, `src/tests/components/portal/configModel.test.ts`, `src/tests/hooks/useCareerMutationsPortal.test.tsx`.
 ## Getting Started
 
 ### Prerequisites

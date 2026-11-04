@@ -168,7 +168,7 @@ Measures how the site is used (SPEC-0010). Logic lives in `src/utils/tracker.ts`
 - **Web Vitals**: LCP, INP, CLS, FCP and TTFB, sent when the tab is hidden
 - **Visitor id**: random id in `localStorage`; with Do Not Track or Global Privacy Control only a per-tab id is used
 - **Owner**: opening `/?owner=<token>` stores the token locally so the owner's own visits are excluded
-- **Privacy**: `/privacy` explains what is measured and lets the visitor erase their data (`POST /events/forget`)
+- **Privacy**: `/privacy` explains what is measured and lets the visitor erase their data (`POST /events/forget`); after erasing, tracking stays off until the page is reloaded
 
 Every event also carries `siteKey` (`VITE_PORTAL_SITE_KEY`, a build-time public key). Disable tracking with `VITE_TRACKING_ENABLED=false`.
 

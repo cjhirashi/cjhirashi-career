@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Settings2 } from 'lucide-react'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
 import { PortalControls, type FilterOptions } from '@/components/career/portal/PortalControls'
@@ -44,12 +46,17 @@ export const MetricsPage: React.FC = () => {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-text">Métricas del Portafolio</h1>
-        <p className="text-text-secondary mt-2">
-          Cómo se usa cjhirashi.com: quién llega, de dónde, qué ve y qué hace. {rangeLabel(query.range)}
-          {comparing ? ', con comparación' : ''}.
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-text">Métricas del Portafolio</h1>
+          <p className="text-text-secondary mt-2">
+            Cómo se usa cjhirashi.com: quién llega, de dónde, qué ve y qué hace. {rangeLabel(query.range)}
+            {comparing ? ', con comparación' : ''}.
+          </p>
+        </div>
+        <Link to="/metrics/settings" className="btn-secondary text-sm inline-flex items-center gap-2">
+          <Settings2 size={16} aria-hidden="true" /> Metas, embudos y anotaciones
+        </Link>
       </div>
 
       <PortalControls query={query} options={options} onChange={setQuery} />
