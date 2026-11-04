@@ -8,6 +8,19 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-11-04] 011 Mensajes del formulario de contacto — implementada y desplegada (solo SPEC-0011)
+- **Fase alcanzada:** implemented — Carlos pidió corregir el formulario (2026-11-04), eligió entrega «Solo Admin» y precisó que se despliega únicamente lo de contacto (el slice 3 de SPEC-0010 sigue en desarrollo). Gate 4 sin separar: aprobación y despliegue en la misma sesión por instrucción directa.
+- **Rebotes del verificador:** 0 formales. La revisión de AIRA devolvió a Haiku los bloques A/B por defectos reales (ruta del Admin sin `/career`, `POST` expuesto, `read_at` sin llenar, pruebas sin aserciones y nunca ejecutadas) y el bloque D por no poder mostrar el texto del mensaje; AIRA los corrigió y añadió soporte genérico al framework de recursos (`canCreate`, `readOnlyFields`, `markOnOpen`, `create_schema=None`).
+- **Directiva de Pausa:** no
+- **Drift / re-anchor:** no (spec `draft`, `anchor_mode: advisory`)
+- **Anclas movidas:** ninguna
+- **Gate:** `check.sh` verde (31 ok · 6 warn · 0 error). API: 16 pruebas nuevas en Postgres desechable; suite completa 818 passed / 27 failed, los mismos 27 que fallan en el commit base (`test_auth_routes`, `test_database`, `test_middleware`, entorno de pruebas). Portafolio 365/365 con dependencias instaladas, `tsc` limpio. Admin `CareerResourceView` 34/34.
+- **Docs actualizadas:** `cjhirashi-career-api/docs/API.md`, `docs/DATABASE.md`, `docs/sections/public/README.md`, `src/routes/README.md`, `cjhirashi-career-portfolio/README.md`
+- **Despliegue:** respaldo `career_db_pre_011_20261104_001814.dump` en `/mnt/disco2/cjhirashi-data/backups/`; imágenes previas etiquetadas `:pre-011`; imágenes construidas desde la rama (main + contacto, sin tocar el árbol principal con trabajo del slice 3); migración `4439c6915701` (tabla + secuencia `cmg_id_seq`; upgrade/downgrade/upgrade probados antes en copia); `api`, `portfolio`, `admin` recreados y sanos. Verificación real por Cloudflare: `POST /api/public/contact-message` → 201 y fila + aviso en la campana; honeypot → 201 sin guardar; vacío → 422; `PUT status=read` fija `read_at`; `POST` del Admin → 405. Datos de prueba borrados (0 mensajes, 0 avisos de contacto).
+- **Decisiones de diseño:** guardar primero y avisar después; IP solo en memoria; trampa con nombre de campo no autocompletable (`trap` en el DOM, `website` en el contrato); correo mostrado como texto, no `mailto:` (enmienda a RF-006). No verificado: el límite 3/h en producción (cubierto por prueba unitaria) y el avistamiento visual del Admin en navegador.
+- **Modelos usados:** AIRA (claude-sonnet-5-5) diseño, revisión y correcciones; Haiku (alias `haiku`, 2 subagentes en serie) implementación de bloques A/B y C/D, según el reparto de roles. El subagente de revisión UX con `sonnet` no pudo lanzarse (error 400 de la API con el modelo heredado); la revisión UX la hizo AIRA.
+- **Próximo paso:** que Carlos abra el Admin y compruebe la lista de mensajes; entrega por email o Telegram queda para una decisión posterior (el modelo no lo impide).
+
 ## [2026-10-13] 008 Vacantes: quiénes son, qué buscan, qué ofrecen y cultura laboral — implementada y desplegada
 - **Fase alcanzada:** implemented — Gate 4 aprobado por el usuario (2026-10-13); push a `origin/main`
 - **Rebotes del verificador:** 0 (APPROVED con 2 observaciones: test-first no visible en

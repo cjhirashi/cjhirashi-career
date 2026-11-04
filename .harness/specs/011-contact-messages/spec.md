@@ -1,7 +1,7 @@
 ---
 titulo: "Formulario de contacto del portafolio: los mensajes llegan al Admin"
 tipo: spec
-estado: draft
+estado: implemented
 fecha: 2026-11-04
 feature_id: "011"
 anchor_mode: advisory

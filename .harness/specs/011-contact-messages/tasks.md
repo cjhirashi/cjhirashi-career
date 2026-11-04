@@ -1,7 +1,7 @@
 ---
 titulo: "Tasks — Mensajes del formulario de contacto"
 tipo: tasks
-estado: draft
+estado: implemented
 fecha: 2026-11-04
 feature_id: "011"
 spec: ./spec.md
@@ -79,8 +79,8 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
   * Ícono: Mail en CAREER_RESOURCE_ICONS
 
 ## E · Cierre
-- [ ] E1 Docs (RF-009): `cjhirashi-career-api/docs` y `src/routes/README.md`, README del portafolio y del Admin si mencionan contacto.
-- [ ] E2 `pytest`, `vitest` de portafolio y admin, `tsc`/lint y `.harness/gate/check.sh` en verde.
-- [ ] E3 Revisión de `experto-ux-ui` del formulario y de la vista del Admin (Art. 8).
-- [ ] E4 **[REQUIERE OK]** Respaldo de base, migración en producción, reconstrucción de `api`, `portfolio` y `admin`.
-- [ ] E5 **[REQUIERE OK]** Verificación real: enviar un mensaje desde cjhirashi.com/contact y confirmarlo en el Admin con su aviso (criterios 1–5).
+- [x] E1 Docs (RF-009): `cjhirashi-career-api/docs` y `src/routes/README.md`, README del portafolio y del Admin si mencionan contacto.
+- [x] E2 `pytest`, `vitest` de portafolio y admin, `tsc`/lint y `.harness/gate/check.sh` en verde.
+- [x] E3 Revisión de `experto-ux-ui` del formulario y de la vista del Admin (Art. 8).
+- [x] E4 **[REQUIERE OK]** Respaldo de base, migración en producción, reconstrucción de `api`, `portfolio` y `admin`.
+- [x] E5 **[REQUIERE OK]** Verificación real: enviar un mensaje desde cjhirashi.com/contact y confirmarlo en el Admin con su aviso (criterios 1–5).
