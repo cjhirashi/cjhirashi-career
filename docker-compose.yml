@@ -59,6 +59,8 @@ services:
     build:
       context: ./cjhirashi-career-portfolio
       dockerfile: Dockerfile
+      args:
+        VITE_PORTAL_SITE_KEY: ${PORTAL_SITE_KEY:-}
     container_name: cjhirashi-career-portfolio
     restart: unless-stopped
     ports:

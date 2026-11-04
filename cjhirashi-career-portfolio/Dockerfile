@@ -11,6 +11,10 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Public analytics key, baked into the bundle at build time
+ARG VITE_PORTAL_SITE_KEY=
+ENV VITE_PORTAL_SITE_KEY=$VITE_PORTAL_SITE_KEY
+
 # Build the application
 RUN npm run build
 

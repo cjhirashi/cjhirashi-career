@@ -1,5 +1,6 @@
 import type { SVGProps } from 'react'
 import { Github, Linkedin, Mail } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useTrackClick } from '@/hooks/useTracking'
 import { useContact } from '@/hooks/useContact'
 
@@ -51,7 +52,12 @@ export const Footer = () => {
   return (
     <footer className="text-text-secondary mt-16 border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm">© {new Date().getFullYear()} Carlos A. Jiménez Hirashi</p>
+        <div className="flex items-center gap-4 text-sm">
+          <p>© {new Date().getFullYear()} Carlos A. Jiménez Hirashi</p>
+          <Link to="/privacy" className="hover:text-primary transition">
+            Privacidad
+          </Link>
+        </div>
 
         {socialLinks.length > 0 && (
           <div className="flex items-center gap-5">
