@@ -1,6 +1,6 @@
 import { apiClient } from './client'
 import { TrackingEvent } from '@/types'
-import { getCommonFields, getVisitorId, resetVisitorId } from '@/utils/tracker'
+import { getCommonFields, getVisitorId, isTrackingSuppressed, resetVisitorId, suppressTracking } from '@/utils/tracker'
 
 export const trackingApi = {
   /** Borra del servidor todo lo asociado al id de este navegador y genera uno nuevo (RF-053). */
@@ -8,9 +8,11 @@ export const trackingApi = {
     const { siteKey } = getCommonFields()
     await apiClient.post('/events/forget', { siteKey, visitorId: getVisitorId() })
     resetVisitorId()
+    suppressTracking()
   },
 
   trackEvent: async (event: Omit<TrackingEvent, 'timestamp' | 'userAgent'>): Promise<void> => {
+    if (isTrackingSuppressed()) return
     const trackingEvent: TrackingEvent = {
       ...getCommonFields(),
       ...event,
@@ -31,6 +33,7 @@ export const trackingApi = {
    * `pagehide`/`visibilitychange` handler (a normal fetch/XHR can be aborted
    * mid-flight when the page unloads). Used for `page_duration` events. */
   trackEventBeacon: (event: Omit<TrackingEvent, 'timestamp' | 'userAgent'>): void => {
+    if (isTrackingSuppressed()) return
     const trackingEvent: TrackingEvent = {
       ...getCommonFields(),
       ...event,

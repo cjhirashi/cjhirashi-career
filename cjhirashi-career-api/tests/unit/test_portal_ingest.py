@@ -25,13 +25,6 @@ from config import settings
 PUBLIC_USER_ID = settings.PUBLIC_PORTAL_USER_ID
 
 
-@pytest.fixture(autouse=True)
-def mock_geo_source_cf():
-    """Mock settings.GEO_SOURCE to use 'cf' (headers only) to avoid network calls in tests."""
-    with patch("services.portal_geo.settings.GEO_SOURCE", "cf"):
-        yield
-
-
 @pytest.fixture
 async def public_user(db_session: AsyncSession):
     """Create the public portal user."""
@@ -102,8 +95,7 @@ class TestIngestEventV1Payload:
             db_session,
             payload=payload,
             headers={},
-            ip=None,
-            now=now,
+                    now=now,
         )
 
         assert event.event_type == "pageview"
@@ -128,8 +120,7 @@ class TestIngestEventV1Payload:
             db_session,
             payload=payload,
             headers={},
-            ip=None,
-        )
+                )
 
         # Check visitor was created with anon-<sessionId>
         visitor_row = await db_session.execute(
@@ -158,7 +149,7 @@ class TestVisitSessionization:
             page="/projects",
             visitorId="visitor-1",
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Second event 10 min later
         now2 = now + timedelta(minutes=10)
@@ -167,7 +158,7 @@ class TestVisitSessionization:
             page="/about",
             visitorId="visitor-1",
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         assert event1.visit_id == event2.visit_id, "Events 10 min apart should be same visit"
 
@@ -184,7 +175,7 @@ class TestVisitSessionization:
             page="/projects",
             visitorId="visitor-2",
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Second event 31 min later
         now2 = now + timedelta(minutes=31)
@@ -193,7 +184,7 @@ class TestVisitSessionization:
             page="/about",
             visitorId="visitor-2",
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         assert event1.visit_id != event2.visit_id, "Events >30 min apart should be different visits"
 
@@ -210,7 +201,7 @@ class TestVisitSessionization:
             page="/projects",
             visitorId="visitor-3",
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Second event (passive page_duration) 40 min later
         now2 = now + timedelta(minutes=40)
@@ -220,7 +211,7 @@ class TestVisitSessionization:
             visitorId="visitor-3",
             durationMs=120000,
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         assert event1.visit_id == event2.visit_id, "Passive event within 24h should attach to old visit"
 
@@ -245,7 +236,7 @@ class TestConcurrentEventHandling:
                 event = await ingest_event(
                     session,
                     payload=TrackEventIn(type="pageview", page=f"/p{n}", visitorId="conc-visitor", siteKey="conc-key"),
-                    headers={}, ip=None,
+                    headers={},
                 )
                 # Mantiene la transacción abierta para forzar el solape entre las 5 ingestas.
                 await asyncio.sleep(0.3)
@@ -281,7 +272,7 @@ class TestOwnerTokenVerification:
             ownerToken=owner_token,
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
 
         # Verify visitor.is_owner is True
         visitor_row = await db_session.execute(
@@ -303,7 +294,7 @@ class TestOwnerTokenVerification:
             ownerToken="wrong-token",
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
 
         # Verify visitor.is_owner is False
         visitor_row = await db_session.execute(
@@ -331,14 +322,14 @@ class TestApplicationIdLinking:
         application_id = await self._application(db_session)
         payload = TrackEventIn(type="pageview", page="/", visitorId="app-visitor",
                                utm={"utm_campaign": application_id, "utm_medium": "postulacion"})
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
         visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
         assert visit.application_id == application_id
 
     async def test_unknown_campaign_does_not_link(self, db_session: AsyncSession, test_site):
         await self._application(db_session)
         payload = TrackEventIn(type="pageview", page="/", visitorId="app-visitor-2", utm={"utm_campaign": "apl-99999"})
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
         visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
         assert visit.application_id is None
 
@@ -367,7 +358,7 @@ class TestChannelClassification:
 
     async def _channel(self, db_session: AsyncSession, visitor: str, **fields) -> str:
         event = await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId=visitor, **fields),
-                                   headers={}, ip=None)
+                                   headers={})
         visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
         return visit.channel
 
@@ -399,7 +390,6 @@ class TestIPNotPersisted:
             db_session,
             payload=payload,
             headers={"CF-Connecting-IP": "8.8.8.8"},
-            ip="8.8.8.8",
         )
 
         # Verify no IP column exists in PortalEvent
@@ -431,7 +421,7 @@ class TestBotDetection:
             userAgent="Mozilla/5.0 (compatible; Googlebot/2.1)",
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event.visit_id)
@@ -458,7 +448,7 @@ class TestEngagementMetrics:
             page="/projects",
             visitorId="engagement-visitor",
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Check: still bounce (1 pageview)
         visit_row = await db_session.execute(
@@ -476,7 +466,7 @@ class TestEngagementMetrics:
             page="/about",
             visitorId="engagement-visitor",
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         # Check: now engaged (2+ pageviews)
         visit_row = await db_session.execute(
@@ -502,7 +492,7 @@ class TestEngagementMetrics:
             activeMs=15000,
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None, now=now)
+        event = await ingest_event(db_session, payload=payload, headers={}, now=now)
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event.visit_id)
@@ -524,7 +514,7 @@ class TestEngagementMetrics:
             visitorId="download-visitor",
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event.visit_id)
@@ -553,7 +543,7 @@ class TestMaxScrollTracking:
             visitorId="scroll-visitor",
             scrollPct=30,
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Second event: 75% scroll
         now2 = now + timedelta(minutes=1)
@@ -563,7 +553,7 @@ class TestMaxScrollTracking:
             visitorId="scroll-visitor",
             scrollPct=75,
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event1.visit_id)
@@ -587,7 +577,7 @@ class TestUnknownSite:
         )
 
         with pytest.raises(UnknownSite):
-            await ingest_event(db_session, payload=payload, headers={}, ip=None)
+            await ingest_event(db_session, payload=payload, headers={})
 
     async def test_no_default_site_raises(
         self, db_session: AsyncSession
@@ -606,7 +596,7 @@ class TestUnknownSite:
         payload = TrackEventIn(type="pageview", page="/")
 
         with pytest.raises(UnknownSite):
-            await ingest_event(db_session, payload=payload, headers={}, ip=None)
+            await ingest_event(db_session, payload=payload, headers={})
 
 
 @pytest.mark.requisito("RF-001")
@@ -625,7 +615,7 @@ class TestNewVisitorTracking:
             visitorId="new-visitor-test",
         )
 
-        event = await ingest_event(db_session, payload=payload, headers={}, ip=None)
+        event = await ingest_event(db_session, payload=payload, headers={})
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event.visit_id)
@@ -646,7 +636,7 @@ class TestNewVisitorTracking:
             page="/",
             visitorId="returning-visitor",
         )
-        event1 = await ingest_event(db_session, payload=payload1, headers={}, ip=None, now=now)
+        event1 = await ingest_event(db_session, payload=payload1, headers={}, now=now)
 
         # Second visit (31 min later, new session)
         now2 = now + timedelta(minutes=31)
@@ -655,7 +645,7 @@ class TestNewVisitorTracking:
             page="/about",
             visitorId="returning-visitor",
         )
-        event2 = await ingest_event(db_session, payload=payload2, headers={}, ip=None, now=now2)
+        event2 = await ingest_event(db_session, payload=payload2, headers={}, now=now2)
 
         visit_row = await db_session.execute(
             select(PortalVisit).where(PortalVisit.id == event2.visit_id)
@@ -669,7 +659,7 @@ class TestHeadersAndCounters:
     async def test_user_agent_header_used_when_payload_has_none(self, db_session: AsyncSession, test_site):
         ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
         event = await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId="hdr-1"),
-                                   headers={"User-Agent": ua, "Accept-Language": "es-MX,es;q=0.9"}, ip=None)
+                                   headers={"User-Agent": ua, "Accept-Language": "es-MX,es;q=0.9"})
         visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
         assert visit.device_type == "mobile" and visit.os == "iOS" and visit.language == "es-MX"
         assert event.user_agent == ua
@@ -678,7 +668,7 @@ class TestHeadersAndCounters:
         base = datetime(2026, 11, 1, 12, 0, tzinfo=timezone.utc)
         for minutes in (0, 5, 10, 60, 65):
             await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId="cnt-1"),
-                               headers={}, ip=None, now=base + timedelta(minutes=minutes))
+                               headers={}, now=base + timedelta(minutes=minutes))
         visitor = (await db_session.execute(select(PortalVisitor).where(PortalVisitor.visitor_key == "cnt-1"))).scalar_one()
         assert visitor.visit_count == 2
 
@@ -686,8 +676,26 @@ class TestHeadersAndCounters:
         site, token = test_site
         base = datetime(2026, 11, 1, 12, 0, tzinfo=timezone.utc)
         first = await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId="own-1"),
-                                   headers={}, ip=None, now=base)
+                                   headers={}, now=base)
         await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/about", visitorId="own-1", ownerToken=token),
-                           headers={}, ip=None, now=base + timedelta(minutes=1))
+                           headers={}, now=base + timedelta(minutes=1))
         visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == first.visit_id))).scalar_one()
         assert visit.is_owner is True
+
+
+@pytest.mark.requisito("RF-004")
+class TestGeoOnlyFromCloudflareHeaders:
+    """La ubicación sale solo de las cabeceras `cf-*`; sin ellas queda vacía (ya no hay respaldo por IP)."""
+
+    async def test_headers_fill_the_visit_location(self, db_session, test_site):
+        headers = {"cf-ipcountry": "MX", "cf-region": "Guanajuato", "cf-ipcity": "Celaya",
+                   "cf-iplatitude": "20.52", "cf-iplongitude": "-100.81", "cf-timezone": "America/Mexico_City"}
+        event = await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId="geo-a"), headers=headers)
+        visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
+        assert (visit.country, visit.region, visit.city) == ("Mexico", "Guanajuato", "Celaya")
+        assert visit.latitude == pytest.approx(20.52)
+
+    async def test_without_headers_there_is_no_location(self, db_session, test_site):
+        event = await ingest_event(db_session, payload=TrackEventIn(type="pageview", page="/", visitorId="geo-b"), headers={})
+        visit = (await db_session.execute(select(PortalVisit).where(PortalVisit.id == event.visit_id))).scalar_one()
+        assert visit.country is None and visit.city is None and visit.latitude is None

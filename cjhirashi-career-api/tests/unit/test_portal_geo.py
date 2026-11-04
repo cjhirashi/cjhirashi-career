@@ -2,11 +2,9 @@
 Tests for portal_geo service.
 """
 import pytest
-from unittest.mock import AsyncMock, patch
 
-from services.portal_geo import geo_from_headers, resolve_request_geo
-from services.geo_ip_service import GeoInfo
-from config import settings
+from services.portal_geo import geo_from_headers
+from services import portal_geo
 
 
 @pytest.mark.requisito("RF-004")
@@ -108,103 +106,19 @@ def test_geo_from_headers_invalid_coordinates():
 
 
 @pytest.mark.requisito("RF-004")
-async def test_resolve_request_geo_cf_mode():
-    """GEO_SOURCE='cf' uses only Cloudflare headers."""
-    headers = {
-        "cf-ipcountry": "MX",
-        "cf-ipcity": "Mexico City",
-    }
-
-    with patch("services.portal_geo.settings") as mock_settings:
-        mock_settings.GEO_SOURCE = "cf"
-        with patch("services.portal_geo.resolve_geo") as mock_resolve:
-            result = await resolve_request_geo(headers, ip="1.2.3.4")
-
-            assert result is not None
-            assert result.country == "Mexico"
-            # resolve_geo should not be called
-            mock_resolve.assert_not_called()
+def test_geo_comes_only_from_cloudflare_headers_and_never_from_the_ip():
+    """Sin cabeceras no hay geografía: ya no existe respaldo por IP ni servicio externo."""
+    assert geo_from_headers({}) is None
+    assert geo_from_headers({"cf-ipcountry": "XX"}) is None
+    assert geo_from_headers({"cf-ipcountry": "MX", "cf-ipcity": "Celaya"}).city == "Celaya"
 
 
 @pytest.mark.requisito("RF-004")
-async def test_resolve_request_geo_ipapi_mode():
-    """GEO_SOURCE='ipapi' uses only resolve_geo."""
-    headers = {
-        "cf-ipcountry": "MX",  # Should be ignored
-    }
+def test_external_ip_lookup_service_is_retired():
+    import importlib.util
 
-    mock_geo = GeoInfo(
-        country="United States",
-        region="California",
-        city="San Francisco",
-        latitude=37.7749,
-        longitude=-122.4194,
-        timezone="America/Los_Angeles",
-    )
+    from config import settings
 
-    with patch("services.portal_geo.settings") as mock_settings:
-        mock_settings.GEO_SOURCE = "ipapi"
-        with patch("services.portal_geo.resolve_geo", new_callable=AsyncMock) as mock_resolve:
-            mock_resolve.return_value = mock_geo
-            result = await resolve_request_geo(headers, ip="1.2.3.4")
-
-            assert result is mock_geo
-            # resolve_geo should be called
-            mock_resolve.assert_called_once_with("1.2.3.4")
-
-
-@pytest.mark.requisito("RF-004")
-async def test_resolve_request_geo_auto_mode_cf_found():
-    """GEO_SOURCE='auto' uses CF headers if valid cf-ipcountry."""
-    headers = {
-        "cf-ipcountry": "MX",
-        "cf-ipcity": "Mexico City",
-    }
-
-    with patch("services.portal_geo.settings") as mock_settings:
-        mock_settings.GEO_SOURCE = "auto"
-        with patch("services.portal_geo.resolve_geo") as mock_resolve:
-            result = await resolve_request_geo(headers, ip="1.2.3.4")
-
-            assert result is not None
-            assert result.country == "Mexico"
-            # resolve_geo should not be called
-            mock_resolve.assert_not_called()
-
-
-@pytest.mark.requisito("RF-004")
-async def test_resolve_request_geo_auto_mode_cf_not_found():
-    """GEO_SOURCE='auto' falls back to resolve_geo if no cf-ipcountry."""
-    headers = {}
-
-    mock_geo = GeoInfo(
-        country="United States",
-        region="California",
-        city="San Francisco",
-        latitude=37.7749,
-        longitude=-122.4194,
-        timezone="America/Los_Angeles",
-    )
-
-    with patch("services.portal_geo.settings") as mock_settings:
-        mock_settings.GEO_SOURCE = "auto"
-        with patch("services.portal_geo.resolve_geo", new_callable=AsyncMock) as mock_resolve:
-            mock_resolve.return_value = mock_geo
-            result = await resolve_request_geo(headers, ip="1.2.3.4")
-
-            assert result is mock_geo
-            # resolve_geo should be called
-            mock_resolve.assert_called_once_with("1.2.3.4")
-
-
-@pytest.mark.requisito("RF-004")
-async def test_resolve_request_geo_never_raises():
-    """resolve_request_geo never raises an exception."""
-    headers = {"cf-ipcountry": "XX"}  # Invalid
-
-    with patch("services.portal_geo.resolve_geo", new_callable=AsyncMock) as mock_resolve:
-        mock_resolve.side_effect = Exception("Network error")
-        result = await resolve_request_geo(headers, ip="1.2.3.4")
-
-        # Should return None, not raise
-        assert result is None
+    assert importlib.util.find_spec("services.geo_ip_service") is None
+    assert not hasattr(settings, "GEO_SOURCE")
+    assert not hasattr(portal_geo, "resolve_request_geo")

@@ -211,11 +211,6 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     PUBLIC_PORTAL_USER_ID: str = "usr-2"
 
-    # -------------------------------------------------------------------------
-    # Portal Analytics — source de geografía
-    # -------------------------------------------------------------------------
-    GEO_SOURCE: str = "auto"
-
     @field_validator("PUBLIC_PORTAL_USER_ID", mode="before")
     @classmethod
     def coerce_legacy_numeric_portal_user_id(cls, value: Any) -> Any:

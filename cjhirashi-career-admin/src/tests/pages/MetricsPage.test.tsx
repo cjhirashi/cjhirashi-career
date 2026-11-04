@@ -1,5 +1,7 @@
+import type React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent, within } from '../utils'
+import { MemoryRouter } from 'react-router-dom'
+import { render as baseRender, screen, waitFor, fireEvent, within } from '../utils'
 import { MetricsPage } from '@/pages/MetricsPage'
 import { portalAnalyticsApi } from '@/api/portalAnalytics'
 import { careerApi } from '@/api/career'
@@ -42,6 +44,8 @@ const breakdown = (dimension: string, keys: string[]) => ({
 })
 const empty = { site_id: 'psi-1', period, sample_size: sample, rows: [] }
 
+const render = (ui: React.ReactElement) => baseRender(<MemoryRouter>{ui}</MemoryRouter>)
+
 const lastQuery = (fn: unknown): PortalQuery => (fn as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0]
 
 beforeEach(() => {
@@ -62,6 +66,11 @@ beforeEach(() => {
 })
 
 describe('MetricsPage', () => {
+  it('enlaza a la configuración de metas, embudos y anotaciones', async () => {
+    render(<MetricsPage />)
+    expect(await screen.findByRole('link', { name: /Metas, embudos y anotaciones/ })).toHaveAttribute('href', '/metrics/settings')
+  })
+
   it('RF-063 arranca con 30 días, sin comparar y con bots y mis visitas excluidos', async () => {
     render(<MetricsPage />)
     await waitFor(() => expect(api.kpis).toHaveBeenCalled())

@@ -19,7 +19,15 @@ export interface Attribution {
   clickIds?: Record<string, string>
 }
 
-export const isTrackingEnabled = (): boolean => import.meta.env.VITE_TRACKING_ENABLED !== 'false'
+// Tras pedir el borrado el visitante no vuelve a medirse hasta recargar la página:
+// de lo contrario la propia página de privacidad le crearía un id nuevo al salir.
+let suppressed = false
+export const suppressTracking = (): void => {
+  suppressed = true
+}
+export const isTrackingSuppressed = (): boolean => suppressed
+
+export const isTrackingEnabled = (): boolean => import.meta.env.VITE_TRACKING_ENABLED !== 'false' && !suppressed
 
 export const generateId = (): string =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto

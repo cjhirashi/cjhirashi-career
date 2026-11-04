@@ -41,7 +41,7 @@ class PortalEvent(Base):
     country = Column(String(100), nullable=True, index=True)
     region = Column(String(100), nullable=True)
     city = Column(String(100), nullable=True)
-    # Ciudad aproximada (ipapi.co) - alimenta el mapa de burbujas de Métricas.
+    # Ciudad aproximada (cabeceras de Cloudflare) - alimenta el mapa de burbujas de Métricas.
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     user_agent = Column(String(500), nullable=True)

@@ -34,7 +34,7 @@ from schemas.events import TrackEventIn
 from services.portal_bots import score_bot, is_bot
 from services.portal_channels import classify_channel, extract_domain
 from services.portal_device import parse_device
-from services.portal_geo import resolve_request_geo
+from services.portal_geo import geo_from_headers
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +123,6 @@ async def ingest_event(
     *,
     payload: TrackEventIn,
     headers: Mapping[str, str],
-    ip: str | None,
     now: datetime | None = None,
     origin_host: str | None = None,
 ) -> PortalEvent:
@@ -136,7 +135,6 @@ async def ingest_event(
         db: AsyncSession (not auto-committed by this function)
         payload: The parsed TrackEventIn schema
         headers: Request headers (for geo, device parsing)
-        ip: Client IP (for geo; never persisted per RF-005)
         now: Current timestamp (defaults to UTC now; server clock always used)
 
     Returns:
@@ -259,8 +257,8 @@ async def ingest_event(
     # El User-Agent del payload manda; si falta se usa el de la cabecera.
     user_agent = payload.userAgent or _header(headers, "user-agent")
 
-    # Parse geographic info
-    geo_info = await resolve_request_geo(headers, ip)
+    # Geografía solo de las cabeceras de Cloudflare
+    geo_info = geo_from_headers(headers)
 
     # Parse device info
     accept_language = _header(headers, "accept-language")

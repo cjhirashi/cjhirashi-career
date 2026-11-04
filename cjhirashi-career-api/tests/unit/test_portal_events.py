@@ -1,10 +1,6 @@
-"""portal_events ingestion: schema validation and the public/private IP guard
-in geo_ip_service (no network, no DB - the ipapi.co call itself is exercised
-manually, not in CI).
-"""
+"""portal_events ingestion: schema validation and model columns (no network, no DB)."""
 from models.portal_event import PortalEvent
 from schemas.events import TrackEventIn
-from services.geo_ip_service import _is_public_ip
 
 
 def test_track_event_in_accepts_minimal_pageview():
@@ -19,17 +15,6 @@ def test_track_event_in_rejects_unknown_type():
 
     with pytest.raises(ValidationError):
         TrackEventIn(type="not-a-real-type", page="/")
-
-
-def test_is_public_ip_rejects_private_and_loopback():
-    assert _is_public_ip("127.0.0.1") is False
-    assert _is_public_ip("10.0.0.5") is False
-    assert _is_public_ip("172.18.0.3") is False
-    assert _is_public_ip("not-an-ip") is False
-
-
-def test_is_public_ip_accepts_public_address():
-    assert _is_public_ip("8.8.8.8") is True
 
 
 def test_portal_event_model_columns():

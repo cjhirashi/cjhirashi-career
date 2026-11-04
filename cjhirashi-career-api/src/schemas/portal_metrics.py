@@ -18,8 +18,8 @@ class DailyCount(BaseModel):
 
 class LocationCount(BaseModel):
     """One bubble on the traffic map - city+country with its averaged
-    coordinates (ipapi.co resolves roughly the same point per city, but
-    different visitors there can land on slightly different values)."""
+    coordinates (Cloudflare reports slightly different coordinates for visitors
+    in the same city, so they are averaged)."""
 
     city: Optional[str]
     country: Optional[str]

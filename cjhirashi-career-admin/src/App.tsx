@@ -13,6 +13,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { MetricsPage } from '@/pages/MetricsPage'
+import { PortalSettingsPage } from '@/pages/PortalSettingsPage'
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
@@ -86,6 +87,17 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <MetricsPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/metrics/settings"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <PortalSettingsPage />
                 </Layout>
               </PrivateRoute>
             }

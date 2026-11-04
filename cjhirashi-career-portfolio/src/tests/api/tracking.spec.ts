@@ -52,3 +52,34 @@ describe('trackingApi', () => {
     expect(getVisitorId()).toBe(before)
   })
 })
+
+describe('RF-053 tras borrar los datos no se vuelve a medir hasta recargar', () => {
+  const fresh = async () => {
+    vi.resetModules()
+    vi.doMock('@/api/client', () => ({ apiClient: { post: vi.fn().mockResolvedValue({}), postBeacon: vi.fn() } }))
+    const client = (await import('@/api/client')).apiClient
+    const api = (await import('@/api/tracking')).trackingApi
+    return { client, api }
+  }
+
+  it('después de forgetMe ni los eventos normales ni los de salida se envían', async () => {
+    const { client, api } = await fresh()
+    await api.forgetMe()
+    vi.mocked(client.post).mockClear()
+
+    await api.trackEvent({ type: 'pageview', page: '/privacy' })
+    api.trackEventBeacon({ type: 'page_leave', page: '/privacy', activeMs: 900 })
+
+    expect(client.post).not.toHaveBeenCalled()
+    expect(client.postBeacon).not.toHaveBeenCalled()
+  })
+
+  it('si el borrado falla, el rastreo sigue activo', async () => {
+    const { client, api } = await fresh()
+    vi.mocked(client.post).mockRejectedValueOnce(new Error('500'))
+    await expect(api.forgetMe()).rejects.toThrow()
+
+    await api.trackEvent({ type: 'click', page: '/privacy' })
+    expect(client.post).toHaveBeenLastCalledWith('/events/track', expect.objectContaining({ type: 'click' }))
+  })
+})
