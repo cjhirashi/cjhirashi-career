@@ -540,3 +540,11 @@ describe('CareerResourceView · mensajes de contacto (SPEC-0011)', () => {
     expect(screen.queryByLabelText('Mensaje')).not.toBeInTheDocument()
   })
 })
+
+describe('Menú del Admin · mensajes de contacto (SPEC-0011)', () => {
+  it('lista contact-messages en el dominio Presencia Digital', async () => {
+    const { CAREER_DOMAINS } = await import('@/config/careerResources')
+    const digital = CAREER_DOMAINS.find((domain) => domain.key === 'digital')
+    expect(digital?.resourceKeys).toContain('contact-messages')
+  })
+})

@@ -2122,7 +2122,7 @@ export const CAREER_DOMAINS: CareerDomainGroup[] = [
     label: 'Presencia Digital',
     icon: Globe,
     // Publicaciones (portfolio blog) deliberately goes last in this group.
-    resourceKeys: ['linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact', 'publications'],
+    resourceKeys: ['linkedin-profile', 'github-profile', 'portal-home', 'portal-about', 'portal-contact', 'contact-messages', 'publications'],
   },
   {
     key: 'networking',
