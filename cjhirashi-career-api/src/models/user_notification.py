@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 from database import Base
 from services.id_generator import register_id_listener
 
-NOTIFICATION_KINDS = ("task_turn",)
+NOTIFICATION_KINDS = ("task_turn", "contact_message")
 
 
 class UserNotification(Base):

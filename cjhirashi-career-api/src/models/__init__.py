@@ -48,6 +48,7 @@ from models.github_profile import GitHubProfile
 from models.portal_home import PortalHome
 from models.portal_about import PortalAbout
 from models.portal_contact import PortalContact
+from models.contact_message import ContactMessage
 from models.portal_event import PortalEvent
 from models.portal_site import PortalSite
 from models.portal_visitor import PortalVisitor
@@ -136,6 +137,7 @@ __all__ = [
     "PortalHome",
     "PortalAbout",
     "PortalContact",
+    "ContactMessage",
     "PortalEvent",
     "PortalSite",
     "PortalVisitor",

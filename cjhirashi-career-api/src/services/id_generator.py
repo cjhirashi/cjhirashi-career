@@ -29,6 +29,7 @@ TABLE_PREFIXES: dict[str, str] = {
     "certifications":             "crt",
     "competencies":               "cmp",
     "contact_interactions":       "cni",
+    "contact_messages":           "cmg",
     "cover_letter_versions":      "clv",
     "cv_versions":                "cvv",
     "differentiators":            "dif",

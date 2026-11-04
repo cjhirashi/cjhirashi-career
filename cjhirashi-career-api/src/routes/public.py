@@ -11,10 +11,11 @@ under this router.
 # Imports
 # ============================================================================
 import re
+import logging
 from collections import OrderedDict
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,6 +35,12 @@ from models.portal_home import PortalHome
 from models.portal_about import PortalAbout
 from models.portal_contact import PortalContact
 
+from schemas.contact_message import ContactMessageIn, ContactMessageCreated
+from services.contact_message_service import ContactMessageService
+from services.portal_ratelimit import SlidingWindowLimiter
+
+logger = logging.getLogger(__name__)
+
 from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
@@ -47,6 +54,22 @@ from schemas.public import (
 router = APIRouter(prefix="/public", tags=["Public Portal"])
 
 USER_ID = settings.PUBLIC_PORTAL_USER_ID
+
+# Limitadores de ritmo para contacto (RF-004)
+# 3 mensajes por hora por IP, 3 por hora por correo
+_ip_limiter = SlidingWindowLimiter(limit=3, window=3600.0)
+_email_limiter = SlidingWindowLimiter(limit=3, window=3600.0)
+
+
+def _client_ip(request: Request) -> str:
+    """Extrae la IP real del visitante (CF-Connecting-IP > X-Forwarded-For > request.client)."""
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return cf_ip.strip()
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 # `Publication.platform` is free text (LinkedIn, Blog propio, Medium...) - the
 # same article can have one row per platform it was cross-posted to (e.g. one
@@ -377,3 +400,67 @@ async def get_blog_post(slug: str, db: AsyncSession = Depends(get_db)):
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     return _blog_post(post)
+
+
+# ============================================================================
+# Contacto (RF-001 a RF-008)
+# ============================================================================
+@router.post(
+    "/contact-message",
+    response_model=ContactMessageCreated,
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit a contact form message",
+)
+async def submit_contact_message(
+    payload: ContactMessageIn,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Recibe y guarda un mensaje del formulario de contacto del portafolio.
+
+    - Validación: nombre (1-120), email válido (≤255), mensaje (1-5000)
+    - Honeypot: si website tiene contenido, devuelve 201 sin guardar
+    - Límite de frecuencia: 3 msgs/hora por IP y 3/hora por correo (RF-004)
+    - Respuesta: 201 con id solo tras confirmar la escritura en BD
+
+    Devuelve:
+        - 201: mensaje guardado exitosamente
+        - 422: validación fallida (nombre/email/mensaje inválidos)
+        - 429: límite de frecuencia excedido
+    """
+    ip = _client_ip(request)
+    email = payload.email.strip()
+
+    # ===== RF-004: Límite de frecuencia (IP y correo) =====
+    if not _ip_limiter.allow(ip) or not _email_limiter.allow(email):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Demasiados mensajes en poco tiempo. Intenta más tarde.",
+        )
+
+    # ===== RF-001/002/003/005: Guardar mensaje =====
+    service = ContactMessageService()
+    message_data = {
+        "name": payload.name,
+        "email": payload.email,
+        "message": payload.message,
+        "website": payload.website or "",
+    }
+
+    try:
+        msg_id = await service.save_contact_message(db, USER_ID, message_data)
+    except Exception as e:
+        logger.exception("Failed to save contact message")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al guardar el mensaje",
+        ) from e
+
+    # Honeypot silencioso: si msg_id es None, devolvemos 201 igual
+    # (para que el bot no aprenda que fue detectado)
+    if msg_id is None:
+        # Devolvemos un id falso (el bot cree que pasó)
+        return ContactMessageCreated(id="cmg-skipped")
+
+    return ContactMessageCreated(id=msg_id)

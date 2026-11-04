@@ -24,6 +24,7 @@ from routes import career_identity, career_search, career_digital, career_suppor
 from routes import bedrock
 from routes import bedrock_tasks
 from routes import admin_sections
+from routes import admin_contact_messages
 from routes import pdf_templates, pdf_template_styles
 from routes import files
 from routes import public
@@ -270,6 +271,7 @@ app.include_router(bedrock.router)
 app.include_router(bedrock_tasks.router)
 app.include_router(notifications.router)
 app.include_router(admin_sections.router)
+app.include_router(admin_contact_messages.router)
 app.include_router(pdf_templates.router)
 app.include_router(pdf_template_styles.router)
 app.include_router(files.router)
