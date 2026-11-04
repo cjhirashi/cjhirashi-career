@@ -46,8 +46,9 @@ marcan, no se eliminan. `portal_visits` y `portal_daily` se pueden reconstruir d
 - **Origen:** `Origin`/`Referer` debe ser un host de `allowed_hosts` (403 si no); `siteKey` desconocida → 403;
   más de 120 eventos/min por visitante o 600 por IP → 429. Cualquier error interno responde 204.
 - **Geografía:** cabeceras de Cloudflare (`cf-ipcountry`, `cf-ipcity`, `cf-region`, `cf-iplatitude`, `cf-iplongitude`,
-  `cf-timezone`; requiere «Add visitor location headers»). Con `GEO_SOURCE=auto` (predeterminado) cae a ipapi.co
-  si no hay `cf-ipcountry`; `cf` solo cabeceras; `ipapi` solo el servicio externo.
+  `cf-timezone`; requiere «Add visitor location headers»). En producción `GEO_SOURCE=cf` (fijado en `docker-compose.yml` tras
+  verificar el 2026-11-04 que las cabeceras llegan al origen): solo cabeceras. El valor predeterminado del código
+  es `auto` (cae a ipapi.co si no hay `cf-ipcountry`); `ipapi` usa solo el servicio externo.
 - **Privacidad:** la IP no se guarda en ninguna tabla ni registro; el `User-Agent` crudo vive solo en el evento.
   `POST /events/forget` `{siteKey, visitorId}` borra visitante, visitas y eventos de quien lo pide (204 siempre).
 - **Dueño:** un `ownerToken` válido marca visitante y visita como `is_owner`.

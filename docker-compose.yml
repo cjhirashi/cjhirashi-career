@@ -143,6 +143,8 @@ services:
       BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
       # Public portal (unauthenticated /public/* routes)
       PUBLIC_PORTAL_USER_ID: ${PUBLIC_PORTAL_USER_ID}
+      # Origen de la geografía del rastreo: cf (cabeceras de Cloudflare, verificado 2026-11-04) | auto | ipapi
+      GEO_SOURCE: ${GEO_SOURCE:-cf}
     depends_on:
       postgres:
         condition: service_healthy
