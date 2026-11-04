@@ -48,3 +48,13 @@ class PortalMetricsOverviewResponse(BaseModel):
     duration_ms_avg: Optional[int] = None
     duration_ms_max: Optional[int] = None
     duration_sample_size: int = 0
+    # SPEC-0010: mediana y p90 (el promedio se distorsiona con pestañas olvidadas),
+    # tamaño de muestra y el resumen de KPIs; se agregan sin tocar los campos anteriores.
+    duration_ms_median: Optional[int] = None
+    duration_ms_p90: Optional[int] = None
+    site_id: Optional[str] = None
+    sample_size: Optional[dict] = None
+    kpis: Optional[dict] = None
+    compare: Optional[str] = None
+    previous_kpis: Optional[dict] = None
+    deltas: Optional[dict] = None

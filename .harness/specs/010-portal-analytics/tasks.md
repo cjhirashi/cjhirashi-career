@@ -36,11 +36,11 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 ### D · Lectura y métricas
 - [ ] D1 `build_readonly_router` y registro de `portal-sites`, `portal-visitors`, `portal-visits`, `portal-events`, `portal-daily`; `portal-sites` sin claves (RF-030). Prueba: escritura devuelve 405.
 - [ ] D2 CRUD de `portal-goals`, `portal-funnels`, `portal-annotations` con token de agente (RF-031).
-- [ ] D3 `MetricsQuery` y constructor de filtros únicos; `overview` conserva su contrato (RF-032). Prueba de contrato contra la respuesta actual.
-- [ ] D4 Endpoints `pages`, `channels`, `sources`, `geo`, `devices`, `paths`, `retention`, `realtime`, `goals`, `funnel/{id}` (RF-033).
-- [ ] D5 Comparación de periodos y `sample_size` (RF-034, 037).
-- [ ] D6 `portal_daily` perezosa y `rebuild` (RF-036, 022).
-- [ ] D7 `dictionary` (RF-035).
+- [x] D3 `MetricsQuery` y constructor de filtros únicos; `overview` conserva su contrato (RF-032). Prueba de contrato contra la respuesta actual.
+- [x] D4 Endpoints `pages`, `channels`, `sources`, `geo`, `devices`, `paths`, `retention`, `realtime`, `goals`, `funnel/{id}` (RF-033).
+- [x] D5 Comparación de periodos y `sample_size` (RF-034, 037).
+- [x] D6 `portal_daily` perezosa y `rebuild` (RF-036, 022).
+- [x] D7 `dictionary` (RF-035).
 
 ### E · Conservación
 - [ ] E1 `scripts/export_portal_events.py` mensual (RF-021). Prueba con rango sintético.
@@ -69,3 +69,4 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 - Bloque B: 55 pruebas en verde (`test_portal_channels/bots/device/geo.py`) ejecutadas por AIRA; `ua-parser[regex]==1.0.2` fijado. Corrección de AIRA: `cf-ipcountry` en minúsculas ("xx") ya se trata como desconocido. Haiku reportó 76 pruebas sumando regresiones y pegó una salida con erratas; la cifra verificada es 55 nuevas.
 - Bloque C1-C2: 52 pruebas en verde (24 de ingesta con Postgres real, 36 de esquema v2 y goal_matches). Haiku entregó el servicio con las pruebas de base de datos sin ejecutar y varias comprobando el defecto («con reglas vacías el canal debe ser Unknown»). Correcciones de AIRA: carga de reglas de canal desde `portal_channel_rules`, vinculación a `applications`, `visit_count` por visita (Haiku lo sumaba por evento), cabecera `User-Agent` como respaldo, marca de dueño sobre la visita vigente, sitio predeterminado con varios sitios; prueba de concurrencia real con 5 ingestas simultáneas, verificada por mutación (sin el bloqueo consultivo falla con violación de unicidad).
 - Bloque C3-C4 (escrito por AIRA, sin subagente: pegamento con peso en seguridad): `routes/events.py` v2 con validación de Origin (403), límite de ritmo por visitante e IP (429), 204 ante error interno y `POST /events/forget` autoservicio (204 siempre, no permite sondear ids). 14 pruebas en verde con Postgres real, incluida la comprobación de que ninguna columna de ninguna tabla `portal_*` contiene la IP.
+- Bloque D3-D7 (escrito por AIRA: SQL de métricas, donde se concentra el riesgo): motor `services/portal_metrics.py` con constructor único de filtros, KPIs con definiciones GA4, desgloses, páginas, recorridos, retención semanal, metas, embudo en orden, tendencia con `portal_daily` perezosa y comparación de periodos; `overview` conserva sus campos históricos. 21 pruebas con Postgres real y expectativas calculadas a mano (excluye bots y dueño, mediana/p90, orden del embudo, retención). Contra la copia de producción: con bots y dueño suma las 73 vistas históricas; en tráfico limpio, 63 (10 son de bots).
