@@ -28,6 +28,7 @@ flowchart TB
     subgraph Ext
         Files[files]
         Public[public]
+        PortalA[portal-analytics]
     end
     Auth --> Carrera
     Infra --> Carrera
@@ -109,3 +110,5 @@ Los README de sección documentan el **contrato HTTP**. El código interno está
 - [src/services/README.md](../../src/services/README.md) — servicios e integraciones
 
 Volver al [README principal de la API](../README.md).
+
+- [portal-analytics](portal-analytics/README.md) — analítica del portafolio público: visitas, canales, metas, embudos y API para agentes (SPEC-0010)

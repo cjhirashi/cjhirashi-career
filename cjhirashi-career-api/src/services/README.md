@@ -38,6 +38,18 @@ flowchart TB
 
 ## Módulos
 
+### Analítica del portafolio (SPEC-0010)
+
+| Módulo | Función |
+|--------|---------|
+| `portal_ingest.py` | `ingest_event`: sitio, visitante (bloqueo consultivo), visita con corte de 30 min, canal, postulación, bots, dueño, contadores y eventos clave. No hace commit |
+| `portal_channels.py` | `classify_channel` con reglas de `portal_channel_rules`; `extract_domain` |
+| `portal_bots.py` | `score_bot` aditivo y explicable (umbral 70) |
+| `portal_device.py` | `parse_device` con `ua-parser`: navegador, sistema, tipo de dispositivo, idioma |
+| `portal_geo.py` | Geografía desde cabeceras `cf-*` de Cloudflare con respaldo según `GEO_SOURCE` |
+| `portal_ratelimit.py` | Ventana deslizante en memoria por visitante e IP |
+| `portal_metrics.py` | `MetricsQuery` y todas las métricas; `rebuild_daily`, `ensure_daily_fresh`, `rebuild_visits` |
+
 ### `auth_service.py` — JWT y contraseñas
 
 `AuthService` (SRP: solo autenticación).

@@ -90,6 +90,9 @@ flowchart TB
 | `portal_home.py` | Hero y stats del Home público |
 | `portal_about.py` | Copy extra de Sobre mí (bio vive en `identity`) |
 | `portal_contact.py` | Contacto + footer (links sociales salen de perfiles) |
+| `portal_site.py` · `portal_visitor.py` · `portal_visit.py` | Analítica del portafolio: sitios medidos, visitantes seudónimos y visitas (SPEC-0010) |
+| `portal_event.py` | Eventos crudos de tráfico (ampliado con `site_id`, `visitor_id`, `visit_id`, `seq`, `props`) |
+| `portal_goal.py` · `portal_funnel.py` · `portal_annotation.py` · `portal_channel_rule.py` · `portal_daily.py` | Metas, embudos, anotaciones, reglas de canal y resumen diario |
 | `tag.py` | Etiquetas transversales |
 | `operational_methodology.py` | Protocolos Markdown + `agent_profile_ids` (agentes destinatarios) |
 

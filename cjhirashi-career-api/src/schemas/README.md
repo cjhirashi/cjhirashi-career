@@ -45,6 +45,18 @@ Enums y schemas de competencia (tipo, nivel). Solapado con las clases de `career
 
 Publications, LinkedIn/GitHub profile, portal home/about/contact.
 
+### `events.py`
+
+`TrackEventIn` (payload v1 y v2 de la ingesta de analítica; recorta `utm`, filtra `clickIds` y `vitals`).
+
+### `portal_metrics.py` y `portal_analytics_metrics.py`
+
+Respuestas de `/career/portal-metrics/*` (resumen histórico y métricas nuevas, todas con `sample_size`).
+
+### `portal_analytics.py`
+
+Salida de los recursos `portal-*` (`PortalSiteOut` no incluye `public_key` ni `owner_token_hash`) y esquemas de metas, embudos y anotaciones.
+
 ### `career_support.py`
 
 `TagCreate` / `TagUpdate` / `TagResponse`.

@@ -203,6 +203,21 @@ CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in
 
 ---
 
+## Analítica del portafolio — `/events` y `/career/portal-*`
+
+→ [sections/portal-analytics/README.md](sections/portal-analytics/README.md)
+
+| Método | Path | Auth |
+|--------|------|------|
+| POST | `/events/track` | No (valida `siteKey` y `Origin`) |
+| POST | `/events/forget` | No (autoservicio) |
+| GET | `/career/portal-sites` `/portal-visitors` `/portal-visits` `/portal-events` `/portal-daily` (+ `/count`, `/{id}`) | JWT o token de agente (solo lectura) |
+| CRUD | `/career/portal-goals` `/portal-funnels` `/portal-annotations` | JWT o token de agente |
+| GET | `/career/portal-metrics/overview` `/kpis` `/trend` `/channels` `/sources` `/campaigns` `/geo` `/devices` `/breakdown` `/pages` `/paths` `/retention` `/realtime` `/goals` `/funnel/{id}` `/dictionary` | JWT o token de agente |
+| POST | `/career/portal-metrics/rebuild` | JWT o token de agente |
+
+---
+
 ## Portal público — `/public`
 
 → [sections/public/README.md](sections/public/README.md)

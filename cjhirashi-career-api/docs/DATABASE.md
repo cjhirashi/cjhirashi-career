@@ -190,6 +190,25 @@ Documentación API: [sections/career-digital/README.md](./sections/career-digita
 
 Alimentan endpoints `/public/*` filtrados por `PUBLIC_PORTAL_USER_ID`.
 
+### Analítica del portafolio (SPEC-0010)
+
+Documentación: [sections/portal-analytics/README.md](./sections/portal-analytics/README.md)
+
+| Tabla | Modelo | Prefijo |
+|-------|--------|---------|
+| `portal_sites` | `PortalSite` | `psi` |
+| `portal_visitors` | `PortalVisitor` | `pvr` |
+| `portal_visits` | `PortalVisit` | `pvs` |
+| `portal_events` | `PortalEvent` | `pev` |
+| `portal_goals` | `PortalGoal` | `pgl` |
+| `portal_funnels` | `PortalFunnel` | `pfn` |
+| `portal_annotations` | `PortalAnnotation` | `pan` |
+| `portal_channel_rules` | `PortalChannelRule` | `pcr` |
+| `portal_daily` | `PortalDaily` | `pdy` |
+
+`portal_events` es el registro inmutable (nunca se purga); visitas, visitantes y resúmenes diarios se derivan y se pueden
+reconstruir. Los visitantes `legacy=true` salen de eventos v1 y no tienen origen ni dispositivo.
+
 ---
 
 ## Dominio: soporte y metodologías

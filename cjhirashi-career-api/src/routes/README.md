@@ -132,6 +132,18 @@ CRUD de estilos CSS reutilizables (`style_id` en plantillas). Tool del agente: `
 
 Upload a MinIO con re-encode de imágenes (JPEG 85 / PNG con alpha, lado máximo 1920). Listado, visibilidad pública/privada, download presigned, stream raw, delete. Lectura pública de objetos `public/` no pasa por JWT.
 
+### `events.py` — `/events`
+
+Ingesta pública de analítica: `POST /track` (valida `siteKey` y `Origin`, limita el ritmo, responde 204 ante errores internos) y `POST /forget` (borrado autoservicio de un visitante). Ver [docs/sections/portal-analytics](../../docs/sections/portal-analytics/README.md).
+
+### `portal_metrics.py` — `/career/portal-metrics`
+
+Métricas agregadas del portafolio (kpis, tendencia, desgloses, páginas, recorridos, retención, metas, embudo, diccionario, `rebuild`) con filtros y `sample_size` comunes.
+
+### `portal_analytics.py` — `/career/portal-*`
+
+Recursos de solo lectura (`portal-sites`, `-visitors`, `-visits`, `-events`, `-daily`) y CRUD de `portal-goals`, `portal-funnels`, `portal-annotations`.
+
 ### `public.py` — `/public`
 
 Read-only sin auth para el Portal: home, about, contact, projects, blog. Transforma Markdown de una línea por ítem a `List[str]` para que el SPA no conozca esa convención.
