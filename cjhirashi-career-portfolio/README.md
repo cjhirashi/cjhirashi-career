@@ -36,7 +36,7 @@ src/
 │   ├── useIdentity.ts
 │   ├── useProjects.ts
 │   ├── useBlog.ts
-│   └── useTracking.ts
+│   └── useTracking.ts            # pageview, page_leave, links, web vitals, project open
 ├── api/               # API client and endpoints
 │   ├── client.ts
 │   ├── identity.ts
@@ -159,14 +159,18 @@ The portal consumes a read-only API with the following endpoints:
 
 ## Event Tracking
 
-Tracks user interactions:
+Measures how the site is used (SPEC-0010). Logic lives in `src/utils/tracker.ts` (identity, privacy, attribution), `src/utils/engagement.ts` (active time, scroll depth) and `src/hooks/useTracking.ts`:
 
-- **Pageviews**: Each page navigation
-- **Clicks**: CTA buttons, project links, social links
-- **Downloads**: CV, documents
-- **Form Submissions**: Contact form
+- **Pageviews**: each navigation; the first page of a visit also sends the external referrer, UTM and click ids
+- **Time and scroll**: one `page_leave` per page with active time (tab visible and recent interaction) and max scroll depth
+- **Outbound links and downloads**: one delegated click listener; query string and hash are never sent
+- **Clicks, project opens, contact form submit**: explicit calls (the form event carries no name or email)
+- **Web Vitals**: LCP, INP, CLS, FCP and TTFB, sent when the tab is hidden
+- **Visitor id**: random id in `localStorage`; with Do Not Track or Global Privacy Control only a per-tab id is used
+- **Owner**: opening `/?owner=<token>` stores the token locally so the owner's own visits are excluded
+- **Privacy**: `/privacy` explains what is measured and lets the visitor erase their data (`POST /events/forget`)
 
-Disable tracking by setting `VITE_TRACKING_ENABLED=false` in `.env`
+Every event also carries `siteKey` (`VITE_PORTAL_SITE_KEY`, a build-time public key). Disable tracking with `VITE_TRACKING_ENABLED=false`.
 
 ## Design System
 
@@ -258,6 +262,9 @@ VITE_API_URL=http://localhost:8001/api/v1
 
 # Feature Flags
 VITE_TRACKING_ENABLED=true
+
+# Public key of the measured site (portal_sites.public_key); build-time, not secret
+VITE_PORTAL_SITE_KEY=
 ```
 
 ## Code Quality Standards

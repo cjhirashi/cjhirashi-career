@@ -4,7 +4,7 @@ import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { MetricChips } from '@/components/Common/MetricChips'
 import { Markdown } from '@/components/Common/Markdown'
-import { useTrackClick } from '@/hooks/useTracking'
+import { useTrackClick, useTrackProjectOpen } from '@/hooks/useTracking'
 
 const Section = ({ title, content }: { title: string; content: string }) => (
   <div className="mb-8">
@@ -17,6 +17,7 @@ export const ProjectDetailPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const { data: project, isLoading, error } = useProjectBySlug(slug ?? '')
   const { trackClick } = useTrackClick()
+  useTrackProjectOpen(project?.slug, project?.id)
 
   if (isLoading) return <LoadingSpinner />
   if (error || !project) return <ErrorMessage message="No se pudo cargar el proyecto" />

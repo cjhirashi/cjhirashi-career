@@ -44,6 +44,9 @@ VITE_API_URL=http://localhost:8001/api/v1
 
 # Enable/disable event tracking
 VITE_TRACKING_ENABLED=true
+
+# Public key of the measured site (build-time). Docker: build arg from PORTAL_SITE_KEY in the root .env
+VITE_PORTAL_SITE_KEY=
 ```
 
 ## API Integration

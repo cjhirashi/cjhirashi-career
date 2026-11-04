@@ -29,7 +29,6 @@ export const ContactPage = () => {
         type: 'form_submit',
         page: '/contact',
         target: 'contact-form',
-        metadata: { name: formData.name, email: formData.email },
       })
 
       setSubmitted(true)
