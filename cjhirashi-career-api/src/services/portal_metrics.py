@@ -341,7 +341,9 @@ async def retention(db: AsyncSession, q: MetricsQuery, weeks: int = 4) -> List[D
     )
     activity = (
         select(vi.visitor_id.label("visitor_id"), func.date_trunc("week", func.timezone(tz, vi.started_at)).label("wk"))
-        .where(vi.user_id == q.user_id, vi.site_id == q.site.id)
+        .where(vi.user_id == q.user_id, vi.site_id == q.site.id,
+               vi.started_at >= q.start - timedelta(days=7),
+               vi.started_at < q.end + timedelta(days=7 * (weeks + 2)))
         .distinct()
         .subquery()
     )
