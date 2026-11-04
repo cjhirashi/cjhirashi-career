@@ -463,7 +463,7 @@ def _backfill_legacy(conn, owner_id: str, site_id: str) -> None:
             pageviews, events_count, active_ms, is_engaged, is_bounce, converted)
         SELECT id, :owner, :site, visitor_id, started_at, last_activity_at, entry_page, exit_page,
                'Unknown', country, region, city, latitude, longitude, is_bot, CASE WHEN is_bot THEN 80 ELSE 0 END,
-               vno = 1, pageviews, events_count, active_ms::int,
+               vno = 0, pageviews, events_count, active_ms::int,
                (active_ms > 10000 OR pageviews >= 2 OR converted),
                NOT (active_ms > 10000 OR pageviews >= 2 OR converted), converted
         FROM tmp_legacy_visit
