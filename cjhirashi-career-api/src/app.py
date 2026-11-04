@@ -31,6 +31,7 @@ from routes import notifications
 from routes import error_reports
 from routes import events
 from routes import portal_metrics
+from routes import portal_analytics
 from services import storage_service, task_scheduler
 from services.error_reporting import areport_error
 
@@ -276,6 +277,7 @@ app.include_router(public.router)
 app.include_router(error_reports.router)
 app.include_router(events.router)
 app.include_router(portal_metrics.router)
+app.include_router(portal_analytics.router)
 
 
 # ============================================================================
