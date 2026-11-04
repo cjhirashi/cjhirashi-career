@@ -64,6 +64,8 @@ guía para recrearlos.
 - IDs: `RF-`/`RNF-`/`T-` por feature, `ADR-` por proyecto; estables, número reservado al crear el archivo.
 - Tests anotados con su `RF-`: pytest `@pytest.mark.requisito("RF-014")`, Vitest `describe("RF-014: …", …)`.
 - Errores de API: **RFC 9457** (Problem Details).
+- 🔴 **Docs en el mismo commit:** todo cambio de código actualiza los README/docs que deja obsoletos
+  (mapa de documentación) o declara `Docs actualizadas: ninguna — <motivo>`. El gate lo exige.
 
 ## Mapa de documentación (producto)
 

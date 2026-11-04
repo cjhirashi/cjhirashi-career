@@ -1,8 +1,8 @@
 ---
 titulo: Método del arnés — SDD Anchored (simplificado)
 tipo: metodo
-estado: vigente-v1.7
-version_arnes: 1.7
+estado: vigente-v1.7+docs
+version_arnes: 1.7+docs
 base: fusión de la línea "simplificado" realmente desplegada (v1.0, §0-§10, con anchor/covers/drift) + la línea v1.1-v1.6 evolucionada en paralelo sin sincronizar — ver §11 Procedencia
 ---
 
@@ -239,7 +239,7 @@ humano el estado y los hallazgos Medium/Low abiertos para que decida: cerrar con
 
 - `gate/check.sh` verde · `anchor_commit` (front-matter de `spec.md`) movido al commit
   de cierre · tabla de cobertura al día · docs del proyecto sincronizadas.
-- Entrada **Session-End** en `memory/history.md`, formato de 5 partes obligatorio
+- Entrada **Session-End** en `memory/history.md`, formato de 6 partes obligatorio
   *(refinado a partir de moai-adk, modu-ai, 1.2k★)*:
   ```markdown
   ## [YYYY-MM-DD] <feature> — <resultado>
@@ -249,10 +249,11 @@ humano el estado y los hallazgos Medium/Low abiertos para que decida: cerrar con
   - **Gaps:** `ABANDON: <RF-/T-NNN> <razón>` por cada requisito o tarea que quedó
     fuera — razón nunca vacía (patrón de `unlazy`); si no hay gaps, dice "ninguno"
     explícito, no se omite la línea
+  - **Docs actualizadas:** rutas tocadas | `ninguna — <motivo>` (obligatorio; lo lee el gate)
   - **Riesgo residual:** qué podría fallar y bajo qué condición
   - **Próximo paso:** acción concreta
   ```
-  Gate 4/5 no se marcan verificados si cualquiera de los 5 campos falta, o si un
+  Gate 4/5 no se marcan verificados si cualquiera de los 6 campos falta, o si un
   `ABANDON:` no trae razón.
 - **Disposición del worktree** *(de `finishing-a-development-branch`,
   `obra/superpowers`)*: decisión explícita entre merge/PR/keep/discard — nunca se
@@ -287,9 +288,12 @@ por qué), **no** pseudocódigo (cómo). Varios disparadores → parte en varios
 
 - **Solución de raíz, nunca parche** (Constitución Art. 10). Lo diferido va como
   `RF-`/`ADR-` explícito, no como código que se queda.
-- **Documentación del proyecto sincronizada** (Art. 11): se planifica en Fase 2, se
-  ejecuta como tareas `[doc]`, el gate falla si el *diff* toca superficie observable
-  (endpoints, CLI, env, puertos, esquema) sin tocar su documento del mapa.
+- 🔴 **Todo cambio queda documentado** (Art. 11, v1.7+docs): se planifica en Fase 2 (rutas exactas de
+  doc por fila de `§Impacto`), se ejecuta como tareas `[doc]` **en el mismo commit que el código**,
+  y el cierre de CADA tarea lo comprueba. El gate falla si cambia código de producto (sin
+  commitear o en commits de la rama) sin tocar un README/doc del mapa y sin declarar
+  `Docs actualizadas: ninguna — <motivo>`. El verificador revisa además que el contenido
+  describa el comportamiento nuevo. Avisar no basta: es bloqueante.
 - **Directiva de Pausa:** si en Fase 4 una asunción de `spec.md`/`plan.md` resulta
   **inviable**: (1) detén el código; (2) edita `spec.md`/`plan.md` con la restricción
   real **y la solución de raíz**; (3) revisión humana por *git diff*; (4) sólo tras
@@ -324,8 +328,8 @@ Compuerta **ejecutable local** (no CI). Se corre al cerrar cada tarea y antes de
 2. **Trazabilidad** — por cada `spec.md` en `implemented`/`verified`: la tabla de
    cobertura de su `tasks.md` completa (todo `RF-` con ≥1 tarea y ≥1 test) · sin tests
    sin `RF-` · `covers` ⊇ ∪(archivos citados en `plan.md`).
-3. **Anclaje + docs + raíz** — drift de `covers` · doc del mapa (Art. 11) no
-   actualizada cuando el *diff* toca superficie observable · `TODO`/`FIXME` sin ticket.
+3. **Anclaje + docs + raíz** — drift de `covers` · **código de producto cambiado sin doc del
+   mapa tocado ni exención declarada (❌ bloqueante, Art. 11)** · `TODO`/`FIXME` sin ticket.
 4. **Presupuesto** — `memory/state.md` ≤ 200 líneas; aviso si `method.md`/`history.md` se inflan.
 
 **Bloques por perfil de arquitectura** (sólo los sustratos del Art. 2):
@@ -370,7 +374,7 @@ Worktree aislado con baseline limpio verificado antes de la primera tarea ·
 `gate/check.sh` verde (todos los bloques) · tabla de cobertura sin filas sin `Pass` ·
 todo `RF-` con test **anotado** · cero hallazgos Critical del verificador sin resolver
 · commits/PR citan los `RF-` · **solución de raíz** (sin *workarounds*, sin
-`TODO`/`FIXME` sin ticket) · **docs sincronizadas** (tareas `[doc]` aplicadas) ·
+`TODO`/`FIXME` sin ticket) · **docs sincronizadas** (tareas `[doc]` aplicadas, contenido verificado contra el diff) ·
 **si la feature toca UI y hay mockup/sistema de diseño de referencia, capturas reales
 contrastadas contra esa referencia** (no solo accesibilidad — también layout,
 iconografía, densidad, tema) · Directiva de Pausa (si se usó) con re-aprobación del
@@ -392,17 +396,64 @@ proyecto de un operador, el humano es Value Captain **y** Tech Lead.
 
 | Rol | Hace | No hace | Modelo |
 |---|---|---|---|
-| **Coordinador** | Clasifica (rúbrica), sostiene la puerta humana, consolida `tasks.md`, escribe el Session-End | Código; marcar `verified` | default del proyecto |
-| **Autor de spec** | Conduce la elicitación de Fase 1, redacta `spec.md` | Diseño técnico; código | **Opus** |
-| **Arquitecto** | `plan.md` conforme al patrón; fija `covers` | Código de implementación | **Opus** |
-| **Implementador** | Código + tests, **una tarea a la vez**, TDD. No se autoaprueba | Ampliar el alcance; marcar `done` | default del proyecto |
-| **Verificador** (adversarial) | Corre el gate y los tests, traza `RF- ↔ test`, busca cómo tumbar la tarea | Editar el código del implementador | default del proyecto |
+| **Coordinador** (`orquestador`) | Clasifica (rúbrica), sostiene la puerta humana, consolida `tasks.md`, escribe el Session-End | Código; marcar `verified` | `claude-sonnet-5-5` |
+| **Autor de spec** | Conduce la elicitación de Fase 1, redacta `spec.md` | Diseño técnico; código | `claude-opus-5` |
+| **Arquitecto** | `plan.md` conforme al patrón; fija `covers` | Código de implementación | `claude-opus-5` |
+| **Implementador** | Código + tests, **una tarea a la vez**, TDD. No se autoaprueba | Ampliar el alcance; marcar `done` | `claude-haiku-5-5` |
+| **Verificador** (adversarial, `revisor`) | Corre el gate y los tests, traza `RF- ↔ test`, busca cómo tumbar la tarea | Editar el código del implementador | `claude-sonnet-5-5` |
+| **Explorador** | Búsqueda read-only acotada: dónde vive X, qué convención hay, cómo se hace Y hoy | Auditar; editar cualquier archivo | `claude-haiku-5-5` |
+| **Experto UX/UI** (dominio, `ADR-003`) | Flujos y estados en Fase 1–2; revisa la UI contra estándar profesional en Fase 4 | Código de producción del frontend | `claude-sonnet-5-5` |
 
-**Por qué Opus solo en estos dos** *(Carlos, 2026-10-16):* Specify y Plan son las
-fases de mayor juicio y más caras de deshacer si salen mal (§3: "iterar en Fase 1–2 es
-barato; refactorizar código es caro"). Implementador/Verificador/Coordinador se
-quedan en el modelo default del proyecto: son más mecánicos o ya tienen su propio
-control (TDD, adversarial) y no justifican el costo extra.
+**Ids explícitos, nunca alias.** Los alias cortos resuelven a versiones viejas
+(`sonnet` → `claude-sonnet-5`, `haiku` → `claude-haiku-4-5-20251001`, `opus` →
+`claude-opus-4-8`; telemetría 2026-10-30 CDMX). Todo `model:` de `.claude/agents/`
+lleva el id completo; un `model: sonnet` cuenta como defecto de configuración.
+`claude-opus-5-5` todavía no se usa: devuelve HTTP 400 con el binario `claude`
+2.1.197 que gana el PATH del Gateway (exige ≥ 2.1.280); al actualizarlo, sustituir
+`claude-opus-5` por `claude-opus-5-5` aquí y en `.claude/agents/`.
+
+**Por qué este reparto** *(Carlos, 2026-10-30)*: Specify y Plan son las fases de mayor
+juicio y más caras de deshacer si salen mal (§3: "iterar en Fase 1–2 es barato;
+refactorizar código es caro"), y ahí va el razonamiento. El plan ya trae el
+razonamiento hecho, así que implementar y ejecutar tests no lo necesita:
+`implementador` y los especialistas de dominio que ejecutan tasks corren en
+`claude-haiku-5-5`. `revisor` y `orquestador` deciden, y quedan en
+`claude-sonnet-5-5`; `explorador` es lectura y va en Haiku.
+
+### Ciclo de escalamiento
+
+Quienes diseñan, especifican y planifican (`autor-de-spec`, `arquitecto`,
+`experto-ux-ui`, `orquestador`) usan modelo de razonamiento. Quienes implementan
+código y quienes ejecutan los tests usan `claude-haiku-5-5`, porque el plan ya trae
+el razonamiento hecho.
+
+Si Haiku no resuelve una falla (reporta `blocked`, o el test no pasa), el trabajo
+**vuelve a los diseñadores**: `arquitecto` (o `autor-de-spec` si el defecto está en
+el requisito) analiza la falla con su modelo de razonamiento y corrige
+`spec.md`/`plan.md`/`tasks.md`. Con el diseño resuelto, la tarea regresa a Haiku.
+`implementador` y los roles que ejecutan tests **nunca suben de modelo por su
+cuenta**.
+
+**Subagentes ad-hoc — regla dura.** Toda llamada `Task`/Agent que **no** invoque
+un rol con nombre de `.claude/agents/` **debe** declarar `model` explícito. Sin esa
+clave el subagente hereda el modelo de la sesión padre, y el modelo heredado casi
+nunca es el que la tarea pide. Ésta es la vía de fuga real: los roles con nombre sí
+declaran su modelo, las llamadas ad-hoc no.
+
+| Forma de la tarea ad-hoc | `model` obligatorio |
+|---|---|
+| Investigación read-only, búsqueda, mapeo de código, inventario de estado | `claude-haiku-5-5` |
+| Correr comandos dados y reportar su salida (diagnóstico, gate, tests, build) | `claude-haiku-5-5` |
+| Implementación, edición acotada, refactor mecánico, redacción sobre un plan ya escrito | `claude-haiku-5-5` |
+| Revisión adversarial, causa raíz con hipótesis abiertas | `claude-sonnet-5-5` |
+| Diseño de arquitectura, elección de patrón, trade-offs estructurales | `claude-opus-5` |
+
+Si la tarea cabe en un rol con nombre, **usa el rol**: `explorador` cubre entera la
+primera fila. Medido en este proyecto (ventana 2026-10-23 → 2026-10-30): 625 turnos
+de investigación read-only (`find`, `ls`, `graphify query`) corrieron en Opus por
+herencia del padre — $102.21 de valoración a precio de lista de la API, la partida
+mal asignada más grande de la semana. Es valoración comparativa entre tareas, no
+gasto facturado: la suscripción es de tarifa plana.
 
 Patrón **CIV** (Coordinator–Implementor–Verifier) como guía **opcional** si se usan
 subagentes: el verificador tiene objetivos opuestos al implementador y bloquea el
@@ -424,7 +475,7 @@ escribió el código que audita.
 - **`RF-` / `RNF-`** — requisito funcional (criterio EARS) / no funcional. Estables.
 - **Modo alineación** — reconstruir una `spec.md` BASELINE del código que ya existe.
 - **Modo re-anchor** — parchear una spec cuyo código drifteó, sin reconstruirla.
-- **Session-End** — la entrada de cierre en `memory/history.md` (formato de 5 partes, §3).
+- **Session-End** — la entrada de cierre en `memory/history.md` (formato de 6 partes, §3).
 - **Génesis** — el paso único donde se define/detecta la arquitectura del proyecto (§1).
 - **`CHECK:`/`EXPECT:`** — por tarea: el comando exacto que decide si está hecha y el
   resultado esperado (§3 Fase 3).
@@ -462,7 +513,7 @@ reglas duras de `CLAUDE.md` siguen en contexto.
 
 ### Formato fijo de la entrada Session-End
 
-Ver §3 Cierre — el formato de 5 partes vive ahí, no se repite aquí.
+Ver §3 Cierre — el formato de 6 partes vive ahí, no se repite aquí.
 
 ---
 
@@ -489,3 +540,8 @@ cuerpo de este documento donde quedó insertada (`unlazy`, spec-kit, moai-adk,
 **Estado:** v1.7 vigente — fusión autorizada por Carlos (2026-10-20), aplicada
 directamente a `harness/reference/.harness/method.md` y propagada a los proyectos con
 `.harness/` existente según valga la pena el cambio en cada uno.
+
+**v1.7+docs (2026-11-04, Carlos):** regla 🔴 «todo cambio queda documentado». Causa: Art. 11 existía
+pero el gate solo avisaba, solo veía el `git diff` sin commitear y solo rutas de superficie, y la
+regla no estaba en `CLAUDE.md`/`AGENTS.md`. Ahora el gate bloquea, mira commits de la rama y el
+implementador/verificador la llevan en su procedimiento.
