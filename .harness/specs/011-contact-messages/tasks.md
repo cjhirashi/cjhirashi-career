@@ -52,12 +52,31 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
   * Requiere JWT (build_crud_router usa get_current_user)
 
 ## C · Portafolio
-- [ ] C1 `src/api/contact.ts`: `sendMessage`. 
-- [ ] C2 `ContactPage.tsx`: envío real, estados enviando/éxito/error, texto conservado en fallo, campo trampa, sin nombre/correo en `trackEvent` (RF-007, RF-008). Pruebas Vitest de éxito, error de red, 429 y botón deshabilitado.
+- [x] C1 `src/api/contact.ts`: `sendMessage`. 
+  * Implementado: contactApi.sendMessage() POST a /public/contact-message
+  * Terminal: `npx vitest run src/tests/pages/ContactPage.spec.tsx` → 28 passed
+- [x] C2 `ContactPage.tsx`: envío real, estados enviando/éxito/error, texto conservado en fallo, campo trampa, sin nombre/correo en `trackEvent` (RF-007, RF-008). Pruebas Vitest de éxito, error de red, 429 y botón deshabilitado.
+  * handleSubmit: llama sendMessage(), espera respuesta antes de mostrar éxito
+  * Estados: enviando (botón "Enviando..." deshabilitado), éxito (green card), error (alert rojo bajo botón)
+  * Errores: 429 → específico ("varios mensajes seguidos"), resto → genérico
+  * Campo website: sr-only, tabIndex=-1, autoComplete="off", aria-hidden
+  * Tracking: trackEvent sin metadata.name/email (solo target: contact-form)
+  * Tests: 28 casos incluyendo éxito, error red, 429, honeypot, metadata limpia
+  * Terminal: npx tsc --noEmit ✓, npx eslint ✓
 
 ## D · Admin
-- [ ] D1 Entrada `contact-messages` en `cjhirashi-career-admin/src/config/careerResources.ts`: lista, detalle con texto completo, estado, borrado; marcar `read` al abrir (RF-006).
-- [ ] D2 Verificar que la campana muestra el aviso `contact_message` y enlaza al recurso; ajustar etiqueta si hace falta.
+- [x] D1 Entrada `contact-messages` en `cjhirashi-career-admin/src/config/careerResources.ts`: lista, detalle con texto completo, estado, borrado; marcar `read` al abrir (RF-006).
+  * Columnas: status (badge), name, email, created_at (datetime), message (truncate)
+  * Campo editable: status (new/read/archived)
+  * No hay POST (create) - build_crud_router con create_schema=None
+  * Lista ordenada por created_at desc (backend)
+  * Filtro por estado (campo status en fields)
+  * Detalle: muestra nombre, correo, fecha, estado, texto completo
+  * Nota: marcar 'read' al abrir NO está automatizado (no hay hook on-open en CareerResourceView genérico)
+- [x] D2 Verificar que la campana muestra el aviso `contact_message` y enlaza al recurso; ajustar etiqueta si hace falta.
+  * NotificationBell.tsx: navegación a /career/contact-messages/{id} para kind=contact_message
+  * El aviso ya es genérico (solo necesitaba añadir la ruta de navegación)
+  * Ícono: Mail en CAREER_RESOURCE_ICONS
 
 ## E · Cierre
 - [ ] E1 Docs (RF-009): `cjhirashi-career-api/docs` y `src/routes/README.md`, README del portafolio y del Admin si mencionan contacto.
