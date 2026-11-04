@@ -64,7 +64,7 @@ export const GoalsFunnel: React.FC<{ query: PortalQuery }> = ({ query }) => {
 
       <SectionCard title="Embudo" subtitle="Cuántas visitas avanzan paso a paso, en orden" icon={Target}>
         {items.length === 0 ? (
-          <EmptyState message="No hay embudos definidos. Créalos en Embudos del portal." />
+          <EmptyState message="Aún no hay embudos definidos. Se crean por la API (recurso portal-funnels), por ejemplo desde un agente." />
         ) : (
           <>
             <select className="input-field w-auto mb-4" aria-label="Embudo" value={funnelId ?? ''} onChange={(e) => setFunnelId(e.target.value)}>
