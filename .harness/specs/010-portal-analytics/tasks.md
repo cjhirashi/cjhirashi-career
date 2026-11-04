@@ -16,10 +16,10 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 ## Slice 1 · API
 
 ### A · Modelos y migración
-- [ ] A1 Registrar prefijos en `services/id_generator.py` (plan §1). Prueba: cada tabla nueva genera ids con su prefijo.
-- [ ] A2 Modelos `models/portal_site.py`, `portal_visitor.py`, `portal_visit.py`, `portal_goal.py`, `portal_funnel.py`, `portal_annotation.py`, `portal_channel_rule.py`, `portal_daily.py`; ampliar `models/portal_event.py` con las columnas del plan; exportar en `models/__init__.py`.
-- [ ] A3 Migración Alembic sobre `a7c1e9d2f4b8` con tablas, columnas, índices, semillas (sitio, reglas de canal, metas) y `downgrade`. Prueba en Postgres efímero: `upgrade` y `downgrade` limpios (RF-040).
-- [ ] A4 Reconstrucción de visitantes y visitas desde los eventos existentes dentro de la migración. Prueba con eventos de ejemplo: conteos de eventos intactos, una visita por `session_id`, eventos sin `session_id` agrupados por hueco de 30 min (RF-040).
+- [x] A1 Registrar prefijos en `services/id_generator.py` (plan §1). Prueba: cada tabla nueva genera ids con su prefijo.
+- [x] A2 Modelos `models/portal_site.py`, `portal_visitor.py`, `portal_visit.py`, `portal_goal.py`, `portal_funnel.py`, `portal_annotation.py`, `portal_channel_rule.py`, `portal_daily.py`; ampliar `models/portal_event.py` con las columnas del plan; exportar en `models/__init__.py`.
+- [x] A3 Migración Alembic sobre `a7c1e9d2f4b8` con tablas, columnas, índices, semillas (sitio, reglas de canal, metas) y `downgrade`. Prueba en Postgres efímero: `upgrade` y `downgrade` limpios (RF-040).
+- [x] A4 Reconstrucción de visitantes y visitas desde los eventos existentes dentro de la migración. Prueba con eventos de ejemplo: conteos de eventos intactos, una visita por `session_id`, eventos sin `session_id` agrupados por hueco de 30 min (RF-040).
 
 ### B · Servicios de dominio (puros, sin base de datos donde sea posible)
 - [ ] B1 `services/portal_channels.py`: derivar canal desde referrer/UTM con reglas (RF-009). Pruebas por canal y precedencia.
@@ -62,3 +62,7 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 - [ ] I1 Hooks y tipos de los endpoints nuevos.
 - [ ] I2 Página de métricas según RF-060 a 063, con verificación visual contra capturas reales a 1280 y 390 px.
 - [ ] J1 Despliegue del admin y verificación. **[REQUIERE OK]**
+
+## Evidencia (AIRA, 2026-11-04)
+- Bloque A: pytest `test_portal_analytics_models.py`, `test_portal_analytics_migration.py`, `test_portal_events.py` en verde (29). La prueba de migración es estructural; la ejecución real se verificó sobre una copia restaurada de producción (pg_dump a Postgres desechable): `upgrade` siembra sitio, 11 reglas y 5 metas, reconstruye 60 visitantes y 65 visitas desde los 110 eventos (110 con `visit_id`, 73 vistas de página, `created_at` y suma de `duration_ms` intactos), `downgrade` devuelve `portal_events` a sus 16 columnas y 110 filas, y un segundo `upgrade` repite el resultado.
+- Correcciones de AIRA a la entrega de Haiku: dueño del sitio tomado de `PUBLIC_PORTAL_USER_ID` (Haiku usaba el primer usuario), JSONB con `CAST` (Haiku usaba `sa.json.dumps`, inexistente), sin `conn.commit()` dentro de Alembic, reglas de canal completas (faltaban referrers sociales y de búsqueda), reconstrucción A4 (no entregada).

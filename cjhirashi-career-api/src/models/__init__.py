@@ -49,6 +49,14 @@ from models.portal_home import PortalHome
 from models.portal_about import PortalAbout
 from models.portal_contact import PortalContact
 from models.portal_event import PortalEvent
+from models.portal_site import PortalSite
+from models.portal_visitor import PortalVisitor
+from models.portal_visit import PortalVisit
+from models.portal_goal import PortalGoal
+from models.portal_funnel import PortalFunnel
+from models.portal_annotation import PortalAnnotation
+from models.portal_channel_rule import PortalChannelRule
+from models.portal_daily import PortalDaily
 
 # Dominio 4: Soporte
 from models.tag import Tag
@@ -128,6 +136,15 @@ __all__ = [
     "PortalHome",
     "PortalAbout",
     "PortalContact",
+    "PortalEvent",
+    "PortalSite",
+    "PortalVisitor",
+    "PortalVisit",
+    "PortalGoal",
+    "PortalFunnel",
+    "PortalAnnotation",
+    "PortalChannelRule",
+    "PortalDaily",
     # Support domain
     "Tag",
     # Operational methodologies domain

@@ -25,7 +25,7 @@ class PortalEvent(Base):
     id = Column(String(20), primary_key=True, index=True)
     user_id = Column(String(20), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    # --- Campos de negocio ---
+    # --- Campos heredados de negocio (v1) ---
     event_type = Column(String(30), nullable=False, index=True)
     page = Column(String(500), nullable=False, index=True)
     target = Column(String(255), nullable=True)
@@ -45,6 +45,17 @@ class PortalEvent(Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     user_agent = Column(String(500), nullable=True)
+
+    # --- Campos nuevos (v2) para analítica multi-sitio ---
+    site_id = Column(String(20), ForeignKey("portal_sites.id", ondelete="CASCADE"), nullable=True, index=True)
+    visitor_id = Column(String(20), ForeignKey("portal_visitors.id", ondelete="CASCADE"), nullable=True, index=True)
+    visit_id = Column(String(20), ForeignKey("portal_visits.id", ondelete="CASCADE"), nullable=True, index=True)
+    seq = Column(Integer, nullable=True)  # Orden dentro de la visita
+    page_title = Column(String(500), nullable=True)
+    props = Column(JSONB, nullable=True)  # Reutiliza event_metadata para compatibilidad
+    scroll_pct = Column(Integer, nullable=True)
+    active_ms = Column(Integer, nullable=True)
+    target_url = Column(String(1024), nullable=True)
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
