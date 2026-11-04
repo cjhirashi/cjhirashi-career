@@ -7,7 +7,7 @@ the request IP at ingestion time (see routes/events.py); the raw IP itself
 is never persisted.
 Career domain (v2) - Presencia Digital.
 """
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Index, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
@@ -59,6 +59,12 @@ class PortalEvent(Base):
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+
+    __table_args__ = (
+        Index("ix_portal_events_site_created_at", "site_id", "created_at"),
+        Index("ix_portal_events_visit_seq", "visit_id", "seq"),
+        Index("ix_portal_events_visitor_created_at", "visitor_id", "created_at"),
+    )
 
     def __repr__(self):
         return f"<PortalEvent(id={self.id}, event_type='{self.event_type}', page='{self.page}')>"

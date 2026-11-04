@@ -119,7 +119,7 @@ Referencias estudiadas (2026-11-04): esquemas de Umami y Plausible, modelo de Ma
 
 ## 6 · Requisitos no funcionales
 - **RNF-001** La ingesta responde en menos de 150 ms p95 sin llamadas externas en la ruta crítica cuando la geografía llega por cabeceras.
-- **RNF-002** Las consultas del tablero responden en menos de 500 ms con 1 millón de eventos (verificado con datos sintéticos).
+- **RNF-002** Con 1 millón de eventos (300 mil visitas), toda consulta del tablero responde en menos de 500 ms para una ventana de hasta 30 días (verificado con datos sintéticos). Las ventanas de 90 y 365 días no tienen meta: se miden y se documentan, y el resumen diario `portal_daily` queda como vía de crecimiento. Decisión de Carlos, 2026-11-04 (la meta original abarcaba ventanas de 365 días).
 - **RNF-003** Las pruebas no usan red ni servicios externos.
 - **RNF-004** Documentación del API, de la base de datos y de cada ruta nueva en el mismo commit.
 

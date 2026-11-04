@@ -2,7 +2,7 @@
 PortalVisit Model - One visit session of an anonymous visitor.
 Tracks entry/exit pages, referrer, UTM, device, geography, engagement and conversion.
 """
-from sqlalchemy import Column, DateTime, ForeignKey, String, Boolean, Integer, Float
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String, Boolean, Integer, Float
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
@@ -82,7 +82,15 @@ class PortalVisit(Base):
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False, index=True)
+
+    __table_args__ = (
+        Index("ix_portal_visits_site_started", "site_id", "started_at"),
+        Index("ix_portal_visits_visitor_activity", "visitor_id", last_activity_at.desc()),
+        Index("ix_portal_visits_site_channel_started", "site_id", "channel", "started_at"),
+        Index("ix_portal_visits_site_country_started", "site_id", "country", "started_at"),
+        Index("ix_portal_visits_application", "application_id"),
+    )
 
     def __repr__(self):
         return f"<PortalVisit(id={self.id}, visitor_id={self.visitor_id})>"
