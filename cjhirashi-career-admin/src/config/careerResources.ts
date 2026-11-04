@@ -1675,6 +1675,28 @@ export const contactInteractionsConfig: ResourceConfig = {
   ],
 }
 
+export const contactMessagesConfig: ResourceConfig = {
+  key: 'contact-messages',
+  label: 'Mensajes de contacto',
+  labelSingular: 'Mensaje',
+  genderFeminine: false,
+  description: 'Mensajes recibidos a través del formulario de contacto del portafolio. Solo cambio de estado y borrado permitidos (sin editar nombre, correo ni mensaje).',
+  columns: [
+    { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
+    { key: 'name', label: 'Nombre' },
+    { key: 'email', label: 'Email' },
+    { key: 'created_at', label: 'Fecha', format: 'datetime' },
+    { key: 'message', label: 'Mensaje', format: 'truncate' },
+  ],
+  fields: [
+    { name: 'status', label: 'Estado', type: 'select', required: true, options: [
+      { value: 'new', label: 'Nuevo' },
+      { value: 'read', label: 'Leído' },
+      { value: 'archived', label: 'Archivado' },
+    ]},
+  ],
+}
+
 export const networkingActivitiesConfig: ResourceConfig = {
   key: 'networking-activities',
   label: 'Actividades de Networking',
@@ -2127,6 +2149,7 @@ export const CAREER_RESOURCE_ICONS: Record<string, LucideIcon> = {
   'application-interactions': MessagesSquare,
   interviews: Calendar,
   'contact-interactions': MessageSquare,
+  'contact-messages': Mail,
   'networking-activities': Activity,
   'linkedin-profile': Linkedin,
   'github-profile': Github,
@@ -2175,6 +2198,7 @@ export const CAREER_RESOURCES: Record<string, ResourceConfig> = {
   'application-interactions': applicationInteractionsConfig,
   interviews: interviewsConfig,
   'contact-interactions': contactInteractionsConfig,
+  'contact-messages': contactMessagesConfig,
   'networking-activities': networkingActivitiesConfig,
   'linkedin-profile': linkedinProfileConfig,
   'github-profile': githubProfileConfig,

@@ -60,6 +60,8 @@ export const NotificationBell: React.FC = () => {
                     setOpen(false)
                     if (item.resource_key === 'agent-tasks' && item.resource_id) {
                       navigate(`/tasks?task=${encodeURIComponent(item.resource_id)}`)
+                    } else if (item.resource_key === 'contact-messages' && item.resource_id) {
+                      navigate(`/career/contact-messages/${encodeURIComponent(item.resource_id)}`)
                     }
                   }}
                 >
