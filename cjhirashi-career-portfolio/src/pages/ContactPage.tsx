@@ -2,43 +2,82 @@ import { useState } from 'react'
 import { useContact } from '@/hooks/useContact'
 import { useTrackClick } from '@/hooks/useTracking'
 import { trackingApi } from '@/api/tracking'
+import { contactApi } from '@/api/contact'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
+import axios from 'axios'
+
+interface FormError {
+  message: string
+  code?: string
+}
 
 export const ContactPage = () => {
   const { data: contact, isLoading, error } = useContact()
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', website: '' })
   const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [formError, setFormError] = useState<FormError | null>(null)
   const { trackClick } = useTrackClick()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    setFormError(null) // clear error on user input
+  }
+
+  const getErrorMessage = (error: unknown): FormError => {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status
+      if (status === 429) {
+        return {
+          message: 'Has enviado varios mensajes seguidos. Inténtalo de nuevo en un rato.',
+          code: '429',
+        }
+      }
+      if (status && status >= 400) {
+        return {
+          message: 'No se pudo enviar el mensaje. Inténtalo de nuevo o escríbeme por email.',
+          code: `HTTP${status}`,
+        }
+      }
+    }
+    return {
+      message: 'No se pudo enviar el mensaje. Inténtalo de nuevo o escríbeme por email.',
+      code: 'NetworkError',
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSending(true)
+    setFormError(null)
 
     try {
-      // No backend endpoint receives this yet (no SMTP/delivery pipeline) -
-      // only the click gets tracked. Wire a real /public/contact-message
-      // endpoint here when that's actually needed.
+      // Send message to backend
+      await contactApi.sendMessage({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        website: formData.website,
+      })
+
+      // Only track and show success after confirmed send
       trackingApi.trackEvent({
         type: 'form_submit',
         page: '/contact',
         target: 'contact-form',
-        metadata: { name: formData.name, email: formData.email },
       })
 
       setSubmitted(true)
-      setFormData({ name: '', email: '', message: '' })
+      setFormData({ name: '', email: '', message: '', website: '' })
       setTimeout(() => setSubmitted(false), 5000)
     } catch (err) {
+      const errorInfo = getErrorMessage(err)
+      setFormError(errorInfo)
       console.error('Failed to send message:', err)
     } finally {
-      setLoading(false)
+      setSending(false)
     }
   }
 
@@ -184,13 +223,37 @@ export const ContactPage = () => {
                   />
                 </div>
 
+                {/* Honeypot trap field: hidden from view, not in tab order */}
+                <div className="sr-only">
+                  <label htmlFor="website">Website</label>
+                  <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleChange}
+                    autoComplete="off"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                {formError && (
+                  <div
+                    role="alert"
+                    className="bg-red-50 dark:bg-red-950/40 backdrop-blur-lg border border-red-200 dark:border-red-900 rounded-md p-4 text-red-700 dark:text-red-300"
+                  >
+                    {formError.message}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={sending}
                   onClick={() => trackClick('contact-submit')}
                   className="btn w-full font-semibold py-3"
                 >
-                  {loading ? 'Enviando...' : 'Enviar mensaje'}
+                  {sending ? 'Enviando...' : 'Enviar mensaje'}
                 </button>
               </form>
             )}

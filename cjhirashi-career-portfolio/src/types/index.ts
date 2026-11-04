@@ -135,7 +135,7 @@ export interface ContactContent {
   github_url: string | null
 }
 
-// Contact form (client-side only - no backend endpoint to receive it yet)
+// Contact form message payload sent to the backend
 export interface ContactMessage {
   id?: string
   name: string

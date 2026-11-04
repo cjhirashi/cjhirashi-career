@@ -38,9 +38,6 @@ from models.portal_contact import PortalContact
 from schemas.contact_message import ContactMessageIn, ContactMessageCreated
 from services.contact_message_service import ContactMessageService
 from services.portal_ratelimit import SlidingWindowLimiter
-
-logger = logging.getLogger(__name__)
-
 from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
@@ -51,6 +48,8 @@ from schemas.public import (
 # ============================================================================
 # Router principal y constantes
 # ============================================================================
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/public", tags=["Public Portal"])
 
 USER_ID = settings.PUBLIC_PORTAL_USER_ID

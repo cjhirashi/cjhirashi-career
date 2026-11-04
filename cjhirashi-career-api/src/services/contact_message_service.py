@@ -9,11 +9,9 @@ Lógica de negocio para mensajes de contacto del portafolio.
 import logging
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import insert
 
 from models.contact_message import ContactMessage
 from models.user_notification import UserNotification
-from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +64,7 @@ class ContactMessageService:
 
         try:
             await db.commit()
-        except Exception as e:
+        except Exception:
             await db.rollback()
             logger.exception("Failed to save contact message")
             raise

@@ -61,7 +61,7 @@ def build_crud_router(
     prefix: str,
     tags: List[str],
     model: Type[Base],
-    create_schema: Type[BaseModel],
+    create_schema: Optional[Type[BaseModel]],
     update_schema: Type[BaseModel],
     response_schema: Type[BaseModel],
     entity_name: str,
@@ -69,6 +69,9 @@ def build_crud_router(
     after_write: Optional[Callable[[Any], None]] = None,
 ) -> APIRouter:
     """Create an APIRouter with standard CRUD endpoints for `model`.
+
+    `create_schema=None` omits `POST` (resources the portal writes itself,
+    e.g. `contact-messages`; the Admin and agents only read/update/delete).
 
     `vectorize=False` opts this resource out of the Qdrant knowledge-base
     indexing that otherwise happens automatically on every write (see
@@ -179,30 +182,31 @@ def build_crud_router(
             )
         return obj
 
-    @router.post(
-        "",
-        response_model=response_schema,
-        status_code=status.HTTP_201_CREATED,
-        summary=f"Create a {entity_name}",
-    )
-    async def create_item(
-        payload: create_schema,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
-    ):
-        try:
-            obj = await repository.create_for_user(db, current_user.id, payload.model_dump())
-        except ValueError as exc:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-        except IntegrityError as exc:
-            await db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=f"{entity_name} already exists (duplicate unique value)",
-            ) from exc
-        if after_write:
-            after_write(obj)
-        return obj
+    if create_schema is not None:
+        @router.post(
+            "",
+            response_model=response_schema,
+            status_code=status.HTTP_201_CREATED,
+            summary=f"Create a {entity_name}",
+        )
+        async def create_item(
+            payload: create_schema,
+            current_user: User = Depends(get_current_user),
+            db: AsyncSession = Depends(get_db),
+        ):
+            try:
+                obj = await repository.create_for_user(db, current_user.id, payload.model_dump())
+            except ValueError as exc:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+            except IntegrityError as exc:
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"{entity_name} already exists (duplicate unique value)",
+                ) from exc
+            if after_write:
+                after_write(obj)
+            return obj
 
     @router.put(
         "/{item_id}", response_model=response_schema, summary=f"Update a {entity_name}"

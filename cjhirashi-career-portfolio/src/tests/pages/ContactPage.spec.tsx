@@ -34,6 +34,8 @@ describe('ContactPage', () => {
     vi.clearAllMocks()
   })
 
+  // === Existing tests (kept as-is for compatibility) ===
+
   it('renders the page heading', async () => {
     await renderReady()
 
@@ -187,6 +189,208 @@ describe('ContactPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/No se pudo cargar la información de contacto/i)).toBeInTheDocument()
+    })
+  })
+
+  // === New tests for sendMessage integration (RFC-007, RFC-008) ===
+
+  it('calls sendMessage with form data on successful submit', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockResolvedValue({ id: 'cmg_123' })
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(vi.mocked(contactApi.sendMessage)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: mockContactMessage.name,
+          email: mockContactMessage.email,
+          message: mockContactMessage.message,
+          website: '',
+        })
+      )
+    })
+  })
+
+  it('shows success message only after sendMessage resolves', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockResolvedValue({ id: 'cmg_123' })
+    await renderReady()
+
+    expect(screen.queryByText(/¡Mensaje enviado!/i)).not.toBeInTheDocument()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(screen.getByText(/¡Mensaje enviado!/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows network error alert when sendMessage fails', async () => {
+    const user = userEvent.setup()
+    const networkError = new Error('Network error')
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(networkError)
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/No se pudo enviar el mensaje\. Inténtalo de nuevo o escríbeme por email\./)
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('preserves form data on error', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(new Error('Failed'))
+    await renderReady()
+
+    const nameInput = screen.getByLabelText(/Nombre/i) as HTMLInputElement
+    const emailInput = screen.getByLabelText(/Email/i) as HTMLInputElement
+    const messageInput = screen.getByLabelText(/Mensaje/i) as HTMLTextAreaElement
+
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(nameInput.value).toBe(mockContactMessage.name)
+      expect(emailInput.value).toBe(mockContactMessage.email)
+      expect(messageInput.value).toBe(mockContactMessage.message)
+    })
+  })
+
+  it('shows specific error for 429 (rate limit)', async () => {
+    const user = userEvent.setup()
+    const rateLimitError = {
+      isAxiosError: true,
+      response: { status: 429 },
+    }
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(rateLimitError)
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Has enviado varios mensajes seguidos\. Inténtalo de nuevo en un rato\./)
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('disables submit button while sending', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockImplementation(
+      () => new Promise(resolve => setTimeout(() => resolve({ id: 'cmg_123' }), 500))
+    )
+    await renderReady()
+
+    const nameInput = screen.getByLabelText(/Nombre/i)
+    const emailInput = screen.getByLabelText(/Email/i)
+    const messageInput = screen.getByLabelText(/Mensaje/i)
+    const submitButton = screen.getByRole('button', { name: /Enviar mensaje/i })
+
+    await user.type(nameInput, mockContactMessage.name)
+    await user.type(emailInput, mockContactMessage.email)
+    await user.type(messageInput, mockContactMessage.message)
+    await user.click(submitButton)
+
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveTextContent('Enviando...')
+  })
+
+  it('includes empty website field in sendMessage payload (honeypot)', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockResolvedValue({ id: 'cmg_123' })
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(vi.mocked(contactApi.sendMessage)).toHaveBeenCalledWith(
+        expect.objectContaining({ website: '' })
+      )
+    })
+  })
+
+  it('does not include name/email in trackEvent metadata on success', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockResolvedValue({ id: 'cmg_123' })
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(screen.getByText(/¡Mensaje enviado!/i)).toBeInTheDocument()
+    })
+
+    expect(trackingApi.trackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'form_submit',
+        target: 'contact-form',
+      })
+    )
+
+    const calls = vi.mocked(trackingApi.trackEvent).mock.calls
+    const formSubmitCall = calls.find(c => c[0].type === 'form_submit')
+    expect(formSubmitCall?.[0]).not.toHaveProperty('metadata.name')
+    expect(formSubmitCall?.[0]).not.toHaveProperty('metadata.email')
+  })
+
+  it('does not show success if sendMessage does not resolve', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(new Error('Failed'))
+    await renderReady()
+
+    const nameInput = screen.getByLabelText(/Nombre/i)
+    const emailInput = screen.getByLabelText(/Email/i)
+    const messageInput = screen.getByLabelText(/Mensaje/i)
+
+    await user.type(nameInput, mockContactMessage.name)
+    await user.type(emailInput, mockContactMessage.email)
+    await user.type(messageInput, mockContactMessage.message)
+    await user.click(screen.getByRole('button', { name: /Enviar mensaje/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText(/¡Mensaje enviado!/i)).not.toBeInTheDocument()
+    })
+  })
+
+  it('clears error alert on user input', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(new Error('Failed'))
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/No se pudo enviar el mensaje\. Inténtalo de nuevo o escríbeme por email\./)
+      ).toBeInTheDocument()
+    })
+
+    const nameInput = screen.getByLabelText(/Nombre/i)
+    await user.type(nameInput, ' more text')
+
+    expect(
+      screen.queryByText(/No se pudo enviar el mensaje\. Inténtalo de nuevo o escríbeme por email\./)
+    ).not.toBeInTheDocument()
+  })
+
+  it('has honeypot website field with sr-only class and tab index -1', async () => {
+    await renderReady()
+
+    const websiteInput = screen.getByLabelText(/Website/i) as HTMLInputElement
+    const srOnlyDiv = websiteInput.closest('div')
+    expect(srOnlyDiv).toHaveClass('sr-only')
+    expect(websiteInput).toHaveAttribute('tabIndex', '-1')
+    expect(websiteInput).toHaveAttribute('autoComplete', 'off')
+    expect(websiteInput).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('shows error alert with role=alert', async () => {
+    const user = userEvent.setup()
+    vi.mocked(contactApi.sendMessage).mockRejectedValue(new Error('Failed'))
+    await renderReady()
+    await fillAndSubmit(user)
+
+    await waitFor(() => {
+      const alert = screen.getByRole('alert')
+      expect(alert).toBeInTheDocument()
+      expect(alert).toHaveTextContent(/No se pudo enviar el mensaje/)
     })
   })
 })
