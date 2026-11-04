@@ -168,7 +168,7 @@ export const ContactPage = () => {
           {/* Contact Form */}
           <div className="content:col-span-2">
             {submitted ? (
-              <div className="bg-green-50 dark:bg-green-950/40 backdrop-blur-lg border border-green-200 dark:border-green-900 rounded-md p-8 text-center">
+              <div role="status" className="bg-green-50 dark:bg-green-950/40 backdrop-blur-lg border border-green-200 dark:border-green-900 rounded-md p-8 text-center">
                 <div className="text-4xl mb-4">✓</div>
                 <h3 className="text-xl font-bold text-green-900 dark:text-green-200 mb-2">¡Mensaje enviado!</h3>
                 <p className="text-green-700 dark:text-green-300">Gracias por escribir. Te responderé pronto.</p>
@@ -224,7 +224,7 @@ export const ContactPage = () => {
                 </div>
 
                 {/* Honeypot trap field: hidden from view, not in tab order */}
-                <div className="sr-only">
+                <div className="sr-only" aria-hidden="true">
                   <label htmlFor="contact-extra">No rellenar este campo</label>
                   <input
                     type="text"
