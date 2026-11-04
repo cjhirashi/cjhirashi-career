@@ -478,3 +478,65 @@ describe('CareerResourceView (list / view / edit-in-place)', () => {
     await waitFor(() => expect(screen.getByTestId('pathname')).toHaveTextContent('/career/competencies/1'))
   })
 })
+
+describe('CareerResourceView · mensajes de contacto (SPEC-0011)', () => {
+  const contactConfig = CAREER_RESOURCES['contact-messages']
+  const message = {
+    id: 'cmg-1',
+    user_id: 'usr-1',
+    name: 'Ana Pérez',
+    email: 'ana@example.com',
+    message: 'Hola,\nquiero hablar de un proyecto.',
+    status: 'new',
+    read_at: null,
+    created_at: '2026-11-04T10:00:00Z',
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockedCareerApi.list.mockResolvedValue([message] as never)
+    mockedCareerApi.count.mockResolvedValue(1)
+    mockedCareerApi.update.mockResolvedValue({ ...message, status: 'read', read_at: '2026-11-04T10:01:00Z' } as never)
+  })
+
+  it('does not offer to create messages', async () => {
+    render(<CareerResourceView config={contactConfig} />)
+    await waitFor(() => expect(screen.getByText('Ana Pérez')).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: 'Nuevo' })).not.toBeInTheDocument()
+  })
+
+  it('shows the full message and marks a new one as read when opened', async () => {
+    render(<CareerResourceView config={contactConfig} />)
+    await waitFor(() => expect(screen.getByText('Ana Pérez')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Ana Pérez'))
+
+    await waitFor(() => expect(screen.getByText(/quiero hablar de un proyecto/)).toBeInTheDocument())
+    expect(screen.getByText('ana@example.com')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(mockedCareerApi.update).toHaveBeenCalledWith('contact-messages', 'cmg-1', { status: 'read' })
+    )
+  })
+
+  it('does not re-mark a message that is already read', async () => {
+    mockedCareerApi.list.mockResolvedValue([{ ...message, status: 'read' }] as never)
+    render(<CareerResourceView config={contactConfig} />)
+    await waitFor(() => expect(screen.getByText('Ana Pérez')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Ana Pérez'))
+
+    await waitFor(() => expect(screen.getByText(/quiero hablar de un proyecto/)).toBeInTheDocument())
+    expect(mockedCareerApi.update).not.toHaveBeenCalled()
+  })
+
+  it('edits only the status, never name, email or message', async () => {
+    mockedCareerApi.list.mockResolvedValue([{ ...message, status: 'read' }] as never)
+    render(<CareerResourceView config={contactConfig} />)
+    await waitFor(() => expect(screen.getByText('Ana Pérez')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Ana Pérez'))
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Vista' })).toHaveAttribute('aria-selected', 'true'))
+    fireEvent.click(screen.getByRole('button', { name: /editar/i }))
+
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'Edición' })).toHaveAttribute('aria-selected', 'true'))
+    expect(screen.queryByLabelText('Nombre')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Mensaje')).not.toBeInTheDocument()
+  })
+})

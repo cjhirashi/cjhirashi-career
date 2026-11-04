@@ -136,7 +136,7 @@ npm run type-check
 - Article previews
 
 ### ContactPage
-- Contact form
+- Contact form: envía a `POST /public/contact-message` y muestra «enviado» solo tras el 201 del servidor; en error conserva el texto y permite reintentar (429 tiene mensaje propio). Campo trampa `trap` oculto (el API lo recibe como `website`)
 - Social media links
 - Email contact
 - Response time indicator
@@ -164,7 +164,7 @@ Tracks user interactions:
 - **Pageviews**: Each page navigation
 - **Clicks**: CTA buttons, project links, social links
 - **Downloads**: CV, documents
-- **Form Submissions**: Contact form
+- **Form Submissions**: Contact form (solo `target: contact-form`; nunca nombre ni correo)
 
 Disable tracking by setting `VITE_TRACKING_ENABLED=false` in `.env`
 

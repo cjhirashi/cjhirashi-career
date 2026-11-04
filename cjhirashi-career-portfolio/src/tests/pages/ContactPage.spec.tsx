@@ -373,7 +373,7 @@ describe('ContactPage', () => {
   it('has honeypot website field with sr-only class and tab index -1', async () => {
     await renderReady()
 
-    const websiteInput = screen.getByLabelText(/Website/i) as HTMLInputElement
+    const websiteInput = screen.getByLabelText(/No rellenar este campo/i) as HTMLInputElement
     const srOnlyDiv = websiteInput.closest('div')
     expect(srOnlyDiv).toHaveClass('sr-only')
     expect(websiteInput).toHaveAttribute('tabIndex', '-1')

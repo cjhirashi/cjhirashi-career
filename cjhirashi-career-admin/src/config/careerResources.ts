@@ -182,6 +182,14 @@ export interface ResourceConfig {
   /** Extra fields hidden from record view when a PDF preview is shown
    * (defaults to `[pdfExportField]` when that is set). */
   pdfPreviewHiddenFields?: string[]
+  /** Campos de `fields` que solo se muestran en la ficha: no entran al formulario ni
+   * se envían. Para recursos que otro proceso escribe (p. ej. `contact-messages`). */
+  readOnlyFields?: string[]
+  /** `false` oculta «Nuevo»: el recurso solo se crea fuera del Admin. Por defecto `true`. */
+  canCreate?: boolean
+  /** Al abrir la ficha de un registro con `field === from`, lo pasa a `to`
+   * (p. ej. mensaje `new` -> `read`). */
+  markOnOpen?: { field: string; from: string; to: string }
 }
 
 const badgeByEvaluation = (value: unknown) => {
@@ -1680,15 +1688,27 @@ export const contactMessagesConfig: ResourceConfig = {
   label: 'Mensajes de contacto',
   labelSingular: 'Mensaje',
   genderFeminine: false,
-  description: 'Mensajes recibidos a través del formulario de contacto del portafolio. Solo cambio de estado y borrado permitidos (sin editar nombre, correo ni mensaje).',
+  description: 'Mensajes recibidos por el formulario de contacto del portafolio. Solo se puede cambiar el estado o borrar.',
+  canCreate: false,
+  readOnlyFields: ['name', 'email', 'message'],
+  markOnOpen: { field: 'status', from: 'new', to: 'read' },
   columns: [
-    { key: 'status', label: 'Estado', format: 'badge', badgeColor: badgeByStatusGeneric },
+    {
+      key: 'status',
+      label: 'Estado',
+      format: 'badge',
+      badgeColor: (value) => (value === 'new' ? 'cyan' : value === 'read' ? 'slate' : 'warning'),
+      badgeLabel: (value) => (value === 'new' ? 'Nuevo' : value === 'read' ? 'Leído' : 'Archivado'),
+    },
     { key: 'name', label: 'Nombre' },
     { key: 'email', label: 'Email' },
     { key: 'created_at', label: 'Fecha', format: 'datetime' },
     { key: 'message', label: 'Mensaje', format: 'truncate' },
   ],
   fields: [
+    { name: 'name', label: 'Nombre', type: 'text' },
+    { name: 'email', label: 'Email', type: 'text' },
+    { name: 'message', label: 'Mensaje', type: 'textarea', fullWidth: true },
     { name: 'status', label: 'Estado', type: 'select', required: true, options: [
       { value: 'new', label: 'Nuevo' },
       { value: 'read', label: 'Leído' },

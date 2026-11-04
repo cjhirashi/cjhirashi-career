@@ -144,9 +144,13 @@ Métricas agregadas del portafolio (kpis, tendencia, desgloses, páginas, recorr
 
 Recursos de solo lectura (`portal-sites`, `-visitors`, `-visits`, `-events`, `-daily`) y CRUD de `portal-goals`, `portal-funnels`, `portal-annotations`.
 
+### `admin_contact_messages.py` — `/career/contact-messages`
+
+CRUD sin `POST` (`build_crud_router(create_schema=None)`) de los mensajes del formulario de contacto; solo `status` es editable (SPEC-0011).
+
 ### `public.py` — `/public`
 
-Read-only sin auth para el Portal: home, about, contact, projects, blog. Transforma Markdown de una línea por ítem a `List[str]` para que el SPA no conozca esa convención.
+Sin auth para el Portal: lectura de home, about, contact, projects, blog, y `POST /contact-message` (formulario de contacto: honeypot, límite 3/h por IP y correo, guarda en `contact_messages` y avisa al dueño; `services/contact_message_service.py`). Transforma Markdown de una línea por ítem a `List[str]` para que el SPA no conozca esa convención.
 
 ### `__init__.py`
 

@@ -52,8 +52,11 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({
   hideActions = false,
 }) => {
   const visibleFields = useMemo(
-    () => config.fields.filter((f) => !presetValues || !(f.name in presetValues)),
-    [config.fields, presetValues]
+    () =>
+      config.fields.filter(
+        (f) => !config.readOnlyFields?.includes(f.name) && (!presetValues || !(f.name in presetValues))
+      ),
+    [config.fields, config.readOnlyFields, presetValues]
   )
 
   const [values, setValues] = useState<FormState>(() => buildInitialState(visibleFields, initialValues))

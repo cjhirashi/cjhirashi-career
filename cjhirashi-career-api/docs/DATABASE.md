@@ -187,8 +187,9 @@ Documentación API: [sections/career-digital/README.md](./sections/career-digita
 | `portal_home` | `PortalHome` | `phm` |
 | `portal_about` | `PortalAbout` | `pab` |
 | `portal_contact` | `PortalContact` | `pco` |
+| `contact_messages` | `ContactMessage` | `cmg` |
 
-Alimentan endpoints `/public/*` filtrados por `PUBLIC_PORTAL_USER_ID`.
+Alimentan endpoints `/public/*` filtrados por `PUBLIC_PORTAL_USER_ID`. `contact_messages` guarda lo que los visitantes envían por el formulario de contacto (`status` `new`/`read`/`archived`, `read_at` se fija al pasar a `read` o `archived`); sin IP ni cabeceras (SPEC-0011).
 
 ### Analítica del portafolio (SPEC-0010)
 

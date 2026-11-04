@@ -35,7 +35,7 @@ Prefijo de id `cmg` en `services/id_generator.TABLE_PREFIXES` (`contact_messages
 - Pruebas Vitest actualizadas en `ContactPage.spec.tsx`.
 
 ## 4 · Admin
-- Entrada `contact-messages` en `src/config/careerResources.ts` (columnas: estado, nombre, correo, fecha; detalle con el texto completo; acciones estado/borrado). Se verifica si la campana ya muestra cualquier `kind` o necesita etiqueta para `contact_message`.
+- Entrada `contact-messages` en `src/config/careerResources.ts` (columnas: estado, nombre, correo, fecha; detalle con el texto completo; acciones estado/borrado). El framework de recursos no tenía soporte para recursos que otro proceso escribe: se añaden a `ResourceConfig` tres opciones genéricas (`canCreate`, `readOnlyFields`, `markOnOpen`) y `build_crud_router` acepta `create_schema=None` para omitir `POST`. La campana ya muestra cualquier `kind`; se añade el enlace para `resource_key="contact-messages"`.
 
 ## 5 · Despliegue y verificación
 Migración con respaldo previo de la base (**REQUIERE OK** de Carlos: toca producción; lo ejecuta AIRA). Reconstruir imágenes `api`, `portfolio` y `admin` con el procedimiento de `docker-compose.yml`. Verificación: enviar un mensaje real desde `https://cjhirashi.com/contact` y verlo en el Admin.

@@ -227,10 +227,13 @@ CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in
 | GET | `/public/home` | No |
 | GET | `/public/about` | No |
 | GET | `/public/contact` | No |
+| POST | `/public/contact-message` | No (honeypot `website`, 3/h por IP y por correo → 429) |
 | GET | `/public/projects` | No |
 | GET | `/public/projects/{id}` | No |
 | GET | `/public/blog` | No |
 | GET | `/public/blog/{slug}` | No |
+
+Mensajes del formulario de contacto: `/career/contact-messages` (JWT del dueño): `GET` lista/detalle, `PUT` solo `status` (`new`/`read`/`archived`), `DELETE`. No hay `POST`: los mensajes solo entran por `/public/contact-message`.
 
 ---
 

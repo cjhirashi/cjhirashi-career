@@ -22,6 +22,9 @@ covers:
   - cjhirashi-career-portfolio/src/hooks/useContact.ts
   - cjhirashi-career-portfolio/src/tests/pages/ContactPage.spec.tsx
   - cjhirashi-career-admin/src/config/careerResources.ts
+  - cjhirashi-career-admin/src/components/career/CareerResourceView.tsx
+  - cjhirashi-career-admin/src/components/career/ResourceForm.tsx
+  - cjhirashi-career-admin/src/components/NotificationBell.tsx
 ---
 
 # Formulario de contacto del portafolio: los mensajes llegan al Admin
@@ -53,7 +56,7 @@ Decisión de Carlos (2026-11-04): por ahora la entrega es **solo en el Admin** (
 - **RF-003** Si `website` viene con contenido, se responde 201 sin guardar ni avisar (el bot no aprende que fue detectado).
 - **RF-004** Límite de frecuencia: 3 mensajes por hora por IP y 3 por hora por correo; el exceso devuelve 429 con mensaje comprensible. La IP solo vive en memoria para el límite (como en `/events/track`).
 - **RF-005** Al guardar se crea un `UserNotification` (`kind="contact_message"`) para el dueño con título «Mensaje de {name}» y `resource_key="contact-messages"`. Si crear el aviso falla, el mensaje igual queda guardado y se responde 201 (se registra el fallo en logs).
-- **RF-006** Admin: recurso `contact-messages` con listado paginado (más nuevos primero, filtro por estado), vista del mensaje completo, cambio de estado (`new`→`read`→`archived`) y borrado. Un mensaje nuevo se marca `read` al abrirlo. Solo el dueño autenticado accede.
+- **RF-006** Admin: recurso `contact-messages` con listado paginado (más nuevos primero, filtro por estado), vista del mensaje completo, cambio de estado (`new`→`read`→`archived`) y borrado. Un mensaje nuevo se marca `read` al abrirlo (desde la lista o desde el aviso de la campana). Nombre, correo y mensaje se muestran pero no se editan. No hay botón «Nuevo». Solo el dueño autenticado accede.
 - **RF-007** El formulario del portafolio llama al endpoint y espera la respuesta: muestra «¡Mensaje enviado!» solo con 201; con error de red, 429 o 5xx muestra un error claro, conserva lo escrito y permite reintentar; deshabilita el botón mientras envía.
 - **RF-008** El evento de analítica `form_submit` del formulario deja de incluir nombre y correo (solo `target: contact-form`).
 - **RF-009** README y docs del API, portafolio y Admin que describan el contacto quedan actualizados en el mismo commit (Art. 11).
@@ -68,4 +71,4 @@ Decisión de Carlos (2026-11-04): por ahora la entrega es **solo en el Admin** (
 
 ## 5 · UX (formulario y Admin)
 
-Estados del formulario: reposo, enviando (botón deshabilitado, «Enviando...»), éxito (tarjeta actual), error (mensaje rojo bajo el botón, texto conservado). Admin: lista con insignia «Nuevo», vista de detalle con nombre, correo (enlace `mailto:`), fecha en `America/Mexico_City` y texto completo respetando saltos de línea. Contraste WCAG AA; revisión de `experto-ux-ui` en Fase 4 (Art. 8).
+Estados del formulario: reposo, enviando (botón deshabilitado, «Enviando...»), éxito (tarjeta actual), error (mensaje rojo bajo el botón, texto conservado). Admin: lista con insignia «Nuevo», vista de detalle con nombre, correo (texto, copiable), fecha en `America/Mexico_City` y texto completo respetando saltos de línea. Contraste WCAG AA; revisión de `experto-ux-ui` en Fase 4 (Art. 8).

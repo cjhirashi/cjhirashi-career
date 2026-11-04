@@ -843,6 +843,17 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
     }
   }
 
+  // Una ficha abierta (desde la lista o por URL) con el valor `from` pasa a `to`.
+  useEffect(() => {
+    const rule = config.markOnOpen
+    if (!rule || viewState !== 'view' || !activeItem || activeItem[rule.field] !== rule.from) return
+    updateMutation.mutate(
+      { id: activeItem.id, payload: { [rule.field]: rule.to } },
+      { onSuccess: (updated) => setActiveItem(updated) }
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.markOnOpen, viewState, activeItem])
+
   const goToListUrl = () => {
     if (!urlEnabled || !listPath) return
     if (location.pathname !== listPath) navigate(listPath)
@@ -1193,9 +1204,11 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
         : sectionTitle
   const headerActions =
     viewState === 'list' ? (
-      <button type="button" onClick={openCreate} className="btn-icon btn-icon-sm" aria-label="Nuevo" title="Nuevo">
-        <Plus size={13} />
-      </button>
+      config.canCreate === false ? null : (
+        <button type="button" onClick={openCreate} className="btn-icon btn-icon-sm" aria-label="Nuevo" title="Nuevo">
+          <Plus size={13} />
+        </button>
+      )
     ) : viewState === 'view' && activeItem ? (
       <>
         {isPdfExportable && (

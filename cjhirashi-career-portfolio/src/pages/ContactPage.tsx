@@ -14,7 +14,7 @@ interface FormError {
 
 export const ContactPage = () => {
   const { data: contact, isLoading, error } = useContact()
-  const [formData, setFormData] = useState({ name: '', email: '', message: '', website: '' })
+  const [formData, setFormData] = useState({ name: '', email: '', message: '', trap: '' })
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
   const [formError, setFormError] = useState<FormError | null>(null)
@@ -59,7 +59,7 @@ export const ContactPage = () => {
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        website: formData.website,
+        website: formData.trap,
       })
 
       // Only track and show success after confirmed send
@@ -70,7 +70,7 @@ export const ContactPage = () => {
       })
 
       setSubmitted(true)
-      setFormData({ name: '', email: '', message: '', website: '' })
+      setFormData({ name: '', email: '', message: '', trap: '' })
       setTimeout(() => setSubmitted(false), 5000)
     } catch (err) {
       const errorInfo = getErrorMessage(err)
@@ -225,12 +225,12 @@ export const ContactPage = () => {
 
                 {/* Honeypot trap field: hidden from view, not in tab order */}
                 <div className="sr-only">
-                  <label htmlFor="website">Website</label>
+                  <label htmlFor="contact-extra">No rellenar este campo</label>
                   <input
                     type="text"
-                    id="website"
-                    name="website"
-                    value={formData.website}
+                    id="contact-extra"
+                    name="trap"
+                    value={formData.trap}
                     onChange={handleChange}
                     autoComplete="off"
                     tabIndex={-1}
