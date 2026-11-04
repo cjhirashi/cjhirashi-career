@@ -22,10 +22,10 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 - [x] A4 Reconstrucción de visitantes y visitas desde los eventos existentes dentro de la migración. Prueba con eventos de ejemplo: conteos de eventos intactos, una visita por `session_id`, eventos sin `session_id` agrupados por hueco de 30 min (RF-040).
 
 ### B · Servicios de dominio (puros, sin base de datos donde sea posible)
-- [ ] B1 `services/portal_channels.py`: derivar canal desde referrer/UTM con reglas (RF-009). Pruebas por canal y precedencia.
-- [ ] B2 `services/portal_bots.py`: `bot_score` y razones (plan §0.7) (RF-007).
-- [ ] B3 `services/portal_device.py`: navegador, sistema, dispositivo con `ua-parser`; agregar la dependencia fijada (RF-006).
-- [ ] B4 `services/portal_geo.py`: geo desde cabeceras `cf-*` con respaldo según `GEO_SOURCE`; ajustar `config.py` (RF-004).
+- [x] B1 `services/portal_channels.py`: derivar canal desde referrer/UTM con reglas (RF-009). Pruebas por canal y precedencia.
+- [x] B2 `services/portal_bots.py`: `bot_score` y razones (plan §0.7) (RF-007).
+- [x] B3 `services/portal_device.py`: navegador, sistema, dispositivo con `ua-parser`; agregar la dependencia fijada (RF-006).
+- [x] B4 `services/portal_geo.py`: geo desde cabeceras `cf-*` con respaldo según `GEO_SOURCE`; ajustar `config.py` (RF-004).
 
 ### C · Ingesta
 - [ ] C1 Esquema `schemas/events.py` v2 compatible con v1 (RF-001).
@@ -66,3 +66,4 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 ## Evidencia (AIRA, 2026-11-04)
 - Bloque A: pytest `test_portal_analytics_models.py`, `test_portal_analytics_migration.py`, `test_portal_events.py` en verde (29). La prueba de migración es estructural; la ejecución real se verificó sobre una copia restaurada de producción (pg_dump a Postgres desechable): `upgrade` siembra sitio, 11 reglas y 5 metas, reconstruye 60 visitantes y 65 visitas desde los 110 eventos (110 con `visit_id`, 73 vistas de página, `created_at` y suma de `duration_ms` intactos), `downgrade` devuelve `portal_events` a sus 16 columnas y 110 filas, y un segundo `upgrade` repite el resultado.
 - Correcciones de AIRA a la entrega de Haiku: dueño del sitio tomado de `PUBLIC_PORTAL_USER_ID` (Haiku usaba el primer usuario), JSONB con `CAST` (Haiku usaba `sa.json.dumps`, inexistente), sin `conn.commit()` dentro de Alembic, reglas de canal completas (faltaban referrers sociales y de búsqueda), reconstrucción A4 (no entregada).
+- Bloque B: 55 pruebas en verde (`test_portal_channels/bots/device/geo.py`) ejecutadas por AIRA; `ua-parser[regex]==1.0.2` fijado. Corrección de AIRA: `cf-ipcountry` en minúsculas ("xx") ya se trata como desconocido. Haiku reportó 76 pruebas sumando regresiones y pegó una salida con erratas; la cifra verificada es 55 nuevas.

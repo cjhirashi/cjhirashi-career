@@ -30,6 +30,7 @@ class GeoInfo:
     city: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
+    timezone: Optional[str] = None
 
 
 def _is_public_ip(ip: str) -> bool:
