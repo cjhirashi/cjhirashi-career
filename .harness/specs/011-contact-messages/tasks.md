@@ -84,3 +84,17 @@ Ejecutor: Haiku implementa por bloque; AIRA revisa cada bloque (Converge) y ejec
 - [x] E3 Revisión de `experto-ux-ui` del formulario y de la vista del Admin (Art. 8).
 - [x] E4 **[REQUIERE OK]** Respaldo de base, migración en producción, reconstrucción de `api`, `portfolio` y `admin`.
 - [x] E5 **[REQUIERE OK]** Verificación real: enviar un mensaje desde cjhirashi.com/contact y confirmarlo en el Admin con su aviso (criterios 1–5).
+
+## Cobertura (el gate exige 100 %; `Estado` lo rellena el gate)
+
+| RF / doc | Tareas | Test(s) | Estado |
+|---|---|---|---|
+| RF-001 | B1, B3 | test_contact_messages (almacena y recorta, 422 por validación, 5xx si falla el guardado) | Pass |
+| RF-002 | A2, A3, B2 | test_contact_messages (columnas sin IP, fila ligada al dueño) | Pass |
+| RF-003 | B2 | test_contact_messages (honeypot 201 sin guardar ni avisar) | Pass |
+| RF-004 | B3 | test_contact_messages (429 al cuarto envío por IP y por correo) | Pass |
+| RF-005 | A2, B2 | test_contact_messages (aviso al dueño; fallo del aviso no pierde el mensaje) | Pass |
+| RF-006 | B4, D1, D2 | test_contact_messages (Admin) y CareerResourceView.test (contact-messages) | Pass |
+| RF-007 | C1, C2 | ContactPage.spec (éxito, error, 429, botón deshabilitado) | Pass |
+| RF-008 | C2 | ContactPage.spec (trackEvent sin name/email) | Pass |
+| RF-009 | E1 | — | hecho |
