@@ -84,7 +84,7 @@ graph TD
 | Capa | Responsabilidad | Ejemplos |
 |------|-----------------|----------|
 | **Routes** | HTTP, validación Pydantic, auth deps, SSE | `routes/bedrock.py`, `routes/career_identity.py` |
-| **Services** | Reglas de negocio, integraciones externas | `bedrock/agent_loop.py`, `job_discovery/`, `linkedin_service.py` |
+| **Services** | Reglas de negocio, integraciones externas | `bedrock/agent_loop.py`, `job_discovery/` |
 | **Repositories** | Queries SQLAlchemy, aislamiento por user | `career_repository.py`, `user_repository.py` |
 | **Models** | Esquema ORM, relaciones | `models/vacancy.py`, `models/bedrock_conversation.py` |
 

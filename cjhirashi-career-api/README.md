@@ -1,6 +1,6 @@
 # API REST — cjhirashi-career
 
-API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (LinkedIn, GitHub, MinIO) y endpoints públicos para el Portal.
+API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (GitHub, MinIO) y endpoints públicos para el Portal.
 
 **URL base (Docker interno):** `http://cjhirashi-career-api:8000`  
 **URL base (local):** `http://localhost:8000`  
