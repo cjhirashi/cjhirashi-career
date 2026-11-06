@@ -30,7 +30,7 @@ docker compose up -d --build portfolio      # desde la raíz del repo; host 8003
 curl -s http://localhost:8003/ | head -1
 ```
 
-La imagen compila el SPA con `VITE_PORTAL_SITE_KEY` (argumento de build tomado de `PORTAL_SITE_KEY` del `.env` raíz) y lo sirve con `serve`. En producción Caddy publica `cjhirashi.com` y reenvía `/api/` a `cjhirashi-career-api:8000`.
+La imagen compila el SPA con `VITE_PORTAL_SITE_KEY` (argumento de build tomado de `PORTAL_SITE_KEY` del `.env` raíz) y lo sirve con `serve`.
 
 ## Problemas frecuentes
 

@@ -49,7 +49,7 @@ Todo el acceso a datos pasa por SQLAlchemy ORM con consultas parametrizadas; no 
 
 - Formulario de contacto (`POST /public/contact-message`): 3 mensajes por hora por IP y por correo, y un campo señuelo (*honeypot*).
 - Analítica (`POST /events/track`): límite por ventana deslizante, clasificación de bots (umbral 70) y respeto a DNT/GPC en el cliente.
-- El resto de rutas no tiene límite de tasa propio; depende de Cloudflare.
+- El resto de rutas no tiene límite de tasa propio en la API.
 
 ## CORS
 
@@ -63,7 +63,7 @@ Solo en `.env` (nunca versionado); `docker-compose.yml` usa `${VARIABLE}`. Detal
 
 | # | Deuda | Detalle |
 |---|---|---|
-| 1 | **Registro público abierto** | `POST /auth/register` no requiere autenticación ni tiene guarda: está accesible desde Internet (comprobado el 2026-11-05: responde 422 de validación en `cjhirashi.com/api` y `admin.cjhirashi.com/api`). Cualquiera puede crear una cuenta `user` con acceso al CRUD de su propio espacio, a la subida de archivos y al chat de Bedrock (consumo propio de la cuenta). El sistema está pensado para un solo administrador; decidir si se desactiva, se protege con un código de invitación o se limita al rol `service`. |
+| 1 | **Registro público abierto** | `POST /auth/register` no requiere autenticación ni tiene guarda: está accesible desde Internet (comprobado el 2026-11-05: responde 422 de validación desde fuera de la red Docker). Cualquiera puede crear una cuenta `user` con acceso al CRUD de su propio espacio, a la subida de archivos y al chat de Bedrock (consumo propio de la cuenta). El sistema está pensado para un solo administrador; decidir si se desactiva, se protege con un código de invitación o se limita al rol `service`. |
 | 2 | Tokens sin revocación del lado del servidor | Los de acceso (7 días) y los de refresco (30) valen hasta caducar; `logout` no los invalida. Valorar una vida menor y usar `refresh_tokens` para revocar. |
 | 3 | `SECRET_KEY` única (HS256) | Sin rotación programada. |
 | 4 | Sin Row-Level Security | El aislamiento es solo de aplicación. |

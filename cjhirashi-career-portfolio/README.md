@@ -43,7 +43,7 @@ El rastreador (`utils/tracker.ts`, `hooks/useTracking.ts`) envía eventos a `POS
 
 | Variable | Uso |
 |---|---|
-| `VITE_API_URL` | Base de la API (`/api` en todos los entornos; Caddy quita el prefijo) |
+| `VITE_API_URL` | Base de la API (`/api` en todos los entornos; la API recibe las rutas sin el prefijo) |
 | `VITE_TRACKING_ENABLED` | `false` desactiva el rastreador |
 | `VITE_PORTAL_SITE_KEY` | Clave del sitio para la analítica; el compose la toma de `PORTAL_SITE_KEY` como argumento de build |
 
@@ -59,7 +59,7 @@ npm run type-check && npm run lint
 
 ## Despliegue
 
-Desde la raíz del repo: `docker compose up -d --build portfolio` (Node 20, `serve -s dist -l 8000`; host 8003). Caddy lo publica en `cjhirashi.com` y reenvía `/api/` a la API (contrato `caddy.json`). Comprobación: `GET http://localhost:8003/`.
+Desde la raíz del repo: `docker compose up -d --build portfolio` (Node 20, `serve -s dist -l 8000`; host 8003). Comprobación: `GET http://localhost:8003/`.
 
 ## Calidad
 

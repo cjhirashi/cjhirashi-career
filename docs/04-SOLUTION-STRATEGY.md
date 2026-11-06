@@ -66,7 +66,7 @@
 graph TB
     subgraph Capa1["Capa 1 — Canales de entrada (2, independientes)"]
         Portal["Portal público<br/>cjhirashi.com"]
-        Admin["Admin Panel<br/>admin.cjhirashi.com"]
+        Admin["Admin Panel"]
     end
 
     subgraph Capa2["Capa 2 — API (punto de convergencia único)"]

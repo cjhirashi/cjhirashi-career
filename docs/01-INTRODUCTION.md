@@ -13,13 +13,13 @@
 
 **cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público y una herramienta privada de gestión de carrera sobre una única fuente de verdad: la curación de la carrera (hecha a mano en el Admin Panel, con asistencia de Agent Bedrock o por un agente con token `agent`) alimenta el contenido que el portal publica.
 
-| Canal | Host | Audiencia | Acceso |
+| Canal | Contenedor | Audiencia | Acceso |
 |---|---|---|---|
-| **Portal público** | `cjhirashi.com` (contenedor, puerto host 8003) | Reclutadores, colegas, público | Solo lectura, sin autenticación; formulario de contacto y analítica con límites de tasa |
-| **Admin Panel** | `admin.cjhirashi.com` (8002) | Carlos, único usuario administrador | Login con JWT |
-| **Archivos públicos** | `files.cjhirashi.com` | Cualquiera, por enlace | MinIO detrás de Caddy |
+| **Portal público** | `cjhirashi-career-portfolio` (puerto host 8003) | Reclutadores, colegas, público | Solo lectura, sin autenticación; formulario de contacto y analítica con límites de tasa |
+| **Admin Panel** | `cjhirashi-career-admin` (8002) | Carlos, único usuario administrador | Login con JWT |
+| **Archivos públicos** | `minio_storage` | Cualquiera, por enlace | Lectura de los archivos marcados públicos |
 
-Ambos hosts reenvían `/api/` a la API (Caddy quita el prefijo). La API (`cjhirashi-career-api:8000`) no se publica.
+El portal y el Admin llaman a la API por `/api/`; la API recibe las rutas sin ese prefijo. La API (`cjhirashi-career-api:8000`) no publica puerto al host.
 
 **Agent Bedrock** no es un canal: es una capacidad de la API (hoy dentro de ella, 39 operaciones bajo `/bedrock`) que el Admin Panel invoca en una sesión autenticada; sus agentes también pueden correr tareas programadas. Está previsto moverlo a `cjhirashi-career-ai` ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md)).
 
@@ -31,7 +31,7 @@ Ambos hosts reenvían `/api/` a la API (Caddy quita el prefijo). La API (`cjhira
 | 2 | Admin Panel | `cjhirashi-career-admin` | SPA React: carrera, vacantes, archivos, PDF, métricas, mensajes de contacto, agentes |
 | 3 | API REST | `cjhirashi-career-api` | FastAPI: autenticación, CRUD de carrera, Bedrock, PDF (WeasyPrint), archivos, analítica; dueña del esquema |
 | 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 51 migraciones Alembic) |
-| 5 | MinIO | `minio_storage` | Archivos (bucket único; los públicos se sirven en `files.cjhirashi.com`) |
+| 5 | MinIO | `minio_storage` | Archivos (bucket único; los públicos se sirven como archivos públicos) |
 | 6 | Qdrant | `qdrant` | Base de conocimiento vectorial de Agent Bedrock; **retiro decidido** (ADR-029, etapa 3), hoy en uso |
 | 7 | `cjhirashi-career-ai` | (sin desplegar) | Harness de agentes en construcción, con BD propia `career_ai_db` |
 
@@ -59,7 +59,7 @@ Secuencias detalladas: [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md).
 | Archivos | MinIO (cliente `minio`) | — |
 | Base de datos | PostgreSQL | 15 (alpine) |
 | Base vectorial | Qdrant | imagen `latest` |
-| Orquestación | Docker Compose; routing por Caddy + Cloudflare Tunnel (`caddy.json`) | red externa `net-cjhirashi-career` |
+| Orquestación | Docker Compose | red externa `net-cjhirashi-career` |
 
 ## Principios de diseño
 
@@ -75,9 +75,9 @@ Secuencias detalladas: [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md).
 - **Autenticación**: JWT HS256 emitido por la API; contraseñas con bcrypt (12 rondas). Un único usuario administrador; no hay RBAC multiusuario.
 - **Rol `agent`**: token dedicado para agentes. Solo alcanza `/career/*`, `POST /bedrock/chat` y `POST /files` (subida); no puede listar, cambiar visibilidad, descargar ni borrar archivos. El resto responde 403.
 - **Portal público**: sin login; CORS restringido a los orígenes conocidos, límite de tasa en el formulario de contacto (3 por hora por IP y por correo) y en la ingesta de analítica; el visitante puede borrar sus datos en `/privacy`.
-- **Archivos**: la subida acepta `is_public` (por defecto `true`); solo los públicos se sirven por `files.cjhirashi.com`. Listar, cambiar la visibilidad, descargar y borrar son exclusivos del administrador.
+- **Archivos**: la subida acepta `is_public` (por defecto `true`); solo los públicos se sirven como archivos públicos. Listar, cambiar la visibilidad, descargar y borrar son exclusivos del administrador.
 - **Bedrock**: credenciales de AWS por variables de entorno del contenedor de la API (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`); ver [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md).
-- **Transporte**: HTTPS terminado en Cloudflare/Caddy; el tráfico interno viaja por la red Docker.
+- **Transporte**: el tráfico interno viaja por la red Docker.
 
 ## Preguntas abiertas
 

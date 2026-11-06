@@ -46,7 +46,7 @@ flowchart TB
 | `portal_channels.py` | `classify_channel` con reglas de `portal_channel_rules`; `extract_domain` |
 | `portal_bots.py` | `score_bot` aditivo y explicable (umbral 70) |
 | `portal_device.py` | `parse_device` con `ua-parser`: navegador, sistema, tipo de dispositivo, idioma |
-| `portal_geo.py` | Geografía solo desde las cabeceras `cf-*` de Cloudflare (sin respaldo por IP ni servicio externo) |
+| `portal_geo.py` | Geografía solo desde las cabeceras `cf-*` que añade la capa de entrada (sin respaldo por IP ni servicio externo) |
 | `portal_ratelimit.py` | Ventana deslizante en memoria por visitante e IP |
 | `portal_metrics.py` | `MetricsQuery` y todas las métricas; `rebuild_daily`, `ensure_daily_fresh`, `rebuild_visits` |
 
@@ -89,7 +89,7 @@ Cada modelo de carrera llama `register_id_listener` al importarse.
 
 I/O de bucket S3-compatible. Sin acceso a BD.
 
-`ensure_bucket`, `upload_file`, `set_visibility` (mueve entre `public/` y `private/`), `delete_file`, `get_public_url`, `get_presigned_url`, `get_object_stream`. Tráfico interno sin TLS; HTTPS lo termina Caddy.
+`ensure_bucket`, `upload_file`, `set_visibility` (mueve entre `public/` y `private/`), `delete_file`, `get_public_url`, `get_presigned_url`, `get_object_stream`. Tráfico interno sin TLS.
 
 ### `qdrant_service.py` — Búsqueda semántica
 

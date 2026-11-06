@@ -38,9 +38,9 @@ graph TB
 | **Admin Panel** | Gestión de carrera, vacantes, archivos, PDF, métricas, mensajes, agentes | [`cjhirashi-career-admin/README.md`](../cjhirashi-career-admin/README.md) |
 | **API REST** | Autenticación, CRUD, Bedrock, PDF, archivos, analítica; dueña del esquema | [`cjhirashi-career-api/README.md`](../cjhirashi-career-api/README.md), [`docs/API.md`](../cjhirashi-career-api/docs/API.md), [`docs/ARCHITECTURE.md`](../cjhirashi-career-api/docs/ARCHITECTURE.md) |
 | **PostgreSQL** | Persistencia de todo el negocio | [`docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md) |
-| **MinIO** | Archivos (bucket único; los públicos se sirven en `files.cjhirashi.com`) | [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md) |
+| **MinIO** | Archivos (bucket único; los públicos se sirven como archivos públicos) | [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md) |
 | **Qdrant** | Base de conocimiento vectorial de Agent Bedrock (se retira en la etapa 3 de la spec 009) | [BEDROCK-SYSTEM.md](./BEDROCK-SYSTEM.md) |
-| **`cjhirashi-career-ai`** | Harness de agentes (spec 009); **no desplegado**: sin servicio en el compose ni ruta en `caddy.json` | [`cjhirashi-career-ai/README.md`](../cjhirashi-career-ai/README.md) |
+| **`cjhirashi-career-ai`** | Harness de agentes (spec 009); **no desplegado**: sin servicio en el compose | [`cjhirashi-career-ai/README.md`](../cjhirashi-career-ai/README.md) |
 
 ## Nivel 2 — Admin Panel
 
@@ -85,12 +85,11 @@ Una instancia (`postgres_db`) con la base `career_db`: 69 modelos SQLAlchemy y 5
 
 | Origen → Destino | Interfaz |
 |---|---|
-| Portal / Admin → API | REST JSON bajo `/api/` (Caddy quita el prefijo); Admin con `Authorization: Bearer`, Portal sin autenticación |
+| Portal / Admin → API | REST JSON bajo `/api/` (la API recibe la ruta sin el prefijo); Admin con `Authorization: Bearer`, Portal sin autenticación |
 | API → PostgreSQL | SQLAlchemy async (asyncpg) |
 | API → MinIO | Cliente S3 `minio`, bucket único |
 | API → Qdrant | `qdrant-client` (6333) |
 | API → AWS Bedrock | boto3: Converse (chat), embeddings e imágenes |
-| Caddy → contenedores | Contrato `caddy.json` |
 
 ## Dependencias externas
 
@@ -100,7 +99,6 @@ Una instancia (`postgres_db`) con la base `career_db`: 69 modelos SQLAlchemy y 5
 | Adzuna, Greenhouse, Lever, LinkedIn (URL oficial), Remotive y otras | Descubrimiento de vacantes | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` (el resto, API públicas) |
 | GitHub | Lectura de repositorios por el agente | `GITHUB_TOKEN` |
 | Brave Search | Consulta web del agente | `BRAVE_SEARCH_API_KEY` |
-| Cloudflare / Caddy (`cjhirashi-srv`) | Tunnel, TLS y routing | Gestionadas fuera del repo |
 
 ---
 

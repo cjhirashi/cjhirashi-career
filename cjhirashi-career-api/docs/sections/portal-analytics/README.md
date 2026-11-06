@@ -45,7 +45,7 @@ marcan, no se eliminan. `portal_visits` y `portal_daily` se pueden reconstruir d
   Un bloqueo consultivo por visitante evita visitas duplicadas con eventos simultáneos.
 - **Origen:** `Origin`/`Referer` debe ser un host de `allowed_hosts` (403 si no); `siteKey` desconocida → 403;
   más de 120 eventos/min por visitante o 600 por IP → 429. Cualquier error interno responde 204.
-- **Geografía:** cabeceras de Cloudflare (`cf-ipcountry`, `cf-ipcity`, `cf-region`, `cf-iplatitude`, `cf-iplongitude`,
+- **Geografía:** cabeceras de geolocalización `cf-*` que añade la capa de entrada del despliegue (`cf-ipcountry`, `cf-ipcity`, `cf-region`, `cf-iplatitude`, `cf-iplongitude`,
   `cf-timezone`; requiere «Add visitor location headers»). Es la única fuente: se verificó el 2026-11-04 que las cabeceras llegan
   al origen y se retiró el respaldo por IP (ipapi.co). Sin cabeceras (p. ej. en desarrollo local) la visita queda sin
   ubicación.

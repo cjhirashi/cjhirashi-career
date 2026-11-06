@@ -46,7 +46,7 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 ```mermaid
 graph TD
-    subgraph Clients["Clientes (vía Caddy /api/ en net-cjhirashi-career)"]
+    subgraph Clients["Clientes (por /api/ en net-cjhirashi-career)"]
         Admin[Admin Panel :8002]
         Portal[Portal Público :8003]
         Agent[Agente externo<br/>token rol agent]
@@ -92,8 +92,8 @@ graph TD
 ## Consumidores y red
 
 ```
-Internet → Cloudflare Tunnel → Caddy → Admin (8002) / Portal (8003)
-                                          └─ /api/ (prefijo removido) → cjhirashi-career-api:8000 (solo red interna Docker)
+Admin (8002) / Portal (8003)
+   └─ /api/ (la API recibe la ruta sin el prefijo) → cjhirashi-career-api:8000 (solo red interna Docker)
 ```
 
 | Cliente | Auth | Endpoints típicos |

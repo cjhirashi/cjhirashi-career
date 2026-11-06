@@ -13,21 +13,21 @@
 
 ---
 
-## Accesos
+## Servicios
 
-| Canal | Host público | Contenedor (puerto host) | Para qué |
-|---|---|---|---|
-| **Portal público** | `cjhirashi.com` | `cjhirashi-career-portfolio` (8003) | Portafolio: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad |
-| **Admin Panel** | `admin.cjhirashi.com` | `cjhirashi-career-admin` (8002) | Gestión privada de carrera, agentes y métricas |
-| **Archivos** | `files.cjhirashi.com` | `minio_storage` (9000, solo vía proxy) | Archivos públicos servidos por MinIO |
-| **API REST** | `/api/` de los dos hosts | `cjhirashi-career-api` (8000, interno) | Caddy quita el prefijo `/api/` |
+| Módulo | Contenedor (puerto host) | Para qué |
+|---|---|---|
+| **Portal público** | `cjhirashi-career-portfolio` (8003) | Portafolio: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad |
+| **Admin Panel** | `cjhirashi-career-admin` (8002) | Gestión privada de carrera, agentes y métricas |
+| **Archivos** | `minio_storage` (9000, interno) | Archivos públicos y privados en MinIO |
+| **API REST** | `cjhirashi-career-api` (8000, interno) | El portal y el Admin la llaman por `/api/`; la API recibe las rutas sin ese prefijo |
 
-Exposición y routing: `caddy.json` (contrato con `cjhirashi-srv`: Caddy + Cloudflare Tunnel), red Docker externa `net-cjhirashi-career`.
+Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-career`.
 
 ## Arquitectura
 
 - **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. Bedrock (agentes) y PDF (WeasyPrint) son capacidades de la API, no módulos ni contenedores aparte.
-- **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` ni en `caddy.json` todavía.
+- **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` todavía.
 - **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y Qdrant (`qdrant`, base de conocimiento vectorial de Agent Bedrock). El retiro de Qdrant está **decidido** ([ADR-029](docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md)) pero se ejecuta en la etapa 3 de la spec 009: hoy sigue en uso por la API.
 - **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), AWS Bedrock, WeasyPrint.
 - **Datos**: 69 modelos SQLAlchemy y 51 migraciones Alembic (head `4439c6915701`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
@@ -69,7 +69,7 @@ El arnés de trabajo (método, constitución, specs, memoria) vive en [`.harness
 
 ## Inicio rápido
 
-Requisitos: Docker y Docker Compose, y la red externa `net-cjhirashi-career` (la gestiona `cjhirashi-srv`).
+Requisitos: Docker y Docker Compose, y la red Docker externa `net-cjhirashi-career` (créala con `docker network create net-cjhirashi-career` si no existe).
 
 ```bash
 cp .env.example .env       # el compose lee `.env`; nunca se versiona

@@ -14,7 +14,7 @@ Identifica **quién interactúa con el sistema y con el proyecto**, qué necesit
 
 | Stakeholder | Canal | Qué necesita | Qué espera |
 |---|---|---|---|
-| **Carlos Jiménez Hirashi** (gestor de carrera, único administrador) | Admin Panel (`admin.cjhirashi.com`), con login | Registrar y mantener toda su carrera en un solo lugar y delegar redacción o análisis a los agentes cuando quiera | Un panel rápido y confiable; que no se pierda nada entre la gestión manual y la asistida; visibilidad real del tráfico del portal, la actividad de los agentes y los errores |
+| **Carlos Jiménez Hirashi** (gestor de carrera, único administrador) | Admin Panel, con login | Registrar y mantener toda su carrera en un solo lugar y delegar redacción o análisis a los agentes cuando quiera | Un panel rápido y confiable; que no se pierda nada entre la gestión manual y la asistida; visibilidad real del tráfico del portal, la actividad de los agentes y los errores |
 | **Visitantes** (reclutadores, colegas, público) | Portal público (`cjhirashi.com`), sin cuenta | Conocer el perfil profesional (Sobre mí, Proyectos, Blog) y poder escribirle por el formulario de contacto | Contenido siempre actualizado, carga rápida y privacidad: pueden borrar sus datos de analítica en `/privacy` |
 | **Agentes de IA** (Agent Bedrock dentro del Admin; agentes externos con token `agent`) | API REST: Bedrock vía `/bedrock/*`; los externos, `/career/*`, `POST /bedrock/chat` y `POST /files` | Un contrato de API estable para leer y escribir el contexto de carrera (los externos también suben diagramas o imágenes) | Respuestas predecibles; que su actividad quede auditada y medible en el Admin |
 
@@ -33,7 +33,6 @@ El repo se trabaja con un arnés SDD Anchored (`.harness/method.md §8`). Roles 
 
 | Stakeholder | Qué necesita | Qué espera |
 |---|---|---|
-| **`cjhirashi-srv`** (proxy compartido: Caddy + Cloudflare Tunnel) | `caddy.json` vigente con hosts, contenedores y puertos de cada servicio | Que solo Portal, Admin y archivos públicos se expongan; API, PostgreSQL y Qdrant no se publican |
 | **CI** (GitHub Actions) | Pruebas del subsistema Bedrock de la API (Python 3.11) y build del Admin (Node 20) | Que los cambios pasen la compuerta antes de integrarse |
 
 ## Matriz de prioridades
@@ -45,7 +44,6 @@ El repo se trabaja con un arnés SDD Anchored (`.harness/method.md §8`). Roles 
 | **Uso diario del Admin** | Carlos | Un panel poco usable rompe el objetivo de gestión centralizada |
 | **Disponibilidad del portal** | Visitantes | No tienen vía de reporte directa; dependen de que funcione sin intervención |
 | **Autorización de los agentes** | Carlos (dueño de los datos) | Un agente mal configurado puede escribir datos de carrera sin supervisión en tiempo real |
-| **Red y exposición compartida** | `cjhirashi-srv` | Un cambio de puertos o red no coordinado rompe el proxy de otros proyectos |
 
 ## Comunicación y feedback
 
@@ -55,7 +53,6 @@ El repo se trabaja con un arnés SDD Anchored (`.harness/method.md §8`). Roles 
 | Visitantes | Sin canal directo: mensajes del formulario de contacto y analítica agregada | Pasiva |
 | Agentes de IA | Auditoría, métricas de agentes y registro de errores en el Admin | Pasiva |
 | Equipo de desarrollo | Specs y estado en `.harness/`; commits y `history.md` | Por cada entregable |
-| `cjhirashi-srv` | Mensajes del contrato `caddy.json` | Ante cambios de exposición |
 
 ---
 

@@ -1,6 +1,6 @@
 # Admin Panel — cjhirashi-career
 
-SPA privada (`admin.cjhirashi.com`, puerto host 8002) con la que Carlos gestiona su carrera, los agentes de IA y la analítica del portafolio. Habla solo con la API REST (`/api/`). Arranque y comandos: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md); arquitectura: [`docs/05-BUILDING-BLOCK-VIEW.md`](../docs/05-BUILDING-BLOCK-VIEW.md).
+SPA privada (puerto host 8002) con la que Carlos gestiona su carrera, los agentes de IA y la analítica del portafolio. Habla solo con la API REST (`/api/`). Arranque y comandos: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md); arquitectura: [`docs/05-BUILDING-BLOCK-VIEW.md`](../docs/05-BUILDING-BLOCK-VIEW.md).
 
 **Última actualización**: 2026-11-05
 
@@ -54,7 +54,7 @@ npm run type-check && npm run lint
 ```
 
 - **Docker**: desde la raíz del repo, `docker compose up -d --build admin` (imagen Node 20 que sirve `dist/` con `serve` en el 8000; host 8002).
-- **API**: todas las llamadas van a `VITE_API_BASE_URL` (`/api`); Caddy lo reenvía a `cjhirashi-career-api:8000` quitando el prefijo. No hay prefijo `/api/v1`.
+- **API**: todas las llamadas van a `VITE_API_BASE_URL` (`/api`); la API (`cjhirashi-career-api:8000`) recibe las rutas sin ese prefijo. No hay prefijo `/api/v1`.
 - **Autenticación**: `POST /auth/login` → tokens de acceso (7 días) y refresco (30); el interceptor de Axios añade `Authorization: Bearer` y renueva con `/auth/refresh` ante un 401.
 - **Guía completa**: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md). Chat de agentes: [`docs/BEDROCK-CHAT.md`](docs/BEDROCK-CHAT.md).
 

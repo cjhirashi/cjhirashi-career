@@ -42,7 +42,7 @@ docker compose up -d --build admin
 curl -s http://localhost:8002/ | head -1     # healthcheck: wget a http://localhost:8000/ dentro del contenedor
 ```
 
-En producción el SPA se sirve en `admin.cjhirashi.com` y Caddy reenvía `/api/` a la API quitando el prefijo; por eso `VITE_API_BASE_URL=/api` sirve en todos los entornos.
+La API recibe las rutas sin el prefijo `/api`; por eso `VITE_API_BASE_URL=/api` sirve en todos los entornos.
 
 ## Estructura
 

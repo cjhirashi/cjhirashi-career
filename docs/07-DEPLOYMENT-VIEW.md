@@ -3,7 +3,7 @@
 **VISTA DE DESPLIEGUE** (arc42, sección 7)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 6 contenedores definidos en `docker-compose.yml` (3 de aplicación + PostgreSQL, MinIO y Qdrant) en la red externa `net-cjhirashi-career`; solo 2 puertos publicados al host (8002 y 8003). La fuente de verdad es el propio `docker-compose.yml` y `caddy.json`.
+**Resumen**: 6 contenedores definidos en `docker-compose.yml` (3 de aplicación + PostgreSQL, MinIO y Qdrant) en la red externa `net-cjhirashi-career`; solo 2 puertos publicados al host (8002 y 8003). La fuente de verdad es el propio `docker-compose.yml`.
 
 ---
 
@@ -11,8 +11,7 @@
 
 ```mermaid
 graph TB
-    Internet((Internet)) --> CF["Cloudflare Tunnel + DNS"]
-    CF --> Caddy["caddy_proxy (cjhirashi-srv)<br/>TLS y routing"]
+    Cliente((Navegador y agentes))
 
     subgraph Net["Red Docker externa: net-cjhirashi-career"]
         Admin["cjhirashi-career-admin<br/>host 8002 → 8000"]
@@ -23,10 +22,10 @@ graph TB
         Q[("qdrant<br/>6333")]
     end
 
-    Caddy -->|admin.cjhirashi.com| Admin
-    Caddy -->|cjhirashi.com| Portal
-    Caddy -->|files.cjhirashi.com| S3
-    Caddy -->|"/api/ (en ambos hosts)"| API
+    Cliente --> Admin
+    Cliente --> Portal
+    Admin -->|/api/| API
+    Portal -->|/api/| API
     API --> PG
     API --> S3
     API --> Q
@@ -35,28 +34,16 @@ graph TB
 
 ## Contenedores y puertos
 
-| Servicio (compose) | Contenedor | Imagen | Puerto | Exposición |
+| Servicio (compose) | Contenedor | Imagen | Puerto | Acceso |
 |---|---|---|---|---|
-| `admin` | `cjhirashi-career-admin` | build local (Node 20, SPA servida) | 8002 → 8000 | `admin.cjhirashi.com` |
-| `portfolio` | `cjhirashi-career-portfolio` | build local | 8003 → 8000 | `cjhirashi.com` |
-| `api` | `cjhirashi-career-api` | build local (`python:3.11-slim`) | 8000 | Interna; `/api/` de los dos hosts, con prefijo removido |
+| `admin` | `cjhirashi-career-admin` | build local (Node 20, SPA servida) | 8002 → 8000 | Publicado al host |
+| `portfolio` | `cjhirashi-career-portfolio` | build local | 8003 → 8000 | Publicado al host |
+| `api` | `cjhirashi-career-api` | build local (`python:3.11-slim`) | 8000 | Interna; el portal y el Admin la llaman por `/api/` y ella recibe las rutas sin el prefijo |
 | `postgres` | `postgres_db` | `postgres:15-alpine` | 5432 | Interna |
-| `minio` | `minio_storage` | `minio/minio:latest` | 9000 (API), 9001 (consola) | `files.cjhirashi.com` (solo 9000); la consola no se expone |
+| `minio` | `minio_storage` | `minio/minio:latest` | 9000 (API), 9001 (consola) | Interna (API en 9000); la consola (9001) no se publica |
 | `qdrant` | `qdrant` | `qdrant/qdrant:latest` | 6333 | Interna. Retiro decidido (ADR-029, etapa 3 de la spec 009); la API depende de él (`depends_on`) |
 
 No hay contenedor de MCP (se retiró el 2026-09-04, ADR-023) ni de `cjhirashi-career-ai`: ese harness (spec 009) está en construcción y no se despliega todavía.
-
-## Contrato de red (`caddy.json`)
-
-`caddy.json` es el contrato con `cjhirashi-srv`: `cjhirashi-srv` escribe el bloque `cjhirashi_srv` (red, hosts y estado) y este repo rellena `servicios`.
-
-| Servicio | Host | Contenedor:puerto | Rutas |
-|---|---|---|---|
-| `admin` | `admin.cjhirashi.com` | `cjhirashi-career-admin:8000` | `/api/` → API (quitando el prefijo); `/` → Admin |
-| `portafolio` | `cjhirashi.com` | `cjhirashi-career-portfolio:8000` | `/api/` → API (quitando el prefijo); `/` → Portal |
-| `files` | `files.cjhirashi.com` | `minio_storage:9000` | `/` |
-
-Tras cualquier cambio de exposición: `python3 bin/caddy-sync cjhirashi-career` desde el repo `cjhirashi-srv`. Los cambios de red o puertos se comunican por los `mensajes` del propio contrato.
 
 ## Variables de entorno
 
@@ -64,7 +51,7 @@ El compose lee `.env` (nunca versionado; plantilla en `.env.example`). Detalle y
 
 ## Red Docker
 
-`net-cjhirashi-career` es una red *bridge* **externa** y dedicada, gestionada por `cjhirashi-srv` (el `caddy_proxy` ya está conectado). Migró desde la red compartida `network-cjhirashi-srv` (MSG-0001 y MSG-0004 del contrato). Declararla como `external: true` en el compose es obligatorio.
+`net-cjhirashi-career` es una red *bridge* **externa** y dedicada, que debe existir antes de levantar el compose (`docker network create net-cjhirashi-career`). Se declara como `external: true` en el compose.
 
 ## Volúmenes
 
@@ -101,7 +88,7 @@ Pruebas y arranque local por servicio: [AGENTS.md](../AGENTS.md) (sección «Com
 
 ## Producción
 
-Es el mismo `docker-compose.yml` en `cjhirashi-srv`, detrás de Caddy y Cloudflare Tunnel (TLS terminado ahí). Despliegue: reconstruir el servicio (`docker compose up -d --build <servicio>`) y comprobar `GET /health`. Las migraciones se aplican con Alembic desde la API (`alembic upgrade head`); respaldo previo de PostgreSQL antes de cualquier migración con datos.
+Es el mismo `docker-compose.yml`. Despliegue: reconstruir el servicio (`docker compose up -d --build <servicio>`) y comprobar `GET /health`. Las migraciones se aplican con Alembic desde la API (`alembic upgrade head`); respaldo previo de PostgreSQL antes de cualquier migración con datos.
 
 ---
 

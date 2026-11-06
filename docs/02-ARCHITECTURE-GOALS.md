@@ -37,7 +37,7 @@ Ante un conflicto entre dos objetivos, gana el de menor número.
 | Tipo | Restricción | Justificación |
 |---|---|---|
 | **Técnica** | Stack fijo: React + TypeScript (frontends), FastAPI (API), PostgreSQL (persistencia) | Continuidad técnica y decisión del arquitecto. |
-| **Infraestructura** | Contenedores Docker en la red externa `net-cjhirashi-career`, gestionada por `cjhirashi-srv` (Caddy + Cloudflare Tunnel) | Se comparte el hosting con otros proyectos; la red y el contrato `caddy.json` son el mecanismo de integración. |
+| **Infraestructura** | Contenedores Docker orquestados con `docker-compose.yml`, en la red externa `net-cjhirashi-career` | Despliegue reproducible con un solo compose. |
 | **Calidad** | Cobertura de pruebas mínima del 80 % por módulo | Estándar del arnés, comprobado por el gate. |
 | **Datos** | La API es la única que lee y escribe la base de carrera; los agentes la usan solo por la API REST | El harness futuro (`cjhirashi-career-ai`) tendrá su propia base y no accederá a `career_db` ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md)). |
 | **Seguridad** | Prácticas OWASP en todo lo expuesto a Internet (Portal, Admin y archivos públicos) | Son alcanzables desde fuera de la red interna. |
@@ -49,7 +49,7 @@ El repo usa un arnés SDD Anchored (`.harness/`: método, constitución, specs, 
 | Convención | Descripción |
 |---|---|
 | **Spec antes que código** | Lo no trivial pasa por `spec.md` → `plan.md` → `tasks.md` con gates aprobados por el usuario; nada se marca `verified` sin su aprobación. |
-| **Documentación en el mismo commit** | Todo cambio actualiza los docs que deja obsoletos (arc42, ADRs, READMEs, `docker-compose.yml`, `caddy.json`) o declara `Docs actualizadas: ninguna — <motivo>` (Constitución Art. 11; el gate lo exige). |
+| **Documentación en el mismo commit** | Todo cambio actualiza los docs que deja obsoletos (arc42, ADRs, READMEs, `docker-compose.yml`) o declara `Docs actualizadas: ninguna — <motivo>` (Constitución Art. 11; el gate lo exige). |
 | **Conventional Commits** | `feat:`, `fix:`, `docs:`… con sufijo `(RF-NNN)` cuando aplica. |
 | **Pruebas trazables** | Cada prueba anota su requisito (`@pytest.mark.requisito("RF-014")`, `describe("RF-014: …")`). |
 | **Arquitectura por capas** | `routes → services → repositories → models`. Norma del arnés: errores de API nuevos en Problem Details (RFC 9457); la API existente responde `{"detail": …}` (formato estándar de FastAPI) y registra los fallos en `error_reports`. |

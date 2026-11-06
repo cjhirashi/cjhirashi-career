@@ -8,7 +8,7 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 ---
 
-**Admin Panel** — SPA privada (`admin.cjhirashi.com`, puerto host 8002) donde Carlos gestiona su carrera, los agentes y la analítica. Un solo usuario administrador.
+**Admin Panel** — SPA privada (puerto host 8002) donde Carlos gestiona su carrera, los agentes y la analítica. Un solo usuario administrador.
 
 **ADR (Architecture Decision Record)** — Registro corto e inmutable de una decisión de arquitectura del producto, en `docs/09-DECISIONS/`. Las decisiones del arnés van en `.harness/decisions/`.
 
@@ -56,7 +56,7 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **Metodología operativa** — Documento de instrucciones que guía a los agentes; se asigna a perfiles de agente y a secciones del Admin.
 
-**`net-cjhirashi-career`** — Red Docker externa y dedicada del proyecto, gestionada por `cjhirashi-srv`. Sustituyó a `network-cjhirashi-srv`.
+**`net-cjhirashi-career`** — Red Docker externa y dedicada del proyecto, declarada `external: true` en `docker-compose.yml`.
 
 **Notificación in-app** — Aviso en la campana del Admin (turnos de tareas, mensajes de contacto).
 

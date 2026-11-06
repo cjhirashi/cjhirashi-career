@@ -43,7 +43,7 @@
 
 ## Seguridad
 
-- **Transporte**: HTTPS en Cloudflare/Caddy; el tráfico interno viaja por `net-cjhirashi-career`.
+- **Transporte**: el tráfico interno viaja por `net-cjhirashi-career`.
 - **Superficie**: solo Portal, Admin y archivos públicos están expuestos; API, PostgreSQL y Qdrant, no.
 - **Límites de tasa** (ventana deslizante) en el formulario de contacto (3 por hora por IP y por correo) y en la ingesta de analítica; clasificación de bots (umbral 70).
 - **Privacidad del visitante**: id seudónimo, respeto a DNT/GPC y borrado propio en `/privacy`.

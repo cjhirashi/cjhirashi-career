@@ -5,7 +5,7 @@
 **Última actualización**: 2026-11-05
 **Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, asistencia de Bedrock, descubrimiento de vacantes, tarea programada, plan con subtareas) y el flujo de analítica del portafolio.
 
-> Las rutas se muestran como las ve la API. Desde el navegador llevan el prefijo `/api/` (Caddy lo quita): `GET /api/public/home` llega a la API como `GET /public/home`.
+> Las rutas se muestran como las ve la API. Desde el navegador llevan el prefijo `/api/` (la API las recibe sin él): `GET /api/public/home` llega a la API como `GET /public/home`.
 
 ---
 
@@ -48,7 +48,7 @@ sequenceDiagram
     participant API as API REST
     participant DB as PostgreSQL
 
-    C->>A: Abre admin.cjhirashi.com
+    C->>A: Abre el Admin Panel
     A->>API: POST /auth/login
     API->>DB: Verifica usuario (bcrypt)
     API-->>A: access token (7 días) + refresh token (30 días)
@@ -217,7 +217,7 @@ sequenceDiagram
     participant A as Admin
 
     P->>API: POST /events/track (pageview, tiempo activo, scroll, salientes, Web Vitals, UTM)
-    API->>API: Sesioniza, puntúa bots (umbral 70), resuelve canal, dispositivo y geografía (cabeceras Cloudflare)
+    API->>API: Sesioniza, puntúa bots (umbral 70), resuelve canal, dispositivo y geografía (cabeceras `cf-*`)
     API->>DB: portal_events / portal_visits / portal_visitors
     API-->>P: 202
     A->>API: GET /career/portal-metrics/{overview|kpis|trend|pages|paths|retention|...}

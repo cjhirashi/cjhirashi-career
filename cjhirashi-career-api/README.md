@@ -46,7 +46,7 @@ flowchart TB
 | Admin Panel | Lectura/escritura | JWT Bearer |
 | Portal Público | Solo lectura vía `/public/*` | Ninguna |
 
-La API **no se expone directamente a Internet**. Solo es accesible desde la red Docker `net-cjhirashi-career`; los hosts públicos la alcanzan por `/api/` (Caddy quita el prefijo).
+La API **no se expone directamente a Internet**. Solo es accesible desde la red Docker `net-cjhirashi-career`; el portal y el Admin la llaman por `/api/` y ella recibe las rutas sin ese prefijo.
 
 ---
 
