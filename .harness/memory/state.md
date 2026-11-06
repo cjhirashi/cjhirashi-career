@@ -1,12 +1,17 @@
 ---
 tipo: memoria
 subtipo: state
-actualizado: 2026-10-14
+actualizado: 2026-11-05
 ---
 
 # Estado del arnés — cjhirashi-career
 
 ## ⚠️ Correcciones del usuario (leer SIEMPRE — no borrar)
+
+### [2026-11-05] La documentación se actualiza con cada cambio, siempre
+- **Qué pasó:** Carlos vio documentación de Qdrant desfasada y la tomó como prueba de que no se actualizaba la documentación al cambiar algo. Era cierto: el arc42 llevaba hasta 121 commits sin tocarse.
+- **Corrección:** la regla 🔴 de la Constitución Art. 11 es obligatoria en cada commit que cambie código o infraestructura, no solo en features grandes: toca los docs que el cambio deja obsoletos **o** declara `Docs actualizadas: ninguna — <motivo>`. «Estado actual» significa lo que corre hoy: no documentes lo decidido pero no ejecutado como si ya fuera así (p. ej. Qdrant sigue en uso hasta la etapa 3 de la spec 009).
+- **Cómo aplicar:** antes de cerrar una tarea, grep del cambio en `docs/`, READMEs y `docker-compose.yml`; ante un conteo (endpoints, modelos, migraciones), mídelo, no lo copies.
 
 ### [2026-09-10] Toda feature de frontend pasa por el especialista `experto-ux-ui`
 - **Qué pasó:** el usuario quiere que los frontends (`admin`, `portfolio`) estén

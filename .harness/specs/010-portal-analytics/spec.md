@@ -1,7 +1,7 @@
 ---
 titulo: "Analítica profesional del portafolio público (cjhirashi.com), consultable por API"
 tipo: spec
-estado: draft
+estado: implemented
 fecha: 2026-11-04
 feature_id: "010"
 anchor_mode: advisory

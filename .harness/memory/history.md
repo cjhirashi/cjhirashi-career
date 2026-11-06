@@ -8,6 +8,17 @@ subtipo: history
 > Append-only, orden cronológico inverso (lo más reciente arriba). Una entrada
 > Session-End por sesión, con el formato fijo de `method.md §10`.
 
+## [2026-11-05] Revisión completa de la documentación del producto (arc42, ADR, guías y READMEs)
+- **Qué pasó:** Carlos señaló que la documentación mencionaba Qdrant como si siguiera igual y exigió que cada cambio actualice su documentación y que los docs de este proyecto y de Synapse queden al 100 % con el estado actual. Medido antes de tocar: el arc42 (01 a 12), la mayoría de los ADR, el README raíz y varias guías llevaban entre 64 y 121 commits de código sin editarse (desde agosto o septiembre) y describían un diseño que ya no existe (MCP Server, `/api/v1`, puerto 8001, red `network-cjhirashi-srv`, «diseño en validación»).
+- **Fase alcanzada:** documentación (sin código de producto; solo corregí el `target` del proxy de Vite en `admin` y `portfolio` de `:8001` a `:8000`, y un comentario).
+- **Hecho:** README y `AGENTS.md`; arc42 01 a 12 reescritos contra el código (419 operaciones, 69 modelos, 51 migraciones, 21 routers, 24 pantallas del Admin); índice de ADR reconstruido (008 a 029) con las revisiones parciales anotadas en ADR-008, 014 y 025; `BEDROCK-SYSTEM`, `ENVIRONMENT-SECURITY`, `ADMIN_PANEL_SETUP` e `IMPLEMENTATION_PLAN`; READMEs de admin, portal, API y harness; `cjhirashi-career-api/docs` (SETUP, TESTING, SECURITY, ARCHITECTURE, API completado con los endpoints que faltaban, READMEs de `src/`, `tests/` y `alembic/`); estado de la spec 010 a `implemented` (32 de 32 tareas).
+- **Qdrant:** **no** se quitó de la documentación porque sigue en uso (contenedor `qdrant` corriendo, la API indexa y consulta en cada escritura). Se documenta como en uso con el retiro decidido en el ADR-029 y pendiente de la etapa 3 de la spec 009 (62 de 163 tareas). Se corrigió además la afirmación falsa de que Synapse corre su propio Qdrant.
+- **Hallazgos de seguridad:** `POST /auth/register` es público y sin guarda, y está accesible desde Internet (R15, `SECURITY.md` deuda 1); `logout` no revoca tokens y la tabla `refresh_tokens` no se usa (R7); no hay respaldo automático de PostgreSQL (R8); `endpoints-parametrized.test.py` no se ejecuta y sus aserciones son triviales.
+- **Gate:** cerrado solo por `cjhirashi-career-ai` (45 pruebas en rojo de la spec 009, TDD previo); la documentación no lo bloquea.
+- **Docs actualizadas:** todas las listadas arriba.
+- **Modelos usados:** AIRA (claude-sonnet-5-5); sin subagentes.
+- **Próximo paso:** decisión de Carlos sobre el registro público (R15), sobre el estado de Qdrant (documentar como está o ejecutar la etapa 3) y sobre los respaldos (R8).
+
 ## [2026-11-04] 011 Mensajes del formulario de contacto — implementada y desplegada (solo SPEC-0011)
 - **Fase alcanzada:** implemented — Carlos pidió corregir el formulario (2026-11-04), eligió entrega «Solo Admin» y precisó que se despliega únicamente lo de contacto (el slice 3 de SPEC-0010 sigue en desarrollo). Gate 4 sin separar: aprobación y despliegue en la misma sesión por instrucción directa.
 - **Rebotes del verificador:** 0 formales. La revisión de AIRA devolvió a Haiku los bloques A/B por defectos reales (ruta del Admin sin `/career`, `POST` expuesto, `read_at` sin llenar, pruebas sin aserciones y nunca ejecutadas) y el bloque D por no poder mostrar el texto del mensaje; AIRA los corrigió y añadió soporte genérico al framework de recursos (`canCreate`, `readOnlyFields`, `markOnOpen`, `create_schema=None`).
