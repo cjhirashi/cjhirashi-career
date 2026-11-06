@@ -1,182 +1,139 @@
-# Estrategia de Solución - cjhirashi-career
+# Estrategia de solución - cjhirashi-career
 
-**ESTRATEGIA DE SOLUCIÓN**
+**ESTRATEGIA DE SOLUCIÓN** (arc42, sección 4)
 
-[![Document Type](https://img.shields.io/badge/type-architecture-blue)]()
-[![Audience](https://img.shields.io/badge/audiencia-arquitectos%20%7C%20developers-informational)]()
-[![Estado](https://img.shields.io/badge/estado-diseño%20en%20validación-yellow)]()
+**Última actualización**: 2026-11-05
 
 ---
 
-**Última actualización**: 2026-08-16
-**Resumen rápido**: 6 decisiones de alto nivel · módulos organizados en canales convergentes sobre una API única · comparativa contra 3 alternativas descartadas · matriz de comunicación entre contenedores
+## Propósito
 
----
+[02-ARCHITECTURE-GOALS.md](./02-ARCHITECTURE-GOALS.md) define **qué debe lograrse** y [03-STAKEHOLDERS.md](./03-STAKEHOLDERS.md) **para quién**; este documento explica **el camino elegido**: las decisiones de más alto nivel, por qué se prefirieron y cómo se organizan los contenedores. El detalle vive en [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) y [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md); las decisiones formales, en [09-DECISIONS/](./09-DECISIONS/README.md).
 
-> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
-> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). La **Decisión 6 ("MCP Server
-> expuesto para agentes externos") queda revertida**; la Decisión 1 ("tres canales")
-> pasa a **dos canales** (Portal Público, Admin Panel). Los diagramas y la matriz de
-> comunicación de este documento todavía incluyen el Canal 3 — es diseño previo.
+## Decisiones de alto nivel
 
----
+### 1. Dos canales independientes hacia una sola API
 
-## 📋 Tabla de Contenidos
+**Decisión**: Portal público y Admin Panel son puntos de entrada autónomos; convergen solo en la API REST y la base de datos. (Hubo un tercer canal, el MCP Server, retirado el 2026-09-04: [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md); nunca implementó las herramientas de carrera y no tuvo tráfico. Los agentes externos usan hoy un token de rol `agent` sobre la API.)
 
-- [Propósito de este Documento](#-propósito-de-este-documento)
-- [Decisiones Arquitectónicas de Alto Nivel](#-decisiones-arquitectónicas-de-alto-nivel)
-- [Organización en Módulos](#-organización-en-módulos)
-- [Comparativa Frente a Alternativas Consideradas](#-comparativa-frente-a-alternativas-consideradas)
-- [Matriz de Comunicación](#-matriz-de-comunicación)
-- [Trazabilidad hacia ADRs](#-trazabilidad-hacia-adrs)
+**Motivación**: las audiencias (visitante anónimo, administrador autenticado, agente) tienen necesidades de acceso y disponibilidad distintas; compartir un canal acoplaría su disponibilidad.
 
----
-
-## 🎯 Propósito de este Documento
-
-Mientras `02-ARCHITECTURE-GOALS.md` define **qué debe lograrse** y `03-STAKEHOLDERS.md` define **para quién**, este documento explica **el camino elegido** para lograrlo: las decisiones estructurales de más alto nivel, por qué se prefirieron sobre otras alternativas razonables, y cómo se organizan los 7 módulos del sistema para satisfacerlas.
-
-Estas decisiones son de nivel estratégico, no de detalle de implementación — el detalle de interfaces y esquemas de datos corresponde a `05-BUILDING-BLOCK-VIEW.md` y `06-RUNTIME-VIEW.md`. Ninguna decisión aquí descrita está aún formalizada como Architecture Decision Record; esa formalización es un trabajo pendiente, referenciado en la sección [Trazabilidad hacia ADRs](#-trazabilidad-hacia-adrs).
-
-## 🧭 Decisiones Arquitectónicas de Alto Nivel
-
-### 1. Tres canales independientes en lugar de uno único
-
-**Decisión**: el sistema se organiza en tres puntos de entrada completamente autónomos — Portal Público, Admin Panel y MCP Server — en vez de un único frontend que sirva a todas las audiencias o de un Admin Panel que actúe como intermediario obligatorio del MCP Server.
-
-**Motivación**: las tres audiencias del sistema (visitante anónimo, usuario administrador humano, agente de IA externo) tienen necesidades de acceso, autenticación y disponibilidad radicalmente distintas. Forzarlas a compartir un mismo canal habría acoplado su disponibilidad — por ejemplo, un agente externo no podría operar si el Admin Panel estuviera caído — y habría complicado el modelo de autorización de cada una.
-
-**Consecuencia arquitectónica**: la API REST se convierte en el único punto de convergencia obligatorio; su disponibilidad es crítica para los tres canales por igual (ver objetivo técnico de escalabilidad horizontal en `02-ARCHITECTURE-GOALS.md`).
+**Consecuencia**: la API es el único punto de convergencia obligatorio y su disponibilidad es crítica para todos.
 
 ### 2. SPA en React para el Admin Panel
 
-**Decisión**: el Admin Panel se construye como una aplicación de una sola página (SPA), con CRUD dinámico sobre las entidades de carrera, un panel de métricas y un chat embebido con Agent Bedrock, en vez de un panel de administración generado en servidor con recargas de página completas.
+**Decisión**: el Admin es una SPA (React 18 + Vite + TypeScript) con CRUD dinámico, métricas y chat con agentes, no un panel renderizado en servidor.
 
-**Motivación**: el uso previsto del panel es intensivo y frecuente por parte de un único usuario (Carlos Jiménez Hirashi), que alterna constantemente entre gestión manual de datos, consulta de métricas y asistencia conversacional con Bedrock. Ese patrón de uso exige transiciones fluidas entre secciones sin la latencia de recargas de página completas.
+**Motivación**: uso intensivo y frecuente por un único usuario, que alterna entre gestión manual, métricas y chat; exige transiciones fluidas.
 
-**Consecuencia arquitectónica**: el Admin Panel consume la API REST íntegramente vía llamadas asíncronas (REST JSON), y todo el estado de sesión y navegación vive en el cliente — el servidor no mantiene estado de vista alguno.
+**Consecuencia**: el Admin consume la API íntegramente por REST JSON y el estado de sesión y navegación vive en el cliente. El sidebar lo gobierna la sección activa ([ADR-024](./09-DECISIONS/024-sidebar-contextual-por-seccion.md)) y las secciones de tabla comparten plantilla ([ADR-020](./09-DECISIONS/020-admin-section-templates.md)).
 
-### 3. PostgreSQL centralizado con nuevas tablas de métricas, eventos y auditoría
+### 3. PostgreSQL centralizado, también para observabilidad
 
-**Decisión**: en lugar de introducir un almacén de datos separado para observabilidad (por ejemplo, una base de series de tiempo dedicada), las métricas del MCP Agent, del Portal Público, el tracking de visitantes y los eventos de auditoría se persisten como nuevas tablas dentro de la misma instancia de PostgreSQL que ya almacena los datos de carrera profesional.
+**Decisión**: métricas, eventos, auditoría, registro de errores y analítica del portafolio se guardan en tablas de la misma instancia PostgreSQL que los datos de carrera, no en un almacén de series de tiempo aparte.
 
-**Motivación**: el volumen de eventos esperado (un único usuario administrador, tráfico de portafolio personal, un número acotado de agentes externos) no justifica la complejidad operativa de un segundo motor de base de datos. Mantener todo en PostgreSQL simplifica el despliegue, el respaldo y la coherencia transaccional entre datos de negocio y datos de observabilidad.
+**Motivación**: el volumen (un administrador, un portafolio personal) no justifica un segundo motor; se gana simplicidad de despliegue, respaldo y coherencia transaccional. La analítica del portafolio (visitas, sesiones, metas, embudos, agregados diarios) usa tablas propias con sesionización y conservación prolongada; el registro de fallas, `error_reports` ([ADR-018](./09-DECISIONS/018-error-reports-registry.md)).
 
-**Consecuencia arquitectónica**: el modelo de datos de PostgreSQL crece para incluir entidades de métricas, eventos y auditoría junto a las de carrera profesional; el diseño de esas tablas y su posible necesidad futura de particionado es un tema pendiente de `05-BUILDING-BLOCK-VIEW.md`.
+**Consecuencia**: el modelo crece (69 modelos, 53 migraciones Alembic); el particionado queda como trabajo futuro si el volumen lo pide.
 
 ### 4. API REST como orquestador único
 
-**Decisión**: la API REST no solo expone operaciones CRUD de negocio, sino que también concentra los endpoints de gestión y los endpoints de métricas — es decir, todo dato que necesita el Admin Panel, el MCP Server o el Portal Público pasa exclusivamente por este componente, sin excepciones.
+**Decisión**: la API concentra el CRUD de negocio, los endpoints de gestión, las métricas, los archivos, el PDF y Agent Bedrock; todo dato que necesita un canal pasa por ella.
 
-**Motivación**: mantener un único orquestador evita la duplicación de lógica de acceso a datos en cada canal y garantiza que las reglas de negocio (por ejemplo, qué contenido es publicable) se apliquen de forma consistente sin importar desde dónde se originó la solicitud.
+**Motivación**: evita duplicar la lógica de acceso a datos y garantiza que las reglas de negocio (por ejemplo, qué es publicable) se apliquen igual desde cualquier origen.
 
-**Consecuencia arquitectónica**: la API REST concentra toda la carga de los tres canales, lo que la convierte en el componente de mayor prioridad para el objetivo técnico de escalabilidad horizontal (ver `02-ARCHITECTURE-GOALS.md`).
+**Consecuencia**: la API concentra la carga de todos los canales; es el componente con mayor prioridad de escalabilidad.
 
-### 5. Agent Bedrock como asistente interno, no como canal
+### 5. Agent Bedrock como capacidad, no como canal
 
-**Decisión**: Agent Bedrock se implementa como una capacidad embebida y exclusiva del Admin Panel — sin puerto propio, sin exposición a Internet y sin posibilidad de ser invocado fuera de una sesión ya autenticada — en lugar de convertirlo en un cuarto canal de acceso al sistema.
+**Decisión**: Agent Bedrock es una capacidad del Admin Panel (harness local sobre la API de Converse: [ADR-008](./09-DECISIONS/008-bedrock-harness-local.md); jerarquía de tres niveles L1/L2/L3: [ADR-012](./09-DECISIONS/012-bedrock-three-level-agents.md); tareas programadas y subtareas: [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md), [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md)), sin puerto propio ni exposición a Internet.
 
-**Motivación**: Bedrock existe para asistir al usuario humano dentro de su flujo de trabajo, no para ofrecer una vía de acceso alternativa. Convertirlo en un canal propio duplicaría innecesariamente la superficie de autenticación y de autorización que ya resuelve el MCP Server para agentes de IA externos.
+**Motivación**: Bedrock asiste al usuario humano dentro de su flujo; convertirlo en canal duplicaría la superficie de autenticación.
 
-**Consecuencia arquitectónica**: Bedrock hereda siempre el contexto de autorización de la sesión del Admin Panel que lo invoca — nunca tiene un alcance de permisos propio y distinto (ver Modelo de Seguridad en `01-INTRODUCTION.md`).
+**Consecuencia**: opera con el contexto de autorización de quien lo invoca (o, en tareas programadas, con el del usuario propietario de la tarea).
 
-### 6. MCP Server expuesto para agentes externos  ~~— REVERTIDA 2026-09-04 ([ADR-023](./09-DECISIONS/023-retirar-mcp-server.md))~~
+### 6. Harness de agentes fuera de la API y sin indexación (en ejecución)
 
-> **Revertida.** El MCP Server nunca implementó las herramientas de carrera (sólo el
-> stub de PDF heredado, ya cubierto in-process por la API) y no tuvo tráfico. Se
-> retiró el 2026-09-04. El texto siguiente queda como registro histórico.
+**Decisión**: el harness completo pasa a `cjhirashi-career-ai` (base propia `career_ai_db`, proveedor de modelos intercambiable, acceso a los datos solo por la API REST). La memoria del agente pasa a Postgres con búsqueda de texto completo; se retiran la base de conocimiento, la indexación en cada escritura y **Qdrant** ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md), spec 009).
 
-**Decisión**: el MCP Server se mantiene como un canal completo, expuesto e independiente (puerto 8004), retomando y confirmando el rol que ya tenía en la versión anterior del proyecto, en lugar de subordinarlo al Admin Panel o eliminarlo del nuevo alcance de portafolio.
+**Motivación**: la indexación gastaba embeddings sin consumidor real y el harness acoplaba la API a un proveedor concreto.
 
-**Motivación**: uno de los tres objetivos de negocio del proyecto (ver `02-ARCHITECTURE-GOALS.md`) es explícitamente habilitar que agentes de IA externos gestionen la carrera profesional de forma autónoma; eliminar o subordinar este canal habría contradicho ese objetivo desde el diseño.
+**Estado**: la decisión está aprobada pero **no ejecutada**: el corte es en tres etapas reversibles (harness arriba con datos copiados, Admin apuntando a `/ai/`, retirada de la API) y la spec 009 va en la etapa 1. Mientras no se complete la etapa 3, Bedrock, la base de conocimiento y Qdrant siguen dentro de la API y operando.
 
-**Consecuencia arquitectónica**: el MCP Server exige su propio mecanismo de autenticación y, potencialmente, controles adicionales de autorización dado que opera sin supervisión humana en tiempo real — ambos puntos permanecen como preguntas abiertas en `01-INTRODUCTION.md`.
-
-## 🧩 Organización en Módulos
-
-Los 7 contenedores del sistema se agrupan en tres capas funcionales. Esta agrupación es una lente estratégica sobre la misma topología descrita en detalle en `01-INTRODUCTION.md` — no introduce componentes nuevos, sino que explica el criterio de organización detrás de ellos.
+## Organización en capas
 
 ```mermaid
 graph TB
-    classDef client fill:#1e293b,stroke:#cbd5e1,color:#fff
-    classDef react fill:#164e63,stroke:#06b6d4,color:#fff
-    classDef nodejs fill:#042f2e,stroke:#10b981,color:#fff
-    classDef utility fill:#1f2817,stroke:#84cc16,color:#fff
-    classDef s3 fill:#7c2d12,stroke:#f97316,color:#fff
-    classDef postgres fill:#1e1b4b,stroke:#6366f1,color:#fff
-
-    subgraph Capa1["Capa 1 — Canales de entrada (3, independientes)"]
-        Portal["⚛️ Portal Público"]
-        Admin["⚛️ Admin Panel"]
-        MCP["🌱 MCP Server"]
+    subgraph Capa1["Capa 1 — Canales de entrada (2, independientes)"]
+        Portal["Portal público<br/>cjhirashi.com"]
+        Admin["Admin Panel<br/>admin.cjhirashi.com"]
     end
 
-    subgraph Capa2["Capa 2 — Orquestación (punto de convergencia único)"]
-        API["🚀 API REST<br/>(PDF WeasyPrint in-process)"]
-        Bedrock["☁️ Agent Bedrock<br/>(interno al Admin Panel)"]
+    subgraph Capa2["Capa 2 — API (punto de convergencia único)"]
+        API["API REST<br/>(Bedrock, PDF WeasyPrint,<br/>archivos, analítica)"]
     end
 
-    subgraph Capa3["Capa 3 — Persistencia (fuente única de verdad)"]
-        DB["🗄️ PostgreSQL<br/>Carrera · Métricas · Eventos · Auditoría"]
+    subgraph Capa3["Capa 3 — Persistencia"]
+        DB["PostgreSQL<br/>carrera · métricas · analítica · auditoría"]
+        S3["MinIO<br/>archivos"]
+        Q["Qdrant<br/>base de conocimiento<br/>(retiro decidido, ADR-029)"]
     end
+
+    AWS["AWS Bedrock"]
 
     Portal --> API
     Admin --> API
-    Admin -.-> Bedrock
-    Bedrock --> API
-    MCP --> API
     API --> DB
-
-    class Portal react
-    class Admin react
-    class MCP utility
-    class API nodejs
-    class Bedrock s3
-    class DB postgres
+    API --> S3
+    API --> Q
+    API --> AWS
 ```
 
-| Capa | Módulos | Criterio de organización |
-|------|---------|-----------------------------|
-| **Capa 1 — Canales de entrada** | Portal Público, Admin Panel, MCP Server | Cada módulo responde a una audiencia distinta y no depende de los otros dos módulos de su misma capa |
-| **Capa 2 — Orquestación** | API REST (incluye Bedrock y PDF) | Concentra reglas de negocio; no es alcanzable desde fuera de la red interna salvo a través de los canales de la Capa 1 |
-| **Capa 3 — Persistencia** | PostgreSQL | Fuente única de verdad; solo la API REST tiene acceso de lectura/escritura sobre ella |
+| Capa | Módulos | Criterio |
+|---|---|---|
+| **1. Canales** | Portal público, Admin Panel | Cada uno responde a una audiencia y no depende del otro |
+| **2. API** | `cjhirashi-career-api` (incluye Bedrock y PDF) | Concentra las reglas de negocio; solo alcanzable desde fuera por los canales de la capa 1 (`/api/`) |
+| **3. Persistencia** | PostgreSQL, MinIO, Qdrant | La API es la única con acceso de lectura/escritura |
 
-## ⚖️ Comparativa Frente a Alternativas Consideradas
+`cjhirashi-career-ai` (harness, sin desplegar) se sumará como componente de la capa 2 cuando termine la etapa 1 de la spec 009.
 
-| Decisión adoptada | Alternativa considerada | Por qué se descartó |
-|---------------------|----------------------------|------------------------|
-| Tres canales independientes (Portal, Admin, MCP) | Un único frontend multipropósito que sirva contenido público y panel de administración desde la misma aplicación | Habría acoplado la disponibilidad y el modelo de autenticación de audiencias con necesidades opuestas (visitante anónimo vs. usuario autenticado), y habría complicado el aislamiento de datos publicables frente a datos privados de carrera |
-| MCP Server como canal autónomo, sin pasar por el Admin Panel | MCP Server como herramienta interna invocada únicamente desde el Admin Panel (análoga a Agent Bedrock) | Habría contradicho directamente el objetivo de negocio de permitir operación autónoma de agentes externos sin que Carlos Jiménez Hirashi esté usando el panel en ese momento |
-| PostgreSQL centralizado también para métricas, eventos y auditoría | Un almacén de series de tiempo o de eventos dedicado (por ejemplo, para tracking de visitantes o auditoría) | El volumen esperado de eventos no justifica la complejidad operativa adicional de un segundo motor de datos para un sistema de un único usuario administrador; se prioriza simplicidad operativa sobre un rendimiento de escritura que no es un cuello de botella previsible en este alcance |
-| Agent Bedrock sin puerto ni exposición propia | Agent Bedrock como microservicio propio, con su propio endpoint interno | Habría introducido una superficie de red adicional sin necesidad real, dado que Bedrock nunca actúa fuera del contexto de una sesión ya autenticada del Admin Panel |
+## Alternativas descartadas
 
-## 🔀 Matriz de Comunicación
+| Decisión adoptada | Alternativa | Por qué se descartó |
+|---|---|---|
+| Dos canales independientes | Un único frontend multipropósito | Acoplaría disponibilidad y autenticación de audiencias opuestas y complicaría el aislamiento de lo publicable |
+| PostgreSQL también para observabilidad | Almacén de series de tiempo o eventos dedicado | El volumen no justifica un segundo motor para un solo administrador |
+| Bedrock sin exposición propia | Microservicio de agentes público | Superficie de red adicional sin necesidad; el acceso externo se resuelve con el token `agent` |
+| MCP Server como tercer canal | Token `agent` sobre la API | El MCP no llegó a implementar herramientas de carrera y no tuvo tráfico (ADR-023) |
 
-Quién se comunica con quién, y bajo qué protocolo — vista consolidada de las interfaces ya descritas por componente en `01-INTRODUCTION.md`.
+## Matriz de comunicación
 
 | Origen | Destino | Protocolo | Autenticación |
-|--------|---------|-----------|-----------------|
-| Visitante anónimo | Portal Público | HTTPS (navegador) | Ninguna |
-| Carlos Jiménez Hirashi | Admin Panel | HTTPS (navegador) | Sesión autenticada |
-| Agente de IA externo | MCP Server | Protocolo MCP | Mecanismo propio del canal (pendiente de definir, ver `01-INTRODUCTION.md`) |
-| Portal Público | API REST | REST JSON | Ninguna (solo lectura) |
-| Admin Panel | API REST | REST JSON (CRUD, PDF, chat Bedrock) | Token de sesión del Admin Panel |
-| Admin Panel | Agent Bedrock | Invocación interna (misma sesión, sin red externa) | Heredada de la sesión del Admin Panel |
-| Agent Bedrock | API REST | REST JSON | Token heredado de la sesión del Admin Panel que lo invocó |
-| MCP Server | API REST | REST JSON | Mecanismo propio del canal (pendiente de definir) |
-| API REST | PostgreSQL | SQL (vía SQLAlchemy async / asyncpg) | Credenciales de servicio, internas a la red Docker |
+|---|---|---|---|
+| Visitante | Portal | HTTPS | Ninguna |
+| Carlos | Admin Panel | HTTPS | Login (JWT) |
+| Portal | API (`/public/*`, contacto, ingesta de analítica) | REST JSON | Ninguna; límites de tasa |
+| Admin | API | REST JSON (CRUD, PDF, chat y tareas de Bedrock) | JWT del administrador |
+| Agente externo | API (`/career/*`, `POST /bedrock/chat`, `POST /files`) | REST JSON | JWT de rol `agent` |
+| API | PostgreSQL | SQL (SQLAlchemy async / asyncpg) | Credenciales de servicio, red Docker interna |
+| API | MinIO | S3 | Credenciales de servicio |
+| API | Qdrant | HTTP (6333) | Red Docker interna |
+| API | AWS Bedrock | HTTPS (boto3) | Credenciales AWS por variable de entorno |
 
-**Conexiones deliberadamente ausentes de esta matriz** (ya explicadas en detalle en `01-INTRODUCTION.md`): MCP Server ↔ Admin Panel, MCP Server ↔ Agent Bedrock, Agent Bedrock ↔ cualquier componente que no sea la API REST, Portal Público ↔ Admin Panel/Bedrock/MCP Server, y cualquier componente ↔ PostgreSQL salvo la API REST.
+Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a PostgreSQL, MinIO o Qdrant que no sea desde la API.
 
-## 📎 Trazabilidad hacia ADRs
+## Trazabilidad hacia ADR
 
-Ninguna de las seis decisiones descritas en este documento está aún formalizada como Architecture Decision Record — actualmente viven únicamente como narrativa en `01-INTRODUCTION.md` y en esta estrategia. Antes de avanzar a `05-BUILDING-BLOCK-VIEW.md`, el Arquitecto de Soluciones debe decidir cuáles de estas seis decisiones ameritan un ADR propio en `docs/09-DECISIONS/`; como mínimo, son candidatas naturales:
-
-1. Independencia de los tres canales (decisión 1)
-2. Mecanismo de autenticación del MCP Server, aún sin resolver (ligado a la decisión 6 y a la pregunta abierta correspondiente en `01-INTRODUCTION.md`)
-3. Centralización de métricas y auditoría en PostgreSQL en lugar de un almacén dedicado (decisión 3)
+| Decisión | ADR |
+|---|---|
+| 1. Dos canales | ADR-014 (módulos) y ADR-023 (retiro del MCP) |
+| 2. SPA del Admin | ADR-020, ADR-021, ADR-024, ADR-028 |
+| 3. PostgreSQL centralizado | ADR-018 |
+| 4. API orquestadora | ADR-011 (descubrimiento de vacantes), ADR-015 y ADR-016 |
+| 5. Bedrock como capacidad | ADR-008, ADR-009 (deprecado), ADR-010, ADR-012, ADR-013, ADR-017, ADR-019, ADR-022, ADR-025, ADR-026, ADR-027 |
+| 6. Harness fuera de la API | ADR-029 |
 
 ---
 
 **Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [02-ARCHITECTURE-GOALS.md](./02-ARCHITECTURE-GOALS.md) · [03-STAKEHOLDERS.md](./03-STAKEHOLDERS.md) · [CLAUDE.md](../CLAUDE.md)
-**Contacto**: Carlos Jiménez Hirashi (cjhirashi@gmail.com)
+**Contacto**: cjhirashi@gmail.com

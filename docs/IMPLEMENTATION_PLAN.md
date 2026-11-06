@@ -1,217 +1,55 @@
-# 🚀 Plan de Implementación - cjhirashi-career
+# Plan de implementación - cjhirashi-career
 
-**Última actualización:** 2026-08-16  
-**Estado:** Fase de Planificación → Fase 1 (Inicio)
-
----
-
-## 📋 Resumen Ejecutivo
-
-Plan de 3 fases para implementar cjhirashi-career desde 0 hasta producción:
-
-1. **FASE 1 (MVP):** Sistema funcional para usuario manual (6-8 semanas)
-2. **FASE 2:** MCP Server operacional (2-3 semanas)
-3. **FASE 3:** Agent Bedrock integrado (2-3 semanas)
-
-**Objetivo Fase 1:** Carlos puede gestionar completamente su carrera SIN IA.
+**Última actualización:** 2026-11-05
+**Estado:** en producción; evolución por specs del arnés (`.harness/specs/`).
 
 ---
 
-## 🏗️ FASE 1: Sistema Funcional (MVP)
+## Resumen
 
-### Objetivo
-Plataforma completa donde **Carlos gestiona su carrera manualmente** sin ayuda de IA.
+El plan original en tres fases (sistema manual, MCP Server, Agent Bedrock) se cumplió con un recorrido distinto: el sistema manual y Agent Bedrock están en producción, y el MCP Server se retiró (ADR-023). Desde entonces el trabajo avanza por **specs**: cada una pasa por gates aprobados por Carlos y su estado vive en el `estado:` de su `spec.md`. Este documento resume lo entregado y lo que sigue.
 
-### Módulos (Orden de Implementación)
+## Entregado (en producción)
 
-#### **Módulo 1: API REST + PostgreSQL (AHORA)**
-- **Responsable:** API Specialist
-- **Dependencias:** Ninguna
-- **Deliverables:**
-  - ✅ CRUD endpoints completos (identidad, competencias, evidencia, etc.)
-  - ✅ Autenticación JWT
-  - ✅ Bucket de archivos (uploads)
-  - ✅ Health checks
-  - ✅ Documentación de endpoints
-  - ✅ 80%+ cobertura de tests
+| Bloque | Qué incluye | Referencia |
+|---|---|---|
+| **API REST + PostgreSQL** | JWT, CRUD de carrera (≈48 recursos bajo `/career`), archivos en MinIO, PDF, health checks; 419 operaciones, 69 modelos, 53 migraciones | [`cjhirashi-career-api/`](../cjhirashi-career-api/README.md) |
+| **Admin Panel** | 24 pantallas: dashboard, recursos de carrera, descubrimiento de vacantes, archivos, tareas (lista, kanban, calendario, Gantt), PDF, métricas, agentes, configuración | [`cjhirashi-career-admin/`](../cjhirashi-career-admin/README.md) |
+| **Portal público** | Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad | [`cjhirashi-career-portfolio/`](../cjhirashi-career-portfolio/README.md) |
+| **Agent Bedrock** | Harness local, jerarquía L1/L2/L3, perfiles configurables, memoria, tareas programadas y subtareas, costos y presupuesto | [BEDROCK-SYSTEM.md](./BEDROCK-SYSTEM.md) |
+| **Spec 001** | Sidebar contextual por sección (verified) | ADR-024 |
+| **Spec 002** | Generación de imágenes del agente Visual (verified) | ADR-025 |
+| **Specs 003 y 004** | Configuración de agentes desde la App; herramientas y metodologías por sección (verified) | ADR-026, ADR-027 |
+| **Spec 007** | Vacantes: etapa del proceso y estado calculado (verified) | — |
+| **Spec 008** | Vacantes: empresa, puesto, oferta y cultura (implemented) | — |
+| **Spec 010** | Analítica profesional del portafolio: ingesta, tablero, metas, embudos, API para agentes (desplegada; el `spec.md` aún figura `draft`) | `.harness/specs/010-portal-analytics/` |
+| **Spec 011** | Formulario de contacto → Admin (implemented) | `.harness/specs/011-contact-messages/` |
 
-**Duración estimada:** 2-3 semanas  
-**Hito:** API lista para consumo by Frontend + MCP
+## En curso
 
----
+**Spec 009 — Harness de agentes fuera de la API y sin indexación** (ADR-029; `approved`, 62 de 163 tareas). Tres etapas reversibles:
 
-#### **Módulo 2: Admin Panel (SPA React)**
-- **Responsable:** Frontend Admin Specialist
-- **Dependencias:** Módulo 1 (API REST)
-- **Deliverables:**
-  - ✅ Autenticación (login con JWT)
-  - ✅ Dashboard (resumen de datos)
-  - ✅ CRUD dinámico (todas las secciones de carrera)
-  - ✅ Métricas dashboard (gráficos básicos)
-  - ✅ Carga de archivos (imágenes, documentos)
-  - ✅ 80%+ cobertura de tests
+1. **Harness arriba, datos copiados**: `cjhirashi-career-ai` con su base `career_ai_db`, cambios aditivos de la API (claim `role`, rol `service`, `/notifications`, `/audit-log`) y migración de la memoria desde Qdrant. *No iniciada en producción.*
+2. **El Admin llama al harness** bajo `/ai/` con paridad exacta del contrato `/bedrock/*` y `/agent-tasks/*`.
+3. **Retiro de la API**: se eliminan Bedrock, la KB, el indexado y Qdrant (con snapshot previo), y la migración borra las tablas `bedrock_*` de `career_db` solo tras verificar la copia.
 
-**Duración estimada:** 2-3 semanas  
-**Hito:** Admin Panel funcional y operativo
+Hasta completar la etapa 3, Bedrock, la KB y Qdrant siguen operando dentro de la API.
 
----
+## Pendiente
 
-#### **Módulo 3: Portal Público (React)**
-- **Responsable:** Frontend Public Specialist
-- **Dependencias:** Módulo 1 (API REST)
-- **Deliverables:**
-  - ✅ Home/About (info personal desde BD)
-  - ✅ Proyectos (listado dinámico)
-  - ✅ Blog (artículos)
-  - ✅ Contacto
-  - ✅ Responsive design
-  - ✅ 80%+ cobertura de tests
+| Spec | Estado | Alcance |
+|---|---|---|
+| **005** | draft (2 de 45 tareas) | Metodologías: esquema mínimo y vínculo con secciones editable desde la app |
+| **006** | approved (0 de 20 tareas) | Tablas, relaciones y frontends del checklist de carrera |
 
-**Duración estimada:** 1-2 semanas  
-**Hito:** Portal público accesible
+Mejoras de plataforma identificadas en [11-TECHNICAL-RISKS.md](./11-TECHNICAL-RISKS.md), por prioridad: respaldo automático de PostgreSQL (R8), expiración y revocación de tokens (R6, R7), escaneo de dependencias en CI (R9).
+
+## Cómo se planifica
+
+- Una feature nueva empieza con `spec.md` (Gate 1), `plan.md` (Gate 2) y `tasks.md`; el estado lo fija el usuario, nunca el agente que implementa.
+- La documentación se actualiza en el mismo commit que el código (Constitución Art. 11).
+- Método y reglas: [`.harness/method.md`](../.harness/method.md) y [`.harness/constitution.md`](../.harness/constitution.md).
 
 ---
 
-### Hitos Fase 1
-
-| Hito | Fecha Est. | Status |
-|------|-----------|--------|
-| M1: API REST funcional | Sem 3 | ⏳ Pendiente |
-| M2: Admin Panel MVP | Sem 6 | ⏳ Pendiente |
-| M3: Portal Público | Sem 8 | ⏳ Pendiente |
-| **FASE 1 COMPLETA** | **Sem 8** | ⏳ Pendiente |
-
----
-
-## 🔗 FASE 2: MCP Server Operacional
-
-### Objetivo
-**MCP Server completamente funcional** operando TODO el sistema de forma independiente.
-
-### Módulos
-
-#### **Módulo 4: MCP Server Completo**
-- **Responsable:** MCP Server Specialist
-- **Dependencias:** Módulo 1 (API REST)
-- **Deliverables:**
-  - ✅ Herramientas MCP para operación completa
-  - ✅ Autenticación/autorización
-  - ✅ Logging de operaciones
-  - ✅ Documentación de herramientas
-  - ✅ 80%+ cobertura de tests
-
-**Duración estimada:** 2-3 semanas  
-**Hito:** MCP listo para conectar agentes externos
-
----
-
-### Hitos Fase 2
-
-| Hito | Fecha Est. | Status |
-|------|-----------|--------|
-| M4: MCP Server completo | Sem 11 | ⏳ Pendiente |
-| **FASE 2 COMPLETA** | **Sem 11** | ⏳ Pendiente |
-
----
-
-## 🤖 FASE 3: Agent Bedrock Integrado
-
-### Objetivo
-**Agent Bedrock como asistente interno** dentro del Admin Panel.
-
-### Módulos
-
-#### **Módulo 5: Agent Bedrock + Chat Interface**
-- **Responsable:** AI Integration Specialist
-- **Dependencias:** Módulo 2 (Admin Panel), Módulo 1 (API REST)
-- **Deliverables:**
-  - ✅ Chat UI en Admin Panel
-  - ✅ Bedrock integration
-  - ✅ Context awareness (leer datos del usuario)
-  - ✅ Sugerencias inteligentes
-  - ✅ 80%+ cobertura de tests
-
-**Duración estimada:** 2-3 semanas  
-**Hito:** Bedrock operativo en Admin Panel
-
----
-
-### Hitos Fase 3
-
-| Hito | Fecha Est. | Status |
-|------|-----------|--------|
-| M5: Agent Bedrock integrado | Sem 14 | ⏳ Pendiente |
-| **FASE 3 COMPLETA** | **Sem 14** | ⏳ Pendiente |
-
----
-
-## 📊 Cronograma General
-
-```
-FASE 1: Sistema Funcional (8 semanas)
-├── Sem 1-3: Módulo 1 (API REST)
-├── Sem 4-6: Módulo 2 (Admin Panel)
-└── Sem 7-8: Módulo 3 (Portal Público)
-
-FASE 2: MCP Operacional (3 semanas)
-└── Sem 9-11: Módulo 4 (MCP Server)
-
-FASE 3: Agent Bedrock (3 semanas)
-└── Sem 12-14: Módulo 5 (Bedrock Integration)
-
-TOTAL: ~14 semanas (~3.5 meses)
-```
-
----
-
-## 👥 Especialistas de Módulo Necesarios
-
-| Módulo | Especialista | Herramientas |
-|--------|-------------|-------------|
-| **M1** | API REST Specialist | FastAPI, SQLAlchemy, PostgreSQL |
-| **M2** | Frontend Admin Specialist | React, TypeScript, Tailwind, React Query |
-| **M3** | Frontend Public Specialist | React, TypeScript, Tailwind |
-| **M4** | MCP Server Specialist | FastMCP, Protocol MCP |
-| **M5** | AI Integration Specialist | AWS Bedrock, LLMs |
-
----
-
-## ✅ Definición de "Completo" (Definition of Done)
-
-Cada módulo está completo cuando:
-
-```
-☐ Código escrito (SOLID + Clean Code)
-☐ Unit tests: 80%+ cobertura
-☐ Integration tests: flujos críticos
-☐ Code review: aprobado (Code Quality Guardian)
-☐ Security scan: sin vulnerabilidades
-☐ Performance: aceptable
-☐ Documentación: README + endpoint docs
-☐ CI/CD gates: pasan todos
-☐ Integración: funciona con otros módulos
-```
-
----
-
-## 🚦 Status Actual
-
-**Fase:** Planificación → Implementación  
-**Módulo Actual:** M1 (API REST Specialist)  
-**Status:** 🟡 Esperando especialista de módulo
-
----
-
-## 📝 Siguientes Pasos
-
-1. ✅ Crear especialista: **API REST Specialist**
-2. ✅ Definir Módulo 1 completamente
-3. ✅ Crear tickets/tareas
-4. ✅ Comenzar desarrollo
-
-**¿Procedemos con M1?**
-
----
-
-**Responsable:** Arquitecto de Soluciones  
-**Última actualización:** 2026-08-16
+**Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [04-SOLUTION-STRATEGY.md](./04-SOLUTION-STRATEGY.md) · [11-TECHNICAL-RISKS.md](./11-TECHNICAL-RISKS.md)

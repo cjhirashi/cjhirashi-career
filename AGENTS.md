@@ -26,18 +26,17 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 
 | Servicio | Stack | Rol | Puerto (compose) |
 |---|---|---|---|
-| `cjhirashi-career-api` | Python 3.14 · FastAPI · SQLAlchemy · Alembic | Sistema de registro (~187 endpoints, dueño del schema) | 8000 (interno, sin publicar) |
-| `cjhirashi-career-ai` | Python 3.14 · FastAPI **async** · asyncpg · boto3 | Microservicio IA (AWS Bedrock, perfiles de agente) | `ia-service` :8010 |
+| `cjhirashi-career-api` | Python 3.11 (imagen) · FastAPI · SQLAlchemy 2 · Alembic | Sistema de registro (419 operaciones HTTP, 69 modelos, 53 migraciones; dueño del schema) | 8000 (interno, sin publicar) |
+| `cjhirashi-career-ai` | Python 3.11 · FastAPI **async** · asyncpg · boto3 | Harness de agentes (spec 009, **en construcción, no desplegado**: sin servicio en `docker-compose.yml` ni ruta en `caddy.json`) | 8010 (previsto) |
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
 
-Infra: **Postgres compartida** (Alembic en `api`; `ai` la usa async), **Qdrant**
-(búsqueda vectorial), **MinIO** (objetos). Routing externo por **Caddy** vía
+Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`), **Qdrant**
+(búsqueda vectorial de Agent Bedrock; su retiro está decidido en el ADR-029 y se ejecuta en la etapa 3 de la spec 009, hoy sigue en uso), **MinIO** (objetos). Routing externo por **Caddy** vía
 `caddy.json` (contrato con el repo `cjhirashi-srv`).
 
 > El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el
-> 2026-09-04 — ver `docs/09-DECISIONS/023-retirar-mcp-server.md`. El arc42 aún lo
-> describe como "Canal 3"; ese texto es diseño previo.
+> 2026-09-04 — ver `docs/09-DECISIONS/023-retirar-mcp-server.md`.
 
 **Arquitectura interna: por capas.** Servicios Python: `routes → services →
 repositories → models`. Frontends: `components/pages → hooks → services (API tipada)

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-25
+Aceptado — 2026-08-25. Revisado parcialmente por [ADR-023](./023-retirar-mcp-server.md) (MCP retirado: de tres canales a dos) y por [ADR-029](./029-harness-agentes-fuera-de-api.md) (harness fuera de la API)
 
 ## Contexto
 

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-09-04
+Aceptado — 2026-09-04. Revisado parcialmente por [ADR-029](./029-harness-agentes-fuera-de-api.md): la implementación pasa al proveedor Bedrock del harness; el modelo se mantiene
 
 Enmienda [ADR-010](./010-bedrock-visual-pdf-agents.md) (elección original del
 modelo de generación de imágenes del agente Visual).

@@ -3,190 +3,101 @@
 ![Python](https://img.shields.io/badge/python-3.11-3776AB.svg?logo=python&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)
 ![React](https://img.shields.io/badge/react-18-61DAFB.svg?logo=react&logoColor=white)
-![Estado](https://img.shields.io/badge/estado-diseño%20en%20validación-yellow.svg)
+![Estado](https://img.shields.io/badge/estado-en%20producci%C3%B3n-brightgreen.svg)
 
 ---
 
-**cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi. Combina un portafolio público profesional y un panel de administración privado para gestión de carrera — todo convergiendo en una única fuente de verdad centralizada.
+**cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi: un portafolio público profesional y un panel de administración privado para gestionar la carrera, ambos sobre una API central y una única fuente de verdad (PostgreSQL).
 
-> El **MCP Server** (Canal 3) se retiró el 2026-09-04 — ver [ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md). El arc42 todavía lo describe como diseño previo.
-
----
-
-## 🎯 Dos Canales de Acceso
-
-### 1️⃣ **Portal Público** (8003)
-Sitio de portafolio — About, Proyectos, Blog, Contacto. Visitantes públicos consultan en modo lectura.
-
-### 2️⃣ **Admin Panel** (8002)
-Dashboard privado de gestión de carrera para Carlos — identidad profesional, competencias, evidencia, métricas, chat con Bedrock.
+> Estado a **2026-11-05**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. El harness de agentes se está separando de la API en `cjhirashi-career-ai` (spec 009, en curso; **aún no desplegado**). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
 
 ---
 
-## 🏗️ Arquitectura
+## Accesos
 
-- **3 módulos**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio`, `cjhirashi-career-api` (Bedrock y PDF son capacidades de la API; Postgres/MinIO/Qdrant son infraestructura)
-- **Stack**: React 18 + FastAPI + PostgreSQL + AWS Bedrock + WeasyPrint
-- **Docker**: 2 contenedores de app expuestos (Admin 8002, Portal 8003) + internos (API con PDF WeasyPrint, Qdrant, Postgres, MinIO)
-- **Métricas**: Tracking de visitantes, actividad del agente, auditoría centralizada
-- **Real-time**: WebSocket/SSE para dashboards vivos
+| Canal | Host público | Contenedor (puerto host) | Para qué |
+|---|---|---|---|
+| **Portal público** | `cjhirashi.com` | `cjhirashi-career-portfolio` (8003) | Portafolio: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad |
+| **Admin Panel** | `admin.cjhirashi.com` | `cjhirashi-career-admin` (8002) | Gestión privada de carrera, agentes y métricas |
+| **Archivos** | `files.cjhirashi.com` | `minio_storage` (9000, solo vía proxy) | Archivos públicos servidos por MinIO |
+| **API REST** | `/api/` de los dos hosts | `cjhirashi-career-api` (8000, interno) | Caddy quita el prefijo `/api/` |
 
----
+Exposición y routing: `caddy.json` (contrato con `cjhirashi-srv`: Caddy + Cloudflare Tunnel), red Docker externa `net-cjhirashi-career`.
 
-## 📚 Documentación
+## Arquitectura
 
-**Documentación arquitectónica completa** (Arc42 ISO 42010):
+- **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. Bedrock (agentes) y PDF (WeasyPrint) son capacidades de la API, no módulos ni contenedores aparte.
+- **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` ni en `caddy.json` todavía.
+- **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y Qdrant (`qdrant`, base de conocimiento vectorial de Agent Bedrock). El retiro de Qdrant está **decidido** ([ADR-029](docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md)) pero se ejecuta en la etapa 3 de la spec 009: hoy sigue en uso por la API.
+- **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), AWS Bedrock, WeasyPrint.
+- **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `4439c6915701`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
 
-| Sección | Propósito |
-|---------|-----------|
-| **[01-INTRODUCTION.md](docs/01-INTRODUCTION.md)** | Visión y contexto del sistema |
-| **[02-ARCHITECTURE-GOALS.md](docs/02-ARCHITECTURE-GOALS.md)** | Objetivos y restricciones arquitectónicas |
-| **[03-STAKEHOLDERS.md](docs/03-STAKEHOLDERS.md)** | Usuarios, roles y expectativas |
-| **[04-SOLUTION-STRATEGY.md](docs/04-SOLUTION-STRATEGY.md)** | Decisiones de alto nivel |
-| **[05-BUILDING-BLOCK-VIEW.md](docs/05-BUILDING-BLOCK-VIEW.md)** | Componentes y estructura (Admin Panel SPA detallado) |
-| **[06-RUNTIME-VIEW.md](docs/06-RUNTIME-VIEW.md)** | Flujos de datos en tiempo de ejecución |
-| **[07-DEPLOYMENT-VIEW.md](docs/07-DEPLOYMENT-VIEW.md)** | Docker, puertos, configuración |
-| **[08-CROSSCUTTING-CONCEPTS.md](docs/08-CROSSCUTTING-CONCEPTS.md)** | Patrones transversales (métricas, tracking, auth) |
-| **[09-DECISIONS/README.md](docs/09-DECISIONS/README.md)** | Architecture Decision Records (ADRs) |
-| **[10-QUALITY-SCENARIOS.md](docs/10-QUALITY-SCENARIOS.md)** | Escenarios de calidad verificables |
-| **[11-TECHNICAL-RISKS.md](docs/11-TECHNICAL-RISKS.md)** | Riesgos técnicos y mitigación |
-| **[12-GLOSSARY.md](docs/12-GLOSSARY.md)** | Glosario de términos |
+## Qué hace cada módulo
 
----
+**Admin Panel** (24 pantallas): panel y métricas de búsqueda; recursos de carrera (identidad, competencias, evidencia, vacantes, aplicaciones, networking, CVs y cartas); descubrimiento de vacantes; archivos; plantillas y estilos de PDF; mensajes de contacto; analítica del portafolio (tablero, metas, embudos, anotaciones); registro de errores; secciones del Admin configurables; y el área de agentes (catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas, chat).
 
-## 🚀 Inicio Rápido
+**Portal público** (9 páginas): Inicio, Sobre mí, Proyectos (y detalle), Blog (y entrada), Contacto (los mensajes llegan al Admin), Privacidad (con borrado de los datos propios del visitante) y 404. Incluye un rastreador de analítica con respeto a DNT/GPC.
 
-### Requisitos
-- Docker y Docker Compose
-- Acceso a red `network-cjhirashi-srv`
+**API**: autenticación JWT (el rol `agent` está restringido: `/career/*`, el chat de Bedrock y la subida de archivos); CRUD de carrera; descubrimiento de vacantes (Adzuna, Greenhouse, Lever, LinkedIn, Remotive y otros); Agent Bedrock y tareas programadas de agentes; generación de PDF; archivos en MinIO; endpoints públicos del portal; registro de errores; analítica del portafolio (ingesta, métricas, metas y embudos). Detalle y contrato: [`cjhirashi-career-api/docs/API.md`](cjhirashi-career-api/docs/API.md).
 
-### Configurar Variables de Entorno
+## Specs del arnés
 
-**IMPORTANTE**: Las variables de entorno se configuran en `.env.local` (NO versionado en git)
+| Spec | Estado | Tema |
+|---|---|---|
+| 001 a 004, 007 | verified | Sidebar contextual, imágenes del agente Visual, configuración de agentes, herramientas y metodologías, vacantes por etapa |
+| 005 | draft | Metodologías: esquema mínimo y vínculo con secciones |
+| 006 | approved | Tablas y frontends del checklist de carrera |
+| 008, 011 | implemented | Descripción de empresa y puesto en vacantes; formulario de contacto al Admin |
+| 009 | approved (en ejecución) | Harness de agentes fuera de la API y sin indexación |
+| 010 | draft en el archivo; desplegada | Analítica profesional del portafolio |
+
+La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `.harness/specs/`.
+
+## Documentación
+
+| Documento | Contenido |
+|---|---|
+| [docs/01](docs/01-INTRODUCTION.md) a [docs/12](docs/12-GLOSSARY.md) | Arc42: introducción, objetivos, interesados, estrategia, bloques, ejecución, despliegue, conceptos transversales, ADRs, calidad, riesgos y glosario |
+| [docs/09-DECISIONS/](docs/09-DECISIONS/README.md) | Decisiones de arquitectura del producto (ADR-008 a ADR-029) |
+| [docs/BEDROCK-SYSTEM.md](docs/BEDROCK-SYSTEM.md) | Subsistema de agentes |
+| [docs/ENVIRONMENT-SECURITY.md](docs/ENVIRONMENT-SECURITY.md) | Variables de entorno, secretos y políticas |
+| [docs/ADMIN_PANEL_SETUP.md](docs/ADMIN_PANEL_SETUP.md) | Arranque y configuración del panel |
+| [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Hoja de ruta |
+| `cjhirashi-career-*/README.md` | Setup y superficie de cada servicio |
+
+El arnés de trabajo (método, constitución, specs, memoria) vive en [`.harness/`](.harness/); el mapa del repo para agentes, en [AGENTS.md](AGENTS.md).
+
+## Inicio rápido
+
+Requisitos: Docker y Docker Compose, y la red externa `net-cjhirashi-career` (la gestiona `cjhirashi-srv`).
 
 ```bash
-# Copiar plantilla de configuración
-cp .env.example .env.local
-
-# Editar valores en .env.local (cambiar contraseñas, claves, etc.)
-nano .env.local  # o tu editor favorito
-
-# Variables críticas a actualizar:
-# - POSTGRES_PASSWORD (contraseña segura)
-# - SECRET_KEY (mínimo 32 caracteres aleatorios)
-# - CORS_ORIGINS (hosts permitidos - comma-separated sin espacios)
-# - BEDROCK_REGION / BEDROCK_MODEL_ID (si usas AWS Bedrock)
-```
-
-### Levantar el sistema
-
-```bash
-# Docker Compose carga automáticamente .env.local
-docker compose up -d
-
-# O especificar explícitamente (opcional)
-docker compose --env-file .env.local up -d
-```
-
-### Verificar que está en línea
-
-```bash
+cp .env.example .env       # el compose lee `.env`; nunca se versiona
+# Cambia al menos: POSTGRES_PASSWORD, SECRET_KEY (32+ caracteres aleatorios), CORS_ORIGINS,
+# MINIO_ROOT_PASSWORD, PUBLIC_PORTAL_USER_ID, PORTAL_SITE_KEY y las credenciales de AWS Bedrock.
+docker compose up -d --build
 docker compose ps
-docker compose logs -f cjhirashi-career-api
+docker compose logs -f api
 ```
 
-### Acceso
+- **Portal público**: http://localhost:8003
+- **Admin Panel**: http://localhost:8002 (credenciales del usuario inicial)
+- **API**: interna; Swagger en `/docs` solo si publicas el puerto 8000 para depurar
 
-- **Portal Público**: http://localhost:8003
-- **Admin Panel**: http://localhost:8002 (credenciales: ver setup inicial)
-- **API REST**: interna (Swagger en `http://localhost:8000/docs` solo si se publica el puerto en depuración)
+Pruebas por servicio: ver [AGENTS.md](AGENTS.md) (sección «Comandos por subproyecto»).
 
----
+## Contribuir
 
-## 🏛️ Guía de Desarrollo
+El flujo de trabajo, los gates y las reglas del repo están en [CLAUDE.md](CLAUDE.md) y [`.harness/method.md`](.harness/method.md). Resumen:
 
-**Ver [CLAUDE.md](CLAUDE.md)** para:
-- Rol del Arquitecto de Soluciones
-- Framework de calidad (Arc42 + SOLID + TDD 80%)
-- 5 agentes globales (Docker Expert, Documentador, QA Engineer, Code Quality Guardian, Git Specialist)
-- Workflow arquitectónico (Diseño → Infraestructura → Documentación → Desarrollo → Validación)
-- Estructura del proyecto
+- Commits en Conventional Commits con sufijo `(RF-NNN)` cuando aplica.
+- **Todo cambio actualiza su documentación en el mismo commit** (Constitución, Art. 11); el gate bloquea si no.
+- Cobertura mínima de pruebas: 80 %.
 
----
+## Contacto
 
-## 📊 Estado Actual
-
-**Fase**: Diseño arquitectónico validado ✅
-
-**Status por componente**:
-
-| Componente | Estado | Notas |
-|-----------|--------|-------|
-| Portal Público | 🟡 En diseño | Réplica mejorada de cjhirashi.com |
-| Admin Panel SPA | 🟡 En diseño | Dashboard dinámico con métricas |
-| MCP Server | ❌ Retirado 2026-09-04 | Ver [ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md) |
-| API REST | ✅ Base heredada | Evolución para gestión carrera |
-| Agent Bedrock | ✅ En la API | Asistente IA interno (sin contenedor propio) |
-| PDF (WeasyPrint) | ✅ En la API | CV / plantillas HTML; no es un módulo ni un contenedor |
-| PostgreSQL | 🟡 En diseño | Nuevas tablas para carrera/métricas |
+- **Propietario**: Carlos Jiménez Hirashi, cjhirashi@gmail.com
 
 ---
 
-## 🔗 Conexión Externa
-
-El proyecto está integrado con **cjhirashi-srv** (Caddy + Cloudflare Tunnel) para acceso público:
-
-- Documentación: `servicios-externos/cjhirashi-career.md`
-- 2 módulos de app expuestos: Admin Panel (8002), Portal Público (8003)
-- Proxy: Caddy reverse proxy + Cloudflare Tunnel
-- Dominio: Configurado en cjhirashi-srv
-
----
-
-## 📋 Checklist de Calidad
-
-Antes de que un módulo sea "listo":
-
-```
-☐ Código escrito (SOLID + Clean Code)
-☐ Unit tests: 80%+ cobertura
-☐ Integration tests: flujos críticos
-☐ Code review: aprobado
-☐ Security scan: sin vulnerabilidades
-☐ Performance: aceptable
-☐ Documentación: Arc42 + ADR
-☐ README: claro y profesional
-☐ CI/CD gates: pasan todos
-☐ Integración: funciona con otros módulos
-```
-
----
-
-## 🤝 Contribuir
-
-Ver [CLAUDE.md](CLAUDE.md) para workflows, roles y procesos de calidad.
-
-```bash
-# Crear rama de feature
-git checkout -b feature/mi-cambio
-
-# Commit con Conventional Commits
-git commit -m "feat: descripción del cambio"
-
-# Push
-git push origin feature/mi-cambio
-```
-
----
-
-## 📧 Contacto
-
-- **Propietario**: Carlos Jiménez Hirashi
-- **Email**: cjhirashi@gmail.com
-- **Issues**: Reportar en repositorio
-
----
-
-**Última actualización**: 2026-08-16  
-**Versión**: 3.0 (Portafolio + Gestor Carrera + Agentes IA)  
-**Documentación**: Arc42 completo (12 secciones)
+**Última actualización**: 2026-11-05

@@ -1,6 +1,6 @@
 # API REST — cjhirashi-career
 
-API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional, Agent Bedrock (Harness local), integraciones (GitHub, MinIO) y endpoints públicos para el Portal.
+API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional (≈48 recursos bajo `/career`), Agent Bedrock (harness local), PDF, archivos (MinIO), analítica del portafolio, integraciones (GitHub, descubrimiento de vacantes) y endpoints públicos para el Portal. 419 operaciones HTTP, 69 modelos y 53 migraciones Alembic. El harness de agentes y Qdrant se retirarán de la API con la spec 009 (ADR-029; en curso, aún no aplicado).
 
 **URL base (Docker interno):** `http://cjhirashi-career-api:8000`  
 **URL base (local):** `http://localhost:8000`  
@@ -46,7 +46,7 @@ flowchart TB
 | Admin Panel | Lectura/escritura | JWT Bearer |
 | Portal Público | Solo lectura vía `/public/*` | Ninguna |
 
-La API **no se expone directamente a Internet**. Solo es accesible desde la red Docker `network-cjhirashi-srv`.
+La API **no se expone directamente a Internet**. Solo es accesible desde la red Docker `net-cjhirashi-career`; los hosts públicos la alcanzan por `/api/` (Caddy quita el prefijo).
 
 ---
 
@@ -69,7 +69,8 @@ Cada dominio tiene su README detallado en [`docs/sections/`](docs/sections/READM
 | Plantillas PDF | `/pdf-templates` | [pdf-templates](docs/sections/pdf-templates/README.md) |
 | Estilos PDF | `/pdf-template-styles` | [pdf-template-styles](docs/sections/pdf-template-styles/README.md) |
 | Archivos (MinIO) | `/files` | [files](docs/sections/files/README.md) |
-| Portal público | `/public` | [public](docs/sections/public/README.md) |
+| Portal público | `/public`, `/events` | [public](docs/sections/public/README.md) |
+| Analítica del portafolio | `/career/portal-*` | [portal-analytics](docs/sections/portal-analytics/README.md) |
 | Infraestructura compartida | — | [infrastructure](docs/sections/infrastructure/README.md) |
 
 ---
@@ -77,7 +78,7 @@ Cada dominio tiene su README detallado en [`docs/sections/`](docs/sections/READM
 ## Inicio rápido
 
 ```bash
-cd api/
+cd cjhirashi-career-api/
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
@@ -153,5 +154,5 @@ Cada paquete Python describe **qué hace cada módulo** (no el contrato HTTP):
 
 ---
 
-**Última actualización:** 2026-08-24  
+**Última actualización:** 2026-11-05  
 **Versión:** ver `settings.APP_VERSION` en `src/config.py`

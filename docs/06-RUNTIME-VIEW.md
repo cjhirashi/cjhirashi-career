@@ -1,212 +1,115 @@
-# Vista de Tiempo de Ejecución - cjhirashi-career
+# Vista de tiempo de ejecución - cjhirashi-career
 
-**VISTA DE TIEMPO DE EJECUCIÓN**
+**VISTA DE TIEMPO DE EJECUCIÓN** (arc42, sección 6)
 
-[![Document Type](https://img.shields.io/badge/type-architecture-blue)]()
-[![Audience](https://img.shields.io/badge/audiencia-arquitectos%20%7C%20developers-informational)]()
-[![Estado](https://img.shields.io/badge/estado-diseño%20en%20validación-yellow)]()
+**Última actualización**: 2026-11-05
+**Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, asistencia de Bedrock, descubrimiento de vacantes, tarea programada, plan con subtareas) y el flujo de analítica del portafolio.
 
----
-
-**Última actualización**: 2026-08-16
-**Resumen rápido**: 5 escenarios de flujo completo (Portal Público, apertura de sesión, CRUD directo, asistencia Bedrock, agente MCP autónomo) · flujo detallado de métricas en tiempo real · latencias objetivo por tipo de operación
+> Las rutas se muestran como las ve la API. Desde el navegador llevan el prefijo `/api/` (Caddy lo quita): `GET /api/public/home` llega a la API como `GET /public/home`.
 
 ---
 
-## 📋 Tabla de Contenidos
+## Escenario 1 — Visitante consulta el portal público
 
-- [Cómo Leer Este Documento](#-cómo-leer-este-documento)
-- [Escenario 1 — Visitante Consulta el Portal Público](#-escenario-1--visitante-consulta-el-portal-público)
-- [Escenario 2 — Carlos Abre el Admin Panel](#-escenario-2--carlos-abre-el-admin-panel)
-- [Escenario 3 — Carlos Edita una Competencia](#-escenario-3--carlos-edita-una-competencia)
-- [Escenario 4 — Carlos Usa Agent Bedrock](#-escenario-4--carlos-usa-agent-bedrock)
-- [Escenario 5 — Agente Externo Opera vía MCP Server](#-escenario-5--agente-externo-opera-vía-mcp-server)
-- [Escenario 6 — Descubrimiento de vacantes](#-escenario-6--descubrimiento-de-vacantes)
-- [Escenario 7 — Tarea programada de un agente](#-escenario-7--tarea-programada-de-un-agente)
-- [Escenario 8 — Plan con subtareas y turno](#-escenario-8--plan-con-subtareas-y-turno)
-- [Métricas en Tiempo Real](#-métricas-en-tiempo-real)
-- [Comparación de Escenarios](#-comparación-de-escenarios)
-
----
-
-## 📖 Cómo Leer Este Documento
-
-Este documento es la sección 6 de la documentación Arc42 y describe **cómo fluyen los datos en tiempo de ejecución** para los cinco casos de uso principales del sistema. Complementa a [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) (qué partes tiene cada módulo) mostrando cómo esas partes interactúan cuando el sistema está corriendo. Es el **diseño objetivo** acordado por el Arquitecto de Soluciones, coherente con [01-INTRODUCTION.md](./01-INTRODUCTION.md) y [04-SOLUTION-STRATEGY.md](./04-SOLUTION-STRATEGY.md) — no describe una implementación existente.
-
-Cada escenario corresponde a uno de los tres canales de entrada (Portal Público, Admin Panel, MCP Server) descritos en `01-INTRODUCTION.md`, con especial atención a las dos formas de operar el Admin Panel (manual y asistida por Bedrock), que son estructuralmente distintas aunque compartan el mismo canal.
-
-## 🌐 Escenario 1 — Visitante Consulta el Portal Público
-
-Un visitante anónimo navega al Portal Público para conocer el perfil profesional de Carlos Jiménez Hirashi. El flujo es de solo lectura, sin autenticación, y dispara en paralelo un evento de tracking que alimenta las métricas del Admin Panel.
+Solo lectura y sin autenticación; en paralelo, el rastreador del portal envía eventos de analítica.
 
 ```mermaid
 sequenceDiagram
-    participant Visitante
-    participant Portal as Portal Público
+    participant V as Visitante
+    participant P as Portal
     participant API as API REST
     participant DB as PostgreSQL
 
-    Visitante->>Portal: Navega a About / Proyectos / Blog
-    Portal->>API: GET /api/v1/public/{recurso} (sin auth)
-    API->>DB: Consulta contenido marcado como publicable
+    V->>P: Navega a Sobre mí / Proyectos / Blog
+    P->>API: GET /public/{home|about|projects|blog|contact}
+    API->>DB: Contenido publicable
     DB-->>API: Datos
-    API-->>Portal: Respuesta REST JSON
-    Portal-->>Visitante: Renderiza contenido
+    API-->>P: JSON
+    P-->>V: Renderiza
 
-    par Tracking asíncrono, no bloqueante
-        Portal->>API: POST /api/v1/events/track {pageview}
-        API->>DB: INSERT portal_visits / portal_interactions
+    par Analítica no bloqueante
+        P->>API: POST /events/track
+        API->>DB: portal_visitors / portal_visits / portal_events
     end
 ```
 
-**Componentes involucrados**: Portal Público, API REST (`EventTrackingService` para el evento, resto de servicios para el contenido publicable), PostgreSQL.
-
 **Pasos:**
-1. El visitante navega a una sección pública sin necesidad de autenticarse.
-2. El Portal Público solicita el contenido correspondiente a `/api/v1/public/*`, en modo exclusivamente de lectura.
-3. La API REST consulta PostgreSQL y retorna únicamente los datos marcados como publicables, sin importar por cuál de los tres canales fueron escritos originalmente.
-4. En paralelo, y sin bloquear el renderizado, el script de tracking del Portal Público envía un evento de visita — ver [Tracking en Portal Público](./08-CROSSCUTTING-CONCEPTS.md#-tracking-en-portal-público).
+1. El visitante navega a una sección pública sin cuenta.
+2. El portal pide el contenido a `/public/*`; la API devuelve solo lo publicable.
+3. El rastreador del portal (respeta DNT/GPC) envía eventos a `POST /events/track` sin bloquear el render; la API sesioniza, clasifica bots, resuelve el origen y la geografía y guarda el evento. `POST /events/forget` borra los datos del visitante (`/privacy`).
+4. El formulario de contacto envía `POST /public/contact-message` (límite de 3 por hora por IP y por correo); el mensaje aparece en el Admin con aviso en la campana.
 
-## 🔐 Escenario 2 — Carlos Abre el Admin Panel
-
-Carlos Jiménez Hirashi abre el Admin Panel: se autentica, la SPA carga los datos iniciales de las cinco secciones y establece la conexión de tiempo real para el dashboard de métricas.
+## Escenario 2 — Carlos abre el Admin Panel
 
 ```mermaid
 sequenceDiagram
-    participant CJH as Carlos Jiménez Hirashi
-    participant Admin as Admin Panel
+    participant C as Carlos
+    participant A as Admin
     participant API as API REST
     participant DB as PostgreSQL
 
-    CJH->>Admin: Ingresa credenciales
-    Admin->>API: POST /api/v1/auth/login
-    API->>DB: Verifica credenciales
-    DB-->>API: Usuario válido
-    API-->>Admin: 200 OK + JWT
-    Admin->>Admin: Persiste token (estado de sesión, Zustand)
-
-    par Carga inicial de datos (React Query)
-        Admin->>API: GET /api/v1/identity
-        Admin->>API: GET /api/v1/metrics/mcp?range=24h
-        Admin->>API: GET /api/v1/metrics/portal?range=24h
-    end
-    API-->>Admin: Respuestas REST JSON (cache inicial)
-
-    Admin->>API: Abre conexión WS/SSE /api/v1/metrics/stream (con JWT)
-    API-->>Admin: Conexión establecida — listo para eventos en vivo
-    Admin-->>CJH: Renderiza dashboard con datos iniciales y conexión activa
+    C->>A: Abre admin.cjhirashi.com
+    A->>API: POST /auth/login
+    API->>DB: Verifica usuario (bcrypt)
+    API-->>A: access token (7 días) + refresh token (30 días)
+    A->>API: GET /notifications/unread-count
+    A->>API: GET /career/{recurso} (según la pantalla)
 ```
 
-**Componentes involucrados**: Admin Panel (Navigation, Estado Compartido, API Client, Real-time), API REST (`AuthService`, `MetricsService`), PostgreSQL.
-
 **Pasos:**
-1. Carlos Jiménez Hirashi se autentica; la API REST emite un JWT tras validar credenciales.
-2. La SPA carga en paralelo los datos iniciales de las secciones más usadas (identidad, resumen de métricas) vía React Query, que administra la cache resultante.
-3. El Admin Panel abre la conexión de tiempo real (`/api/v1/metrics/stream`) autenticada con el mismo JWT, dejando el dashboard listo para recibir actualizaciones sin que el usuario tenga que refrescar la página.
+1. Login: la API valida las credenciales y emite un JWT de acceso (HS256) y uno de refresco; el Admin los guarda en el cliente y los envía como `Authorization: Bearer`.
+2. Cada pantalla pide sus datos por REST con React Query; con el token vencido, el interceptor usa `/auth/refresh`.
+3. El cambio de contraseña se hace en `/change-password` (`POST /auth/change-password`).
 
-## ✏️ Escenario 3 — Carlos Edita una Competencia
-
-Gestión manual directa: Carlos opera un formulario del Admin Panel sin invocar ninguna asistencia de IA. Es el flujo CRUD más simple y el más frecuente del sistema.
+## Escenario 3 — Carlos edita un registro de carrera
 
 ```mermaid
 sequenceDiagram
-    participant CJH as Carlos Jiménez Hirashi
-    participant Admin as Admin Panel
+    participant C as Carlos
+    participant A as Admin
     participant API as API REST
     participant DB as PostgreSQL
 
-    CJH->>Admin: Edita una competencia en EntityForm y guarda
-    Admin->>API: PUT /api/v1/competencies/{id} (con JWT)
-    API->>API: CompetencyEvidenceService valida la operación
-    API->>DB: UPDATE competencies
-    API->>DB: INSERT audit_logs (channel: admin_panel, before/after)
-    DB-->>API: Confirmación
-    API-->>Admin: 200 OK + recurso actualizado
-    Admin->>Admin: React Query invalida cache de competencies
-    Admin-->>CJH: Confirma el cambio en la tabla
+    C->>A: Edita una competencia y guarda
+    A->>API: PUT /career/competencies/{id} (Bearer)
+    API->>API: Valida con Pydantic; aísla por user_id
+    API->>DB: UPDATE
+    API-->>A: Recurso actualizado
 ```
 
-**Componentes involucrados**: Admin Panel (CRUD Section, API Client), API REST (`CompetencyEvidenceService`, `AuditService`), PostgreSQL.
-
 **Pasos:**
-1. Carlos Jiménez Hirashi edita el formulario correspondiente y confirma el guardado.
-2. El Admin Panel envía la operación a la API REST con su token de sesión.
-3. `CompetencyEvidenceService` valida y persiste el cambio; en el mismo ciclo de la solicitud, `AuditService` registra la entrada correspondiente en `audit_logs` con el estado anterior y el nuevo.
-4. React Query invalida la cache local de la entidad afectada, refrescando la tabla sin recarga de página.
+1. El Admin envía el cambio al CRUD genérico `/career/{recurso}` (IDs prefijados, p. ej. `comp-12`).
+2. La API valida el esquema y limita todo al `user_id` del token.
+3. Mientras Qdrant siga en uso, la escritura dispara un indexado **best-effort** del registro en la base de conocimiento (embedding + `upsert`); un fallo del indexado nunca falla la escritura. Se retira con el ADR-029.
+4. Las ediciones manuales no generan `audit_logs`: ese registro es del agente (Escenario 4).
 
-## 🤝 Escenario 4 — Carlos Usa Agent Bedrock
-
-Gestión asistida: Carlos pide ayuda a Agent Bedrock dentro de la misma sesión del Admin Panel — por ejemplo, para redactar una narrativa a partir de evidencia ya registrada.
+## Escenario 4 — Carlos usa Agent Bedrock
 
 ```mermaid
 sequenceDiagram
-    participant CJH as Carlos Jiménez Hirashi
-    participant Admin as Admin Panel
-    participant Bedrock as Agent Bedrock
-    participant API as API REST
+    participant C as Carlos
+    participant A as Admin
+    participant API as API REST (harness Bedrock)
+    participant AWS as AWS Bedrock
     participant DB as PostgreSQL
 
-    CJH->>Admin: Escribe una solicitud en Chat Bedrock
-    Admin->>Bedrock: Invoca asistente (llamada interna, misma sesión)
-    Bedrock->>API: Lee contexto de carrera necesario (con token heredado)
-    API->>DB: SELECT sobre evidence / competencies
-    DB-->>API: Contexto
-    API-->>Bedrock: Contexto de carrera
-    Bedrock->>Bedrock: Genera la respuesta/sugerencia
-    opt Carlos acepta la sugerencia
-        Bedrock->>API: Actualiza el recurso correspondiente
-        API->>DB: UPDATE / INSERT
-        API->>DB: INSERT audit_logs (channel: bedrock, before/after)
-        DB-->>API: Confirmación
-        API-->>Bedrock: Recurso actualizado
-    end
-    Bedrock-->>Admin: Respuesta / sugerencia generada
-    Admin-->>CJH: Muestra el resultado en ChatWindow
+    C->>A: Escribe en el chat de agentes
+    A->>API: POST /bedrock/chat (respuesta por streaming)
+    API->>AWS: Converse con el perfil y las herramientas del agente
+    AWS-->>API: Respuesta / llamadas a herramientas
+    API->>DB: Lee o escribe vía las herramientas CRUD (acotado al user_id)
+    API->>DB: INSERT audit_logs (valores antes y después, motivo "Agent Bedrock")
+    API-->>A: Respuesta
+    A-->>C: Muestra el resultado
 ```
 
-**Componentes involucrados**: Admin Panel (Bedrock Chat), Agent Bedrock, API REST (servicio de dominio correspondiente al recurso afectado, `AuditService`), PostgreSQL.
-
 **Pasos:**
-1. Carlos Jiménez Hirashi, ya autenticado, solicita asistencia dentro del Chat Bedrock.
-2. El Admin Panel invoca a Agent Bedrock de forma interna — no hay salida de red hacia un canal externo distinto.
-3. Agent Bedrock lee el contexto de carrera necesario en la API REST, en nombre de la sesión activa, y genera su respuesta.
-4. Si Carlos acepta una sugerencia que implica escritura, Agent Bedrock actualiza el recurso vía API REST; el cambio queda registrado en `audit_logs` con canal `bedrock`, distinguiéndolo de una edición manual.
+1. El Admin llama a `POST /bedrock/chat` con la sesión autenticada; el bucle del agente corre dentro de la API (hasta que `cjhirashi-career-ai` lo reemplace, ADR-029).
+2. El agente (L1 orquestador, L2 por área, L3 por tarea: ADR-012) usa herramientas con el alcance del usuario; puede consultar la base de conocimiento en Qdrant y la memoria del agente.
+3. **Toda escritura del agente** queda en `audit_logs` con el estado completo antes y después, para poder recuperar un borrado erróneo; si el registro falla, la herramienta falla en lugar de escribir sin rastro.
+4. El uso y el costo de cada ronda se guardan en `bedrock_usage_logs` y `bedrock_usage_round_logs`, con un presupuesto diario configurable.
 
-## 🤖 Escenario 5 — Agente Externo Opera vía MCP Server
-
-Un agente de IA externo (por ejemplo, Claude u otro cliente MCP) opera el sistema de forma completamente autónoma, sin que el Admin Panel intervenga ni esté necesariamente activo.
-
-```mermaid
-sequenceDiagram
-    participant Agente as Agente IA externo
-    participant MCP as MCP Server
-    participant API as API REST
-    participant DB as PostgreSQL
-
-    Agente->>MCP: Invoca herramienta MCP (con autenticación propia del canal)
-    MCP->>API: Lee contexto de carrera (REST/JSON)
-    API->>DB: Consulta
-    DB-->>API: Datos de contexto
-    API-->>MCP: Contexto
-    MCP->>API: Actualiza contexto (ej. registra evidencia nueva)
-    API->>API: Servicio de dominio valida la operación
-    API->>DB: INSERT / UPDATE
-    API->>DB: INSERT audit_logs (channel: mcp_server, before/after)
-    API->>DB: INSERT mcp_agent_metrics (herramienta, latencia, resultado)
-    DB-->>API: Confirmación
-    API-->>MCP: Resultado de la operación
-    MCP-->>Agente: Resultado de la herramienta
-```
-
-**Componentes involucrados**: MCP Server, API REST (servicio de dominio correspondiente, `AuditService`, `MetricsService`), PostgreSQL.
-
-**Pasos:**
-1. Un agente de IA externo se conecta directamente al MCP Server, autenticándose con el mecanismo propio del canal (pendiente de definir en detalle, ver [01-INTRODUCTION.md — Preguntas de Validación Abiertas](./01-INTRODUCTION.md#-preguntas-de-validación-abiertas)) — sin que el Admin Panel intervenga ni esté necesariamente activo.
-2. El MCP Server ejecuta la herramienta solicitada, leyendo y, si corresponde, escribiendo el contexto de carrera necesario en la API REST.
-3. Cada operación de escritura queda registrada en `audit_logs` con canal `mcp_server`, y cada solicitud atendida por el MCP Server queda registrada en `mcp_agent_metrics` — es la única fuente que permite a Carlos Jiménez Hirashi observar la actividad autónoma de agentes externos desde el Admin Panel (ver [Métricas en Tiempo Real](#-métricas-en-tiempo-real)).
-4. El resultado se retorna directamente al agente externo — Carlos Jiménez Hirashi no participa en este flujo en tiempo real, pero puede observarlo después vía el dashboard de métricas o el registro de auditoría.
-
-## 🔎 Escenario 6 — Descubrimiento de vacantes
+## Escenario 5 — Descubrimiento de vacantes
 
 Carlos o Agent Bedrock buscan vacantes. `POST /career/job-discoveries/run` no escribe `vacancies`; asigna refs `L1, L2…`. Indeed se resuelve vía Adzuna; LinkedIn solo devuelve URLs oficiales de búsqueda. El agente presenta el preview y **espera autorización**. Solo entonces `save_job_listings(refs=…)` (o `POST /save` con las marcadas en Admin) inserta `vacancies` con `evaluation=pending_review` para seguimiento. Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md).
 
@@ -229,7 +132,7 @@ sequenceDiagram
     API->>DB: INSERT vacancies pending_review
 ```
 
-## ⏰ Escenario 7 — Tarea programada de un agente
+## Escenario 6 — Tarea programada de un agente
 
 Carlos crea una tarea en `/tasks`, la asigna a un agente del catálogo y pone `scheduled_at`. El Admin puede cerrarse. Un loop asyncio en la API (`task_scheduler`, mismo patrón que LinkedIn) reclama la fila y corre el harness Bedrock con el `user_id` dueño — sin JWT ni SPA. Ver [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
 
@@ -267,7 +170,7 @@ sequenceDiagram
 3. Al vencer, invoca el mismo harness que el chat: L1/L2 con historial `scheduled-task-{id}`; L3 sin historial de usuario.
 4. Si Bedrock o el presupuesto fallan, la tarea queda `failed` con `error_message`. "Ejecutar ahora" (`POST /agent-tasks/{id}/run`) usa el mismo runner.
 
-## 🧩 Escenario 8 — Plan con subtareas y turno
+## Escenario 7 — Plan con subtareas y turno
 
 Carlos crea un padre (responsable general) y subtareas con distintos responsables. Las bloqueantes se ejecutan en `sort_order`; al completar una, el scheduler pasa el turno: agente con `execute_on_turn` corre el harness; usuario recibe un aviso en `user_notifications`. Ver [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md).
 
@@ -304,78 +207,44 @@ sequenceDiagram
 3. Agente: `scheduled_at` **o** `execute_on_turn` al quedar libre.
 4. Usuario: notificación `task_turn`; en Vista solo se edita el estado.
 
-## 📡 Métricas en Tiempo Real
-
-### Flujo: Eventos del Portal Público
+## Analítica del portafolio: de la visita al tablero
 
 ```mermaid
 sequenceDiagram
-    participant Portal as Portal Público
+    participant P as Portal
     participant API as API REST
     participant DB as PostgreSQL
-    participant Admin as Admin Panel
+    participant A as Admin
 
-    Portal->>API: POST /api/v1/events/track {pageview, click, download, time_on_page}
-    API->>API: EventTrackingService normaliza el evento
-    API->>DB: INSERT portal_visits (si es visita nueva) / portal_interactions
-    DB-->>API: Confirmación
-    API-->>Portal: 202 Accepted (no bloqueante para el visitante)
-    API-->>Admin: Empuja evento agregado por el canal WS/SSE de métricas
+    P->>API: POST /events/track (pageview, tiempo activo, scroll, salientes, Web Vitals, UTM)
+    API->>API: Sesioniza, puntúa bots (umbral 70), resuelve canal, dispositivo y geografía (cabeceras Cloudflare)
+    API->>DB: portal_events / portal_visits / portal_visitors
+    API-->>P: 202
+    A->>API: GET /career/portal-metrics/{overview|kpis|trend|pages|paths|retention|...}
+    API->>DB: Agregados (portal_daily) y consultas
+    API-->>A: JSON
 ```
 
-El script de tracking del Portal Público (ver [08-CROSSCUTTING-CONCEPTS.md — Tracking en Portal Público](./08-CROSSCUTTING-CONCEPTS.md#-tracking-en-portal-público)) envía cada evento de forma asíncrona, sin bloquear la navegación del visitante. `EventTrackingService` persiste el evento y, en el mismo ciclo, notifica al canal de tiempo real para que cualquier sesión activa del Admin Panel reciba la actualización.
+- **Ingesta**: pública, con límites de tasa y sin bloquear al visitante.
+- **Consulta**: el Admin (tablero `/metrics`) y los agentes con token consultan `/career/portal-metrics/*` por REST; `GET .../realtime` sirve la vista casi en vivo (el Admin la consulta periódicamente; no hay canal WebSocket ni SSE de métricas). `POST .../rebuild` recalcula los agregados diarios.
+- **Metas, embudos y anotaciones** (`/career/portal-goals`, `portal-funnels`, `portal-annotations`) se configuran en `/metrics/settings`.
+- **Privacidad**: el id del visitante es seudónimo y `POST /events/forget` borra sus datos.
 
-### Flujo: Eventos del MCP Agent
+La actividad de los agentes se mide aparte: `bedrock_usage_logs` (costos), `audit_logs` (escrituras) y la pantalla de métricas del agente.
 
-```mermaid
-sequenceDiagram
-    participant MCP as MCP Server
-    participant API as API REST
-    participant DB as PostgreSQL
-    participant Admin as Admin Panel
+## Comparación de escenarios
 
-    MCP->>API: Cualquier operación CRUD del agente externo
-    API->>API: Middleware de métricas mide latencia y resultado
-    API->>DB: INSERT mcp_agent_metrics (herramienta, latencia_ms, estado)
-    DB-->>API: Confirmación
-    API-->>Admin: Empuja evento por el canal WS/SSE de métricas
-```
-
-A diferencia del Portal Público, el evento de métricas del MCP Agent no requiere una llamada adicional: se captura como parte del middleware de la propia solicitud CRUD que el MCP Server ya realiza contra la API REST (ver [Escenario 5](#-escenario-5--agente-externo-opera-vía-mcp-server)).
-
-### Consumo desde el Admin Panel
-
-El Admin Panel combina dos vías de lectura, coherente con lo descrito en [05-BUILDING-BLOCK-VIEW.md — Admin Panel Detallado](./05-BUILDING-BLOCK-VIEW.md#-admin-panel-detallado):
-
-1. **Carga inicial vía REST** (`GET /api/v1/metrics/mcp`, `GET /api/v1/metrics/portal`): al abrir el dashboard o cambiar el rango de fechas, se solicita el agregado histórico correspondiente.
-2. **Actualizaciones en vivo vía WebSocket/SSE** (`/api/v1/metrics/stream`): cada evento nuevo (solicitud MCP, visita del Portal) se empuja a toda sesión conectada del Admin Panel, que actualiza los gráficos sin necesidad de refrescar ni de hacer polling.
-
-### Latencias Esperadas (Objetivo)
-
-| Operación | Latencia objetivo | Nota |
-|---|---|---|
-| Ingesta de evento de tracking (`POST /api/v1/events/track`) | P95 < 150 ms | No debe percibirse por el visitante del Portal Público; es asíncrona respecto al renderizado |
-| Registro de métrica del MCP Agent | Incluida en la latencia normal de la operación CRUD que la origina — sin sobrecosto perceptible | Se captura como middleware, no como una llamada adicional |
-| Propagación de evento al Admin Panel vía WebSocket/SSE | < 500 ms desde que se persiste el evento hasta que aparece en el dashboard | Objetivo priorizado en [02-ARCHITECTURE-GOALS.md — Objetivo técnico #3](./02-ARCHITECTURE-GOALS.md#-objetivos-técnicos) |
-| Carga inicial de métricas (`GET /api/v1/metrics/*`) | P95 < 400 ms para un rango de 24h | Sujeta a los índices definidos en [05-BUILDING-BLOCK-VIEW.md — Base de Datos Detallada](./05-BUILDING-BLOCK-VIEW.md#-base-de-datos-detallada) |
-
-**Nota**: estas cifras son objetivos de diseño, no mediciones de producción — el sistema aún no está implementado. Se marcan explícitamente como "objetivo" siguiendo la regla de no reportar métricas aspiracionales como si fueran reales.
-
-## 🔄 Comparación de Escenarios
-
-| Escenario | Canal | Persiste en PostgreSQL | Genera evento de auditoría | Genera métrica |
+| Escenario | Canal | Escribe en PostgreSQL | Auditoría | Métrica |
 |---|---|---|---|---|
-| 1 — Portal Público (lectura) | Canal 1 | Solo el evento de tracking | No | Portal (`portal_visits`/`portal_interactions`) |
-| 2 — Apertura de sesión Admin | Canal 2 | No (solo lectura) | No | No |
-| 3 — Edición manual (CRUD directo) | Canal 2 | Sí | Sí (`channel: admin_panel`) | No |
-| 4 — Asistencia de Bedrock | Canal 2 (interno) | Sí, si hay escritura | Sí (`channel: bedrock`), si hay escritura | No |
-| 5 — Agente externo vía MCP | Canal 3 | Sí, si hay escritura | Sí (`channel: mcp_server`), si hay escritura | Sí (`mcp_agent_metrics`), en toda solicitud |
-| 6 — Descubrimiento de vacantes | Canal 2 | Sí, al autorizar el save | Sí (`channel: bedrock` o `admin_panel`) | No |
-| 7 — Tarea programada de agente | Canal 2 (sin SPA) | Sí, si el agente escribe | Sí (`channel: bedrock`), si hay escritura | No |
-
-**Lectura del panorama completo**: los tres canales convergen en la misma API REST y la misma base de datos, pero dejan huellas distintas — solo el MCP Server genera métricas de uso en cada solicitud (por ser el canal de mayor autonomía y menor supervisión humana en tiempo real), mientras que los tres canales de escritura (Admin Panel manual, Bedrock, MCP Server) generan auditoría, distinguible por el campo `channel` de `audit_logs`.
+| 1 — Portal (lectura) | Portal | Solo analítica y mensajes de contacto | No | `portal_*` |
+| 2 — Apertura de sesión | Admin | `last_login`, tokens | No | No |
+| 3 — Edición manual | Admin | Sí | No | No |
+| 4 — Asistencia de Bedrock | Admin (API) | Sí, si el agente escribe | Sí (`audit_logs`) | Uso y costo |
+| 5 — Descubrimiento de vacantes | Admin / agente | Sí, al autorizar el guardado | Sí si lo guarda el agente | No |
+| 6 — Tarea programada | Sin interfaz (scheduler de la API) | Sí, si el agente escribe | Sí | Uso y costo |
+| 7 — Plan con subtareas | Admin / scheduler | Sí | Sí si el agente escribe | Uso y costo |
 
 ---
 
-**Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) · [07-DEPLOYMENT-VIEW.md](./07-DEPLOYMENT-VIEW.md) · [08-CROSSCUTTING-CONCEPTS.md](./08-CROSSCUTTING-CONCEPTS.md) · [CLAUDE.md](../CLAUDE.md)
-**Contacto**: Carlos Jiménez Hirashi (cjhirashi@gmail.com)
+**Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) · [07-DEPLOYMENT-VIEW.md](./07-DEPLOYMENT-VIEW.md) · [08-CROSSCUTTING-CONCEPTS.md](./08-CROSSCUTTING-CONCEPTS.md)
+**Contacto**: cjhirashi@gmail.com

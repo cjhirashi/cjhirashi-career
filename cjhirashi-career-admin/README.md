@@ -1,88 +1,36 @@
-# Admin Panel — Career Management
+# Admin Panel — cjhirashi-career
 
-A modern React SPA (Single Page Application) for managing professional identity, competencies, evidence, job strategies, networking, and interview preparation.
+SPA privada (`admin.cjhirashi.com`, puerto host 8002) con la que Carlos gestiona su carrera, los agentes de IA y la analítica del portafolio. Habla solo con la API REST (`/api/`). Arranque y comandos: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md); arquitectura: [`docs/05-BUILDING-BLOCK-VIEW.md`](../docs/05-BUILDING-BLOCK-VIEW.md).
 
-## Features
+**Última actualización**: 2026-11-05
 
-- **JWT Authentication**: Secure login with token refresh
-- **Professional Identity Management**: IKIGAI framework, differentiators, narrative, value proposition
-- **Competencies Tracking**: Technical, transferable, and business skills with proficiency levels
-- **Evidence Management**: Projects, positions, achievements, and STAR cases
-- **Job Strategy Tracking**: Active job search and application tracking
-- **Networking Management**: Professional contacts and opportunities
-- **Interview Preparation**: Question bank with prepared answers
-- **Metrics Dashboard**: Portfolio progress and activity tracking
-- **Responsive Design**: Mobile-first with Cyan + Slate palette
-- **TypeScript**: Full type safety
-- **Tests**: 80%+ coverage with Vitest and React Testing Library
+## Qué incluye
 
-## Technology Stack
+- **Panel y métricas**: dashboard, métricas de búsqueda (`/search-metrics`) y tablero de analítica del portafolio (`/metrics`, ver abajo).
+- **Carrera**: vista genérica por recurso (`/career/:resourceKey/:recordSlug?`: identidad, competencias, evidencia, vacantes, aplicaciones, contactos, entrevistas, CVs, cartas…), descubrimiento de vacantes (`/job-discovery`) y archivos (`/files`).
+- **Tareas** (`/tasks`): lista, kanban, calendario y Gantt; subtareas con turno y tareas programadas para agentes.
+- **Agentes**: chat con el orquestador y chat contextual por sección, catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas de uso y plantillas y estilos de PDF (`/agent/*`).
+- **Configuración**: perfiles de agentes, secciones del Admin, prompts globales y registro de errores (`/settings/*`).
+- **Notificaciones**: campana con turnos de tareas y mensajes de contacto del portal.
 
-- **React 18**: Modern UI framework with hooks
-- **TypeScript**: Type-safe development
-- **Vite**: Fast build tool
-- **Tailwind CSS**: Utility-first CSS with Cyan + Slate theme
-- **Zustand**: Minimal state management with persistence
-- **React Query**: Server state management with caching
-- **Axios**: HTTP client with JWT interceptors
-- **React Router**: Client-side routing
-- **Vitest**: Unit testing framework
-- **React Testing Library**: Component testing utilities
+## Stack
 
-## Project Structure
+React 18, TypeScript 5, Vite 5, Tailwind CSS (tema claro/oscuro con tokens semánticos), React Query 5, Zustand 4, React Router 6, Axios, Recharts y Vitest + React Testing Library. Node 20.
+
+## Estructura
 
 ```
-admin/
-├── src/
-│   ├── components/          # Reusable components
-│   │   ├── Layout.tsx       # Main layout with sidebar and navbar
-│   │   ├── PrivateRoute.tsx # Auth protection
-│   │   ├── LoadingSpinner.tsx
-│   │   ├── Navbar.tsx
-│   │   ├── Sidebar.tsx
-│   │   └── career/portal/   # Paneles del tablero de métricas (controles, KPIs, gráfica, desglose, metas, recorridos, calidad)
-│   ├── pages/              # Page components
-│   │   ├── LoginPage.tsx
-│   │   ├── DashboardPage.tsx
-│   │   ├── IdentityPage.tsx
-│   │   ├── CompetenciesPage.tsx
-│   │   ├── EvidencePage.tsx
-│   │   ├── JobStrategiesPage.tsx
-│   │   ├── NetworkingPage.tsx
-│   │   ├── InterviewsPage.tsx
-│   │   ├── MetricsPage.tsx   # Tablero de analítica del portafolio (SPEC-0010)
-│   │   └── PortalSettingsPage.tsx  # Metas, embudos y anotaciones de la analítica (/metrics/settings)
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useAuth.ts
-│   │   └── usePortalAnalytics.ts   # un hook por endpoint de /career/portal-metrics
-│   ├── stores/             # Zustand state stores
-│   │   └── authStore.ts
-│   ├── api/                # API client and endpoints
-│   │   ├── client.ts       # Axios instance with interceptors
-│   │   ├── auth.ts         # Auth endpoints
-│   │   └── portalAnalytics.ts  # Cliente de /career/portal-metrics/*
-│   ├── types/              # TypeScript interfaces
-│   │   ├── index.ts
-│   │   └── portalAnalytics.ts  # Respuestas de la analítica
-│   ├── tests/              # Test files
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   └── setup.ts
-│   ├── App.tsx             # Root component with routing
-│   ├── main.tsx            # Entry point
-│   └── index.css           # Global styles with Tailwind
-├── index.html              # HTML template
-├── package.json            # Dependencies
-├── tsconfig.json           # TypeScript config
-├── vite.config.ts          # Vite config
-├── tailwind.config.ts      # Tailwind config
-├── vitest.config.ts        # Vitest config
-├── .eslintrc.json          # ESLint config
-├── .prettierrc              # Prettier config
-├── Dockerfile              # Docker image
-└── README.md               # This file
+src/
+├── pages/        # una página por pantalla (Dashboard, Metrics, PortalSettings, Files, Tasks, Agent*, …)
+├── components/   # Layout, Sidebar, Navbar, campana, selectores temáticos; section/ (plantilla de tabla),
+│                 # career/ (formularios y vistas de recursos; career/portal/ = tablero), bedrock/ (chat), tasks/
+├── hooks/        # useAuth, useCareerResource, useBedrockChat, usePortalAnalytics (un hook por endpoint), …
+├── api/          # client.ts (Axios con interceptores JWT) y un módulo por dominio
+├── stores/       # authStore, bedrockChatStore, preferencias
+├── config/       # careerResources.ts (catálogo de recursos), perfiles y secciones de chat
+├── types/ utils/ # tipos y utilidades
+└── tests/        # pruebas transversales; el resto conviven con el código
 ```
-
 
 ## Tablero de métricas del portafolio (`/metrics`)
 
@@ -94,348 +42,38 @@ Lee `/career/portal-metrics/*` (SPEC-0010). Arranca en los últimos 30 días, si
 - **Paneles:** desglose por pestañas (fuentes, páginas, ubicación con mapa, dispositivos; cada pestaña pide sus datos solo al abrirse), metas y embudo, recorridos y retención semanal, y calidad de los datos (muestra, porcentaje de bots y aviso si hay pocas visitas).
 - **Configuración (`/metrics/settings`, enlazada desde el tablero):** crea, edita y elimina metas, embudos y anotaciones. El usuario escribe valores simples (ruta, texto, segundos) y `configModel.ts` los traduce al diccionario `match` del servidor y los valida (un embudo necesita nombre y al menos 2 pasos). Al guardar se invalidan las consultas del tablero, que de otro modo mostraría la versión anterior hasta 5 minutos.
 - **Pruebas:** `src/tests/pages/MetricsPage.test.tsx`, `src/tests/api/portalAnalytics.test.ts`, `src/tests/components/portal/format.test.ts`, `src/tests/pages/PortalSettingsPage.test.tsx`, `src/tests/components/portal/configModel.test.ts`, `src/tests/hooks/useCareerMutationsPortal.test.tsx`.
-## Getting Started
 
-### Prerequisites
-
-- Node.js 18+ and npm/yarn
-- Docker (for containerization)
-
-### Installation
-
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Create environment file**:
-   ```bash
-   cp .env.example .env.local
-   ```
-
-3. **Update API URL** (if needed):
-   Edit `.env.local` and set `VITE_API_BASE_URL` to your API server URL
-
-### Development
-
-**Start dev server** (port 8000):
-```bash
-npm run dev
-```
-
-**Type checking**:
-```bash
-npm run type-check
-```
-
-**Linting**:
-```bash
-npm run lint
-npm run lint:fix   # Auto-fix issues
-```
-
-**Code formatting**:
-```bash
-npm run format
-```
-
-## Testing
-
-### Running Tests
-
-**Run all tests**:
-```bash
-npm test
-```
-
-**Run tests in UI mode**:
-```bash
-npm run test:ui
-```
-
-**Generate coverage report**:
-```bash
-npm run test:coverage
-```
-
-### Test Structure
-
-- `src/tests/components/` — Component tests
-- `src/tests/hooks/` — Hook tests
-- `src/tests/fixtures/` — Mock data and test utilities
-
-### Coverage Requirements
-
-- **Minimum**: 80% overall coverage
-- **Unit tests**: Components, hooks, utilities
-- **Integration tests**: Form submission, API calls
-- **E2E scenarios**: Login → Create item → Download (manual)
-
-## Building
-
-### Development Build
+## Desarrollo, pruebas y despliegue
 
 ```bash
-npm run build
+npm ci
+cp .env.example .env          # VITE_API_BASE_URL=/api
+npm run dev                   # Vite en :8000 con proxy /api → API
+npx vitest run                # pruebas (cobertura mínima 80 %)
+npm run type-check && npm run lint
 ```
 
-Output: `dist/` directory
+- **Docker**: desde la raíz del repo, `docker compose up -d --build admin` (imagen Node 20 que sirve `dist/` con `serve` en el 8000; host 8002).
+- **API**: todas las llamadas van a `VITE_API_BASE_URL` (`/api`); Caddy lo reenvía a `cjhirashi-career-api:8000` quitando el prefijo. No hay prefijo `/api/v1`.
+- **Autenticación**: `POST /auth/login` → tokens de acceso (7 días) y refresco (30); el interceptor de Axios añade `Authorization: Bearer` y renueva con `/auth/refresh` ante un 401.
+- **Guía completa**: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md). Chat de agentes: [`docs/BEDROCK-CHAT.md`](docs/BEDROCK-CHAT.md).
 
-### Preview Build
+## Calidad
 
-```bash
-npm run preview
-```
+- Capas del frontend: `pages/components → hooks → api → stores`; la lógica de negocio no vive en los componentes.
+- TypeScript estricto, ESLint sin avisos y Prettier.
+- Cada prueba anota su requisito (`describe("RF-014: …")`); toda feature de interfaz pasa por el experto UX/UI antes de `verified`.
+- Accesibilidad: contraste AA en ambos temas ([ADR-028](../docs/09-DECISIONS/028-contraste-tokens-semanticos-admin.md)).
 
-## Docker
+## Solución de problemas
 
-### Build Image
+| Síntoma | Causa y salida |
+|---|---|
+| La SPA no alcanza la API en desarrollo | El proxy de `vite.config.ts` apunta a `http://cjhirashi-career-api:8000` (red Docker); fuera de Docker cámbialo por tu API local |
+| 401 en bucle | Token vencido y refresco inválido: cierra sesión y vuelve a entrar |
+| Puerto 8000 ocupado | `lsof -i :8000` y detén el proceso, o `npm run dev -- --port 3000` |
+| Pruebas con estado raro | `rm -rf node_modules/.vite coverage && npx vitest run` |
 
-```bash
-docker build -t admin-panel:latest .
-```
+## Contacto
 
-### Run Container
-
-```bash
-docker run -p 8002:8000 \
-  -e VITE_API_BASE_URL=http://api:8001/api/v1 \
-  admin-panel:latest
-```
-
-### Docker Compose
-
-In the project root:
-
-```yaml
-admin:
-  build: ./admin
-  container_name: admin_panel
-  ports:
-    - "8002:8000"
-  environment:
-    - VITE_API_BASE_URL=http://api:8001/api/v1
-  networks:
-    - network-cjhirashi-srv
-  depends_on:
-    - api
-```
-
-## API Integration
-
-### Base Configuration
-
-- **Base URL**: `http://api:8001/api/v1` (internal)
-- **Auth Header**: `Authorization: Bearer <access_token>`
-- **Token Refresh**: Automatic (15 minutes before expiry)
-
-### Available Endpoints
-
-#### Authentication
-
-- `POST /auth/register` — Register new user
-- `POST /auth/login` — Login with credentials
-- `POST /auth/refresh` — Refresh access token
-- `POST /auth/logout` — Logout
-- `POST /auth/change-password` — Change user password
-
-#### Career Modules (Coming Soon)
-
-- `/identity` — Professional identity CRUD
-- `/competencies` — Skills management
-- `/evidence` — Projects, positions, achievements
-- `/job-strategies` — Job search tracking
-- `/networking` — Contacts and opportunities
-- `/interviews` — Interview prep questions/answers
-- `/metrics` — Portfolio metrics and analytics
-
-## Design System
-
-### Colors
-
-**Primary**: Cyan (interactive elements, highlights)
-- `cyan-600` (buttons, active states)
-- `cyan-50` - `cyan-900` (palette)
-
-**Neutral**: Slate (backgrounds, text)
-- `slate-900` (text)
-- `slate-50` (light backgrounds)
-- `slate-800` (dark backgrounds)
-
-### Components
-
-- **Buttons**: `.btn-primary`, `.btn-secondary`
-- **Forms**: `.input-field`, `.form-label`
-- **Cards**: `.card`, `.card-header`, `.card-body`
-- **Status Badges**: `.badge-success`, `.badge-error`, `.badge-warning`
-
-See `src/index.css` for all component definitions.
-
-## Authentication Flow
-
-1. **Login**: User enters credentials → API returns JWT tokens
-2. **Token Storage**: Tokens stored in Zustand (persisted to localStorage)
-3. **Protected Routes**: `PrivateRoute` redirects unauthenticated users to login
-4. **Auto Refresh**: Hook monitors token expiry and refreshes automatically
-5. **Interceptors**: Axios adds auth header and handles 401 responses
-6. **Logout**: Tokens deleted, user redirected to login
-
-## State Management
-
-### Zustand Store (`authStore`)
-
-```typescript
-{
-  user: User | null
-  accessToken: string | null
-  refreshToken: string | null
-  tokenExpiresAt: Date | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  error: string | null
-}
-```
-
-### Using Auth State
-
-```typescript
-import { useAuthStore } from '@/stores/authStore'
-
-const { user, isAuthenticated, logout } = useAuthStore()
-```
-
-### Using Auth Hook
-
-```typescript
-import { useAuth } from '@/hooks/useAuth'
-
-const { login, logout, user, isLoading, error } = useAuth()
-```
-
-## API Client
-
-### Axios Configuration
-
-The API client (`src/api/client.ts`) handles:
-
-- JWT token injection in request headers
-- Automatic token refresh on 401 errors
-- Retry logic for failed requests
-- Error logging and formatting
-
-### Making API Calls
-
-```typescript
-import { axiosInstance } from '@/api/client'
-
-// Automatic auth header injection
-const response = await axiosInstance.get('/identity')
-```
-
-### Using React Query
-
-```typescript
-import { useQuery } from '@tanstack/react-query'
-import { identityApi } from '@/api/identity'
-
-export const useIdentity = () => {
-  return useQuery({
-    queryKey: ['identity'],
-    queryFn: () => identityApi.get(),
-  })
-}
-```
-
-## Code Quality Standards
-
-### SOLID Principles
-
-- **Single Responsibility**: Each component/hook has one job
-- **Open/Closed**: Extend via props, not modification
-- **Liskov Substitution**: Components substitute base types
-- **Interface Segregation**: Specific, focused interfaces
-- **Dependency Inversion**: Depend on abstractions (types)
-
-### Clean Code
-
-- Descriptive variable/function names
-- Small, focused functions
-- No magic strings (use constants)
-- Self-documenting code (no comments needed)
-- DRY principle (Don't Repeat Yourself)
-
-### TypeScript
-
-- No `any` types
-- Strict mode enabled
-- Interface for all data structures
-- Type-safe props
-
-## Performance
-
-- **Code Splitting**: Route-based lazy loading (React Router)
-- **Caching**: React Query handles server state caching
-- **Memoization**: React.memo for expensive components
-- **Optimization**: Tailwind purging unused CSS
-
-## Accessibility
-
-- ARIA labels on interactive elements
-- Semantic HTML (buttons, links, forms)
-- Color contrast compliance (WCAG AA)
-- Keyboard navigation support
-- Focus indicators
-
-## Browser Support
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## Troubleshooting
-
-### Port Already in Use
-
-```bash
-# Kill process on port 8000
-lsof -ti:8000 | xargs kill -9
-
-# Or use different port
-npm run dev -- --port 3000
-```
-
-### API Connection Issues
-
-1. Verify API is running: `curl http://api:8001/health`
-2. Check `VITE_API_BASE_URL` in `.env.local`
-3. Check CORS settings in API (should allow admin origin)
-4. Browser console may show CORS errors
-
-### Tests Failing
-
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules
-npm install
-
-# Clear vitest cache
-npm test -- --clearCache
-```
-
-## Contributing
-
-1. Create feature branch: `git checkout -b feature/name`
-2. Make changes following code standards
-3. Write tests for new features (80% coverage)
-4. Run linting and tests: `npm run lint && npm test`
-5. Commit with descriptive message
-6. Create Pull Request for review
-
-## License
-
-Proprietary - cjhirashi-career Project
-
-## Support
-
-For issues or questions, contact: cjhirashi@gmail.com
+Carlos Jiménez Hirashi, cjhirashi@gmail.com

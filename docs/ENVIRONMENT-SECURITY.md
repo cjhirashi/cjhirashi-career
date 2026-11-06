@@ -1,243 +1,69 @@
-# Estrategia de Seguridad: Variables de Entorno
+# Variables de entorno y secretos
 
-## 🎯 Resumen Ejecutivo
+**Última actualización**: 2026-11-05
 
-Este documento define la **mejor práctica de la industria** para manejar variables de entorno en este proyecto. La estrategia es:
+Cómo se configura y protege el entorno del sistema. Complementa [07-DEPLOYMENT-VIEW.md](./07-DEPLOYMENT-VIEW.md) y [08-CROSSCUTTING-CONCEPTS.md](./08-CROSSCUTTING-CONCEPTS.md).
 
-```
-✅ docker-compose.yml           → EN GIT (sin secretos hardcodeados)
-✅ .env.local                   → NO EN GIT (privado, contiene secretos dev)
-✅ .env.example                 → EN GIT (plantilla pública, sin valores reales)
-✅ .gitignore                   → Bloquea .env.* (excepto .env.example)
-✅ CI/CD (GitHub Secrets)       → Variables en Actions secrets para producción
-```
+## Estrategia
 
----
+| Archivo | En git | Contenido |
+|---|---|---|
+| `docker-compose.yml` | Sí | Estructura de servicios; **solo referencias** `${VARIABLE}`, nunca valores |
+| `.env.example` | Sí | Plantilla autodescriptiva sin secretos reales |
+| `.env` | **No** (ignorado) | Valores reales. Lo lee el compose (`env_file: .env` en `api`, `postgres` y `minio`) |
 
-## 📋 Capas de Configuración
-
-### **Capa 1: Desarrollo Local (env_file)**
-
-**Archivo**: `.env.local` (privado, en `.gitignore`)
-
-**Propósito**: Variables de desarrollo local
+Producción usa el mismo mecanismo: un `.env` en el servidor, fuera del repo. No hay despliegue por GitHub Actions (el CI solo corre pruebas) ni «GitHub Secrets» de producción.
 
 ```bash
-# Contiene valores REALES (cambiar por los tuyos):
-POSTGRES_USER=mcpuser
-POSTGRES_PASSWORD=mcppass123-dev-only
-SECRET_KEY=cjhirashi-career-dev-secret-key-32chars-minimum
-DATABASE_URL=postgresql+asyncpg://mcpuser:mcppass123-dev-only@postgres:5432/career_db
+cp .env.example .env     # primera vez
+$EDITOR .env             # valores reales
+docker compose up -d --build
 ```
 
-**Cómo se carga**:
-```bash
-# docker-compose.yml usa:
-env_file: .env.local
+## Variables
 
-# Docker Compose carga automáticamente .env.local en:
-# - api_rest
-# - postgres
-```
+Todas las lee la API (`cjhirashi-career-api/src/config.py`) salvo las de PostgreSQL y MinIO, que también las usan sus contenedores. El Admin recibe solo `VITE_API_BASE_URL=/api` y el Portal, `VITE_API_URL=/api`.
 
----
+| Grupo | Variables | Notas |
+|---|---|---|
+| PostgreSQL | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL` | El compose compone `DATABASE_URL` para el contenedor de la API; la de `.env` sirve para ejecutar fuera de Docker |
+| Seguridad | `SECRET_KEY` (**obligatoria**, 32+ caracteres aleatorios), `ALGORITHM` (`HS256`), `ACCESS_TOKEN_EXPIRE_DAYS` (7) | Cambiar `SECRET_KEY` invalida todos los tokens emitidos |
+| CORS | `CORS_ORIGINS` | Lista separada por comas, sin espacios; la plantilla trae solo `localhost` |
+| Aplicación | `APP_NAME`, `APP_VERSION`, `DEBUG`, `UPLOADS_DIR`, `MAX_UPLOAD_SIZE_MB` | `DEBUG=true` baja el nivel de logs a DEBUG; no lo dejes activo en producción. `LOG_LEVEL` aparece en `.env.example` pero la API no lo lee |
+| AWS Bedrock | `BEDROCK_REGION`, `BEDROCK_DEFAULT_MODEL_ID`, `BEDROCK_ORCHESTRATOR_MODEL_ID`, `BEDROCK_IMAGE_REGION`, `BEDROCK_IMAGE_MODEL_ID`, `BEDROCK_EMBEDDING_MODEL_ID`, `BEDROCK_MAX_IMAGES_PER_DAY`, `BEDROCK_DAILY_BUDGET_USD`, `BEDROCK_MAX_ROUND_TRIPS`, `BEDROCK_HISTORY_WINDOW`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Modelos y regiones en [BEDROCK-SYSTEM.md](./BEDROCK-SYSTEM.md); el presupuesto diario corta el gasto |
+| Qdrant | `QDRANT_URL`, `QDRANT_COLLECTION` | Se retiran con el ADR-029 (etapa 3 de la spec 009); hasta entonces la API los necesita |
+| MinIO | `MINIO_ENDPOINT` (`minio:9000`, nombre del servicio, no `localhost`), `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_BUCKET`, `MINIO_PUBLIC_URL` | Un valor `localhost` filtrado desde el entorno del host rompe el arranque de la API |
+| Descubrimiento de vacantes | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `ADZUNA_COUNTRY`, `JOB_DISCOVERY_TIMEOUT_SECONDS`, `JOB_DISCOVERY_MAX_RESULTS` | Claves gratuitas de Adzuna; los demás adaptadores no requieren clave |
+| Agentes: herramientas | `GITHUB_TOKEN`, `BRAVE_SEARCH_API_KEY` | Lectura de repositorios y consulta web del agente |
+| Portal | `PUBLIC_PORTAL_USER_ID`, `PORTAL_SITE_KEY` | Usuario dueño del portafolio público y clave del sitio para la analítica |
 
-### **Capa 2: docker-compose.yml (infraestructura)**
+## Reglas
 
-**Archivo**: `docker-compose.yml` (versionado en git)
+1. **Nunca** versionar `.env` ni valores reales; `docker-compose.yml` solo usa `${VARIABLE}`.
+2. Cada secreto es único por entorno: no reutilices claves entre desarrollo y producción.
+3. Las credenciales de AWS deben tener permisos acotados a Bedrock; su rotación y el alcance del rol IAM son un riesgo abierto ([11-TECHNICAL-RISKS.md](./11-TECHNICAL-RISKS.md)).
+4. La API no se publica al host: se alcanza por la red Docker y por `/api/` de los hosts públicos.
+5. Los archivos de la base de datos y de MinIO viven fuera del repo (`/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/`).
 
-**Propósito**: Define la estructura de servicios (sin secretos hardcodeados)
-
-```yaml
-# ✅ CORRECTO: Referencias a variables
-services:
-  postgres:
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
-# ❌ NUNCA: Valores hardcodeados
-# environment:
-#   POSTGRES_PASSWORD: "mcppass123"  # ¡EXPONE SECRETO!
-```
-
-**Por qué es seguro**:
-- El compose describe *qué* variables necesita (no *qué valores* son)
-- Cualquier dev puede ver la estructura sin ver los secretos
-- Los valores reales vienen de `.env.local` (ignorado en git)
-
----
-
-### **Capa 3: Plantilla Pública (.env.example)**
-
-**Archivo**: `.env.example` (versionado en git)
-
-**Propósito**: Template para nuevos devs / CI/CD
+## Comprobaciones
 
 ```bash
-# Placeholder: SIN valores reales
-POSTGRES_USER=mcpuser
-POSTGRES_PASSWORD=your-secure-password-here-min-20-chars
-SECRET_KEY=your-secret-key-min-32-chars-change-in-production
+git ls-files | grep -E '^\.env$'        # debe salir vacío
+git check-ignore -v .env                # debe mostrar la regla de .gitignore
+grep -nE 'PASSWORD:|SECRET_KEY:' docker-compose.yml   # solo referencias ${…}
 ```
 
-**Cómo usarlo**:
-```bash
-# Nuevo dev:
-cp .env.example .env.local
-nano .env.local  # Llenar con valores reales
+## Si se commitea un secreto por error
 
-# El archivo es autodescriptivo:
-# - Qué variables se necesitan
-# - Formato esperado
-# - Constraints (min 20 chars, etc)
-```
+1. **Rotarlo de inmediato**: contraseña de la base de datos, `SECRET_KEY` (invalida los tokens), claves de AWS en IAM o `MINIO_ROOT_PASSWORD`.
+2. Retirarlo del historial si el repo se comparte (`git filter-repo`) y empujar el arreglo.
+3. Revisar los registros de acceso del servicio afectado.
 
----
+## Checklist de arranque seguro
 
-### **Capa 4: Producción (GitHub Secrets)**
-
-**Ubicación**: GitHub → Settings → Secrets → Actions Secrets
-
-**Propósito**: Variables para CI/CD y deployments a producción
-
-```bash
-# Variables guardadas en GitHub (no en repo):
-DATABASE_URL_PROD
-SECRET_KEY_PROD
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-```
-
-**Cómo se usan en CI/CD**:
-```yaml
-# .github/workflows/deploy.yml
-env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
-  SECRET_KEY: ${{ secrets.SECRET_KEY_PROD }}
-```
-
----
-
-## 🛡️ Seguridad: Cómo Evitar Exponer Secretos
-
-### **1. Verificar que `.env.local` está ignorado**
-
-```bash
-# Ver si git está trackeando .env.local
-git status
-git ls-files | grep ".env"
-
-# Debería estar vacío. Si ves .env.local, arreglar:
-git rm --cached .env.local  # Remove from tracking
-git commit -m "Remove .env.local from version control"
-```
-
-### **2. Verificar .gitignore está correcto**
-
-```bash
-# Ver reglas de .gitignore
-cat .gitignore | grep -A 5 "Environment"
-
-# Debe contener:
-.env
-.env.local
-.env.*.local
-!.env.example  # Permitir que .env.example esté en git
-```
-
-### **3. Nunca hacer:**
-
-```bash
-❌ git add .env.local                          # Never
-❌ docker-compose.yml con secretos              # Never
-❌ Commitar AWS keys, DB passwords, API keys   # Never
-❌ Push a GitHub sin revisar git status        # Never
-```
-
-### **4. Si accidentalmente commiteaste un secreto:**
-
-```bash
-# ⚠️ EMERGENCIA: Un secreto está en git
-
-# Opción 1: Remover del historio (mejor)
-git filter-branch --tree-filter 'rm -f .env.local' HEAD
-
-# Opción 2: Simplemente cambiar el secreto (más fácil)
-# 1. Cambiar contraseña en la BD
-# 2. Cambiar SECRET_KEY en aplicación
-# 3. Cambiar AWS keys en IAM
-# 4. Invalidar tokens viejos
-
-# Luego, subir fix commit
-git add -A
-git commit -m "Remove accidental secrets from history"
-git push origin main
-```
-
----
-
-## 📝 Checklist de Setup Seguro
-
-Cuando levantes el sistema por primera vez:
-
-```
-☐ Copiar .env.example → .env.local
-☐ Cambiar todas las contraseñas en .env.local
-  ☐ POSTGRES_PASSWORD: 20+ caracteres aleatorios
-  ☐ SECRET_KEY: 32+ caracteres aleatorios (use `openssl rand -hex 16`)
-  ☐ BEDROCK_REGION/MODEL_ID: agregar si usas AWS Bedrock
-  ☐ ADZUNA_APP_ID / ADZUNA_APP_KEY: requeridas para buscar Indeed
-☐ Verificar .gitignore contiene .env.local
-☐ Verificar git status NO muestra .env.local
-☐ docker compose --env-file .env.local up -d
-☐ Probar que servicios están saludables: docker compose ps
-☐ NO compartir .env.local en Slack, email, etc.
-```
-
----
-
-## 🔄 Flujo: Desarrollo Local vs Producción
-
-### **Desarrollo Local**
-
-```
-.env.example
-    ↓
-cp → .env.local (privado, no versionado)
-    ↓
-docker-compose.yml (env_file: .env.local)
-    ↓
-docker compose up -d
-    ↓
-http://localhost:8003
-```
-
-### **Producción (via GitHub)**
-
-```
-GitHub Secrets (DATABASE_URL_PROD, SECRET_KEY_PROD, etc.)
-    ↓
-.github/workflows/deploy.yml (env: ${{ secrets.XXX }})
-    ↓
-docker-compose.yml (env_file: .env) # En producción, .env es inyectado por orquestador
-    ↓
-Deploy a VPS / Kubernetes
-    ↓
-https://portafolio.cjhirashi.com
-```
-
----
-
-## 🎓 Referencias
-
-- [OWASP: Secrets Management](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
-- [Docker Compose: env_file](https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file)
-- [GitHub Actions: Encrypted Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
-- [12-Factor App: Store config in environment](https://12factor.net/config)
-
----
-
-**Última Actualización**: 2026-08-17  
-**Responsable**: Code Quality Guardian (Seguridad)  
-**Estado**: ✅ Implementado y verificado
+- [ ] `.env` creado desde `.env.example` y ausente de `git ls-files`
+- [ ] `SECRET_KEY` de 32+ caracteres aleatorios
+- [ ] Contraseñas de PostgreSQL y MinIO propias
+- [ ] `CORS_ORIGINS` con los orígenes reales del entorno
+- [ ] Credenciales de AWS con permisos mínimos y `BEDROCK_DAILY_BUDGET_USD` definido
+- [ ] `DEBUG=false` en producción

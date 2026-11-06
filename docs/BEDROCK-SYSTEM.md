@@ -4,6 +4,8 @@ Documento índice del Harness Converse (ADR-008, ADR-012).
 
 ## 1. Resumen
 
+> Subsistema de agentes dentro de la API. El ADR-029 lo trasladará a `cjhirashi-career-ai` (spec 009, en curso, no desplegado).
+
 - **Harness** en `cjhirashi-career-api/src/services/bedrock/` — loop Converse, historial PG, tools, presupuesto, jerarquía de 3 niveles.
 - **AWS:** solo `bedrock-runtime` (Converse + Titan Embeddings + Stable Image Core). Titan
   Image Generator (v1/v2) llegó a fin de vida y Nova Canvas quedó sin acceso habilitado
@@ -27,9 +29,11 @@ contextual y el turno degrada al orquestador.
 
 ## 3. Perfiles
 
-**L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`
+**L1:** `agent_orchestrator`
 
-**L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`
+**L2:** `agent_professional_identity`, `agent_search_operations`, `agent_digital_presence`, `agent_networking`, `agent_support`, `agent_methodologies`, `agent_pdf_design`, `agent_settings` (incidencias y bitácora) y `agent_configuration` (ADR-022)
+
+**L3:** `agent_pdf_render`, `agent_visual_design`, `agent_changelog`, `agent_task_manager`, `agent_vacancy_search`, `agent_cv_writing`, `agent_cover_letter_writing`, `agent_web_search` y `agent_github` (ADR-013)
 
 Definidos en `cjhirashi-career-api/src/services/bedrock/agent_profiles.py`.
 
@@ -49,6 +53,8 @@ en el Catálogo de Agentes (`/settings/agents`) como overrides en Postgres.
 - Endpoints de sección: `GET /bedrock/sections/{id}`, `PUT /bedrock/sections/{id}/methodologies`.
 
 ## 4. Knowledge base: reindexado y consistencia
+
+> **Estado (2026-11-05)**: este subsistema sigue en uso. El [ADR-029](09-DECISIONS/029-harness-agentes-fuera-de-api.md) decidió retirar la KB, la indexación y Qdrant al mover el harness a `cjhirashi-career-ai` (memoria del agente a Postgres con búsqueda de texto completo); la decisión se ejecuta en la etapa 3 de la spec 009 y **aún no se aplica**. Hasta entonces, lo siguiente describe el comportamiento real.
 
 El agente busca metodologías y registros de carrera por semántica en Qdrant
 (colección `career_knowledge`), un índice **derivado de Postgres**: `CareerRepository`

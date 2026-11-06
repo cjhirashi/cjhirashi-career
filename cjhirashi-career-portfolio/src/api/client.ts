@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios'
 import { reportClientError } from '@/utils/reportClientError'
 
 const getApiUrl = (): string => {
-  // In development, use proxy to /api which is rewritten to http://api:8001/api/v1
+  // In development, use the Vite proxy: /api is rewritten (prefix removed) to http://cjhirashi-career-api:8000
   // In production, use the environment variable
   if (import.meta.env.DEV) {
     return '/api'

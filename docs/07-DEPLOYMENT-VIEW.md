@@ -1,276 +1,109 @@
-# Vista de Despliegue - cjhirashi-career
+# Vista de despliegue - cjhirashi-career
 
-**VISTA DE DESPLIEGUE**
+**VISTA DE DESPLIEGUE** (arc42, sección 7)
 
-[![Document Type](https://img.shields.io/badge/type-architecture-blue)]()
-[![Audience](https://img.shields.io/badge/audiencia-arquitectos%20%7C%20developers-informational)]()
-[![Estado](https://img.shields.io/badge/estado-diseño%20en%20validación-yellow)]()
-
----
-
-**Última actualización**: 2026-08-16
-**Resumen rápido**: 3 módulos de aplicación + infra (Postgres, MinIO, Qdrant) · 2 puertos publicados al host (8002, 8003) · API interna (8000) con PDF WeasyPrint in-process · 1 red bridge externa compartida · Caddy + Cloudflare Tunnel como entrada externa
+**Última actualización**: 2026-11-05
+**Resumen**: 6 contenedores definidos en `docker-compose.yml` (3 de aplicación + PostgreSQL, MinIO y Qdrant) en la red externa `net-cjhirashi-career`; solo 2 puertos publicados al host (8002 y 8003). La fuente de verdad es el propio `docker-compose.yml` y `caddy.json`.
 
 ---
 
-> ⚠️ **Estado (2026-09-04): el MCP Server se retiró** — ver
-> [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Ya no existe el contenedor
-> `cjhirashi-career-mcp`, el puerto host 8004, ni el host `mcp.cjhirashi.com`. Las
-> tablas y diagramas de despliegue de abajo todavía lo listan — es diseño previo.
-> Nota: la API interna escucha en **:8000** (antes se documentó :8001).
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Cómo Leer Este Documento](#-cómo-leer-este-documento)
-- [Diagrama de Despliegue](#-diagrama-de-despliegue)
-- [Contenedores y Puertos](#-contenedores-y-puertos)
-- [docker-compose.yml — Especificación Objetivo](#-docker-composeyml--especificación-objetivo)
-- [Red Docker](#-red-docker)
-- [Volúmenes](#-volúmenes)
-- [Health Checks](#-health-checks)
-- [Ambiente de Desarrollo](#-ambiente-de-desarrollo)
-- [Ambiente de Producción](#-ambiente-de-producción)
-- [Caddy y Cloudflare Tunnel](#-caddy-y-cloudflare-tunnel)
-
----
-
-## 📖 Cómo Leer Este Documento
-
-Este documento es la sección 7 de la documentación Arc42 y describe **dónde corre cada cosa**: contenedores, puertos, red, volúmenes y variables de entorno del sistema objetivo de siete módulos descrito en [01-INTRODUCTION.md](./01-INTRODUCTION.md). Es el **diseño objetivo** de despliegue — el `docker-compose.yml` especificado aquí es el que debe construirse; no describe la topología heredada del proyecto anterior (generador de documentos), que queda como base técnica reutilizable pero no como arquitectura vigente.
-
-## 🚀 Diagrama de Despliegue
+## Diagrama de despliegue
 
 ```mermaid
 graph TB
-    classDef client fill:#1e293b,stroke:#cbd5e1,color:#fff
-    classDef thirdparty fill:#4c1d95,stroke:#a855f7,color:#fff
-    classDef docker fill:#172554,stroke:#3b82f6,color:#fff
-    classDef react fill:#164e63,stroke:#06b6d4,color:#fff
-    classDef nodejs fill:#042f2e,stroke:#10b981,color:#fff
-    classDef utility fill:#1f2817,stroke:#84cc16,color:#fff
-    classDef s3 fill:#7c2d12,stroke:#f97316,color:#fff
-    classDef postgres fill:#1e1b4b,stroke:#6366f1,color:#fff
+    Internet((Internet)) --> CF["Cloudflare Tunnel + DNS"]
+    CF --> Caddy["caddy_proxy (cjhirashi-srv)<br/>TLS y routing"]
 
-    Internet["👤 Internet<br/>Visitantes · Carlos · Agentes IA"]
-    CF["🔌 Cloudflare Tunnel<br/>infraestructura externa"]
-    Caddy["🔌 Caddy<br/>reverse proxy + TLS · infraestructura externa"]
-
-    subgraph Host["🐳 Docker Host — red network-cjhirashi-srv (bridge externa)"]
-        direction TB
-        Portal["⚛️ portal-publico<br/>host 8003 → contenedor 8000"]
-        Admin["⚛️ admin-panel<br/>host 8002 → contenedor 8000"]
-        MCP["🌱 mcp-server<br/>host 8004 → contenedor 8000"]
-        API["🚀 api<br/>8001 (sin publicar al host)<br/>Bedrock + PDF WeasyPrint"]
-        PG["🗄️ postgres<br/>5432 (sin publicar al host)"]
-        VOL[("💾 postgres_data<br/>volumen Docker con nombre")]
+    subgraph Net["Red Docker externa: net-cjhirashi-career"]
+        Admin["cjhirashi-career-admin<br/>host 8002 → 8000"]
+        Portal["cjhirashi-career-portfolio<br/>host 8003 → 8000"]
+        API["cjhirashi-career-api<br/>8000 (sin publicar)"]
+        PG[("postgres_db<br/>5432")]
+        S3[("minio_storage<br/>API 9000 · consola 9001 interna")]
+        Q[("qdrant<br/>6333")]
     end
 
-    Bedrock["☁️ AWS Bedrock<br/>servicio gestionado, fuera del Docker Host"]
-
-    Internet --> CF --> Caddy
-    Caddy -->|HTTPS| Portal
-    Caddy -->|HTTPS| Admin
-    Caddy -->|Protocolo MCP| MCP
-
-    Portal -->|REST, solo lectura| API
-    Admin -->|REST, lectura/escritura, PDF| API
-    Admin -.->|invocación interna| Bedrock
-    Bedrock -->|REST, en nombre de la sesión| API
-    MCP -->|REST, canal independiente| API
-    API -->|asyncpg| PG
-    PG --- VOL
-
-    class Internet client
-    class CF,Caddy thirdparty
-    class Host docker
-    class Portal,Admin react
-    class MCP,PDF utility
-    class API nodejs
-    class Bedrock s3
-    class PG postgres
+    Caddy -->|admin.cjhirashi.com| Admin
+    Caddy -->|cjhirashi.com| Portal
+    Caddy -->|files.cjhirashi.com| S3
+    Caddy -->|"/api/ (en ambos hosts)"| API
+    API --> PG
+    API --> S3
+    API --> Q
+    API --> AWS["AWS Bedrock (externo)"]
 ```
 
-Ver [protocolo de paleta de colores](../COLOR_PALETTE.md) — el color de cada nodo es el mismo en todos los diagramas del proyecto, incluidos los de [01-INTRODUCTION.md](./01-INTRODUCTION.md#-diagrama-del-sistema) y [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md).
+## Contenedores y puertos
 
-**Nota sobre Agent Bedrock**: es el único componente que no corre en el Docker Host — es un servicio gestionado de AWS, sin contenedor propio (ver [01-INTRODUCTION.md — Componente 4️⃣](./01-INTRODUCTION.md#4️⃣-agent-bedrock-asistente-interno-del-admin-panel)). Se representa fuera del `subgraph Host` para dejar explícito que su disponibilidad depende de la nube de AWS, no de este despliegue Docker.
-
-## 🔌 Contenedores y Puertos
-
-| Servicio (objetivo) | Nombre de contenedor sugerido | Puerto host | Puerto contenedor | Publicado al host |
+| Servicio (compose) | Contenedor | Imagen | Puerto | Exposición |
 |---|---|---|---|---|
-| Portal Público | `cjhirashi-career-portfolio` | 8003 | 8000 | ✅ Sí |
-| Admin Panel | `cjhirashi-career-admin` | 8002 | 8000 | ✅ Sí |
-| ~~MCP Server~~ | ~~`cjhirashi-career-mcp`~~ | — | — | ❌ Retirado 2026-09-04 (ADR-023) |
-| API REST | `cjhirashi-career-api` | — | 8000 | ❌ No |
-| PostgreSQL | `postgres_db` | — | 5432 | ❌ No |
-| Agent Bedrock | — (servicio gestionado, sin contenedor) | — | — | ❌ No aplica |
+| `admin` | `cjhirashi-career-admin` | build local (Node 20, SPA servida) | 8002 → 8000 | `admin.cjhirashi.com` |
+| `portfolio` | `cjhirashi-career-portfolio` | build local | 8003 → 8000 | `cjhirashi.com` |
+| `api` | `cjhirashi-career-api` | build local (`python:3.11-slim`) | 8000 | Interna; `/api/` de los dos hosts, con prefijo removido |
+| `postgres` | `postgres_db` | `postgres:15-alpine` | 5432 | Interna |
+| `minio` | `minio_storage` | `minio/minio:latest` | 9000 (API), 9001 (consola) | `files.cjhirashi.com` (solo 9000); la consola no se expone |
+| `qdrant` | `qdrant` | `qdrant/qdrant:latest` | 6333 | Interna. Retiro decidido (ADR-029, etapa 3 de la spec 009); la API depende de él (`depends_on`) |
 
-Todos los servicios contenedorizados deben declarar `restart: unless-stopped`, coherente con el patrón ya usado en el `docker-compose.yml` heredado del proyecto anterior.
+No hay contenedor de MCP (se retiró el 2026-09-04, ADR-023) ni de `cjhirashi-career-ai`: ese harness (spec 009) está en construcción y no se despliega todavía.
 
-## 📄 docker-compose.yml — Especificación Objetivo
+## Contrato de red (`caddy.json`)
 
-Estructura de referencia para los contenedores de aplicación e infra (Bedrock y PDF viven in-process en la API):
+`caddy.json` es el contrato con `cjhirashi-srv`: `cjhirashi-srv` escribe el bloque `cjhirashi_srv` (red, hosts y estado) y este repo rellena `servicios`.
 
-```yaml
-services:
-  portal-publico:
-    build: ./portal-publico
-    container_name: portafolio_portal
-    restart: unless-stopped
-    ports:
-      - "8003:8000"
-    environment:
-      - API_UPSTREAM=portafolio_api:8001
-    networks:
-      - network-cjhirashi-srv
-    depends_on:
-      - api
+| Servicio | Host | Contenedor:puerto | Rutas |
+|---|---|---|---|
+| `admin` | `admin.cjhirashi.com` | `cjhirashi-career-admin:8000` | `/api/` → API (quitando el prefijo); `/` → Admin |
+| `portafolio` | `cjhirashi.com` | `cjhirashi-career-portfolio:8000` | `/api/` → API (quitando el prefijo); `/` → Portal |
+| `files` | `files.cjhirashi.com` | `minio_storage:9000` | `/` |
 
-  admin-panel:
-    build: ./admin-panel
-    container_name: portafolio_admin
-    restart: unless-stopped
-    ports:
-      - "8002:8000"
-    environment:
-      - API_UPSTREAM=portafolio_api:8001
-      - METRICS_STREAM_PATH=/api/v1/metrics/stream
-    networks:
-      - network-cjhirashi-srv
-    depends_on:
-      - api
+Tras cualquier cambio de exposición: `python3 bin/caddy-sync cjhirashi-career` desde el repo `cjhirashi-srv`. Los cambios de red o puertos se comunican por los `mensajes` del propio contrato.
 
-  mcp-server:
-    build: ./mcp-server
-    container_name: portafolio_mcp
-    restart: unless-stopped
-    ports:
-      - "8004:8000"
-    environment:
-      - API_UPSTREAM=portafolio_api:8001
-    networks:
-      - network-cjhirashi-srv
-    depends_on:
-      - api
+## Variables de entorno
 
-  api:
-    build: ./api
-    container_name: portafolio_api
-    restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://<usuario>:<password>@postgres:5432/<db>
-      - SECRET_KEY=<secreto, ver Notas de Seguridad en 08-CROSSCUTTING-CONCEPTS.md>
-      - ALGORITHM=HS256
-      - CORS_ORIGINS=http://localhost:8002 http://localhost:8003
-      - BEDROCK_REGION=<región AWS>
-      - BEDROCK_MODEL_ID=<identificador del modelo>
-    networks:
-      - network-cjhirashi-srv
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+El compose lee `.env` (nunca versionado; plantilla en `.env.example`). Detalle y políticas de secretos: [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md). Dentro de la red, la API alcanza MinIO por el nombre del servicio (`minio:9000`), nunca por `localhost`.
 
-  postgres:
-    image: postgres:15-alpine
-    container_name: portafolio_postgres
-    restart: unless-stopped
-    environment:
-      - POSTGRES_USER=<usuario>
-      - POSTGRES_PASSWORD=<password>
-      - POSTGRES_DB=<db>
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./cjhirashi-career-api/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks:
-      - network-cjhirashi-srv
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U <usuario> -d <db>"]
-      interval: 10s
-      retries: 5
+## Red Docker
 
-networks:
-  network-cjhirashi-srv:
-    external: true
+`net-cjhirashi-career` es una red *bridge* **externa** y dedicada, gestionada por `cjhirashi-srv` (el `caddy_proxy` ya está conectado). Migró desde la red compartida `network-cjhirashi-srv` (MSG-0001 y MSG-0004 del contrato). Declararla como `external: true` en el compose es obligatorio.
 
-volumes:
-  postgres_data:
-```
+## Volúmenes
 
-**Nota**: los valores entre `<>` son placeholders — las credenciales reales, la región de AWS y el identificador del modelo de Bedrock deben resolverse en variables de entorno o un gestor de secretos, nunca en texto plano versionado en Git (ver [08-CROSSCUTTING-CONCEPTS.md — Seguridad](./08-CROSSCUTTING-CONCEPTS.md#-seguridad)).
+Rutas absolutas en el disco de datos (`volumes: {}` en el compose):
 
-## 🌐 Red Docker
-
-- **Nombre**: `network-cjhirashi-srv`
-- **Tipo**: bridge, **externa** al proyecto (`external: true`) — debe existir de antemano en el host compartido `cjhirashi-srv`; este proyecto no la crea ni la administra (ver restricción de infraestructura en [02-ARCHITECTURE-GOALS.md — Restricciones](./02-ARCHITECTURE-GOALS.md#-restricciones)).
-- **Resolución de nombres**: los contenedores se alcanzan entre sí por su `container_name` (por ejemplo, `portafolio_postgres:5432` desde `portafolio_api`, `portafolio_api:8001` referenciado por los tres canales de entrada vía la variable `API_UPSTREAM`).
-- Todos los servicios del proyecto se conectan exclusivamente a esta única red — no hay redes internas adicionales ni segmentación por capa, consistente con el patrón ya usado en el despliegue heredado.
-
-## 💾 Volúmenes
-
-| Volumen | Tipo | Ruta en Host | Usado por | Propósito |
-|---|---|---|---|---|
-| **postgres_data** | Bind mount | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/postgres` | `postgres` | Persistencia de los tres dominios de datos (carrera, observabilidad, auditoría) entre reinicios/recreaciones del contenedor |
-| **uploads** | Bind mount (lectura/escritura) | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/uploads` | `api` | Bucket de archivos: imágenes del portal, avatar de usuario, documentos necesarios para Admin Panel y Portal Público |
-| **init.sql** | Bind mount (solo lectura) | `./cjhirashi-career-api/init.sql` → `/docker-entrypoint-initdb.d/init.sql` | `postgres` | Script de inicialización del esquema en el primer arranque |
-
-**Carpeta base de volúmenes**: `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/`
-- **postgres/** — Base de datos persistente
-- **uploads/** — Bucket de archivos (imágenes, documentos)
-- **backups/** — Directorio para respaldos futuros de volúmenes
-
-**Nota sobre PDFs**: Los PDFs se generan bajo demanda en memoria y se descargan directamente al usuario — **no se almacenan en disco del servidor**. El volumen `uploads` es solo para imágenes y archivos del sistema, no para PDFs.
-
-## 🔍 Health Checks
-
-| Servicio | Mecanismo objetivo |
+| Dato | Ruta del host |
 |---|---|
-| `postgres` | `pg_isready -U <usuario> -d <db>`, cada 10s, 5 reintentos |
-| `api` | `GET http://localhost:8001/health`, cada 30s |
-| `admin-panel` | `GET http://localhost:8000/` (o endpoint de salud equivalente de la SPA servida), cada 30s |
-| `portal-publico` | `GET http://localhost:8000/` (o endpoint de salud equivalente), cada 30s |
-| `mcp-server` | Handshake mínimo del protocolo MCP o endpoint de salud dedicado — a definir junto con el mecanismo de autenticación del canal (ver [01-INTRODUCTION.md — Preguntas de Validación Abiertas](./01-INTRODUCTION.md#-preguntas-de-validación-abiertas)) |
-| Agent Bedrock | No aplica un health check propio en este despliegue — su disponibilidad se observa indirectamente a través del resultado de las llamadas que la API REST hace al SDK de AWS Bedrock |
+| PostgreSQL | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/postgres` |
+| MinIO | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/minio` |
+| Qdrant | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/qdrant` |
 
-`api` y `postgres` son los dos únicos servicios con dependencia explícita de salud (`depends_on: condition: service_healthy`) — el resto de contenedores dependen de `api` sin condición de salud estricta, siguiendo el mismo patrón ya usado en el despliegue heredado del proyecto anterior.
+## Health checks
 
-## 🧪 Ambiente de Desarrollo
+| Servicio | Prueba |
+|---|---|
+| `admin`, `portfolio` | `wget` a `http://localhost:8000/` cada 30 s |
+| `api` | `GET /health` (urllib) cada 30 s, 40 s de arranque, 3 reintentos; `GET /system/readiness` para comprobaciones de preparación |
+| `postgres` | `pg_isready` cada 10 s |
+| `minio` | `curl` a `/minio/health/live` cada 10 s |
+| `qdrant` | sin healthcheck (la API arranca con `service_started`) |
+
+La API arranca solo cuando PostgreSQL y MinIO están sanos.
+
+## Desarrollo
 
 ```bash
-# Desde la raíz del proyecto
-docker compose build
-docker compose up -d
+cp .env.example .env
+docker compose up -d --build            # todo el sistema
+docker compose up -d --build api        # un servicio
+docker compose logs -f api
 ```
 
-- Todos los servicios corren en el mismo host Docker; no se contempla, en este alcance, un `docker-compose.override.yml` ni perfiles separados de desarrollo/producción — el sistema opera como una instancia única, coherente con el objetivo técnico de MVP de un único usuario administrador (ver [02-ARCHITECTURE-GOALS.md](./02-ARCHITECTURE-GOALS.md#-objetivos-técnicos)).
-- Para desarrollo local de cada frontend (Portal Público, Admin Panel) fuera de Docker, se recomienda mantener el mismo patrón ya usado en el proyecto heredado: un proxy de desarrollo (por ejemplo, el proxy de Vite) que reenvíe las llamadas a la API REST hacia `API_UPSTREAM`, evitando problemas de CORS sin exponer nombres DNS internos de Docker al navegador.
-- Swagger interactivo de la API REST disponible en `http://localhost:8001/docs` dentro de la red Docker, o expuesto puntualmente al host solo durante depuración local (nunca en producción, ver [Notas de Seguridad](./08-CROSSCUTTING-CONCEPTS.md#-seguridad)).
+Pruebas y arranque local por servicio: [AGENTS.md](../AGENTS.md) (sección «Comandos por subproyecto»). Verifica siempre el arranque real (`GET /health`), no solo que el contenedor exista.
 
-## 🏭 Ambiente de Producción
+## Producción
 
-- **Hospedado en**: el mismo host Docker compartido `cjhirashi-srv` — no hay ambiente de producción separado ni pipeline de promoción entre ambientes; el sistema opera como instancia única.
-- **Entrada de tráfico**: Cloudflare Tunnel → Caddy (reverse proxy, terminación TLS) → los contenedores publicados al host (`portal_publico:8003`, `admin_panel:8002`). Ninguno de los contenedores internos (`api_rest`, `postgres_db`, MinIO, Qdrant) debe ser alcanzable directamente desde Internet — ver la restricción explícita en [01-INTRODUCTION.md — Conexiones explícitamente prohibidas](./01-INTRODUCTION.md#-diagrama-del-sistema).
-- **Base de datos**: sin réplicas ni backups automatizados definidos en este documento — pendiente de diseño, coherente con el alcance de MVP de un único usuario administrador.
-- **Secretos**: `SECRET_KEY`, credenciales de PostgreSQL y credenciales de AWS Bedrock deben resolverse vía variables de entorno inyectadas en tiempo de despliegue o un gestor de secretos — nunca en texto plano versionado en `docker-compose.yml` (ver [08-CROSSCUTTING-CONCEPTS.md — Seguridad](./08-CROSSCUTTING-CONCEPTS.md#-seguridad)).
-
-## 🔌 Caddy y Cloudflare Tunnel
-
-Ninguno de los dos vive en este repositorio — son infraestructura compartida del host `cjhirashi-srv` que enruta tráfico externo hacia la red Docker `network-cjhirashi-srv`, en el mismo patrón ya usado por el proyecto heredado (ver [02-ARCHITECTURE-GOALS.md — Restricciones de infraestructura](./02-ARCHITECTURE-GOALS.md#-restricciones)). Este proyecto no define ni versiona su configuración; se documentan aquí únicamente como el punto de entrada conocido del tráfico real hacia los tres canales expuestos.
-
-| Componente | Responsabilidad | Alcance de este proyecto |
-|---|---|---|
-| Cloudflare Tunnel | Expone el host `cjhirashi-srv` a Internet sin abrir puertos entrantes directos en el firewall | Ninguno — infraestructura externa administrada por el Administrador de `cjhirashi-srv` (ver [03-STAKEHOLDERS.md](./03-STAKEHOLDERS.md#-stakeholders-de-infraestructura)) |
-| Caddy | Reverse proxy y terminación TLS; enruta cada subdominio/ruta hacia el puerto de host correspondiente (8002, 8003, 8004) | Este proyecto debe comunicar con anticipación cualquier cambio de puerto o de canal expuesto al Administrador de `cjhirashi-srv`, coherente con la matriz de prioridades de [03-STAKEHOLDERS.md](./03-STAKEHOLDERS.md#-matriz-de-prioridades) |
-
-**Pendiente de definir**: la configuración exacta de enrutamiento de Caddy para el MCP Server (puerto 8004), dado que su protocolo no es HTTP tradicional de navegador sino el protocolo MCP consumido por clientes de agentes de IA — puede requerir reglas de proxy distintas a las de Portal Público y Admin Panel.
+Es el mismo `docker-compose.yml` en `cjhirashi-srv`, detrás de Caddy y Cloudflare Tunnel (TLS terminado ahí). Despliegue: reconstruir el servicio (`docker compose up -d --build <servicio>`) y comprobar `GET /health`. Las migraciones se aplican con Alembic desde la API (`alembic upgrade head`); respaldo previo de PostgreSQL antes de cualquier migración con datos.
 
 ---
 
-**Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) · [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md) · [08-CROSSCUTTING-CONCEPTS.md](./08-CROSSCUTTING-CONCEPTS.md) · [CLAUDE.md](../CLAUDE.md)
-**Contacto**: Carlos Jiménez Hirashi (cjhirashi@gmail.com)
+**Relacionado**: [01-INTRODUCTION.md](./01-INTRODUCTION.md) · [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md) · [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md)
+**Contacto**: cjhirashi@gmail.com

@@ -1,6 +1,6 @@
 # API REST — Documentación
 
-Índice central de documentación del módulo API (`api/`).
+Índice central de documentación del módulo API (`cjhirashi-career-api/`).
 
 **Entrada principal:** [../README.md](../README.md)
 
@@ -79,8 +79,14 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `pdf_template_styles` | `/pdf-template-styles` | JWT |
 | `files` | `/files` | JWT |
 | `public` | `/public` | Ninguna |
+| `events` | `/events` | Ninguna (ingesta y borrado de analítica del visitante) |
+| `portal_metrics`, `portal_analytics` | `/career/portal-*` | JWT |
+| `admin_sections` | `/admin` | JWT |
+| `admin_contact_messages` | `/career/contact-messages` | JWT |
+| `notifications` | `/notifications` | JWT |
+| `error_reports` | `/settings/error-reports`, `/system/error-report` | JWT |
 
-**OpenAPI interactivo:** `http://localhost:8001/docs`
+**OpenAPI interactivo:** `http://localhost:8000/docs` (solo si publicas el puerto o corres la API en local)
 
 ---
 
@@ -107,10 +113,10 @@ READMEs de implementación (función de cada módulo Python), distintos de los d
 
 | Cliente | Puerto host | Endpoints típicos |
 |---------|-------------|-------------------|
-| Admin Panel | 8002 | `/auth`, `/career/*`, `/bedrock`, `/files` |
-| Portal Público | 8003 | `/public/*` |
-| MCP Server | 8004 | `/auth`, `/career/*`, `/bedrock` (según tools) |
+| Admin Panel | 8002 (`/api/`) | `/auth`, `/career/*`, `/bedrock`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications` |
+| Portal Público | 8003 (`/api/`) | `/public/*`, `/events/*` |
+| Agente externo (token `agent`) | vía `/api/` | `/career/*`, `POST /bedrock/chat`, `POST /files` |
 
 ---
 
-**Última actualización:** 2026-08-24
+**Última actualización:** 2026-11-05
