@@ -2,7 +2,7 @@
 
 Pytest async (`asyncio_mode=auto`). Objetivo de cobertura: 80%. Guía de ejecución: [docs/TESTING.md](../docs/TESTING.md).
 
-**Config:** `pytest.ini` en `api/`. `conftest.py` añade `src/` al `sys.path` (imports `from models import …`, igual que la app).
+**Config:** `pytest.ini` en `cjhirashi-career-api/`. `conftest.py` añade `src/` al `sys.path` (imports `from models import …`, igual que la app).
 
 ## Arquitectura
 

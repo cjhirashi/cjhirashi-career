@@ -2383,3 +2383,13 @@ flowchart LR
     INIT --> LOOP[agent_loop.chat_stream]
     PUB2[BedrockError] --> ERR[errors.py]
 ```
+
+---
+
+## Perfiles: delegación, foto y herramientas (override del Admin)
+
+| Módulo | Rol |
+|---|---|
+| `profile_delegation.py` | Destinos de delegación efectivos: lo permitido por nivel en código ∩ el override del Admin |
+| `profile_photos.py` | Fotos de los agentes del catálogo (URL pública del bucket) |
+| `profile_tools.py` | Herramientas efectivas por perfil: set de código ∩ override del Admin (los L2 las derivan de sus secciones, ADR-027) |

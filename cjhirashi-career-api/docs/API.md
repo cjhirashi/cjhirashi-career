@@ -2,8 +2,8 @@
 
 Referencia rápida de todos los endpoints. Para detalle por dominio, ver los README de [sections/](sections/README.md).
 
-**Base URL local:** `http://localhost:8001`  
-**Base URL Docker:** `http://cjhirashi-career-api:8001`  
+**Base URL local:** `http://localhost:8000`  
+**Base URL Docker:** `http://cjhirashi-career-api:8000`  
 **Auth:** `Authorization: Bearer <access_token>` (salvo donde se indique)
 
 ---
@@ -237,6 +237,31 @@ Mensajes del formulario de contacto: `/career/contact-messages` (JWT del dueño)
 
 ---
 
+## Operación del Admin — `/admin`, `/notifications`, `/settings`, `/system`
+
+| Método | Path | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/admin/sections` | JWT | Catálogo de secciones del Admin |
+| GET | `/admin/sections/{id}` | JWT | Detalle de una sección |
+| PUT | `/admin/sections/{id}` | JWT | Actualiza dominio e instrucciones de la sección |
+| GET | `/notifications` | JWT | Lista los avisos del usuario (turnos de tareas, mensajes de contacto) |
+| GET | `/notifications/unread-count` | JWT | Avisos sin leer |
+| POST | `/notifications/{id}/read` | JWT | Marca un aviso como leído |
+| POST | `/notifications/read-all` | JWT | Marca todos como leídos |
+| GET | `/settings/error-reports` | JWT | Lista paginada de reportes de falla |
+| GET | `/settings/error-reports/summary` | JWT | Contadores de pendientes y resueltos |
+| GET | `/settings/error-reports/{id}` | JWT | Detalle de un reporte |
+| PATCH | `/settings/error-reports/{id}` | JWT | Marca como resuelto o reabre |
+| DELETE | `/settings/error-reports/{id}` | JWT | Elimina un reporte |
+| POST | `/settings/error-reports/purge-resolved` | JWT | Elimina los resueltos antiguos |
+| POST | `/system/error-report` | Ninguna | Ingesta pública de una falla del cliente (con límite de tasa; nunca falla por el registro) |
+| GET | `/system/readiness` | Ninguna | Comprueba dependencias que `/health` no ve (hoy, MinIO) |
+| GET | `/health` | Ninguna | Estado de la API |
+
+Además, bajo `/bedrock`: `PUT /bedrock/global-rules` (reglas globales del agente), `PUT /bedrock/agent-profiles/{id}/delegation`, `.../photo` y `.../sections` (destinos de delegación, foto y secciones que gestiona cada perfil); bajo `/agent-tasks`: `GET /agent-tasks/distinct/{campo}`; bajo `/files`: `GET /files/count`.
+
+---
+
 ## Códigos HTTP comunes
 
 | Código | Significado |
@@ -246,7 +271,9 @@ Mensajes del formulario de contacto: `/career/contact-messages` (JWT del dueño)
 | 204 | Sin contenido (delete exitoso) |
 | 400 | Request inválido |
 | 401 | Token ausente/inválido |
+| 403 | Token de rol `agent` fuera de su lista de rutas, o cuenta inactiva |
 | 404 | Recurso no encontrado |
+| 429 | Límite de tasa excedido (contacto, analítica, ingesta de errores) |
 | 422 | Error de validación Pydantic |
 | 502 | Error servicio externo (Bedrock) |
 | 503 | Servicio no configurado |
@@ -272,4 +299,4 @@ Ver [sections/infrastructure/README.md](sections/infrastructure/README.md).
 
 ---
 
-**Última actualización:** 2026-08-24
+**Última actualización:** 2026-11-05

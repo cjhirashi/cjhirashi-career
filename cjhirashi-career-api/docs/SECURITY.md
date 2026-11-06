@@ -1,162 +1,81 @@
-# API REST — cjhirashi-career — Modelo de Seguridad
+# API REST — cjhirashi-career — Modelo de seguridad
 
-**SECURITY**
+**SECURITY** · **Última actualización**: 2026-11-05
 
 ![Auth](https://img.shields.io/badge/auth-JWT%20HS256-orange)
 ![Hashing](https://img.shields.io/badge/passwords-bcrypt-green)
 
----
+Implementación de seguridad de la API: autenticación JWT, hashing de contraseñas, rol `agent`, aislamiento de datos por usuario, validación de entrada y límites de tasa. Visión transversal: [../../docs/08-CROSSCUTTING-CONCEPTS.md](../../docs/08-CROSSCUTTING-CONCEPTS.md); variables y secretos: [../../docs/ENVIRONMENT-SECURITY.md](../../docs/ENVIRONMENT-SECURITY.md).
 
-Implementación de seguridad de la API: autenticación JWT, hashing de contraseñas, aislamiento de datos por usuario y validación de entrada.
+## Autenticación JWT
 
----
-
-## 📋 Tabla de Contenidos
-
-- [Autenticación JWT](#-autenticación-jwt)
-- [Seguridad de Contraseñas](#-seguridad-de-contraseñas)
-- [Aislamiento por Usuario](#-aislamiento-por-usuario)
-- [Validación de Entrada](#-validación-de-entrada)
-- [Prevención de SQL Injection](#-prevención-de-sql-injection)
-- [CORS](#-cors)
-- [Variables de Entorno y Secretos](#-variables-de-entorno-y-secretos)
-- [Deuda Técnica de Seguridad](#-deuda-técnica-de-seguridad)
-- [Checklist de Producción](#-checklist-de-producción)
-
----
-
-## 🔐 Autenticación JWT
-
-**Algoritmo**: HS256
-**Expiración**: `ACCESS_TOKEN_EXPIRE_DAYS` (7 días por defecto, configurable)
-**Payload**: `{"sub": <username>, "exp": <timestamp>, "iat": <timestamp>}`
-
-Implementado en `src/utils/security.py` y consumido por `src/middleware/auth.py` (dependency `get_current_user`), usado por todas las rutas del router `documents`.
-
-```python
-# Emisión (routes/auth.py)
-access_token = create_access_token(data={"sub": user.username})
-
-# Validación (middleware/auth.py)
-payload = decode_access_token(token)
-username = payload.get("sub")
-```
+- **Algoritmo**: HS256 con `SECRET_KEY` (obligatoria, 32+ caracteres).
+- **Tokens** (`services/auth_service.py`): de **acceso** (`ACCESS_TOKEN_EXPIRE_DAYS`, 7 días por defecto) y de **refresco** (`REFRESH_TOKEN_EXPIRE_DAYS`, 30), con `type` en el payload. El `sub` es el ID prefijado del usuario (`usr-N`).
+- **Refresco**: `POST /auth/refresh` valida el token de refresco por firma, tipo y expiración, y comprueba que el usuario siga activo. `POST /auth/logout` solo registra la salida: el cliente descarta los tokens. La tabla `refresh_tokens` (con `token_hash`, `is_revoked`) existe en el modelo, pero las rutas de refresco y salida **no la usan**: no hay revocación del lado del servidor, ni de acceso ni de refresco; caducan solos.
+- **Validación**: `middleware/auth.py` (`get_current_user`) decodifica el token, carga el `User` y lo inyecta en cada ruta protegida.
 
 ```mermaid
 graph LR
-    classDef backend fill:#042f2e,stroke:#10b981,color:#fff
-    classDef secrets fill:#111827,stroke:#6b7280,color:#fff
-    classDef postgres fill:#1e1b4b,stroke:#6366f1,color:#fff
-    classDef client fill:#1e293b,stroke:#cbd5e1,color:#fff
-
-    User["👤 Cliente"] -->|username, password| Login["POST /auth/login"]
-    Login --> Verify["verify_password()"]
-    Verify --> DB["🗄️ users.password_hash"]
-    DB -->|Coincide| Create["create_access_token()"]
-    Create -->|access_token| User
-
-    User -->|Bearer token| Protected["GET /documents"]
-    Protected --> Decode["decode_access_token()"]
-    Decode -->|sub = username| Lookup["Buscar usuario en BD"]
-    Lookup -->|200| Response["Respuesta autorizada"]
-
-    class Login backend
-    class Protected backend
-    class Create secrets
-    class Decode secrets
-    class DB postgres
-    class User client
+    C["Cliente"] -->|username, password| L["POST /auth/login"]
+    L --> V["verify_password (bcrypt)"]
+    V -->|ok| T["create_access_token + create_refresh_token"]
+    T -->|access + refresh| C
+    C -->|"Authorization: Bearer"| P["Ruta protegida"]
+    P --> D["decode_access_token → get_current_user"]
+    D --> R["Respuesta filtrada por user_id"]
 ```
 
-## 🔒 Seguridad de Contraseñas
+## Contraseñas
 
-**Hashing**: bcrypt vía `passlib.context.CryptContext(schemes=["bcrypt"])`
+`bcrypt` (12 rondas) directamente, sin passlib. Longitud mínima de 8 caracteres en el registro y en el cambio de contraseña (`POST /auth/change-password`, la nueva debe diferir de la actual). Nunca se guarda ni se registra la contraseña en claro.
 
-```python
-hashed = hash_password(plain_password)          # Registro
-valid = verify_password(plain_password, hashed)  # Login
-```
+## Rol `agent`
 
-Nunca se almacena ni se registra en logs la contraseña en texto plano.
+Las cuentas con `access_role = agent` son para agentes externos. `middleware/auth.py` solo les permite `/career/*`, `POST /bedrock/chat` y `POST /files` (subida); cualquier otra ruta responde **403** «Agent token is not authorized for this endpoint». No pueden listar, cambiar la visibilidad, descargar ni borrar archivos, para que un token de agente no enumere ni retire los archivos reales de Carlos. Las rutas `/public` no pasan por esta dependencia.
 
-## 🧱 Aislamiento por Usuario
+## Aislamiento por usuario
 
-Todas las consultas al recurso `documents` filtran explícitamente por el `user_id` del token autenticado — no existe forma de acceder a datos de otro usuario a través de la API:
+Todo endpoint de carrera filtra por el `user_id` del **token**, nunca del cuerpo de la petición (`CareerRepository`). Un recurso de otro usuario responde `404`, no `403`, para no revelar su existencia. El portal público lee con el usuario dueño del portafolio (`PUBLIC_PORTAL_USER_ID`).
 
-```python
-# repositories: cada query incluye el filtro de propiedad
-stmt = select(Document).where(
-    Document.id == document_id,
-    Document.user_id == current_user.id
-)
-```
+## Validación de entrada
 
-Un `document_id` de otro usuario retorna `404 Not Found`, no `403 Forbidden` — esto evita revelar la existencia del recurso a usuarios no autorizados.
+Pydantic v2 valida tipo, longitud y formato; los errores de validación responden `422` con `{"detail": "Error de validación", ...}` y la lista de errores. Los `5xx` y los `4xx` relevantes (salvo 401 y 404) se registran en `error_reports`.
 
-## ✅ Validación de Entrada
+## SQL injection
 
-Pydantic v2 valida tipo, longitud y formato en cada request:
+Todo el acceso a datos pasa por SQLAlchemy ORM con consultas parametrizadas; no hay SQL crudo interpolado con datos de usuario.
 
-```python
-class UserCreate(UserBase):
-    password: constr(min_length=8, max_length=255)
+## Límites de tasa y abuso
 
-class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=255)
-    email: EmailStr
-```
+- Formulario de contacto (`POST /public/contact-message`): 3 mensajes por hora por IP y por correo, y un campo señuelo (*honeypot*).
+- Analítica (`POST /events/track`): límite por ventana deslizante, clasificación de bots (umbral 70) y respeto a DNT/GPC en el cliente.
+- El resto de rutas no tiene límite de tasa propio; depende de Cloudflare.
 
-Errores de validación retornan `422` con el detalle de campo y motivo (ver [API.md § Manejo de Errores](./API.md#-manejo-de-errores)).
+## CORS
 
-## 🛡️ Prevención de SQL Injection
+Los orígenes salen de `CORS_ORIGINS` (lista separada por comas en `config.py`). La plantilla trae `http://localhost:8002` (Admin) y `http://localhost:8003` (Portal); en producción pon los orígenes reales.
 
-Todo acceso a datos pasa por SQLAlchemy ORM con queries parametrizadas — no hay SQL crudo interpolado con datos de usuario en el código actual:
+## Secretos
 
-```python
-# Seguro — parametrizado por SQLAlchemy
-stmt = select(User).where(User.username == username)
-```
+Solo en `.env` (nunca versionado); `docker-compose.yml` usa `${VARIABLE}`. Detalle en [ENVIRONMENT-SECURITY](../../docs/ENVIRONMENT-SECURITY.md).
 
-## 🌐 CORS
+## Deuda técnica de seguridad
 
-Orígenes permitidos configurados vía `CORS_ORIGINS` (variable de entorno, parseada a lista en `config.py`). Por defecto:
+| # | Deuda | Detalle |
+|---|---|---|
+| 1 | **Registro público abierto** | `POST /auth/register` no requiere autenticación ni tiene guarda: está accesible desde Internet (comprobado el 2026-11-05: responde 422 de validación en `cjhirashi.com/api` y `admin.cjhirashi.com/api`). Cualquiera puede crear una cuenta `user` con acceso al CRUD de su propio espacio, a la subida de archivos y al chat de Bedrock (consumo propio de la cuenta). El sistema está pensado para un solo administrador; decidir si se desactiva, se protege con un código de invitación o se limita al rol `service`. |
+| 2 | Tokens sin revocación del lado del servidor | Los de acceso (7 días) y los de refresco (30) valen hasta caducar; `logout` no los invalida. Valorar una vida menor y usar `refresh_tokens` para revocar. |
+| 3 | `SECRET_KEY` única (HS256) | Sin rotación programada. |
+| 4 | Sin Row-Level Security | El aislamiento es solo de aplicación. |
+| 5 | Sin escaneo automático de dependencias | El CI solo corre pruebas. |
+| 6 | Credenciales de AWS en variables de entorno | Rotación y alcance del rol IAM pendientes ([BEDROCK-HARNESS.md](./BEDROCK-HARNESS.md)). |
 
-```
-http://localhost:8002  (Admin Panel)
-http://localhost:8003  (Portal Público)
-http://localhost:8004  (MCP Server)
-```
+## Checklist de producción
 
-## 🔑 Variables de Entorno y Secretos
-
-```bash
-# .env (NO se versiona, está en .gitignore)
-SECRET_KEY=clave-real-de-producción-min-32-caracteres
-DATABASE_URL=postgresql+asyncpg://user:password@host:5432/db
-
-# .env.example (sí se versiona, solo placeholders)
-SECRET_KEY=your-secret-key-change-in-production-min-32-chars-recommended
-```
-
-## ⚠️ Deuda Técnica de Seguridad
-
-- **Dos implementaciones de autenticación en paralelo**: `utils/security.py` (funciones sueltas, usado por `routes/auth.py`, registrado) y `services/auth_service.py` (clase `AuthService`, usado por `routes/auth_enhanced.py`, **no registrado**). El primero codifica `sub` como `username`; el segundo lo codifica como `str(user.id)`. Si en el futuro se registra `auth_enhanced.py` sin ajustar `middleware/auth.py` (que busca el usuario por `username`), los tokens emitidos por ese router no serán válidos contra el middleware actual.
-- **Sin rate limiting activo**: la configuración (`RATE_LIMIT_ENABLED`, `RATE_LIMIT_REQUESTS`) existe en `config.py` pero no hay middleware que la aplique todavía.
-- **Sin rotación de refresh tokens**: el modelo `RefreshToken` está definido en base de datos pero no hay lógica de emisión/revocación conectada a un endpoint activo.
-- **Sin headers de seguridad HTTP** (`Content-Security-Policy`, `X-Frame-Options`, `Strict-Transport-Security`) configurados en el middleware.
-
-## 📋 Checklist de Producción
-
-- [ ] `SECRET_KEY` rotado a un valor aleatorio fuerte (no el de `.env.example`)
+- [ ] `SECRET_KEY` aleatoria de 32+ caracteres y distinta por entorno
 - [ ] `DEBUG=false`
-- [ ] HTTPS vía reverse proxy (Caddy, según arquitectura de `cjhirashi-srv`)
-- [ ] Backups de base de datos configurados y probados
-- [ ] `CORS_ORIGINS` restringido a los tres orígenes internos reales
-- [ ] Rate limiting implementado y habilitado
-- [ ] Resolver la duplicidad de `auth.py` / `auth_enhanced.py` antes de exponer refresh tokens
-- [ ] Auditoría (`audit_logs`) conectada a las rutas de escritura
-
----
-
-**Referencias**: [OWASP Top 10](https://owasp.org/www-project-top-ten/) · [JWT Best Practices (RFC 8725)](https://tools.ietf.org/html/rfc8725) · [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
-**Relacionado**: [ARCHITECTURE.md](./ARCHITECTURE.md) · [API.md](./API.md)
+- [ ] `CORS_ORIGINS` con los orígenes reales
+- [ ] `.env` fuera de git; contraseñas propias de PostgreSQL y MinIO
+- [ ] API sin puerto publicado al host
+- [ ] Credenciales de AWS con permisos mínimos y `BEDROCK_DAILY_BUDGET_USD` definido
+- [ ] Decisión tomada sobre el registro público (deuda 1)

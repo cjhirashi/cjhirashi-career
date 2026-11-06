@@ -1,145 +1,86 @@
-# API REST — Guía de Configuración Local
+# API REST — Guía de configuración local
 
-**DEVELOPER GUIDE**
+**DEVELOPER GUIDE** · **Última actualización**: 2026-11-05
 
-![Setup Time](https://img.shields.io/badge/setup-~10%20min-informational)
-![Difficulty](https://img.shields.io/badge/dificultad-básico-brightgreen)
+**Prerrequisitos:** Python 3.11+ (la imagen usa 3.11), PostgreSQL 15 (local o en Docker) y Git. Para ejecutar todo el sistema, Docker Compose: [../../docs/07-DEPLOYMENT-VIEW.md](../../docs/07-DEPLOYMENT-VIEW.md).
 
----
-
-**Prerrequisitos:**
-- Python 3.11+
-- PostgreSQL 15+ (local o vía Docker)
-- Git
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Instalación](#-instalación)
-- [Configuración del Entorno](#-configuración-del-entorno)
-- [Inicializar la Base de Datos](#-inicializar-la-base-de-datos)
-- [Ejecutar el Servidor](#-ejecutar-el-servidor)
-- [Verificación](#-verificación)
-- [Configuración de IDE](#-configuración-de-ide)
-- [Problemas Comunes de Setup](#-problemas-comunes-de-setup)
-
----
-
-## 🚀 Instalación
-
-### Paso 1: Crear Entorno Virtual e Instalar Dependencias
+## 1. Instalar
 
 ```bash
-cd api/
-python -m venv venv
-source venv/bin/activate  # En Windows: venv\Scripts\activate
+cd cjhirashi-career-api
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Paso 2: Configurar Variables de Entorno
+## 2. Configurar el entorno
 
 ```bash
 cp .env.example .env
 ```
 
-Edita `.env` con tus valores. Variables mínimas requeridas:
+La plantilla raíz del repo (`../.env.example`) lista todas las variables; las mínimas para arrancar la API son:
 
 ```bash
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/mcp_db
-SECRET_KEY=una-clave-aleatoria-de-al-menos-32-caracteres
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_DAYS=7
-CORS_ORIGINS=http://localhost:8002,http://localhost:8003,http://localhost:8004
+DATABASE_URL=postgresql+asyncpg://career_admin:<contraseña>@localhost:5432/career_db
+SECRET_KEY=<32+ caracteres aleatorios>
+CORS_ORIGINS=http://localhost:8002,http://localhost:8003
+MINIO_ENDPOINT=localhost:9000
+MINIO_ROOT_USER=<usuario>
+MINIO_ROOT_PASSWORD=<contraseña>
+MINIO_BUCKET=cjhirashi-career
+MINIO_PUBLIC_URL=http://localhost:9000/cjhirashi-career
 ```
 
-> **⚠️ Importante**: `SECRET_KEY` debe tener mínimo 32 caracteres. Genera uno seguro con:
-> ```bash
-> python -c "import secrets; print(secrets.token_urlsafe(32))"
-> ```
+> `SECRET_KEY` debe tener al menos 32 caracteres: `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Si MinIO no responde al arrancar, la API lo registra y sigue sirviendo todo menos los archivos (subida, listado y descarga fallan hasta que MinIO esté accesible). Variables completas y política de secretos: [../../docs/ENVIRONMENT-SECURITY.md](../../docs/ENVIRONMENT-SECURITY.md).
 
-## 🗄️ Inicializar la Base de Datos
+## 3. Base de datos
 
-### Opción 1: PostgreSQL Local
+PostgreSQL local o desechable en Docker:
 
 ```bash
-psql -U user -d mcp_db -f init.sql
+docker run -d --name career-pg-dev -e POSTGRES_USER=career_admin -e POSTGRES_PASSWORD=<contraseña> \
+  -e POSTGRES_DB=career_db -p 127.0.0.1:5432:5432 postgres:15-alpine
 ```
 
-### Opción 2: PostgreSQL con Docker
+Aplica el esquema con **Alembic** (fuente de verdad para despliegues):
 
 ```bash
-docker run -d \
-  --name postgres-dev \
-  -e POSTGRES_USER=mcpuser \
-  -e POSTGRES_PASSWORD=mcppass123 \
-  -e POSTGRES_DB=mcp_db \
-  -p 5432:5432 \
-  postgres:15-alpine
+alembic upgrade head          # desde cjhirashi-career-api/
 ```
 
-### Opción 3: Creación automática vía SQLAlchemy
+`init_db()` (`src/database.py`) ejecuta además `Base.metadata.create_all` y crea las secuencias de IDs prefijados al arrancar, pero **no** sustituye a las migraciones. `init.sql` es histórico (anterior a 2026-08-21, cuando Alembic no trackeaba nada). Detalle: [DATABASE.md](./DATABASE.md) y [../alembic/README.md](../alembic/README.md).
 
-El método `init_db()` en `src/database.py` ejecuta `Base.metadata.create_all()` al arrancar la API, creando las tablas de los modelos que estén importados en el proceso. Ver [DATABASE.md § Estado de las Tablas](./DATABASE.md#-estado-de-las-tablas) para las limitaciones actuales de este mecanismo frente a `init.sql`.
-
-## ▶️ Ejecutar el Servidor
-
-### Desarrollo (con recarga automática)
+## 4. Ejecutar
 
 ```bash
-cd src/
-uvicorn app:app --reload --host 0.0.0.0 --port 8001
+uvicorn app:app --app-dir src --reload --host 0.0.0.0 --port 8000
 ```
 
-### Con Docker
+Con Docker (desde la raíz del repo): `docker compose up -d --build api` (imagen `python:3.11-slim`, un worker, healthcheck en `/health`). La API no publica puerto al host; se alcanza por la red `net-cjhirashi-career`.
+
+## 5. Verificar
 
 ```bash
-docker build -t portafolio-api:latest .
-docker run -p 8001:8001 --env-file .env portafolio-api:latest
+curl http://localhost:8000/health        # {"status":"healthy","app_name":…,"version":…}
+curl http://localhost:8000/system/readiness
 ```
 
-> **Nota**: el `Dockerfile` actual copia todo el contenido de `api/` a `/app` y ejecuta `uvicorn app:app`, lo cual requiere que el proceso arranque con `src/` como directorio de trabajo (`WORKDIR /app/src` o `--app-dir src`). Si el contenedor falla con `ModuleNotFoundError: No module named 'app'`, ver [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#problema-modulenotfounderror-no-module-named-app-en-docker).
+Swagger UI en `http://localhost:8000/docs` y ReDoc en `/redoc`. Pruebas: [TESTING.md](./TESTING.md).
 
-## ✅ Verificación
+## IDE
 
-```bash
-curl http://localhost:8001/health
-```
+Intérprete `venv/bin/python`; marca `src/` como *Sources Root* (los imports son absolutos: `from config import settings`); habilita pytest.
 
-**Respuesta esperada:**
-```json
-{
-  "status": "healthy",
-  "app_name": "cjhirashi-career API",
-  "version": "1.0.0"
-}
-```
-
-Documentación interactiva disponible en `http://localhost:8001/docs` (Swagger UI) y `http://localhost:8001/redoc` (ReDoc).
-
-## 🖥️ Configuración de IDE
-
-### VS Code
-
-1. Instalar la extensión de Python
-2. Seleccionar intérprete: `venv/bin/python`
-3. Instalar Pylance para verificación de tipos
-
-### PyCharm
-
-1. Configurar el intérprete a `venv/bin/python`
-2. Habilitar pytest en las configuraciones de ejecución
-3. Marcar `src/` como "Sources Root" para que los imports absolutos (`from config import settings`) resuelvan correctamente
-
-## 🔧 Problemas Comunes de Setup
+## Problemas comunes
 
 | Síntoma | Causa | Solución |
-|---------|-------|----------|
-| `Port 8001 already in use` | Otro proceso usa el puerto | `lsof -i :8001` y `kill -9 <PID>` |
-| Error de conexión a BD | PostgreSQL no corre o `DATABASE_URL` incorrecta | Verificar `.env` y que el contenedor/servicio esté activo |
-| `ModuleNotFoundError` al importar `config`/`database` | Se ejecutó `uvicorn` fuera de `src/` | Ejecutar `uvicorn app:app` **desde** `src/`, no desde `api/` |
+|---|---|---|
+| `Port 8000 already in use` | Otro proceso usa el puerto | `lsof -i :8000` y detén el proceso |
+| Error de conexión a la BD | PostgreSQL no corre o `DATABASE_URL` incorrecta | Revisa `.env` y que el contenedor esté activo |
+| Los archivos fallan (el resto de la API sirve) | `MINIO_ENDPOINT` apunta a `localhost` dentro de Docker o MinIO no responde | En Compose debe ser `minio:9000`; en local, un MinIO accesible. El log del arranque dice «Failed to initialize MinIO bucket» |
+| `ModuleNotFoundError` al importar `config` o `database` | `uvicorn` sin `--app-dir src` | Usa el comando de arriba |
 
-Ver [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) para el listado completo de problemas conocidos.
+Más casos: [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
 ---
 

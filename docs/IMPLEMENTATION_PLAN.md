@@ -13,7 +13,7 @@ El plan original en tres fases (sistema manual, MCP Server, Agent Bedrock) se cu
 
 | Bloque | Qué incluye | Referencia |
 |---|---|---|
-| **API REST + PostgreSQL** | JWT, CRUD de carrera (≈48 recursos bajo `/career`), archivos en MinIO, PDF, health checks; 419 operaciones, 69 modelos, 53 migraciones | [`cjhirashi-career-api/`](../cjhirashi-career-api/README.md) |
+| **API REST + PostgreSQL** | JWT, CRUD de carrera (≈48 recursos bajo `/career`), archivos en MinIO, PDF, health checks; 419 operaciones, 69 modelos, 51 migraciones | [`cjhirashi-career-api/`](../cjhirashi-career-api/README.md) |
 | **Admin Panel** | 24 pantallas: dashboard, recursos de carrera, descubrimiento de vacantes, archivos, tareas (lista, kanban, calendario, Gantt), PDF, métricas, agentes, configuración | [`cjhirashi-career-admin/`](../cjhirashi-career-admin/README.md) |
 | **Portal público** | Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad | [`cjhirashi-career-portfolio/`](../cjhirashi-career-portfolio/README.md) |
 | **Agent Bedrock** | Harness local, jerarquía L1/L2/L3, perfiles configurables, memoria, tareas programadas y subtareas, costos y presupuesto | [BEDROCK-SYSTEM.md](./BEDROCK-SYSTEM.md) |

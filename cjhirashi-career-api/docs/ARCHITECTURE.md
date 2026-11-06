@@ -1,8 +1,8 @@
 # API REST — Guía de arquitectura
 
-**Ubicación:** `api/docs/ARCHITECTURE.md`
+**Ubicación:** `cjhirashi-career-api/docs/ARCHITECTURE.md`
 
-**Última actualización:** 2026-08-24
+**Última actualización:** 2026-11-05
 
 Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock, MinIO, y Qdrant.
 
@@ -30,7 +30,7 @@ Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2
 La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 - Autenticación JWT (access + refresh)
-- CRUD de 37 recursos de carrera profesional
+- CRUD de ≈48 recursos de carrera profesional bajo `/career`
 - Agent Bedrock (Harness local Converse API)
 - Job discovery multi-proveedor
 - Archivos (MinIO), plantillas PDF
@@ -38,7 +38,7 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 **Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock) · Qdrant client
 
-**Estado:** implementación avanzada — 14 routers registrados en `src/app.py`, ~50 modelos ORM, 8 migraciones Alembic.
+**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 51 migraciones Alembic. El harness de agentes y Qdrant se trasladarán/retirarán según el ADR-029 (spec 009, en curso; aún sin aplicar).
 
 ---
 
@@ -46,13 +46,13 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 ```mermaid
 graph TD
-    subgraph Clients["Clientes (Docker network-cjhirashi-srv)"]
+    subgraph Clients["Clientes (vía Caddy /api/ en net-cjhirashi-career)"]
         Admin[Admin Panel :8002]
         Portal[Portal Público :8003]
-        MCP[MCP Server :8004]
+        Agent[Agente externo<br/>token rol agent]
     end
 
-    subgraph API["api_rest :8001"]
+    subgraph API["cjhirashi-career-api :8000"]
         Routes[Routes — HTTP/SSE]
         Services[Services — lógica de negocio]
         Repos[Repositories — acceso a datos]
@@ -68,7 +68,7 @@ graph TD
     end
 
     Admin --> Routes
-    MCP --> Routes
+    Agent --> Routes
     Portal --> Routes
     Routes --> Services
     Services --> Repos
@@ -77,7 +77,6 @@ graph TD
     Services --> MinIO
     Services --> Qdrant
     Services --> AWS
-    Services --> LI
     Services --> GH
 ```
 
@@ -93,16 +92,15 @@ graph TD
 ## Consumidores y red
 
 ```
-Internet → Caddy/Cloudflare → Admin (8002) / Portal (8003) / MCP (8004)
-                                    ↓              ↓              ↓
-                              api_rest:8001 (solo red interna Docker)
+Internet → Cloudflare Tunnel → Caddy → Admin (8002) / Portal (8003)
+                                          └─ /api/ (prefijo removido) → cjhirashi-career-api:8000 (solo red interna Docker)
 ```
 
 | Cliente | Auth | Endpoints típicos |
 |---------|------|-------------------|
-| Admin Panel | JWT | `/auth`, `/career/*`, `/bedrock`, `/files` |
-| Portal Público | Ninguna | `/public/*` |
-| MCP Server | JWT | `/career/*`, `/bedrock` (según tools MCP) |
+| Admin Panel | JWT | `/auth`, `/career/*`, `/bedrock`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications`, `/settings`, `/admin` |
+| Portal Público | Ninguna | `/public/*`, `/events/*` |
+| Agente externo | JWT de rol `agent` | `/career/*`, `POST /bedrock/chat`, `POST /files` (el resto, 403) |
 
 ---
 
@@ -112,12 +110,12 @@ Internet → Caddy/Cloudflare → Admin (8002) / Portal (8003) / MCP (8004)
 
 - Lifespan: `init_db()`, MinIO bucket y scheduler de tareas de agentes
 - CORS, exception handlers globales
-- Registra 14 routers (ver [API.md](./API.md))
+- Registra 21 routers (ver [API.md](./API.md))
 - Health check `/health`
 
 ### `src/config.py`
 
-`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, Qdrant, CORS, portal público.
+`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, Qdrant, CORS, descubrimiento de vacantes y portal público.
 
 ### `src/database.py`
 
@@ -129,19 +127,25 @@ Engine async, `AsyncSessionLocal`, `get_db()` dependency, `init_db()` / `close_d
 |---------|---------|
 | `auth_enhanced.py` | Autenticación JWT + refresh |
 | `career_common.py` | Factory CRUD + `RESOURCE_REGISTRY` |
-| `career_identity.py` | 12 recursos identidad |
-| `career_search.py` | 14 recursos búsqueda + PDF CV |
-| `career_digital.py` | 6 recursos presencia digital |
+| `career_identity.py` | Recursos de identidad |
+| `career_search.py` | Recursos de búsqueda (vacantes, aplicaciones, CVs y cartas) |
+| `career_digital.py` | Recursos de presencia digital |
 | `career_support.py` | Tags |
-| `career_metrics.py` | Métricas agregadas |
+| `career_metrics.py` | Métricas agregadas de búsqueda |
 | `career_methodologies.py` | Metodologías operativas |
 | `job_discovery.py` | Búsqueda multi-proveedor |
-| `bedrock.py` | Agent Bedrock (SSE) |
+| `bedrock.py` | Agent Bedrock (streaming) |
 | `bedrock_tasks.py` | Tareas del agente |
+| `notifications.py` | Notificaciones in-app |
+| `admin_sections.py` | Secciones configurables del Admin |
+| `admin_contact_messages.py` | Mensajes del formulario de contacto |
 | `pdf_templates.py` | Plantillas HTML (`pdf_template`) |
 | `pdf_template_styles.py` | Estilos CSS (`pdf_style`) |
 | `files.py` | Upload MinIO |
-| `public.py` | Portal read-only |
+| `public.py` | Portal read-only y contacto |
+| `error_reports.py` | Registro de errores |
+| `events.py` | Ingesta y borrado de analítica |
+| `portal_metrics.py`, `portal_analytics.py` | Consulta y configuración de la analítica |
 
 Documentación por sección: [sections/README.md](./sections/README.md)
 
@@ -152,7 +156,11 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 | `auth_service.py` | Hash bcrypt, JWT access/refresh |
 | `bedrock/` | Harness local: loop Converse, tools, memoria, presupuesto |
 | `bedrock_service.py` | Fachada + CRUD tools del agente |
-| `job_discovery/` | Proveedores Indeed, LinkedIn, Remotive, etc. |
+| `job_discovery/` | Adaptadores: Adzuna (Indeed), Greenhouse, Lever, LinkedIn, Remotive, RemoteOK, GetOnBoard |
+| `task_scheduler.py` | Bucle in-process de tareas programadas de agentes |
+| `portal_*.py` | Analítica: ingesta, sesionización, bots, geografía, canales, dispositivo, límites de tasa y métricas |
+| `contact_message_service.py` | Mensajes del formulario de contacto |
+| `error_report_service.py`, `error_reporting.py` | Registro y deduplicación de errores |
 | `storage_service.py` | MinIO upload/presigned URLs |
 | `qdrant_service.py` | Indexación y búsqueda vectorial |
 | `pdf_service.py` | Generación PDF |
@@ -173,7 +181,7 @@ Pydantic v2 por dominio: `user`, `career_identity`, `career_search`, `career_dig
 
 ### `src/models/`
 
-~50 modelos ORM. Import centralizado en `models/__init__.py`. Ver [DATABASE.md](./DATABASE.md).
+69 modelos ORM. Import centralizado en `models/__init__.py`. Ver [DATABASE.md](./DATABASE.md).
 
 ---
 
@@ -230,7 +238,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as Admin/MCP
+    participant C as Admin / agente
     participant R as career_common router
     participant M as get_current_user
     participant Repo as CareerRepository
@@ -278,7 +286,7 @@ sequenceDiagram
 | PostgreSQL | Persistencia única | `DATABASE_URL` |
 | MinIO | Archivos, imágenes IA | `MINIO_*` |
 | Qdrant | Knowledge base Bedrock | `QDRANT_*` |
-| AWS Bedrock | Converse, Embeddings, Titan Image | `AWS_*`, `BEDROCK_*` |
+| AWS Bedrock | Converse, embeddings (Titan) e imágenes (Stability) | `AWS_*`, `BEDROCK_*` |
 | GitHub API | Repos públicos | Sin key (API pública) |
 
 ---
@@ -291,7 +299,7 @@ sequenceDiagram
 
 **Dependency Inversion:** routes dependen de `Depends(get_db)`, `Depends(get_current_user)`, servicios inyectables.
 
-**DRY:** un repositorio y un registry (`RESOURCE_REGISTRY`) para ~37 recursos; Bedrock tools reutilizan el mismo CRUD que el Admin.
+**DRY:** un repositorio y un registry (`RESOURCE_REGISTRY`) para ≈48 recursos; Bedrock tools reutilizan el mismo CRUD que el Admin.
 
 **Aislamiento multi-tenant:** `user_id` siempre del JWT, nunca del request body.
 
@@ -303,8 +311,9 @@ sequenceDiagram
 |-------|----------------|
 | Route | `HTTPException` (401, 404, 422, 502, 503) |
 | Service | `BedrockError`, `ValueError` → convertidos en route |
-| App global | `RequestValidationError` → 422 con detalle de campos |
-| App global | `Exception` no capturada → 500 + log stacktrace |
+| App global | `RequestValidationError` → 422 `{"detail": "Error de validación", ...}` con la lista de errores |
+| App global | `Exception` no capturada → 500 + log y registro en `error_reports` |
+| App global | Los 5xx y los 4xx relevantes (salvo 401 y 404) se registran en `error_reports` con huella |
 
 Bedrock chat usa SSE event `type: error` además de códigos HTTP en fallos previos al stream.
 
@@ -312,7 +321,7 @@ Bedrock chat usa SSE event `type: error` además de códigos HTTP en fallos prev
 
 ## Testing
 
-Estructura en `api/tests/`:
+Estructura en `cjhirashi-career-api/tests/`:
 
 | Carpeta | Alcance |
 |---------|---------|
@@ -332,6 +341,8 @@ Ver [TESTING.md](./TESTING.md).
 - Connection pool (`pool_size=10`, `max_overflow=20`)
 - Paginación en listados CRUD
 - Presupuesto diario Bedrock por usuario
+
+**Limitación:** el scheduler de tareas corre in-process con un solo worker; con varias réplicas duplicaría ejecuciones (se resuelve al mover el harness, ADR-029).
 
 **No implementado:**
 - Cache Redis

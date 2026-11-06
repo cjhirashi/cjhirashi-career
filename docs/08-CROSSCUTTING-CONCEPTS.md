@@ -23,7 +23,7 @@
 ## Persistencia
 
 - **PostgreSQL** es la única fuente de verdad de carrera; la API la usa con SQLAlchemy 2 async (asyncpg).
-- **Esquema**: Alembic es la fuente de verdad para despliegues (`alembic upgrade head`); 53 migraciones. Detalle y dominios: [`cjhirashi-career-api/docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md).
+- **Esquema**: Alembic es la fuente de verdad para despliegues (`alembic upgrade head`); 51 migraciones. Detalle y dominios: [`cjhirashi-career-api/docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md).
 - **IDs prefijados** por recurso (p. ej. `comp-12`) y secciones del Admin con PK sintético `sec-N` ([ADR-021](./09-DECISIONS/021-admin-sections-synthetic-pk.md)).
 - **Archivos** en MinIO (bucket único), con metadatos y visibilidad en `file_uploads`.
 - **Base vectorial** (Qdrant): índice derivado, reconstruible desde PostgreSQL; el retiro está decidido ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md)).
@@ -57,7 +57,7 @@ Cobertura mínima del **80 %** por módulo; en la API la impone `pytest.ini` (`-
 
 | Módulo | Herramienta | Ubicación |
 |---|---|---|
-| API | pytest (93 archivos de prueba: unitarias e integración), marcador `@pytest.mark.requisito("RF-NNN")` | `cjhirashi-career-api/tests/` |
+| API | pytest (867 pruebas en 93 archivos: unitarias e integración), marcador `@pytest.mark.requisito("RF-NNN")` | `cjhirashi-career-api/tests/` |
 | Admin y Portal | Vitest + React Testing Library, `describe("RF-NNN: …")` | `src/tests/` y junto al código |
 | `cjhirashi-career-ai` | pytest; las pruebas con Postgres real usan una base desechable (`TEST_DATABASE_URL`) | `cjhirashi-career-ai/tests/` |
 | CI | GitHub Actions: pruebas del subsistema Bedrock de la API (Python 3.11) y build del Admin (Node 20) | `.github/workflows/ci.yml` |

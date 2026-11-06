@@ -77,7 +77,7 @@ Cada turno, `compose_system_prompt` inyecta el catálogo asignado al caller. Si 
 ## Ejemplo
 
 ```bash
-curl -s "http://localhost:8001/career/operational-methodologies?search=STAR&limit=5" \
+curl -s "http://localhost:8000/career/operational-methodologies?search=STAR&limit=5" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

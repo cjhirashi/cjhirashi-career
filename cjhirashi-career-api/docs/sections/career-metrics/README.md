@@ -80,11 +80,11 @@ flowchart LR
 
 ```bash
 # Overview en vivo
-curl -s http://localhost:8001/career/metrics/search-overview \
+curl -s http://localhost:8000/career/metrics/search-overview \
   -H "Authorization: Bearer $TOKEN"
 
 # Últimas 8 semanas
-curl -s "http://localhost:8001/career/metrics/weekly?limit=8" \
+curl -s "http://localhost:8000/career/metrics/weekly?limit=8" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

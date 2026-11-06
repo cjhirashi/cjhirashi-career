@@ -60,7 +60,7 @@ Las tags se asocian desde el Admin Panel a otros recursos (proyectos, publicacio
 ## Ejemplo
 
 ```bash
-curl -s -X POST http://localhost:8001/career/tags \
+curl -s -X POST http://localhost:8000/career/tags \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"tag_name": "IA", "slug": "ia", "color": "#3b82f6"}'

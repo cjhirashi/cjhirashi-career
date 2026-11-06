@@ -2,7 +2,7 @@
 
 **Ubicación:** `api/docs/DATABASE.md`
 
-**Última actualización:** 2026-08-24
+**Última actualización:** 2026-11-05
 
 Esquema PostgreSQL de cjhirashi-career: gestión de carrera, Agent Bedrock, integraciones y analítica.
 
@@ -287,7 +287,7 @@ Definida en migraciones o scripts SQL; agrega métricas semanales de búsqueda.
 | `e5f6a7b8c9d0` | `agent_profile_ids` en `operational_methodologies` |
 
 ```bash
-cd api/
+cd cjhirashi-career-api/
 alembic upgrade head          # aplicar todas
 alembic current               # ver revisión activa
 alembic revision --autogenerate -m "descripción"  # nueva migración

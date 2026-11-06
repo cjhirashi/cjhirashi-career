@@ -114,3 +114,18 @@ flowchart TB
 
 ---
 
+---
+
+## Operación del Admin, agentes y contacto (añadidos después del diseño inicial)
+
+| Modelo | Tabla | Rol |
+|---|---|---|
+| `AdminSectionOverride` | `admin_section_overrides` | Overrides editables de una sección del Admin: agente L2 del chat contextual, instrucciones y vistas |
+| `UserNotification` | `user_notifications` | Avisos in-app (ADR-016): turnos de tareas y mensajes de contacto |
+| `ErrorReport` | `error_reports` | Registro centralizado de fallas con huella para deduplicar (ADR-018) |
+| `ContactMessage` | `contact_messages` | Mensajes del formulario de contacto del portafolio |
+| `BedrockAgentDelegation` | `bedrock_agent_delegation` | Destinos de delegación editables por perfil (subconjunto de los permitidos por nivel) |
+| `BedrockAgentProfilePhoto` | `bedrock_agent_profile_photos` | Foto de un agente del catálogo, elegida del bucket MinIO |
+| `BedrockAgentProfileTool` | `bedrock_agent_profile_tools` | Override de herramientas por perfil de agente |
+| `PersonalProfile` | `personal_profile` | Hechos biográficos de referencia para los agentes |
+| `SearchPlatform` | `search_platforms` | Plataformas de búsqueda de empleo donde Carlos tiene cuenta (LinkedIn, GetOnBoard…) |

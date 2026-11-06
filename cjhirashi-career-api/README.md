@@ -1,6 +1,6 @@
 # API REST — cjhirashi-career
 
-API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional (≈48 recursos bajo `/career`), Agent Bedrock (harness local), PDF, archivos (MinIO), analítica del portafolio, integraciones (GitHub, descubrimiento de vacantes) y endpoints públicos para el Portal. 419 operaciones HTTP, 69 modelos y 53 migraciones Alembic. El harness de agentes y Qdrant se retirarán de la API con la spec 009 (ADR-029; en curso, aún no aplicado).
+API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional (≈48 recursos bajo `/career`), Agent Bedrock (harness local), PDF, archivos (MinIO), analítica del portafolio, integraciones (GitHub, descubrimiento de vacantes) y endpoints públicos para el Portal. 419 operaciones HTTP, 69 modelos y 51 migraciones Alembic. El harness de agentes y Qdrant se retirarán de la API con la spec 009 (ADR-029; en curso, aún no aplicado).
 
 **URL base (Docker interno):** `http://cjhirashi-career-api:8000`  
 **URL base (local):** `http://localhost:8000`  

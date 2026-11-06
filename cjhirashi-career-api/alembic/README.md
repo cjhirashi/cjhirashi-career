@@ -19,7 +19,7 @@ flowchart TB
 **Guía de esquema:** [docs/DATABASE.md](../docs/DATABASE.md) · **Setup:** [docs/SETUP.md](../docs/SETUP.md)
 
 ```bash
-cd api/
+cd cjhirashi-career-api/
 alembic upgrade head
 alembic revision -m "descripcion"   # nueva revisión
 ```

@@ -88,7 +88,7 @@ Ver [public](../public/README.md).
 ## Ejemplo: actualizar hero del portal
 
 ```bash
-curl -s -X PUT http://localhost:8001/career/portal-home/phm-1 \
+curl -s -X PUT http://localhost:8000/career/portal-home/phm-1 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

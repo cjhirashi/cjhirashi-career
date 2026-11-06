@@ -46,7 +46,7 @@ El Harness local usa la API **Converse** de `bedrock-runtime` con el usuario IAM
 | `Converse` (default) | `bedrock:InvokeModel` |
 | `ConverseStream` (opcional, `BEDROCK_USE_CONVERSE_STREAM=true`) | `bedrock:InvokeModelWithResponseStream` |
 | Titan Embeddings | `bedrock:InvokeModel` |
-| Titan Image | `bedrock:InvokeModel` |
+| Stability Stable Image Core (imágenes) | `bedrock:InvokeModel` |
 
 **Importante:** Los modelos con prefijo `us.` (Claude, Nova Pro/Premier) usan **inference profiles** geográficos US y enrutan a `us-east-1`, `us-east-2` y `us-west-2`. Los demás (`amazon.nova-lite`, `meta.*`, etc.) usan **foundation model** directo en la región del cliente (`us-east-1`). La política IAM debe cubrir inference profiles **y** foundation models en las tres regiones US.
 
@@ -125,7 +125,7 @@ Reemplaza `858838169216` por tu account ID si difiere.
 | `not authorized to perform: bedrock:InvokeModel on inference-profile/...` | Falta permiso IAM en inference profiles | Añadir statement `inference-profile/*` |
 | `not authorized to perform: bedrock:InvokeModelWithResponseStream` | Falta permiso streaming | Añadir acción o dejar `BEDROCK_USE_CONVERSE_STREAM=false` |
 | `AccessDeniedException` con modelo Anthropic habilitado en Model access | Política solo en foundation-model, no inference-profile | Añadir inference profiles |
-| `ValidationException: conversation must start with a user message` | Bug en historial del harness (rondas tool) o mensajes duplicados | Actualizar api_rest; no es Model access |
+| `ValidationException: conversation must start with a user message` | Bug en historial del harness (rondas tool) o mensajes duplicados | Actualizar la API; no es Model access |
 | Modelo no responde tras IAM correcto | Model access no habilitado | Primera invocación o Bedrock Model catalog |
 
 ### Variables relacionadas

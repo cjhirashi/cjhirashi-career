@@ -52,7 +52,7 @@ Prefijos de ID (`ach-17`, `vac-5`) los asigna `id_generator` al insertar.
 
 | Método | Path | Función |
 |--------|------|---------|
-| POST | `/register` | Alta de usuario + hash bcrypt |
+| POST | `/register` | Alta de usuario + hash bcrypt. **Público y sin guarda** (ver `docs/SECURITY.md`, deuda 1) |
 | POST | `/login` | Access + refresh JWT |
 | POST | `/refresh` | Renueva access token |
 | POST | `/logout` | Invalida sesión (cliente descarta tokens) |
@@ -151,6 +151,18 @@ CRUD sin `POST` (`build_crud_router(create_schema=None)`) de los mensajes del fo
 ### `public.py` — `/public`
 
 Sin auth para el Portal: lectura de home, about, contact, projects, blog, y `POST /contact-message` (formulario de contacto: honeypot, límite 3/h por IP y correo, guarda en `contact_messages` y avisa al dueño; `services/contact_message_service.py`). Transforma Markdown de una línea por ítem a `List[str]` para que el SPA no conozca esa convención.
+
+### `admin_sections.py` — `/admin`
+
+`GET /sections`, `GET /sections/{id}` y `PUT /sections/{id}`: catálogo de secciones del Admin (tipo, agente de dominio, vistas) y edición de su dominio e instrucciones (ADR-017, ADR-021).
+
+### `notifications.py` — `/notifications`
+
+Bandeja de avisos in-app (ADR-016): lista, contador de no leídos, marcar uno y marcar todos como leídos. Los avisos los crean el scheduler (turnos de tareas) y el formulario de contacto.
+
+### `error_reports.py` — `/settings/error-reports` y `/system`
+
+Registro centralizado de fallas (ADR-018): lista paginada, resumen, detalle, resolver o reabrir, borrar y purgar resueltos (JWT); `POST /system/error-report` es la ingesta pública con límite de tasa. `GET /system/readiness` comprueba dependencias que `/health` no ve (hoy, MinIO).
 
 ### `__init__.py`
 

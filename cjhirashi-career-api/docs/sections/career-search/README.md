@@ -193,14 +193,14 @@ Ver [career-metrics](../career-metrics/README.md).
 ## Ejemplo: listar vacantes pendientes
 
 ```bash
-curl -s "http://localhost:8001/career/vacancies?search=pending&limit=50" \
+curl -s "http://localhost:8000/career/vacancies?search=pending&limit=50" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Ejemplo: generar PDF de CV
 
 ```bash
-curl -s -X POST "http://localhost:8001/career/cv-versions/cvv-3/pdf?template_id=pdt-1" \
+curl -s -X POST "http://localhost:8000/career/cv-versions/cvv-3/pdf?template_id=pdt-1" \
   -H "Authorization: Bearer $TOKEN" \
   -o cv.pdf
 ```

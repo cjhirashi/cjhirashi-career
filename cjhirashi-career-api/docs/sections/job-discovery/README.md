@@ -174,11 +174,11 @@ El system prompt incluye reglas estrictas de autorización antes de `save_job_li
 
 ```bash
 # Listar proveedores
-curl -s http://localhost:8001/career/job-discoveries/providers \
+curl -s http://localhost:8000/career/job-discoveries/providers \
   -H "Authorization: Bearer $TOKEN"
 
 # Ejecutar búsqueda
-curl -s -X POST http://localhost:8001/career/job-discoveries/run \
+curl -s -X POST http://localhost:8000/career/job-discoveries/run \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"query":"devops","providers":["remotive","remoteok"],"remote":true}'

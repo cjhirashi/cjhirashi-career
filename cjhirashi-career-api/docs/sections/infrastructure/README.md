@@ -135,7 +135,7 @@ Variables clave:
 |----------|-----------|
 | `DATABASE_URL` | PostgreSQL async |
 | `JWT_SECRET_KEY` | Firma de tokens |
-| `CORS_ORIGINS` | Admin, Portal, MCP |
+| `CORS_ORIGINS` | Admin, Portal |
 | `PUBLIC_PORTAL_USER_ID` | Usuario cuyos datos sirve `/public/*` |
 | `BEDROCK_*` | Harness local, modelos, presupuesto |
 | `MINIO_*` | Almacenamiento de archivos |

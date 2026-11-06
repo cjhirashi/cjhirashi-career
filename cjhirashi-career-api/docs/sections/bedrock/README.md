@@ -235,7 +235,7 @@ Ejecutadas en `services/bedrock/tools.py` → `bedrock_service._execute_tool`:
 ## Ejemplo curl (SSE)
 
 ```bash
-curl -N -X POST http://localhost:8001/bedrock/chat \
+curl -N -X POST http://localhost:8000/bedrock/chat \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

@@ -122,7 +122,7 @@ El HTML no debe incluir CSS. El estilo se referencia con `style_id`.
 ## Ejemplo
 
 ```bash
-curl -s "http://localhost:8001/pdf-templates?document_type=cv" \
+curl -s "http://localhost:8000/pdf-templates?document_type=cv" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

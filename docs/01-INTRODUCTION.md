@@ -30,7 +30,7 @@ Ambos hosts reenvían `/api/` a la API (Caddy quita el prefijo). La API (`cjhira
 | 1 | Portal público | `cjhirashi-career-portfolio` | SPA React: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad; rastreador de analítica |
 | 2 | Admin Panel | `cjhirashi-career-admin` | SPA React: carrera, vacantes, archivos, PDF, métricas, mensajes de contacto, agentes |
 | 3 | API REST | `cjhirashi-career-api` | FastAPI: autenticación, CRUD de carrera, Bedrock, PDF (WeasyPrint), archivos, analítica; dueña del esquema |
-| 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 53 migraciones Alembic) |
+| 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 51 migraciones Alembic) |
 | 5 | MinIO | `minio_storage` | Archivos (bucket único; los públicos se sirven en `files.cjhirashi.com`) |
 | 6 | Qdrant | `qdrant` | Base de conocimiento vectorial de Agent Bedrock; **retiro decidido** (ADR-029, etapa 3), hoy en uso |
 | 7 | `cjhirashi-career-ai` | (sin desplegar) | Harness de agentes en construcción, con BD propia `career_ai_db` |

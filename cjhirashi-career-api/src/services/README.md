@@ -136,3 +136,14 @@ Task asyncio en el mismo lifespan. Cada 30 s reclama `bedrock_tasks` con `assign
 ### `__init__.py`
 
 Vacío. Los consumidores importan módulos concretos (`from services import storage_service`).
+
+---
+
+## Servicios añadidos (operación, contacto y vacantes)
+
+| Módulo | Rol |
+|---|---|
+| `contact_message_service.py` | Lógica de los mensajes de contacto del portafolio: valida, limita la tasa, guarda y avisa al dueño |
+| `error_reporting.py` | Camino de **escritura** del registro de fallas (ADR-018): huella, deduplicación y decorador `capture_errors` |
+| `error_report_service.py` | Camino de **lectura y gestión** del registro de fallas: lista, resumen, resolver y purgar |
+| `vacancy_stage.py` | Vacantes: etapa del proceso y estado calculado (spec 007) |

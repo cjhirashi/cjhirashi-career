@@ -81,7 +81,7 @@ Ruta **`/tasks`** (sidebar principal). `/agent/tasks` redirige ahí. Vistas: lis
 ## Ejemplo
 
 ```bash
-curl -s -X POST http://localhost:8001/agent-tasks \
+curl -s -X POST http://localhost:8000/agent-tasks \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

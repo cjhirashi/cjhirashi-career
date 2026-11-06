@@ -92,3 +92,14 @@ Plantillas HTML (`PdfOutputTemplate*`), estilos CSS (`PdfTemplateStyle*`), `PdfT
 ### `public.py`
 
 Formas ya “aplanadas” para el Portal: cards de proyecto, detalle, blog, CTAs, stats. Listas multilínea del admin llegan como `List[str]`.
+
+---
+
+## Esquemas añadidos
+
+| Módulo | Contenido |
+|---|---|
+| `admin_sections.py` | Catálogo de secciones del Admin y su actualización |
+| `contact_message.py` | Entrada del formulario público (con campo señuelo `website`) y respuesta al Admin |
+| `error_reports.py` | Reportes de falla: ingesta, lista, resumen y resolución (ADR-018) |
+| `user_notification.py` | Avisos in-app |

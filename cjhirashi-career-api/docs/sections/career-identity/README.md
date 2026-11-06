@@ -100,14 +100,14 @@ Filtrados por `PUBLIC_PORTAL_USER_ID`. Ver [public](../public/README.md).
 ## Ejemplo: listar logros
 
 ```bash
-curl -s "http://localhost:8001/career/achievements?limit=10&sort_by=created_at&sort_dir=desc" \
+curl -s "http://localhost:8000/career/achievements?limit=10&sort_by=created_at&sort_dir=desc" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ## Ejemplo: crear competencia
 
 ```bash
-curl -s -X POST http://localhost:8001/career/competencies \
+curl -s -X POST http://localhost:8000/career/competencies \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

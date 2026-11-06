@@ -3,7 +3,7 @@
 **ESCENARIOS DE CALIDAD** (arc42, sección 10)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 6 atributos de calidad, 24 escenarios con estímulo, medida, estado y evidencia. El sistema está en producción: el estado refleja lo medido o verificado, y lo que no se ha medido se dice como tal.
+**Resumen**: 6 atributos de calidad, 25 escenarios con estímulo, medida, estado y evidencia. El sistema está en producción: el estado refleja lo medido o verificado, y lo que no se ha medido se dice como tal.
 
 ---
 
@@ -34,7 +34,7 @@ Cada escenario tiene **Estímulo**, **Medida**, **Estado** (✅ cumple · ⚠️
 
 | # | Escenario | Medida | Estado | Evidencia |
 |---|---|---|---|---|
-| M1 | Cobertura de pruebas | ≥ 80 % por módulo | ⚠️ parcial | La API lo impone en `pytest.ini` (`--cov-fail-under=80`) y tiene 93 archivos de prueba; el último `coverage.json` del repo es de 2026-08-17 (78,4 %) y está obsoleto. Admin y Portal usan Vitest sin umbral automático |
+| M1 | Cobertura de pruebas | ≥ 80 % por módulo | ⚠️ parcial | La API lo impone en `pytest.ini` (`--cov-fail-under=80`) y tiene 867 pruebas en 93 archivos; el último `coverage.json` del repo es de 2026-08-17 (78,4 %) y está obsoleto. Admin y Portal usan Vitest sin umbral automático |
 | M2 | Documentación al día | Arc42 y READMEs reflejan el sistema | ✅ cumple (revisado 2026-11-05) | Toda la documentación se revisó contra el código; desde entonces rige la regla «todo cambio actualiza su doc en el mismo commit», con gate (Constitución Art. 11) |
 | M3 | Deuda técnica registrada y priorizada | Registro con prioridad | ✅ cumple | [11-TECHNICAL-RISKS.md](./11-TECHNICAL-RISKS.md) |
 | M4 | Separación de responsabilidades | `routes → services → repositories → models` | ✅ cumple | Estructura de `cjhirashi-career-api/src/`; la lógica de negocio vive en `services/` |
@@ -49,6 +49,7 @@ Cada escenario tiene **Estímulo**, **Medida**, **Estado** (✅ cumple · ⚠️
 | S4 | OWASP Top 10 | Sin vulnerabilidades conocidas sin mitigar | ❌ pendiente | Sin auditoría formal |
 | S5 | Gestión de secretos | Nada versionado en texto plano | ✅ cumple | `.env` fuera de git; `docker-compose.yml` solo usa `${VARIABLE}` |
 | S6 | Acceso de agentes acotado | El rol `agent` no alcanza rutas fuera de su lista | ✅ cumple | `middleware/auth.py` responde 403 fuera de `/career/*`, `POST /bedrock/chat` y `POST /files` |
+| S7 | Alta de cuentas controlada | Solo el administrador crea usuarios | ❌ pendiente | `POST /auth/register` es público (comprobado el 2026-11-05): ver R15 y `cjhirashi-career-api/docs/SECURITY.md` |
 
 ## Escalabilidad
 
@@ -72,10 +73,10 @@ Cada escenario tiene **Estímulo**, **Medida**, **Estado** (✅ cumple · ⚠️
 | Rendimiento | 2 | 1 | 2 | 5 |
 | Disponibilidad | 1 | 0 | 3 | 4 |
 | Mantenibilidad | 3 | 1 | 0 | 4 |
-| Seguridad | 4 | 1 | 1 | 6 |
+| Seguridad | 4 | 1 | 2 | 7 |
 | Escalabilidad | 0 | 2 | 1 | 3 |
 | Usabilidad | 1 | 0 | 1 | 2 |
-| **Total** | **11** | **5** | **8** | **24** |
+| **Total** | **11** | **5** | **9** | **25** |
 
 ---
 

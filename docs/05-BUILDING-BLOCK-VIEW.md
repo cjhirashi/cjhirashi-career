@@ -79,7 +79,7 @@ Autorización: `middleware/auth.py` valida el JWT y restringe el rol `agent` a `
 
 ## Nivel 2 — PostgreSQL
 
-Una instancia (`postgres_db`) con la base `career_db`: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `4439c6915701`). Dominios: usuarios y sesiones; carrera (identidad, búsqueda y vacantes, presencia digital, soporte y metodologías); Agent Bedrock (perfiles, conversaciones, tareas, uso, costos); archivos; analítica del portafolio (`portal_*`); observabilidad (`audit_logs`, `error_reports`, `events`, `user_notifications`); y mensajes de contacto. El esquema, los IDs prefijados y las migraciones están en [`DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md), que es la fuente de verdad.
+Una instancia (`postgres_db`) con la base `career_db`: 69 modelos SQLAlchemy y 51 migraciones Alembic (head `4439c6915701`). Dominios: usuarios y sesiones; carrera (identidad, búsqueda y vacantes, presencia digital, soporte y metodologías); Agent Bedrock (perfiles, conversaciones, tareas, uso, costos); archivos; analítica del portafolio (`portal_*`); observabilidad (`audit_logs`, `error_reports`, `events`, `user_notifications`); y mensajes de contacto. El esquema, los IDs prefijados y las migraciones están en [`DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md), que es la fuente de verdad.
 
 ## Interfaces entre bloques
 

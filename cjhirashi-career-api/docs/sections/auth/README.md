@@ -1,12 +1,12 @@
 # Autenticación — `/auth`
 
-Gestión de usuarios y tokens JWT para Admin Panel y MCP Server.
+Gestión de usuarios y tokens JWT para el Admin Panel y los agentes externos (rol `agent`).
 
 ## Arquitectura
 
 ```mermaid
 flowchart LR
-    Client[Admin / MCP] --> Route[routes/auth_enhanced.py]
+    Client[Admin / agente] --> Route[routes/auth_enhanced.py]
     Route --> Schema[schemas/user.py]
     Route --> AuthS[auth_service.py]
     Route --> UserRepo[user_repository.py]
@@ -50,7 +50,7 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant Client as Admin / MCP
+    participant Client as Admin / agente
     participant API as /auth/login
     participant Auth as AuthService
     participant DB as PostgreSQL
@@ -146,16 +146,16 @@ Todas las rutas de carrera, Bedrock, archivos y LinkedIn usan `Depends(get_curre
 
 ```bash
 # Login
-curl -s -X POST http://localhost:8001/auth/login \
+curl -s -X POST http://localhost:8000/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"carlos","password":"secret123"}'
 
 # Perfil (con token)
-curl -s http://localhost:8001/auth/me \
+curl -s http://localhost:8000/auth/me \
   -H "Authorization: Bearer $TOKEN"
 
 # Refresh
-curl -s -X POST http://localhost:8001/auth/refresh \
+curl -s -X POST http://localhost:8000/auth/refresh \
   -H "Content-Type: application/json" \
   -d "{\"refresh_token\":\"$REFRESH\"}"
 ```

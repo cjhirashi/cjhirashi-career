@@ -138,9 +138,9 @@ El Admin Panel escribe vía endpoints `/career/*`:
 
 ```bash
 # Sin token
-curl -s http://localhost:8001/public/home
-curl -s http://localhost:8001/public/blog?limit=5
-curl -s http://localhost:8001/public/projects/prj-1
+curl -s http://localhost:8000/public/home
+curl -s http://localhost:8000/public/blog?limit=5
+curl -s http://localhost:8000/public/projects/prj-1
 ```
 
 Ver también: [career-digital](../career-digital/README.md), [career-identity](../career-identity/README.md)

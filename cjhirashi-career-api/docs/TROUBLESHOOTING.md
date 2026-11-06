@@ -41,14 +41,14 @@ al arrancar el contenedor con `docker run` o `docker compose up`.
 
 1. Ejecutar uvicorn indicando el subdirectorio de la app:
    ```bash
-   uvicorn src.app:app --host 0.0.0.0 --port 8001
+   uvicorn src.app:app --host 0.0.0.0 --port 8000
    ```
 2. O, para no cambiar el import interno (`from config import settings`, imports absolutos relativos a `src/`), usar `--app-dir src`:
    ```bash
-   uvicorn app:app --app-dir src --host 0.0.0.0 --port 8001
+   uvicorn app:app --app-dir src --host 0.0.0.0 --port 8000
    ```
 
-**Verificación**: `curl http://localhost:8001/health` debe responder `{"status": "healthy", ...}`.
+**Verificación**: `curl http://localhost:8000/health` debe responder `{"status": "healthy", ...}`.
 
 **Nota**: esta es una discrepancia real entre `Dockerfile` y la estructura de `src/` — repórtala al responsable de infraestructura (Experto Docker) para corregir el `Dockerfile` de forma permanente en vez de aplicar el workaround en cada ejecución.
 
@@ -107,7 +107,7 @@ al hacer `POST /auth/login`.
    ```
 2. Probar el endpoint directamente:
    ```bash
-   curl -X POST http://localhost:8001/auth/login \
+   curl -X POST http://localhost:8000/auth/login \
      -H "Content-Type: application/json" \
      -d '{"username":"usuario","password":"password123"}'
    ```
@@ -133,7 +133,7 @@ al hacer `POST /auth/login`.
 1. Revisar el detalle de `errors` en la respuesta — indica el campo (`loc`) y el motivo (`msg`).
 2. Corregir el payload:
    ```bash
-   curl -X POST http://localhost:8001/auth/register \
+   curl -X POST http://localhost:8000/auth/register \
      -H "Content-Type: application/json" \
      -d '{"username":"validuser","email":"valido@example.com","password":"password123"}'
    ```
@@ -142,20 +142,20 @@ al hacer `POST /auth/login`.
 
 ---
 
-### Problema: Puerto 8001 ya en uso
+### Problema: Puerto 8000 ya en uso
 
 **Síntoma**:
 ```
 [Errno 98] Address already in use
 ```
 
-**Causa Raíz**: otro proceso (posiblemente una instancia anterior de uvicorn) ya escucha en el puerto 8001.
+**Causa Raíz**: otro proceso (posiblemente una instancia anterior de uvicorn) ya escucha en el puerto 8000.
 
 **Solución**:
 
 1. Identificar el proceso:
    ```bash
-   lsof -i :8001
+   lsof -i :8000
    ```
 2. Terminarlo:
    ```bash
@@ -166,7 +166,7 @@ al hacer `POST /auth/login`.
    uvicorn app:app --port 8011
    ```
 
-**Verificación**: `curl http://localhost:8001/health` responde sin error de conexión.
+**Verificación**: `curl http://localhost:8000/health` responde sin error de conexión.
 
 ## 🔴 Códigos de Error de la API
 
@@ -213,7 +213,7 @@ R: El schema existe, pero la ruta que lo usa (`routes/auth_enhanced.py`) no est�
 R: No, esos routers no existen aún. Ver [API.md § Endpoints en Diseño](./API.md#-endpoints-en-diseño-no-implementados).
 
 **P: ¿Dónde veo la documentación interactiva de la API?**
-R: `http://localhost:8001/docs` (Swagger UI) o `http://localhost:8001/redoc`.
+R: `http://localhost:8000/docs` (Swagger UI) o `http://localhost:8000/redoc`.
 
 ## 📞 Cuándo Contactar Soporte
 

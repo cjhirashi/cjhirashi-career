@@ -1,156 +1,61 @@
-# API REST — cjhirashi-career — Guía de Testing
+# API REST — cjhirashi-career — Guía de testing
 
-**TESTING GUIDE**
+**TESTING GUIDE** · **Última actualización**: 2026-11-05
 
-![Coverage Target](https://img.shields.io/badge/cobertura%20objetivo-80%25-yellow)
-![Estado](https://img.shields.io/badge/tests%20escritos-0-red)
+Estrategia y ejecución de las pruebas de la API. Estado medido el 2026-11-05: **867 pruebas** en 93 archivos (`pytest --collect-only`). Objetivo de cobertura: **80 %**, impuesto por `pytest.ini` (`--cov-fail-under=80`): una corrida parcial o solo de recolección falla ese umbral sin que haya un defecto.
 
----
-
-Estrategia de testing y guía de ejecución de pruebas para la API. **Estado actual: infraestructura de testing configurada (`pytest.ini`, `conftest.py`), sin archivos de prueba escritos todavía.**
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Pirámide de Testing](#-pirámide-de-testing)
-- [Estructura de Tests](#-estructura-de-tests)
-- [Ejecutar Tests](#-ejecutar-tests)
-- [Fixtures Disponibles](#-fixtures-disponibles)
-- [Cómo Escribir Tests](#-cómo-escribir-tests)
-- [Objetivos de Cobertura](#-objetivos-de-cobertura)
-- [Debugging de Tests](#-debugging-de-tests)
-
----
-
-## 🏛️ Pirámide de Testing
-
-```mermaid
-graph TD
-    classDef backend fill:#042f2e,stroke:#10b981,color:#fff
-    classDef warning fill:#7c2d12,stroke:#f97316,color:#fff
-
-    A["🏛️ Unit Tests — 60%<br/>Services, Models, Auth"]
-    B["🔗 Integration Tests — 30%<br/>Routes, Base de Datos"]
-    C["🎯 E2E Tests — 10%<br/>Flujos completos"]
-
-    A --> B --> C
-
-    class A backend
-    class B backend
-    class C backend
-```
-
-**Cobertura objetivo**: 80% (política de calidad del proyecto, ver `CLAUDE.md`)
-
-## 📁 Estructura de Tests
+## Estructura
 
 ```
 tests/
-├── conftest.py           — Fixtures compartidas (event_loop, async_db)
-├── unit/                  — Lógica sin BD (sin archivos aún)
-├── integration/           — Tests con BD real (sin archivos aún)
-└── fixtures/               — Datos de prueba (sin archivos aún)
+├── conftest.py     # fixtures compartidas
+├── unit/           # servicios, middleware, Bedrock (unit/bedrock/), descubrimiento de vacantes, migraciones, analítica del portafolio
+├── integration/    # rutas de autenticación y flujos HTTP completos
+└── fixtures/       # datos de apoyo
 ```
 
-`pytest.ini` ya define markers (`unit`, `integration`, `slow`, `asyncio`) y modo `asyncio_mode = auto`, listos para usarse en cuanto se agreguen los primeros archivos `test_*.py`.
+Los marcadores (`--strict-markers`) son `unit`, `integration`, `slow`, `asyncio` y `requisito`. Cada prueba de una feature del arnés anota su requisito: `@pytest.mark.requisito("RF-014")`.
 
-## ▶️ Ejecutar Tests
+## Ejecutar
 
 ```bash
-# Todos los tests
-pytest
-
-# Con reporte de cobertura
-pytest --cov=src --cov-report=html
-open htmlcov/index.html
-
-# Un archivo específico
-pytest tests/unit/services/test_auth_service.py
-
-# Por marcador
-pytest -m unit
-pytest -m integration
+cd cjhirashi-career-api
+venv_test/bin/python -m pytest -q                       # suite completa con cobertura
+venv_test/bin/python -m pytest tests/unit/bedrock -q    # un subconjunto (CI corre este)
+venv_test/bin/python -m pytest tests/unit/test_auth.py -k login -q
 ```
 
-## 🧩 Fixtures Disponibles
+Los `venv*` pueden no existir en un clon limpio: `python -m venv venv_test && venv_test/bin/pip install -r requirements.txt pytest pytest-asyncio httpx aiosqlite`. El CI (`.github/workflows/ci.yml`) corre `tests/unit/bedrock` con Python 3.11 y SQLite en memoria.
 
-`tests/conftest.py` provee actualmente:
+### Base de datos de pruebas
 
-```python
-@pytest.fixture(scope="session")
-def event_loop():
-    """Event loop compartido para tests async."""
-
-@pytest.fixture
-async def async_db():
-    """Sesión de base de datos SQLite en memoria (aiosqlite) para tests aislados."""
-```
-
-> El fixture `async_db` usa SQLite en memoria, no PostgreSQL — válido para tests unitarios de lógica de negocio, pero **no reproduce comportamiento específico de PostgreSQL** (JSONB, triggers). Los tests de integración que dependan de esas características deben apuntar a una base PostgreSQL de prueba real.
-
-## ✍️ Cómo Escribir Tests
-
-### Test Unitario (sin base de datos)
-
-```python
-# tests/unit/utils/test_security.py
-from utils.security import hash_password, verify_password
-
-class TestPasswordHashing:
-    def test_hash_password_verifies_correctly(self):
-        plain = "password123"
-        hashed = hash_password(plain)
-
-        assert hashed != plain
-        assert verify_password(plain, hashed)
-
-    def test_different_hashes_for_same_password(self):
-        plain = "password123"
-        assert hash_password(plain) != hash_password(plain)
-```
-
-### Test de Integración (con cliente HTTP async)
-
-```python
-# tests/integration/routes/test_auth.py
-import pytest
-from httpx import AsyncClient, ASGITransport
-from app import app
-
-@pytest.mark.asyncio
-async def test_login_invalid_credentials():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post(
-            "/auth/login",
-            json={"username": "no_existe", "password": "wrongpass"}
-        )
-    assert response.status_code == 401
-```
-
-**Patrón recomendado**: Arrange → Act → Assert, un comportamiento por test, nombres descriptivos (`test_login_with_invalid_credentials`, no `test_login_2`).
-
-## 🎯 Objetivos de Cobertura
-
-| Componente | Objetivo | Estado |
-|-----------|----------|--------|
-| Services (`auth_service.py`) | 90% | Sin tests |
-| Repositories | 85% | Sin tests |
-| Routes (`auth.py`, `documents.py`) | 80% | Sin tests |
-| Models | 75% | Sin tests |
-| Schemas | 70% | Sin tests |
-
-## 🐛 Debugging de Tests
+- **Por defecto**, SQLite en memoria (`conftest.py` mapea `JSONB` a `JSON` solo en SQLite). Las pruebas que dependen de secuencias de IDs prefijados (`usr-1`, `psp-1`…) se saltan.
+- **Con Postgres real**: define `TEST_DATABASE_URL` apuntando a una base **desechable** (nunca la de desarrollo ni la de producción):
 
 ```bash
-pytest -vv              # Output verboso
-pytest -s               # Mostrar prints
-pytest -x               # Detener en el primer fallo
-pytest --lf             # Re-ejecutar solo los últimos fallidos
-pytest --pdb            # Debugger interactivo al fallar
+docker run -d --rm --name career-testdb -e POSTGRES_PASSWORD=test -p 127.0.0.1:55432:5432 postgres:15-alpine
+export TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55432/postgres
 ```
+
+## Fixtures (`conftest.py`)
+
+`test_db` (esquema limpio por prueba), `db_session`, `test_user` y `test_user_data`, `test_identity`, `test_competency`, `valid_login_credentials` / `invalid_login_credentials`, `valid_jwt_token` y `async_client` (httpx sobre la app, con `get_db` sustituido).
+
+## Cómo escribir una prueba
+
+1. Elige la capa: `unit/` si prueba un servicio o módulo aislado; `integration/` si recorre la ruta HTTP.
+2. Anota el requisito (`@pytest.mark.requisito("RF-NNN")`) y escribe primero la prueba en rojo.
+3. Sin red ni servicios externos: AWS Bedrock, Qdrant, MinIO y los proveedores de vacantes se simulan.
+4. Las pruebas son `async` (`asyncio_mode = auto`); no necesitan decorador.
+
+## Cobertura
+
+`--cov=src` con informe en `htmlcov/` y términos faltantes en consola. El último `coverage.json` versionado es de 2026-08-17 (78,4 %) y está obsoleto; la medición vigente sale de una corrida completa.
+
+## Depuración
+
+`pytest -x --pdb` se detiene en el primer fallo; `-k <expresión>` filtra; `-s` muestra la salida estándar. Si una prueba de base de datos se salta, comprueba `TEST_DATABASE_URL`.
 
 ---
 
-**Relacionado**: [ARCHITECTURE.md](./ARCHITECTURE.md) · [SETUP.md](./SETUP.md) · [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+**Relacionado**: [README.md](./README.md) · [../tests/README.md](../tests/README.md) · [../../docs/08-CROSSCUTTING-CONCEPTS.md](../../docs/08-CROSSCUTTING-CONCEPTS.md)

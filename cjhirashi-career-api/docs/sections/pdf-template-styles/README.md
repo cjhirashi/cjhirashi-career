@@ -87,7 +87,7 @@ Usa `CareerRepository` con `resource_key="pdf-template-styles"` y **`vectorize=F
 ## Ejemplo
 
 ```bash
-curl -s "http://localhost:8001/pdf-template-styles" \
+curl -s "http://localhost:8000/pdf-template-styles" \
   -H "Authorization: Bearer $TOKEN"
 ```
 

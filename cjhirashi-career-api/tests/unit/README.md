@@ -1,69 +1,22 @@
 # Tests unitarios (`tests/unit/`)
 
-Prueban módulos aislados (services, middleware, models, config). No requieren PostgreSQL ni AWS.
+Prueban módulos aislados (servicios, middleware, modelos, esquemas, migraciones) sin red ni servicios externos (AWS, Qdrant y MinIO se simulan). Por defecto usan SQLite en memoria; las que necesitan secuencias de IDs prefijados requieren `TEST_DATABASE_URL` ([../../docs/TESTING.md](../../docs/TESTING.md)).
 
-## Arquitectura
+**Última actualización**: 2026-11-05. Los archivos se agrupan por **patrón de nombre**; no hay lista por archivo (se desactualiza): usa `ls tests/unit/` o `pytest --collect-only -q`.
 
-```mermaid
-flowchart TB
-    Unit[tests/unit/] --> Auth[test_auth.py]
-    Unit --> MW[test_middleware*.py]
-    Unit --> Cfg[test_config.py]
-    Unit --> DB[test_database.py]
-    Unit --> Repo[test_repositories.py]
-    Unit --> Models[test_models*.py]
-    Unit --> Utils[test_utils.py]
-    Unit --> JD[test_job_discovery.py]
-    Unit --> Bedrock[bedrock/]
-    Unit --> Param[endpoints-parametrized]
-    Auth --> AuthS[AuthService]
-    MW --> GCU[middleware.auth]
-    JD --> Adapters[job_discovery adapters]
-    Bedrock --> Harness[services/bedrock]
-```
+| Patrón | Cubre |
+|---|---|
+| `test_auth*`, `test_middleware*`, `test_config`, `test_database` | Autenticación y JWT, rol `agent`, configuración y base de datos |
+| `test_admin_section*` | Secciones configurables del Admin: catálogo, migración a PK sintético, reclave de superficies |
+| `test_resource_registry`, `test_career_distinct`, `test_work_history_schema`, `test_search_*`, `test_file_upload_migration` | Registro de recursos de carrera, esquemas y migraciones de datos |
+| `test_vacancy_*` | Vacantes: etapa del proceso y estado calculado, descripciones de empresa y puesto, URL duplicada, claves foráneas |
+| `test_methodology_*`, `test_section_methodologies`, `test_section_tools_derivation` | Metodologías operativas (alcance, indexado, migraciones) y herramientas derivadas de las secciones |
+| `test_portal_*` | Analítica del portafolio: modelos, ingesta, sesionización, bots, canales, geografía, dispositivo, metas, motor de métricas, rutas, migración y concurrencia del recálculo diario |
+| `test_contact_messages` | Mensajes del formulario de contacto |
+| `test_error_report*` | Registro de errores (huella, deduplicación, límite de tasa) |
+| `test_job_discovery`, `test_github_service`, `test_web_search_service` | Adaptadores de vacantes y herramientas externas del agente |
+| `test_pdf_generation` | Generación de PDF con WeasyPrint |
+| `test_task_scheduler`, `test_system_readiness` | Scheduler de tareas de agentes y comprobación de preparación |
+| `bedrock/` | Harness Bedrock: [bedrock/README.md](bedrock/README.md) |
 
----
-
-## Módulos
-
-### `test_auth.py`
-
-Hash bcrypt, verify, access/refresh JWT, rechazo de token mal firmado o de tipo incorrecto (`AuthService`).
-
-### `test_middleware.py`
-
-`get_current_user` / `get_optional_current_user`: 401 sin token, usuario inactivo, `sub` ausente; happy path con mock de sesión.
-
-### `test_middleware_extended.py`
-
-Casos extra de JWT y excepciones de auth (incluye fallback si `utils.exceptions` no existe).
-
-### `test_config.py`
-
-Validación de `Settings`: campos obligatorios (`DATABASE_URL`, `SECRET_KEY` ≥ 32, MinIO), defaults, `ValidationError`.
-
-### `test_database.py`
-
-Engine, `get_db` commit/rollback, `init_db` / `close_db` (SQLite o mocks).
-
-### `test_repositories.py`
-
-`UserRepository`: get_by_username/email, `user_exists`, CRUD básico sobre la sesión de test.
-
-### `test_models.py` / `test_models_extended.py`
-
-Constraints y campos de User, Identity, Competency y modelos de carrera/sistema. `test_models_extended` cubre más entidades (RefreshToken, FileUpload, AuditLog, etc.). Algunos nombres (`Evidence`, `JobStrategy`) reflejan el esquema v1; si el import falla, el archivo está desfasado respecto al ORM v2.
-
-### `test_utils.py`
-
-Listas de `utils.constants` (tipos de competencia, entrevistas, etc.).
-
-### `test_job_discovery.py`
-
-Parseo de payloads Adzuna/Getonboard/Greenhouse/Lever/Remotive/RemoteOK, URLs de LinkedIn (sin scrape), `IndeedAdapter.is_enabled` según credenciales Adzuna, preview_store refs. Mocks httpx; no pega a APIs reales.
-
-### `endpoints-parametrized.test.py`
-
-Tabla método×path de smoke. Las rutas listadas (`/api/v1/...`) no coinciden con los prefijos actuales (`/auth`, `/career`, `/health`); tratarlo como pendiente de alinear.
-
-Bedrock: [bedrock/README.md](bedrock/README.md).
+`endpoints-parametrized.test.py` **no se ejecuta**: su nombre no coincide con `python_files = test_*.py` y sus aserciones son triviales (rutas `/api/v1/...` que ya no existen). Pendiente: eliminarlo o reemplazarlo por una prueba de humo real contra los prefijos actuales.

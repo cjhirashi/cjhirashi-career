@@ -30,7 +30,7 @@ Exposición y routing: `caddy.json` (contrato con `cjhirashi-srv`: Caddy + Cloud
 - **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` ni en `caddy.json` todavía.
 - **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y Qdrant (`qdrant`, base de conocimiento vectorial de Agent Bedrock). El retiro de Qdrant está **decidido** ([ADR-029](docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md)) pero se ejecuta en la etapa 3 de la spec 009: hoy sigue en uso por la API.
 - **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), AWS Bedrock, WeasyPrint.
-- **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `4439c6915701`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
+- **Datos**: 69 modelos SQLAlchemy y 51 migraciones Alembic (head `4439c6915701`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
 
 ## Qué hace cada módulo
 

@@ -117,14 +117,14 @@ El bucket se crea en startup (`storage_service.ensure_bucket()` en `app.py`).
 
 ```bash
 # Subir imagen
-curl -s -X POST http://localhost:8001/files \
+curl -s -X POST http://localhost:8000/files \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@photo.jpg" \
   -F "category=images" \
   -F "is_public=true"
 
 # Listar por categoría
-curl -s "http://localhost:8001/files?category=images&limit=20" \
+curl -s "http://localhost:8000/files?category=images&limit=20" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
