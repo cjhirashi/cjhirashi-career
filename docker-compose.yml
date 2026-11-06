@@ -165,8 +165,9 @@ services:
   # Responsabilidad: búsqueda semántica sobre las metodologías operativas y
   #   los registros de las ~30 tablas de carrera (ver services/qdrant_service.py
   #   y repositories/career_repository.py, que la mantiene sincronizada).
-  #   Instancia privada de este proyecto (no compartida con otros proyectos
-  #   de Charlie, ej. Synapse, que corre su propio Qdrant aislado).
+  #   Instancia privada de este proyecto (ningún otro proyecto la usa; Synapse
+  #   no tiene Qdrant). Retiro decidido en el ADR-029 (etapa 3 de la spec 009):
+  #   hasta entonces la API depende de ella.
   #
   # INTERNO: No expuesto (accesible solo desde red Docker)
   qdrant:
