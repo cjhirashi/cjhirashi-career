@@ -11,12 +11,12 @@ API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD d
 
 ```mermaid
 flowchart TB
-    subgraph Clientes["Clientes — network-cjhirashi-srv"]
+    subgraph Clientes["Clientes — net-cjhirashi-career"]
         Admin[Admin Panel :8002]
         Portal[Portal Público :8003]
     end
 
-    subgraph API["api_rest :8000"]
+    subgraph API["cjhirashi-career-api :8000"]
         Routes[routes/]
         Services[services/]
         Repos[repositories/]
