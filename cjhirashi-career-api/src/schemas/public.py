@@ -37,6 +37,10 @@ class PublicProjectDetail(PublicProjectCard):
     architecture: Optional[str] = None
     approach_steps: Optional[str] = None
     results: Optional[Any] = None
+    presentacion: Optional[str] = None
+    tecnico: Optional[str] = None
+    estado: Optional[str] = None
+    estado_verificado_el: Optional[date] = None
     status: Optional[str] = None
     is_featured: bool = False
 

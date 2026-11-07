@@ -133,6 +133,8 @@ def _project_detail(p: Project, competency_names: dict) -> PublicProjectDetail:
         **_project_card(p, competency_names).model_dump(),
         detailed_summary=p.detailed_summary, problem=p.problem, solution=p.solution,
         architecture=p.architecture, approach_steps=p.approach_steps, results=p.results,
+        presentacion=p.presentacion, tecnico=p.tecnico, estado=p.estado,
+        estado_verificado_el=p.estado_verificado_el,
         status=p.status, is_featured=bool(p.is_featured),
     )
 

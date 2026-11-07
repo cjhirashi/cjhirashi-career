@@ -23,6 +23,10 @@ export interface Project {
   solution: string | null
   architecture: string | null
   approach_steps: string | null
+  presentacion: string | null
+  tecnico: string | null
+  estado: string | null
+  estado_verificado_el: string | null
   results: Record<string, unknown> | unknown[] | null
   status: string | null
   is_featured: boolean

@@ -142,7 +142,7 @@ Documentación API: [sections/career-identity/README.md](./sections/career-ident
 | `star_stories` | `StarStory` | `sts` |
 | `career_reviews` | `CareerReview` | `crv` |
 | `role_gap_analysis` | `RoleGapAnalysis` | `rga` |
-| `projects` | `Project` | `prj` |
+| `projects` | `Project` | `prj` — incluye `presentacion`, `tecnico`, `estado` (markdown) y `estado_verificado_el` (ADR-030, migración `5a1c7e9d2b30`) |
 
 Campos comunes: `user_id`, `notes` (texto libre añadido en migración prefijada), timestamps, columnas específicas por entidad.
 

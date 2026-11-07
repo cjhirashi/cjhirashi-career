@@ -2,7 +2,7 @@
 Project Model - Portfolio projects (public-facing and internal detail).
 Career domain (v2) - Identity.
 """
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 from database import Base
@@ -48,6 +48,11 @@ class Project(Base):
     metric4_label = Column(String(100), nullable=True)
     metric4_value = Column(String(500), nullable=True)
     approach_steps = Column(Text, nullable=True)
+    # Estructura vigente (2026-11-07): 3 campos markdown agrupados por ritmo de cambio.
+    presentacion = Column(Text, nullable=True)
+    tecnico = Column(Text, nullable=True)
+    estado = Column(Text, nullable=True)
+    estado_verificado_el = Column(Date, nullable=True)
     results = Column(JSONB, nullable=True)
     github_url = Column(String(500), nullable=True)
     demo_url = Column(String(500), nullable=True)

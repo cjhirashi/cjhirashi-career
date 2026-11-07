@@ -6,12 +6,13 @@ import { MetricChips } from '@/components/Common/MetricChips'
 import { Markdown } from '@/components/Common/Markdown'
 import { useTrackClick, useTrackProjectOpen } from '@/hooks/useTracking'
 
-const Section = ({ title, content }: { title: string; content: string }) => (
-  <div className="mb-8">
-    <h2 className="text-xl font-bold text-text mb-3">{title}</h2>
-    <Markdown>{content}</Markdown>
-  </div>
-)
+const formatVerifiedDate = (isoDate: string) =>
+  new Date(`${isoDate}T00:00:00Z`).toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  })
 
 export const ProjectDetailPage = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -72,11 +73,14 @@ export const ProjectDetailPage = () => {
             ))}
         </div>
 
-        {project.detailed_summary && <Section title="Resumen" content={project.detailed_summary} />}
-        {project.problem && <Section title="El problema" content={project.problem} />}
-        {project.solution && <Section title="La solución" content={project.solution} />}
-        {project.architecture && <Section title="Arquitectura" content={project.architecture} />}
-        {project.approach_steps && <Section title="Enfoque" content={project.approach_steps} />}
+        {project.presentacion && <Markdown>{project.presentacion}</Markdown>}
+        {project.tecnico && <Markdown>{project.tecnico}</Markdown>}
+        {project.estado && <Markdown>{project.estado}</Markdown>}
+        {project.estado_verificado_el && (
+          <p className="text-sm text-text-secondary mb-8">
+            Estado verificado el {formatVerifiedDate(project.estado_verificado_el)}
+          </p>
+        )}
 
         {project.tech_stack.length > 0 && (
           <div className="mb-8">

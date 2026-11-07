@@ -218,6 +218,10 @@ export interface Project {
   metric4_label?: string | null
   metric4_value?: string | null
   approach_steps?: string | null
+  presentacion?: string | null
+  tecnico?: string | null
+  estado?: string | null
+  estado_verificado_el?: string | null
   results?: Record<string, unknown> | null
   github_url?: string | null
   demo_url?: string | null

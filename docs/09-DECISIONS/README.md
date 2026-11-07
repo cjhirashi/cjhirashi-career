@@ -3,7 +3,7 @@
 **ARCHITECTURE DECISION RECORDS** (arc42, sección 9)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 22 ADR de producto (008 a 029), todos aceptados salvo el 009 (deprecado por el 012). Las decisiones **del arnés** viven en `.harness/decisions/`, no aquí.
+**Resumen**: 23 ADR de producto (008 a 030), todos aceptados salvo el 009 (deprecado por el 012). Las decisiones **del arnés** viven en `.harness/decisions/`, no aquí.
 
 ---
 
@@ -126,6 +126,7 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 | 027 | [Herramientas y metodologías por sección (agentes L2)](./027-herramientas-metodologias-por-seccion.md) | ✅ Aceptado |
 | 028 | [Contraste de los tokens semánticos de texto del Admin (tema claro)](./028-contraste-tokens-semanticos-admin.md) | ✅ Aceptado |
 | 029 | [Harness de agentes fuera de la API (`cjhirashi-career-ai`) y sin indexación](./029-harness-agentes-fuera-de-api.md) | ✅ Aceptado |
+| 030 | [Documentación de proyectos en 3 campos markdown](./030-proyectos-tres-campos-markdown.md) | ✅ Aceptado |
 
 **Revisiones cruzadas vigentes**: ADR-009 deprecado por ADR-012; ADR-014 revisado parcialmente por ADR-023 (MCP retirado) y por ADR-029 (harness fuera de la API); ADR-008 y ADR-025 revisados parcialmente por ADR-029; ADR-026 parcialmente superado por ADR-027 para los agentes L2.
 

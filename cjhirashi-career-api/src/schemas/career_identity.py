@@ -607,6 +607,10 @@ class ProjectBase(BaseModel):
     metric4_label: Optional[str] = Field(None, max_length=100)
     metric4_value: Optional[str] = Field(None, max_length=500)
     approach_steps: Optional[str] = None
+    presentacion: Optional[str] = None
+    tecnico: Optional[str] = None
+    estado: Optional[str] = None
+    estado_verificado_el: Optional[date] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = Field(None, max_length=500)
     demo_url: Optional[str] = Field(None, max_length=500)
@@ -655,6 +659,10 @@ class ProjectUpdate(BaseModel):
     metric4_label: Optional[str] = None
     metric4_value: Optional[str] = None
     approach_steps: Optional[str] = None
+    presentacion: Optional[str] = None
+    tecnico: Optional[str] = None
+    estado: Optional[str] = None
+    estado_verificado_el: Optional[date] = None
     results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
