@@ -33,7 +33,7 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 
 Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`), **Qdrant**
 (búsqueda vectorial de Agent Bedrock; su retiro está decidido en el ADR-029 y se ejecuta en la etapa 3 de la spec 009, hoy sigue en uso), **MinIO** (objetos). Routing externo por **Caddy** vía
-`caddy.json` (contrato con el repo `cjhirashi-srv`).
+`caddy.json` (contrato con el repo `cjhirashi-srv`; vive solo en local, no se versiona).
 
 > El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el
 > 2026-09-04 — ver `docs/09-DECISIONS/023-retirar-mcp-server.md`.

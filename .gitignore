@@ -59,3 +59,18 @@ servicios-externos/
 # Outputs
 /mnt/disco2/cjhirashi-data/mcp-outputs/
 mcp-outputs/
+
+# --- Información de infraestructura y credenciales: nunca se versionan ---
+caddy.json
+Caddyfile
+cloudflared/
+*.pem
+*.key
+*.p12
+*.pfx
+.env.*
+!.env.example
+passphrase
+*.dump
+respaldos*/
+.credentials/
