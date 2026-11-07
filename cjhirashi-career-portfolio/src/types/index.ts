@@ -18,16 +18,10 @@ export interface Project {
   github_url: string | null
   demo_url: string | null
   notebook_url: string | null
-  detailed_summary: string | null
-  problem: string | null
-  solution: string | null
-  architecture: string | null
-  approach_steps: string | null
   presentacion: string | null
   tecnico: string | null
   estado: string | null
   estado_verificado_el: string | null
-  results: Record<string, unknown> | unknown[] | null
   status: string | null
   is_featured: boolean
 }

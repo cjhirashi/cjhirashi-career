@@ -593,10 +593,6 @@ class ProjectBase(BaseModel):
     industry: Optional[str] = Field(None, max_length=100)
     year: Optional[int] = None
     card_summary: Optional[str] = Field(None, max_length=500)
-    detailed_summary: Optional[str] = None
-    problem: Optional[str] = None
-    solution: Optional[str] = None
-    architecture: Optional[str] = None
     competency_ids: Optional[List[str]] = None
     metric1_label: Optional[str] = Field(None, max_length=100)
     metric1_value: Optional[str] = Field(None, max_length=500)
@@ -606,31 +602,19 @@ class ProjectBase(BaseModel):
     metric3_value: Optional[str] = Field(None, max_length=500)
     metric4_label: Optional[str] = Field(None, max_length=100)
     metric4_value: Optional[str] = Field(None, max_length=500)
-    approach_steps: Optional[str] = None
     presentacion: Optional[str] = None
     tecnico: Optional[str] = None
     estado: Optional[str] = None
     estado_verificado_el: Optional[date] = None
-    results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = Field(None, max_length=500)
     demo_url: Optional[str] = Field(None, max_length=500)
     notebook_url: Optional[str] = Field(None, max_length=500)
-    repo_structure: Optional[str] = None
     evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None
     status: ProjectStatusLiteral = "active"
     is_featured: bool = False
     image_url: Optional[str] = Field(None, max_length=1024)
     notes: Optional[str] = None
-
-    @field_validator("results", mode="before")
-    @classmethod
-    def _coerce_legacy_results(cls, value: Any) -> Any:
-        """Pre-migration rows stored `results` as free text; wrap it as a
-        single-item list so the JSON-list schema can still read it."""
-        if isinstance(value, str):
-            return [value] if value.strip() else None
-        return value
 
 
 class ProjectCreate(ProjectBase):
@@ -645,10 +629,6 @@ class ProjectUpdate(BaseModel):
     industry: Optional[str] = None
     year: Optional[int] = None
     card_summary: Optional[str] = None
-    detailed_summary: Optional[str] = None
-    problem: Optional[str] = None
-    solution: Optional[str] = None
-    architecture: Optional[str] = None
     competency_ids: Optional[List[str]] = None
     metric1_label: Optional[str] = None
     metric1_value: Optional[str] = None
@@ -658,16 +638,13 @@ class ProjectUpdate(BaseModel):
     metric3_value: Optional[str] = None
     metric4_label: Optional[str] = None
     metric4_value: Optional[str] = None
-    approach_steps: Optional[str] = None
     presentacion: Optional[str] = None
     tecnico: Optional[str] = None
     estado: Optional[str] = None
     estado_verificado_el: Optional[date] = None
-    results: Optional[Union[List[Any], Dict[str, Any]]] = None
     github_url: Optional[str] = None
     demo_url: Optional[str] = None
     notebook_url: Optional[str] = None
-    repo_structure: Optional[str] = None
     evidence_sources: Optional[str] = None
     releases: Optional[List[Any]] = None
     status: Optional[ProjectStatusLiteral] = None

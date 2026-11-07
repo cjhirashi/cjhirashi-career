@@ -703,6 +703,16 @@ textarea:focus-visible {
   max-width: 100%;
 }
 
+/* Pie de foto: el párrafo en cursiva que sigue a una imagen */
+.markdown-content p:has(> img:only-child) + p > em:only-child {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin-top: -0.25rem;
+  margin-bottom: 1.5rem;
+}
+
 .markdown-content hr {
   border: 0;
   border-top: 1px solid var(--border);

@@ -31,12 +31,6 @@ class PublicProjectCard(BaseModel):
 
 
 class PublicProjectDetail(PublicProjectCard):
-    detailed_summary: Optional[str] = None
-    problem: Optional[str] = None
-    solution: Optional[str] = None
-    architecture: Optional[str] = None
-    approach_steps: Optional[str] = None
-    results: Optional[Any] = None
     presentacion: Optional[str] = None
     tecnico: Optional[str] = None
     estado: Optional[str] = None

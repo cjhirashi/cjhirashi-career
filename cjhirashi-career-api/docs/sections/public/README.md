@@ -101,7 +101,7 @@ Ordenado por fecha de publicación descendente.
 
 `project_id` acepta ID prefijado (`prj-N`).
 
-Retorna `PublicProjectDetail` con tech stack, URLs, imágenes y tres campos markdown: `presentacion`, `tecnico` y `estado`, más `estado_verificado_el` (fecha). La página pública muestra solo esos tres campos (ver ADR-030); los campos anteriores (`detailed_summary`, `problem`, `solution`, `architecture`, `approach_steps`, `results`) siguen en la respuesta como datos heredados.
+Retorna `PublicProjectDetail` con tech stack, URLs, imágenes y tres campos markdown: `presentacion`, `tecnico` y `estado`, más `estado_verificado_el` (fecha); la página pública muestra solo esos tres campos (ver ADR-030).
 
 **404** si el proyecto no pertenece al usuario público o no existe.
 

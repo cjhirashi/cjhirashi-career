@@ -28,10 +28,6 @@ class Project(Base):
     industry = Column(String(100), nullable=True)
     year = Column(Integer, nullable=True)
     card_summary = Column(String(500), nullable=True)
-    detailed_summary = Column(Text, nullable=True)
-    problem = Column(Text, nullable=True)
-    solution = Column(Text, nullable=True)
-    architecture = Column(Text, nullable=True)
     # Lista de ids de `competencies` (mismo patrón que
     # Achievement.demonstrated_competency_ids) - "encontrar o crear" se
     # resuelve en CareerRepository._resolve_competency_ids, no aquí.
@@ -47,17 +43,14 @@ class Project(Base):
     metric3_value = Column(String(500), nullable=True)
     metric4_label = Column(String(100), nullable=True)
     metric4_value = Column(String(500), nullable=True)
-    approach_steps = Column(Text, nullable=True)
     # Estructura vigente (2026-11-07): 3 campos markdown agrupados por ritmo de cambio.
     presentacion = Column(Text, nullable=True)
     tecnico = Column(Text, nullable=True)
     estado = Column(Text, nullable=True)
     estado_verificado_el = Column(Date, nullable=True)
-    results = Column(JSONB, nullable=True)
     github_url = Column(String(500), nullable=True)
     demo_url = Column(String(500), nullable=True)
     notebook_url = Column(String(500), nullable=True)
-    repo_structure = Column(Text, nullable=True)
     evidence_sources = Column(Text, nullable=True)
     releases = Column(JSONB, nullable=True)
     status = Column(String(30), default="active", nullable=True, index=True)

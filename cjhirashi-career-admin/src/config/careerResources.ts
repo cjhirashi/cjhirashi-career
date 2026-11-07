@@ -602,7 +602,7 @@ export const achievementsConfig: ResourceConfig = {
       helpText: 'Solo debe haber uno marcado a la vez - es el logro que se muestra como caso destacado en la Home del portal.',
     },
     { name: 'challenge', label: 'Desafío', type: 'textarea', fullWidth: true },
-    { name: 'solution', label: 'Solución (anterior, ya no se muestra)', type: 'textarea', fullWidth: true },
+    { name: 'solution', label: 'Solución', type: 'textarea', fullWidth: true },
     { name: 'executive_storytelling', label: 'Narrativa ejecutiva', type: 'textarea', fullWidth: true },
     {
       name: 'documentation_urls',
@@ -826,11 +826,6 @@ export const projectsConfig: ResourceConfig = {
     { name: 'tecnico', label: 'Técnico (markdown): Arquitectura, El producto en acción, Enfoque', type: 'textarea', fullWidth: true },
     { name: 'estado', label: 'Estado (markdown): Estado y operación, Hoja de ruta', type: 'textarea', fullWidth: true },
     { name: 'estado_verificado_el', label: 'Estado verificado el', type: 'date' },
-    { name: 'detailed_summary', label: 'Resumen detallado (anterior, ya no se muestra)', type: 'textarea', fullWidth: true },
-    { name: 'problem', label: 'Problema (anterior, ya no se muestra)', type: 'textarea', fullWidth: true },
-    { name: 'solution', label: 'Solución', type: 'textarea', fullWidth: true },
-    { name: 'architecture', label: 'Arquitectura (anterior, ya no se muestra)', type: 'textarea', fullWidth: true },
-    { name: 'repo_structure', label: 'Estructura del repositorio', type: 'textarea', fullWidth: true },
     {
       name: 'competency_ids',
       label: 'Stack tecnológico',
@@ -842,12 +837,6 @@ export const projectsConfig: ResourceConfig = {
       placeholder: '— Selecciona o escribe una tecnología —',
       helpText:
         'Selecciona competencias existentes o escribe una nueva tecnología para crearla automáticamente en Competencias.',
-    },
-    {
-      name: 'approach_steps',
-      label: 'Pasos del enfoque (anterior, ya no se muestra)',
-      type: 'textarea',
-      fullWidth: true,
     },
     {
       name: 'evidence_sources',
@@ -868,18 +857,6 @@ export const projectsConfig: ResourceConfig = {
     { name: 'metric3_value', label: 'Métrica 3 - Valor', type: 'text' },
     { name: 'metric4_label', label: 'Métrica 4 - Nombre', type: 'text' },
     { name: 'metric4_value', label: 'Métrica 4 - Valor', type: 'text' },
-    {
-      name: 'results',
-      label: 'Resultados',
-      type: 'json',
-      fullWidth: true,
-      jsonList: {
-        kind: 'text',
-        itemNoun: 'resultado',
-        addLabel: 'Añadir resultado',
-        textPlaceholder: 'Un resultado medible o hallazgo',
-      },
-    },
     {
       name: 'releases',
       label: 'Releases',

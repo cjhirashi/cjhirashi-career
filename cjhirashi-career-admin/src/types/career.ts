@@ -131,7 +131,6 @@ export interface Achievement {
   work_history_id?: string | null
   context?: Record<string, unknown> | null
   challenge?: string | null
-  solution?: string | null
   impact_metrics?: Record<string, unknown> | null
   evidence_type?: EvidenceType | null
   documentation_urls?: string | null
@@ -204,10 +203,7 @@ export interface Project {
   industry?: string | null
   year?: number | null
   card_summary?: string | null
-  detailed_summary?: string | null
-  problem?: string | null
   solution?: string | null
-  architecture?: string | null
   competency_ids?: string[] | null
   metric1_label?: string | null
   metric1_value?: string | null
@@ -217,16 +213,13 @@ export interface Project {
   metric3_value?: string | null
   metric4_label?: string | null
   metric4_value?: string | null
-  approach_steps?: string | null
   presentacion?: string | null
   tecnico?: string | null
   estado?: string | null
   estado_verificado_el?: string | null
-  results?: Record<string, unknown> | null
   github_url?: string | null
   demo_url?: string | null
   notebook_url?: string | null
-  repo_structure?: string | null
   evidence_sources?: string | null
   releases?: unknown[] | null
   status: ProjectStatus
