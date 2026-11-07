@@ -191,22 +191,30 @@ const MermaidDiagram: React.FC<{ code: string }> = ({ code }) => {
   )
 }
 
-/** Only this host may be framed by a ```archify block - the API locks
- * uploading a new file to the `agent` role (see `middleware/auth.py`'s
- * `file_upload` check), but nothing stops this markdown field itself from
- * being hand-edited with an arbitrary URL, so the iframe only ever loads
- * from the one bucket host we actually trust. */
-const ARCHIFY_ALLOWED_HOST = 'files.cjhirashi.com'
+/** Only these sources may be framed by an ```archify / ```plotly / ```embed
+ * block. Nothing stops the markdown field from being hand-edited with an
+ * arbitrary URL, so the iframe only loads from hosts we trust: the career
+ * bucket, and Synapse's public file route (`/files/<uuid>`), whose HTML is
+ * served by Synapse under a sandboxed CSP (no network, no cookies). */
+const EMBED_FILES_HOST = 'files.cjhirashi.com'
+const EMBED_SYNAPSE_HOST = 'synapse.cjhirashi.com'
+const SYNAPSE_FILE_PATH = /^\/files\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/** Renders a ```archify fenced block - its body is the public URL of an
- * Archify-generated standalone HTML diagram (uploaded via `POST /files`) -
- * as a sandboxed iframe instead of a plain code block. */
+const isAllowedEmbedUrl = (parsed: URL): boolean => {
+  if (parsed.protocol !== 'https:') return false
+  if (parsed.hostname === EMBED_FILES_HOST) return true
+  return parsed.hostname === EMBED_SYNAPSE_HOST && SYNAPSE_FILE_PATH.test(parsed.pathname)
+}
+
+/** Renders a ```archify, ```plotly or ```embed fenced block - its body is the
+ * public URL of a standalone interactive HTML (an Archify diagram or a Plotly
+ * chart, uploaded via `POST /files` or published from Synapse) - as a
+ * sandboxed iframe instead of a plain code block. */
 const ArchifyDiagram: React.FC<{ url: string }> = ({ url }) => {
   const trimmed = url.trim()
   let isAllowed = false
   try {
-    const parsed = new URL(trimmed)
-    isAllowed = parsed.protocol === 'https:' && parsed.hostname === ARCHIFY_ALLOWED_HOST
+    isAllowed = isAllowedEmbedUrl(new URL(trimmed))
   } catch {
     isAllowed = false
   }
@@ -214,7 +222,7 @@ const ArchifyDiagram: React.FC<{ url: string }> = ({ url }) => {
   if (!isAllowed) {
     return (
       <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-3">
-        Diagrama Archify con URL no válida (debe ser https://{ARCHIFY_ALLOWED_HOST}/...): {trimmed}
+        Contenido interactivo con URL no válida (debe ser https://{EMBED_FILES_HOST}/... o https://{EMBED_SYNAPSE_HOST}/files/{'<id>'}): {trimmed}
       </div>
     )
   }
@@ -223,7 +231,7 @@ const ArchifyDiagram: React.FC<{ url: string }> = ({ url }) => {
     <div className="mb-3">
       <iframe
         src={trimmed}
-        title="Diagrama interactivo"
+        title="Contenido interactivo"
         loading="lazy"
         sandbox="allow-scripts allow-same-origin"
         className="archify-diagram"
@@ -234,7 +242,7 @@ const ArchifyDiagram: React.FC<{ url: string }> = ({ url }) => {
         rel="noopener noreferrer"
         className="text-xs text-text-secondary hover:text-primary transition mt-1 inline-block"
       >
-        Abrir diagrama en pantalla completa ↗
+        Abrir en pantalla completa ↗
       </a>
     </div>
   )
@@ -258,7 +266,7 @@ const MarkdownPre = ({
   if (language === 'mermaid') {
     return <MermaidDiagram code={extractText(children)} />
   }
-  if (language === 'archify') {
+  if (language === 'archify' || language === 'plotly' || language === 'embed') {
     return <ArchifyDiagram url={extractText(children)} />
   }
 
