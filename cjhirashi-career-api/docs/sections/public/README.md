@@ -53,8 +53,8 @@ No se expone data de otros usuarios aunque existan en la BD.
 | `GET` | `/public/about` | Bio, historial laboral, competencias, certificaciones |
 | `GET` | `/public/contact` | Contacto + links sociales |
 | `POST` | `/public/contact-message` | Recibe el formulario de contacto (`name`, `email`, `message`, `website` trampa). 201 `{id}` solo tras guardar; 422 validación; 429 más de 3 por hora por IP o por correo. Con `website` relleno devuelve 201 sin guardar. Crea un aviso `contact_message` para el dueño. La IP solo se usa en memoria para el límite |
-| `GET` | `/public/projects` | Todos los proyectos |
-| `GET` | `/public/projects/{project_id}` | Detalle de un proyecto |
+| `GET` | `/public/projects` | Todos los proyectos, salvo los de `status: archived` (los `in_development` y `active` se muestran) |
+| `GET` | `/public/projects/{project_id}` | Detalle de un proyecto (404 si está `archived`) |
 | `GET` | `/public/blog` | Posts publicados del blog |
 | `GET` | `/public/blog/{slug}` | Post por slug |
 

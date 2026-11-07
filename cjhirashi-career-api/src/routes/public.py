@@ -16,7 +16,7 @@ from collections import OrderedDict
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
@@ -53,6 +53,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/public", tags=["Public Portal"])
 
 USER_ID = settings.PUBLIC_PORTAL_USER_ID
+
+# Un proyecto archivado no se muestra en el portafolio público (listado, detalle ni destacados).
+_PROJECT_VISIBLE = or_(Project.status.is_(None), Project.status != "archived")
 
 # Limitadores de ritmo para contacto (RF-004)
 # 3 mensajes por hora por IP, 3 por hora por correo
@@ -200,7 +203,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
     projects = (
         await db.execute(
             select(Project)
-            .where(Project.user_id == USER_ID, Project.is_featured.is_(True))
+            .where(Project.user_id == USER_ID, Project.is_featured.is_(True), _PROJECT_VISIBLE)
             .order_by(Project.year.desc().nullslast())
             .limit(3)
         )
@@ -346,7 +349,9 @@ async def get_contact(db: AsyncSession = Depends(get_db)):
 async def list_projects(db: AsyncSession = Depends(get_db)):
     projects = (
         await db.execute(
-            select(Project).where(Project.user_id == USER_ID).order_by(Project.year.desc().nullslast())
+            select(Project)
+            .where(Project.user_id == USER_ID, _PROJECT_VISIBLE)
+            .order_by(Project.year.desc().nullslast())
         )
     ).scalars().all()
     competency_names = await _competency_names_by_id(db)
@@ -356,7 +361,7 @@ async def list_projects(db: AsyncSession = Depends(get_db)):
 @router.get("/projects/{slug}", response_model=PublicProjectDetail)
 async def get_project(slug: str, db: AsyncSession = Depends(get_db)):
     project = (
-        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.slug == slug))
+        await db.execute(select(Project).where(Project.user_id == USER_ID, Project.slug == slug, _PROJECT_VISIBLE))
     ).scalar_one_or_none()
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
