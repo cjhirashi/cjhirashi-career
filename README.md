@@ -101,3 +101,7 @@ El flujo de trabajo, los gates y las reglas del repo están en [CLAUDE.md](CLAUD
 ---
 
 **Última actualización**: 2026-11-05
+
+## Licencia
+
+Este proyecto se distribuye bajo la [PolyForm Noncommercial License 1.0.0](LICENSE): se puede ver, estudiar y usar con fines no comerciales. **No se permite su uso comercial** sin autorización escrita del autor. Copyright 2026 Carlos Jiménez Hirashi.
