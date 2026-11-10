@@ -1,6 +1,6 @@
 # Plan de implementación - cjhirashi-career
 
-**Última actualización:** 2026-11-05
+**Última actualización:** 2026-11-10
 **Estado:** en producción; evolución por specs del arnés (`.harness/specs/`).
 
 ---
@@ -13,7 +13,7 @@ El plan original en tres fases (sistema manual, MCP Server, Agent Bedrock) se cu
 
 | Bloque | Qué incluye | Referencia |
 |---|---|---|
-| **API REST + PostgreSQL** | JWT, CRUD de carrera (≈48 recursos bajo `/career`), archivos en MinIO, PDF, health checks; 419 operaciones, 69 modelos, 51 migraciones | [`cjhirashi-career-api/`](../cjhirashi-career-api/README.md) |
+| **API REST + PostgreSQL** | JWT, CRUD de carrera (≈48 recursos bajo `/career`), archivos en MinIO, PDF, health checks; 419 operaciones, 69 modelos, 53 migraciones | [`cjhirashi-career-api/`](../cjhirashi-career-api/README.md) |
 | **Admin Panel** | 24 pantallas: dashboard, recursos de carrera, descubrimiento de vacantes, archivos, tareas (lista, kanban, calendario, Gantt), PDF, métricas, agentes, configuración | [`cjhirashi-career-admin/`](../cjhirashi-career-admin/README.md) |
 | **Portal público** | Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad | [`cjhirashi-career-portfolio/`](../cjhirashi-career-portfolio/README.md) |
 | **Agent Bedrock** | Harness local, jerarquía L1/L2/L3, perfiles configurables, memoria, tareas programadas y subtareas, costos y presupuesto | [BEDROCK-SYSTEM.md](./BEDROCK-SYSTEM.md) |
@@ -22,7 +22,7 @@ El plan original en tres fases (sistema manual, MCP Server, Agent Bedrock) se cu
 | **Specs 003 y 004** | Configuración de agentes desde la App; herramientas y metodologías por sección (verified) | ADR-026, ADR-027 |
 | **Spec 007** | Vacantes: etapa del proceso y estado calculado (verified) | — |
 | **Spec 008** | Vacantes: empresa, puesto, oferta y cultura (implemented) | — |
-| **Spec 010** | Analítica profesional del portafolio: ingesta, tablero, metas, embudos, API para agentes (desplegada; el `spec.md` aún figura `draft`) | `.harness/specs/010-portal-analytics/` |
+| **Spec 010** | Analítica profesional del portafolio: ingesta, tablero, metas, embudos, API para agentes (implemented) | `.harness/specs/010-portal-analytics/` |
 | **Spec 011** | Formulario de contacto → Admin (implemented) | `.harness/specs/011-contact-messages/` |
 
 ## En curso

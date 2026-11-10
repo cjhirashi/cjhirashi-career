@@ -2,7 +2,7 @@
 
 **ESTRATEGIA DE SOLUCIÓN** (arc42, sección 4)
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-10
 
 ---
 
@@ -34,7 +34,7 @@
 
 **Motivación**: el volumen (un administrador, un portafolio personal) no justifica un segundo motor; se gana simplicidad de despliegue, respaldo y coherencia transaccional. La analítica del portafolio (visitas, sesiones, metas, embudos, agregados diarios) usa tablas propias con sesionización y conservación prolongada; el registro de fallas, `error_reports` ([ADR-018](./09-DECISIONS/018-error-reports-registry.md)).
 
-**Consecuencia**: el modelo crece (69 modelos, 51 migraciones Alembic); el particionado queda como trabajo futuro si el volumen lo pide.
+**Consecuencia**: el modelo crece (69 modelos, 53 migraciones Alembic); el particionado queda como trabajo futuro si el volumen lo pide.
 
 ### 4. API REST como orquestador único
 

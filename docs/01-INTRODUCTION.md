@@ -2,7 +2,7 @@
 
 **INTRODUCCIÓN ARQUITECTÓNICA** (arc42, sección 1)
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-10
 **Resumen**: dos canales de entrada (Portal público y Admin Panel) hacia una API central con una sola base de datos. Stack: React 18 · FastAPI · PostgreSQL · MinIO · AWS Bedrock · WeasyPrint. Estado: en producción.
 
 > El MCP Server (antes «Canal 3») se retiró el 2026-09-04: [ADR-023](./09-DECISIONS/023-retirar-mcp-server.md). Los agentes externos acceden con tokens de rol `agent` a la API REST. El harness de agentes se está separando de la API ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md), spec 009, en curso).
@@ -30,7 +30,7 @@ El portal y el Admin llaman a la API por `/api/`; la API recibe las rutas sin es
 | 1 | Portal público | `cjhirashi-career-portfolio` | SPA React: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad; rastreador de analítica |
 | 2 | Admin Panel | `cjhirashi-career-admin` | SPA React: carrera, vacantes, archivos, PDF, métricas, mensajes de contacto, agentes |
 | 3 | API REST | `cjhirashi-career-api` | FastAPI: autenticación, CRUD de carrera, Bedrock, PDF (WeasyPrint), archivos, analítica; dueña del esquema |
-| 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 51 migraciones Alembic) |
+| 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 53 migraciones Alembic) |
 | 5 | MinIO | `minio_storage` | Archivos (bucket único; los públicos se sirven como archivos públicos) |
 | 6 | Qdrant | `qdrant` | Base de conocimiento vectorial de Agent Bedrock; **retiro decidido** (ADR-029, etapa 3), hoy en uso |
 | 7 | `cjhirashi-career-ai` | (sin desplegar) | Harness de agentes en construcción, con BD propia `career_ai_db` |

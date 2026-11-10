@@ -9,7 +9,7 @@
 
 **cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi: un portafolio público profesional y un panel de administración privado para gestionar la carrera, ambos sobre una API central y una única fuente de verdad (PostgreSQL).
 
-> Estado a **2026-11-05**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. El harness de agentes se está separando de la API en `cjhirashi-career-ai` (spec 009, en curso; **aún no desplegado**). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
+> Estado a **2026-11-10**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. El harness de agentes se está separando de la API en `cjhirashi-career-ai` (spec 009, en curso; **aún no desplegado**). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
 
 ---
 
@@ -30,7 +30,7 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 - **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` todavía.
 - **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y Qdrant (`qdrant`, base de conocimiento vectorial de Agent Bedrock). El retiro de Qdrant está **decidido** ([ADR-029](docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md)) pero se ejecuta en la etapa 3 de la spec 009: hoy sigue en uso por la API.
 - **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), AWS Bedrock, WeasyPrint.
-- **Datos**: 69 modelos SQLAlchemy y 51 migraciones Alembic (head `4439c6915701`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
+- **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `6b2d8f4a1c57`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
 
 ## Qué hace cada módulo
 
@@ -49,7 +49,7 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 | 006 | approved | Tablas y frontends del checklist de carrera |
 | 008, 011 | implemented | Descripción de empresa y puesto en vacantes; formulario de contacto al Admin |
 | 009 | approved (en ejecución) | Harness de agentes fuera de la API y sin indexación |
-| 010 | draft en el archivo; desplegada | Analítica profesional del portafolio |
+| 010 | implemented | Analítica profesional del portafolio |
 
 La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `.harness/specs/`.
 
@@ -58,7 +58,7 @@ La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `
 | Documento | Contenido |
 |---|---|
 | [docs/01](docs/01-INTRODUCTION.md) a [docs/12](docs/12-GLOSSARY.md) | Arc42: introducción, objetivos, interesados, estrategia, bloques, ejecución, despliegue, conceptos transversales, ADRs, calidad, riesgos y glosario |
-| [docs/09-DECISIONS/](docs/09-DECISIONS/README.md) | Decisiones de arquitectura del producto (ADR-008 a ADR-029) |
+| [docs/09-DECISIONS/](docs/09-DECISIONS/README.md) | Decisiones de arquitectura del producto (ADR-008 a ADR-031) |
 | [docs/BEDROCK-SYSTEM.md](docs/BEDROCK-SYSTEM.md) | Subsistema de agentes |
 | [docs/ENVIRONMENT-SECURITY.md](docs/ENVIRONMENT-SECURITY.md) | Variables de entorno, secretos y políticas |
 | [docs/ADMIN_PANEL_SETUP.md](docs/ADMIN_PANEL_SETUP.md) | Arranque y configuración del panel |
@@ -100,7 +100,7 @@ El flujo de trabajo, los gates y las reglas del repo están en [CLAUDE.md](CLAUD
 
 ---
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-10
 
 ## Licencia
 

@@ -2,7 +2,7 @@
 
 **CONCEPTOS TRANSVERSALES** (arc42, sección 8)
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-10
 **Resumen**: autenticación, persistencia, errores, registro y auditoría, seguridad, pruebas, documentación, convenciones, métricas y analítica. Aplican a todos los módulos.
 
 ---
@@ -23,7 +23,7 @@
 ## Persistencia
 
 - **PostgreSQL** es la única fuente de verdad de carrera; la API la usa con SQLAlchemy 2 async (asyncpg).
-- **Esquema**: Alembic es la fuente de verdad para despliegues (`alembic upgrade head`); 51 migraciones. Detalle y dominios: [`cjhirashi-career-api/docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md).
+- **Esquema**: Alembic es la fuente de verdad para despliegues (`alembic upgrade head`); 53 migraciones. Detalle y dominios: [`cjhirashi-career-api/docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md).
 - **IDs prefijados** por recurso (p. ej. `comp-12`) y secciones del Admin con PK sintético `sec-N` ([ADR-021](./09-DECISIONS/021-admin-sections-synthetic-pk.md)).
 - **Archivos** en MinIO (bucket único), con metadatos y visibilidad en `file_uploads`.
 - **Base vectorial** (Qdrant): índice derivado, reconstruible desde PostgreSQL; el retiro está decidido ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md)).

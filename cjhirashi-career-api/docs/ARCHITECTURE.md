@@ -2,7 +2,7 @@
 
 **Ubicación:** `cjhirashi-career-api/docs/ARCHITECTURE.md`
 
-**Última actualización:** 2026-11-05
+**Última actualización:** 2026-11-10
 
 Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock, MinIO, y Qdrant.
 
@@ -38,7 +38,7 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 **Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock) · Qdrant client
 
-**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 51 migraciones Alembic. El harness de agentes y Qdrant se trasladarán/retirarán según el ADR-029 (spec 009, en curso; aún sin aplicar).
+**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 53 migraciones Alembic. El harness de agentes y Qdrant se trasladarán/retirarán según el ADR-029 (spec 009, en curso; aún sin aplicar).
 
 ---
 

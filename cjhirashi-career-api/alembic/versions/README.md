@@ -1,8 +1,8 @@
 # Revisiones Alembic (`alembic/versions/`)
 
-Cadena lineal de **51 revisiones**; head actual: `4439c6915701` (`add_contact_messages_table`, 2026-11-04). Comprueba el estado real con `alembic heads` y `alembic history`; esta página resume la cadena por tema (no por archivo, para no desactualizarse).
+Cadena lineal de **53 revisiones**; head actual: `6b2d8f4a1c57` (`project_drop_legacy_text_fields`, 2026-11-07). Comprueba el estado real con `alembic heads` y `alembic history`; esta página resume la cadena por tema (no por archivo, para no desactualizarse).
 
-**Última actualización**: 2026-11-05
+**Última actualización**: 2026-11-10
 
 ## Cómo está organizada la cadena
 
@@ -14,7 +14,8 @@ Cadena lineal de **51 revisiones**; head actual: `4439c6915701` (`add_contact_me
 | **Carrera y vacantes** | Plataformas de búsqueda y su clave foránea con CVs, etapa del proceso y estado calculado, textos descriptivos de empresa y puesto, empresa objetivo, `projects.slug` y `notebook_url`, tecnologías a competencias, cambios de identidad y certificaciones |
 | **Observabilidad** | Registro de errores (`error_reports`), roles de acceso de usuario (`access_role`) |
 | **Analítica del portafolio** | Tablas `portal_*` (sitios, visitantes, visitas, metas, embudos, anotaciones, reglas de canal, agregados diarios), eventos con sesión, latitud/longitud y duración, `portal_about` |
-| **Contacto** | `contact_messages` (head) |
+| **Contacto** | `contact_messages` |
+| **Proyectos del portafolio** | Documentación en tres campos markdown (`presentacion`, `tecnico`, `estado`) con `estado_verificado_el`, y retiro de los campos de texto anteriores (ADR-030; head) |
 
 ## Convenciones
 

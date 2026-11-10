@@ -26,7 +26,7 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 
 | Servicio | Stack | Rol | Puerto (compose) |
 |---|---|---|---|
-| `cjhirashi-career-api` | Python 3.11 (imagen) · FastAPI · SQLAlchemy 2 · Alembic | Sistema de registro (419 operaciones HTTP, 69 modelos, 51 migraciones; dueño del schema) | 8000 (interno, sin publicar) |
+| `cjhirashi-career-api` | Python 3.11 (imagen) · FastAPI · SQLAlchemy 2 · Alembic | Sistema de registro (419 operaciones HTTP, 69 modelos, 53 migraciones; dueño del schema) | 8000 (interno, sin publicar) |
 | `cjhirashi-career-ai` | Python 3.11 · FastAPI **async** · asyncpg · boto3 | Harness de agentes (spec 009, **en construcción, no desplegado**: sin servicio en `docker-compose.yml` ni ruta en `caddy.json`) | 8010 (previsto) |
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
