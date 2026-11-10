@@ -50,7 +50,7 @@ describe('Navbar', () => {
     it('should swap logo file based on the resolved theme (color is baked into the SVG)', () => {
       render(<Navbar onLogout={mockLogout} />)
       const src = screen.getByAltText('cjhirashi').getAttribute('src')
-      expect(src).toMatch(/^\/logo-(light|dark)\.svg$/)
+      expect(src).toMatch(/^\/logo-(light|dark)\.svg(\?v=\d+)?$/)
     })
 
     it('should render user avatar with initial', () => {

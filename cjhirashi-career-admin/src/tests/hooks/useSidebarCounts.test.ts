@@ -11,7 +11,7 @@ describe('sidebar table resources', () => {
   })
 
   it('returns only table keys for a domain, in declared order', () => {
-    expect(tableResourceKeysForDomain('digital')).toEqual(['publications'])
+    expect(tableResourceKeysForDomain('digital')).toEqual(['contact-messages', 'publications'])
     expect(tableResourceKeysForDomain('support')).toEqual(['tags'])
     expect(tableResourceKeysForDomain(null)).toEqual([])
     expect(tableResourceKeysForDomain('identity')).not.toContain('personal-profile')
