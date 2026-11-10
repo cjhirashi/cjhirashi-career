@@ -77,7 +77,7 @@ export const HomePage = () => {
 
       {/* Stats */}
       {home && home.stats.length > 0 && (
-        <section className="py-8 px-4 sm:px-6 lg:px-8 border-t border-border">
+        <section className="py-14 px-4 sm:px-6 lg:px-8 border-t border-border">
           <div className="mx-auto max-w-4xl grid grid-cols-2 sm:grid-cols-4 divide-x divide-border">
             {home.stats.map(stat => (
               <div key={stat.label} className="text-center px-4">
@@ -93,7 +93,7 @@ export const HomePage = () => {
           featured_on_home (see api/src/routes/public.py's get_home), the
           full skill breakdown lives on About. */}
       {home && home.skill_categories.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <section className="section-alt py-24 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
               <Layers size={22} className="text-primary" /> Stack técnico
