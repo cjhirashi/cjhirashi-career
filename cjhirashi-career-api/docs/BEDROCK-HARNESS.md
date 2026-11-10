@@ -1,5 +1,7 @@
 # Bedrock Harness local — API
 
+> **Estado (2026-11-10, [ADR-032](../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
+
 ## Paquete
 
 `src/services/bedrock/` — ver [README del paquete](../src/services/bedrock/README.md).

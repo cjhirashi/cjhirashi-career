@@ -27,12 +27,12 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 | Servicio | Stack | Rol | Puerto (compose) |
 |---|---|---|---|
 | `cjhirashi-career-api` | Python 3.11 (imagen) · FastAPI · SQLAlchemy 2 · Alembic | Sistema de registro (419 operaciones HTTP, 69 modelos, 53 migraciones; dueño del schema) | 8000 (interno, sin publicar) |
-| `cjhirashi-career-ai` | Python 3.11 · FastAPI **async** · asyncpg · boto3 | Harness de agentes (spec 009, **en construcción, no desplegado**: sin servicio en `docker-compose.yml` ni ruta en `caddy.json`) | 8010 (previsto) |
+| `cjhirashi-career-ai` | Python 3.11 · FastAPI **async** · asyncpg · boto3 | Harness de agentes (spec 009, **aplazada**, ADR-032; no desplegado: sin servicio en `docker-compose.yml` ni ruta en `caddy.json`) | 8010 (previsto) |
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
 
 Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`), **Qdrant**
-(búsqueda vectorial de Agent Bedrock; su retiro está decidido en el ADR-029 y se ejecuta en la etapa 3 de la spec 009, hoy sigue en uso), **MinIO** (objetos). Routing externo por **Caddy** vía
+(búsqueda vectorial del subsistema Bedrock, fuera de operación desde el ADR-032; el contenedor sigue arriba y su retiro no se ha ejecutado), **MinIO** (objetos). Routing externo por **Caddy** vía
 `caddy.json` (contrato con el repo `cjhirashi-srv`; vive solo en local, no se versiona).
 
 > El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el

@@ -1,5 +1,7 @@
 # ADR-012: Jerarquía de agentes en 3 niveles
 
+> **Estado (2026-11-10, [ADR-032](032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
+
 ## Estado
 
 Aceptado — 2026-08-25

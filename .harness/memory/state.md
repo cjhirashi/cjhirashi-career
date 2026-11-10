@@ -8,6 +8,8 @@ actualizado: 2026-11-05
 
 ## ⚠️ Correcciones del usuario (leer SIEMPRE — no borrar)
 
+- **[2026-11-10] Decisión del propietario (ADR-032):** el subsistema de agentes con AWS Bedrock está **fuera de operación** (no funcionaba del todo bien); los agentes de IA son **externos** y entran por la API con el rol `agent` (solo `/career/*` y la subida de archivos). La spec 009 (harness fuera de la API) se **aplaza** (`deferred`); un arnés de agentes propio queda como evolución contemplada, sin fecha. El código Bedrock sigue en el repo y en producción: retirarlo exige spec propia. `audit_logs` solo lo escribe Bedrock: las escrituras de un agente externo por `/career/*` no se auditan. Lo documentado antes de esta fecha que describa agentes internos como operativos está desfasado.
+
 ### [2026-11-05] La documentación se actualiza con cada cambio, siempre
 - **Qué pasó:** Carlos vio documentación de Qdrant desfasada y la tomó como prueba de que no se actualizaba la documentación al cambiar algo. Era cierto: el arc42 llevaba hasta 121 commits sin tocarse.
 - **Corrección:** la regla 🔴 de la Constitución Art. 11 es obligatoria en cada commit que cambie código o infraestructura, no solo en features grandes: toca los docs que el cambio deja obsoletos **o** declara `Docs actualizadas: ninguna — <motivo>`. «Estado actual» significa lo que corre hoy: no documentes lo decidido pero no ejecutado como si ya fuera así (p. ej. Qdrant sigue en uso hasta la etapa 3 de la spec 009).

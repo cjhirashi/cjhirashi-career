@@ -9,7 +9,7 @@
 
 **cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi: un portafolio público profesional y un panel de administración privado para gestionar la carrera, ambos sobre una API central y una única fuente de verdad (PostgreSQL).
 
-> Estado a **2026-11-10**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. El harness de agentes se está separando de la API en `cjhirashi-career-ai` (spec 009, en curso; **aún no desplegado**). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
+> Estado a **2026-11-10**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. Los agentes de IA son **externos** y entran por la API con el rol `agent`; el subsistema de agentes con AWS Bedrock está fuera de operación y la separación del harness (spec 009) se aplazó ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
 
 ---
 
@@ -18,7 +18,7 @@
 | Módulo | Contenedor (puerto host) | Para qué |
 |---|---|---|
 | **Portal público** | `cjhirashi-career-portfolio` (8003) | Portafolio: Inicio, Sobre mí, Proyectos, Blog, Contacto, Privacidad |
-| **Admin Panel** | `cjhirashi-career-admin` (8002) | Gestión privada de carrera, agentes y métricas |
+| **Admin Panel** | `cjhirashi-career-admin` (8002) | Gestión privada de carrera y métricas |
 | **Archivos** | `minio_storage` (9000, interno) | Archivos públicos y privados en MinIO |
 | **API REST** | `cjhirashi-career-api` (8000, interno) | El portal y el Admin la llaman por `/api/`; la API recibe las rutas sin ese prefijo |
 
@@ -26,19 +26,19 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 
 ## Arquitectura
 
-- **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. Bedrock (agentes) y PDF (WeasyPrint) son capacidades de la API, no módulos ni contenedores aparte.
-- **`cjhirashi-career-ai`** (en construcción, spec 009): harness de agentes con base de datos propia (`career_ai_db`) que sacará de la API los agentes, la base de conocimiento y su indexación. No está en `docker-compose.yml` todavía.
-- **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y Qdrant (`qdrant`, base de conocimiento vectorial de Agent Bedrock). El retiro de Qdrant está **decidido** ([ADR-029](docs/09-DECISIONS/029-harness-agentes-fuera-de-api.md)) pero se ejecuta en la etapa 3 de la spec 009: hoy sigue en uso por la API.
-- **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), AWS Bedrock, WeasyPrint.
+- **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. La generación de PDF (WeasyPrint) es una capacidad de la API, no un módulo ni un contenedor aparte. Los agentes de IA son externos: se conectan a la API con un token de rol `agent` (solo `/career/*` y la subida de archivos).
+- **`cjhirashi-career-ai`** (spec 009, **aplazada**, ADR-032): andamiaje de un harness de agentes con base de datos propia. No se despliega: no está en `docker-compose.yml`. Diseñar de nuevo un arnés de agentes propio queda como evolución contemplada, sin fecha.
+- **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y un contenedor `qdrant` que quedó sin consumidor operativo al dejar de operar el subsistema Bedrock (su retiro no se ha ejecutado).
+- **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), WeasyPrint.
 - **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `6b2d8f4a1c57`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
 
 ## Qué hace cada módulo
 
-**Admin Panel** (24 pantallas): panel y métricas de búsqueda; recursos de carrera (identidad, competencias, evidencia, vacantes, aplicaciones, networking, CVs y cartas); descubrimiento de vacantes; archivos; plantillas y estilos de PDF; mensajes de contacto; analítica del portafolio (tablero, metas, embudos, anotaciones); registro de errores; secciones del Admin configurables; y el área de agentes (catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas, chat).
+**Admin Panel**: panel y métricas de búsqueda; recursos de carrera (identidad, competencias, evidencia, vacantes, aplicaciones, networking, CVs y cartas); descubrimiento de vacantes; archivos; plantillas y estilos de PDF; mensajes de contacto; analítica del portafolio (tablero, metas, embudos, anotaciones); registro de errores; secciones del Admin configurables; y tareas. El panel conserva el área del subsistema de agentes Bedrock (catálogo, instrucciones, herramientas, memoria, auditoría, métricas y chat), fuera de operación ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)).
 
 **Portal público** (9 páginas): Inicio, Sobre mí, Proyectos (y detalle), Blog (y entrada), Contacto (los mensajes llegan al Admin), Privacidad (con borrado de los datos propios del visitante) y 404. Incluye un rastreador de analítica con respeto a DNT/GPC.
 
-**API**: autenticación JWT (el rol `agent` está restringido: `/career/*`, el chat de Bedrock y la subida de archivos); CRUD de carrera; descubrimiento de vacantes (Adzuna, Greenhouse, Lever, LinkedIn, Remotive y otros); Agent Bedrock y tareas programadas de agentes; generación de PDF; archivos en MinIO; endpoints públicos del portal; registro de errores; analítica del portafolio (ingesta, métricas, metas y embudos). Detalle y contrato: [`cjhirashi-career-api/docs/API.md`](cjhirashi-career-api/docs/API.md).
+**API**: autenticación JWT (el rol `agent` está restringido a `/career/*` y a la subida de archivos nuevos); CRUD de carrera; descubrimiento de vacantes (Adzuna, Greenhouse, Lever, LinkedIn, Remotive y otros); generación de PDF; archivos en MinIO; endpoints públicos del portal; registro de errores; analítica del portafolio (ingesta, métricas, metas y embudos). Detalle y contrato: [`cjhirashi-career-api/docs/API.md`](cjhirashi-career-api/docs/API.md).
 
 ## Specs del arnés
 
@@ -48,7 +48,7 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 | 005 | draft | Metodologías: esquema mínimo y vínculo con secciones |
 | 006 | approved | Tablas y frontends del checklist de carrera |
 | 008, 011 | implemented | Descripción de empresa y puesto en vacantes; formulario de contacto al Admin |
-| 009 | approved (en ejecución) | Harness de agentes fuera de la API y sin indexación |
+| 009 | deferred | Harness de agentes fuera de la API y sin indexación (aplazada por [ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)) |
 | 010 | implemented | Analítica profesional del portafolio |
 
 La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `.harness/specs/`.
@@ -58,8 +58,8 @@ La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `
 | Documento | Contenido |
 |---|---|
 | [docs/01](docs/01-INTRODUCTION.md) a [docs/12](docs/12-GLOSSARY.md) | Arc42: introducción, objetivos, interesados, estrategia, bloques, ejecución, despliegue, conceptos transversales, ADRs, calidad, riesgos y glosario |
-| [docs/09-DECISIONS/](docs/09-DECISIONS/README.md) | Decisiones de arquitectura del producto (ADR-008 a ADR-031) |
-| [docs/BEDROCK-SYSTEM.md](docs/BEDROCK-SYSTEM.md) | Subsistema de agentes |
+| [docs/09-DECISIONS/](docs/09-DECISIONS/README.md) | Decisiones de arquitectura del producto (ADR-008 a ADR-032) |
+| [docs/BEDROCK-SYSTEM.md](docs/BEDROCK-SYSTEM.md) | Subsistema de agentes Bedrock (fuera de operación; referencia de diseño) |
 | [docs/ENVIRONMENT-SECURITY.md](docs/ENVIRONMENT-SECURITY.md) | Variables de entorno, secretos y políticas |
 | [docs/ADMIN_PANEL_SETUP.md](docs/ADMIN_PANEL_SETUP.md) | Arranque y configuración del panel |
 | [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Hoja de ruta |
@@ -74,7 +74,7 @@ Requisitos: Docker y Docker Compose, y la red Docker externa `net-cjhirashi-care
 ```bash
 cp .env.example .env       # el compose lee `.env`; nunca se versiona
 # Cambia al menos: POSTGRES_PASSWORD, SECRET_KEY (32+ caracteres aleatorios), CORS_ORIGINS,
-# MINIO_ROOT_PASSWORD, PUBLIC_PORTAL_USER_ID, PORTAL_SITE_KEY y las credenciales de AWS Bedrock.
+# MINIO_ROOT_PASSWORD, PUBLIC_PORTAL_USER_ID, PORTAL_SITE_KEY y las credenciales de AWS Bedrock (solo si se activa ese subsistema).
 docker compose up -d --build
 docker compose ps
 docker compose logs -f api

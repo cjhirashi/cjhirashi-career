@@ -1,5 +1,7 @@
 # Paquete `services/bedrock/`
 
+> **Estado (2026-11-10, [ADR-032](../../../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
+
 Harness local del Agent Bedrock del Admin Panel: loop Converse con tool calling, historial en PostgreSQL, presupuesto diario, delegación a especialistas y memoria semántica en Qdrant.
 
 **Punto de entrada público:** `chat_stream` (exportado en `__init__.py`).

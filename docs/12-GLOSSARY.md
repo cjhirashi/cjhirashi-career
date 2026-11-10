@@ -1,5 +1,7 @@
 # Glosario - cjhirashi-career
 
+> **Estado (2026-11-10, [ADR-032](09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** los agentes de IA son externos y entran por la API con el rol `agent`; el subsistema de agentes con AWS Bedrock está fuera de operación. Donde este documento describe agentes internos, léase como referencia de diseño.
+
 **GLOSARIO DEL PROYECTO** (arc42, sección 12)
 
 **Última actualización**: 2026-11-05

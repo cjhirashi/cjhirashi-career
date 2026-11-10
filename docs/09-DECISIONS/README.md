@@ -3,7 +3,7 @@
 **ARCHITECTURE DECISION RECORDS** (arc42, sección 9)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 24 ADR de producto (008 a 031), todos aceptados salvo el 009 (deprecado por el 012). Las decisiones **del arnés** viven en `.harness/decisions/`, no aquí.
+**Resumen**: 25 ADR de producto (008 a 032), todos aceptados salvo el 009 (deprecado por el 012). Las decisiones **del arnés** viven en `.harness/decisions/`, no aquí.
 
 ---
 
@@ -128,10 +128,11 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 | 029 | [Harness de agentes fuera de la API (`cjhirashi-career-ai`) y sin indexación](./029-harness-agentes-fuera-de-api.md) | ✅ Aceptado |
 | 030 | [Documentación de proyectos en 3 campos markdown](./030-proyectos-tres-campos-markdown.md) | ✅ Aceptado |
 | 031 | [Embeber HTML e imágenes de Synapse en las fichas](./031-embeber-html-de-synapse-en-fichas.md) | ✅ Aceptado |
+| 032 | [Agentes externos por la API; el subsistema Bedrock queda fuera de operación](./032-agentes-externos-y-bedrock-fuera-de-operacion.md) | ✅ Aceptado |
 
 **Revisiones cruzadas vigentes**: ADR-009 deprecado por ADR-012; ADR-014 revisado parcialmente por ADR-023 (MCP retirado) y por ADR-029 (harness fuera de la API); ADR-008 y ADR-025 revisados parcialmente por ADR-029; ADR-026 parcialmente superado por ADR-027 para los agentes L2.
 
-**Estado de ADR-029**: aceptado y **en ejecución** (spec 009, 62 de 163 tareas): el harness (`cjhirashi-career-ai`) aún no está desplegado y Qdrant sigue en uso hasta la etapa 3.
+**Estado de ADR-029**: aplazado por el ADR-032 (2026-11-10): la separación del harness no se despliega; el subsistema Bedrock está fuera de operación y los agentes de IA son externos.
 
 ## 🆕 Cómo Crear un Nuevo ADR
 
