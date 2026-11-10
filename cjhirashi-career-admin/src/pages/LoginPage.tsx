@@ -7,7 +7,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate()
   const { login, isLoading, error, clearError } = useAuth()
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
-  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
+  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg?v=20261110' : '/logo-light.svg?v=20261110'
   const [formData, setFormData] = useState({ username: '', password: '' })
   const [formErrors, setFormErrors] = useState<{ username?: string; password?: string }>({})
 

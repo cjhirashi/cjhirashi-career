@@ -26,7 +26,7 @@ export const Header = () => {
   // light backgrounds, light text for dark ones), so swap the whole file
   // instead of trying to theme it via CSS.
   const resolvedTheme = useUIStore(state => state.resolvedTheme)
-  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
+  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg?v=20261110' : '/logo-light.svg?v=20261110'
   const location = useLocation()
   const { trackClick } = useTrackClick()
   const { data: contact } = useContact()

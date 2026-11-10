@@ -30,7 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   // light backgrounds, light text for dark ones), so swap the whole file
   // instead of trying to theme it via CSS.
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme)
-  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'
+  const logoSrc = resolvedTheme === 'dark' ? '/logo-dark.svg?v=20261110' : '/logo-light.svg?v=20261110'
 
   return (
     <header className="sticky top-0 z-20 glass-panel backdrop-blur-[16px] border-b border-border">
