@@ -45,15 +45,6 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('renders the home achievement as a flagship case with challenge/result', async () => {
-    await renderReady()
-
-    expect(screen.getAllByText(mockHome.home_achievement!.title, { exact: false }).length).toBeGreaterThan(0)
-    expect(screen.getByText('Desafío')).toBeInTheDocument()
-    expect(screen.getByText('Resultado')).toBeInTheDocument()
-    expect(screen.getByText(mockHome.home_achievement!.challenge!)).toBeInTheDocument()
-  })
-
   it('renders hero CTA buttons from hero_ctas, first as primary and rest as secondary', async () => {
     await renderReady()
 
@@ -146,10 +137,9 @@ describe('HomePage - Entry Point', () => {
     expect(container.querySelector('h1')).not.toBeInTheDocument()
   })
 
-  it('omits the home achievement case and featured sections when there is none', async () => {
+  it('omits the featured sections when there are none', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({
       ...mockHome,
-      home_achievement: null,
       featured_projects: [],
       featured_publications: [],
     })
@@ -159,8 +149,21 @@ describe('HomePage - Entry Point', () => {
     await waitFor(() => {
       expect(screen.getByText(mockHome.hero_title!)).toBeInTheDocument()
     })
-    expect(screen.queryByText('Ver caso completo →')).not.toBeInTheDocument()
     expect(screen.queryByText('Del blog')).not.toBeInTheDocument()
+  })
+
+  it('does not render the home achievement and places "Stack técnico" before the featured projects', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: ['Frontend'] })
+
+    render(<HomePage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Stack técnico')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Logro destacado')).not.toBeInTheDocument()
+    const stack = screen.getByText('Stack técnico')
+    const projects = screen.getByText('Proyectos')
+    expect(stack.compareDocumentPosition(projects) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('renders hero section in gradient background', async () => {

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Award, BookOpen, Clock, Layers, ShieldCheck, TrendingUp } from 'lucide-react'
+import { BookOpen, Layers, ShieldCheck } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
@@ -7,8 +7,6 @@ import { BlogCard } from '@/components/Common/BlogCard'
 import { LoadingSpinner } from '@/components/Common/LoadingSpinner'
 import { ErrorMessage } from '@/components/Common/ErrorMessage'
 import { Markdown } from '@/components/Common/Markdown'
-import { MetricChips } from '@/components/Common/MetricChips'
-import { parseMetrics } from '@/utils/metrics'
 
 export const HomePage = () => {
   const { data: home, isLoading, error } = useHome()
@@ -20,9 +18,6 @@ export const HomePage = () => {
 
   if (isLoading) return <LoadingSpinner />
   if (error) return <ErrorMessage message="No se pudo cargar el contenido de la Home" />
-
-  const achievement = home?.home_achievement
-  const hasAchievementMetrics = parseMetrics(achievement?.impact_metrics).length > 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
@@ -94,47 +89,29 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Flagship achievement - the single achievements.home=True row,
-          rendered as a highlighted narrative card. Short KPI-style metrics
-          live as a footer row inside the card. */}
-      {achievement && (
+      {/* Stack técnico - categories of whichever competencies are marked
+          featured_on_home (see api/src/routes/public.py's get_home), the
+          full skill breakdown lives on About. */}
+      {home && home.skill_categories.length > 0 && (
         <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl card p-8">
-            <div className="flex items-center gap-2 mb-2">
-              <Award size={14} className="text-primary flex-shrink-0" />
-              <span className="text-xs font-bold text-primary uppercase tracking-wide">Logro destacado</span>
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
+              <Layers size={22} className="text-primary" /> Stack técnico
+            </h2>
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              {home.skill_categories.map(category => (
+                <span key={category} className="badge mono">
+                  {category}
+                </span>
+              ))}
             </div>
-            <h2 className="text-2xl font-bold text-text mb-6">{achievement.title}</h2>
-
-            <div className="space-y-5">
-              {achievement.executive_storytelling && (
-                <Markdown className="text-sm text-text-secondary">{achievement.executive_storytelling}</Markdown>
-              )}
-
-              {achievement.challenge && (
-                <div>
-                  <p className="text-xs font-bold text-primary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                    <Clock size={12} /> Desafío
-                  </p>
-                  <Markdown className="text-sm">{achievement.challenge}</Markdown>
-                </div>
-              )}
-
-              {achievement.solution && (
-                <div className="rounded-lg p-4 bg-secondary-light border border-secondary-light">
-                  <p className="text-xs font-bold text-secondary uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                    <TrendingUp size={12} /> Resultado
-                  </p>
-                  <Markdown className="text-sm">{achievement.solution}</Markdown>
-                </div>
-              )}
-            </div>
-
-            {hasAchievementMetrics && (
-              <div className="mt-6 pt-6 border-t border-border">
-                <MetricChips metrics={achievement.impact_metrics} />
-              </div>
-            )}
+            <Link
+              to="/about"
+              onClick={() => trackClick('home-ver-stack-completo')}
+              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+            >
+              Ver más en Sobre Mí →
+            </Link>
           </div>
         </section>
       )}
@@ -183,33 +160,6 @@ export const HomePage = () => {
                 <BlogCard key={post.id} post={post} />
               ))}
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Stack técnico - categories of whichever competencies are marked
-          featured_on_home (see api/src/routes/public.py's get_home), the
-          full skill breakdown lives on About. */}
-      {home && home.skill_categories.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
-              <Layers size={22} className="text-primary" /> Stack técnico
-            </h2>
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
-              {home.skill_categories.map(category => (
-                <span key={category} className="badge mono">
-                  {category}
-                </span>
-              ))}
-            </div>
-            <Link
-              to="/about"
-              onClick={() => trackClick('home-ver-stack-completo')}
-              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
-            >
-              Ver más en Sobre Mí →
-            </Link>
           </div>
         </section>
       )}

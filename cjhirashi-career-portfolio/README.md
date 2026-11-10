@@ -8,7 +8,7 @@ SPA pública de solo lectura (`cjhirashi.com`, puerto host 8003) con el portafol
 
 | Ruta | Página | Contenido |
 |---|---|---|
-| `/` | HomePage | Presentación y proyectos destacados (`GET /public/home`) |
+| `/` | HomePage | Presentación, stats, stack técnico, proyectos y publicaciones destacados (`GET /public/home`) |
 | `/about` | AboutPage | Sobre mí (`GET /public/about`) |
 | `/projects`, `/projects/:slug` | ProjectsPage, ProjectDetailPage | Listado con filtros y detalle de cada proyecto, con Markdown, diagramas Archify incrustados y capturas |
 | `/blog`, `/blog/:slug` | BlogPage, BlogPostPage | Publicaciones del blog |
