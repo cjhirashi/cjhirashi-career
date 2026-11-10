@@ -506,6 +506,35 @@ textarea:focus-visible {
 }
 
 /*
+ * Animated hero background (HomePage). The SVG (from Rand's design folder) is dark
+ * in both themes, so the hero always uses the dark palette (data-theme="dark" on the
+ * section) and re-derives the aliases that :root resolved for the page theme.
+ * Bump ?v= when the SVG changes (Cloudflare caches /public assets).
+ */
+.hero-animated {
+  --bg: var(--bg-primary);
+  --primary: var(--primary-color);
+  --primary-container: var(--primary-light);
+  --secondary: var(--secondary-color);
+  --secondary-container: var(--secondary-light);
+  --surface: var(--bg-secondary);
+  --surface-card: var(--bg-card);
+  --border: var(--border-glass);
+  --text: var(--text-primary);
+  background-color: #071018;
+  background-image: url('/hero-bg-horizontal.svg?v=1');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .hero-animated {
+    background-image: url('/hero-bg-vertical.svg?v=1');
+  }
+}
+
+/*
  * Hero split layout (HomePage): two columns (copy + visual) on desktop,
  * collapses to a single stacked column on mobile - matches the reference
  * `.hero-split` pattern (grid 1.1fr 0.9fr).
