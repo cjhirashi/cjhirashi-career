@@ -5,7 +5,7 @@ instructions, custom tools, and memory.
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # ============================================================================
 # Configuración compartida
@@ -411,6 +411,13 @@ class BedrockAuditLogResponse(BaseModel):
     new_values: Optional[Dict[str, Any]] = None
     created_at: datetime
     notes: Optional[str] = None
+
+    # `audit_logs.id` es un entero autoincremental; el contrato público lo
+    # entrega como texto (el Admin lo usa en la ruta de restauración).
+    @field_validator("id", mode="before")
+    @classmethod
+    def _id_as_text(cls, value: Any) -> str:
+        return str(value)
 
     class Config:
         from_attributes = True
