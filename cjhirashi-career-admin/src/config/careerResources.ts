@@ -363,7 +363,6 @@ export const competenciesConfig: ResourceConfig = {
     { key: 'level', label: 'Nivel' },
     { key: 'years_of_experience', label: 'Años exp.', format: 'number' },
     { key: 'proficiency_score', label: 'Score', format: 'number' },
-    { key: 'is_highlighted', label: 'Destacada', format: 'boolean' },
     { key: 'featured_on_home', label: 'En Home', format: 'boolean' },
   ],
   fields: [
@@ -384,7 +383,6 @@ export const competenciesConfig: ResourceConfig = {
     { name: 'years_of_experience', label: 'Años de experiencia', type: 'number' },
     { name: 'practice_start_date', label: 'Fecha de inicio de práctica', type: 'date' },
     { name: 'proficiency_score', label: 'Score de dominio (0-100)', type: 'number' },
-    { name: 'is_highlighted', label: 'Destacada', type: 'boolean' },
     {
       name: 'featured_on_home',
       label: 'Destacado en home',

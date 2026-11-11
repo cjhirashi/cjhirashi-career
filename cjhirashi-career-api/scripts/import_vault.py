@@ -704,7 +704,6 @@ async def import_competencies(session, vault: Path, user_id: int, report: Import
                 years_of_experience=item["years_of_experience"],
                 depth_description=item["depth_description"],
                 honesty_note=item["honesty_note"],
-                is_highlighted=item["name"] in ("Context Engineering", "Controladores HVAC (Automatización Industrial)"),
             )
             session.add(row)
             await session.flush()

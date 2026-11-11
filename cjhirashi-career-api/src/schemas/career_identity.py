@@ -184,7 +184,6 @@ class CompetencyBase(BaseModel):
     honesty_note: Optional[str] = None
     aligned_differentiator_ids: Optional[List[str]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
-    is_highlighted: bool = False
     featured_on_home: bool = False
     notes: Optional[str] = None
 
@@ -207,7 +206,6 @@ class CompetencyUpdate(BaseModel):
     honesty_note: Optional[str] = None
     aligned_differentiator_ids: Optional[List[str]] = None
     proficiency_score: Optional[int] = Field(None, ge=0, le=100)
-    is_highlighted: Optional[bool] = None
     featured_on_home: Optional[bool] = None
     notes: Optional[str] = None
 

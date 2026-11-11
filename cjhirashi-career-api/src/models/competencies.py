@@ -39,10 +39,8 @@ class Competency(Base):
     honesty_note = Column(Text, nullable=True)
     aligned_differentiator_ids = Column(JSONB, nullable=True)
     proficiency_score = Column(Integer, nullable=True)
-    is_highlighted = Column(Boolean, default=False, nullable=True)
-    # Drives the Home page's "Stack técnico" teaser - only categories with at
-    # least one competency marked True appear there (see routes/public.py's
-    # get_home). Independent of is_highlighted, which has no wired use yet.
+    # Drives the Home page's "Stack técnico" block: the competencies marked
+    # True appear there, grouped by category (see routes/public.py's get_home).
     featured_on_home = Column(Boolean, default=False, nullable=True, index=True)
 
     notes = Column(Text, nullable=True)

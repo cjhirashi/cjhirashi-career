@@ -36,7 +36,6 @@ const sampleItem = {
   level: 'Senior',
   years_of_experience: 8,
   proficiency_score: 90,
-  is_highlighted: true,
   depth_description: 'Descripción larga de la profundidad de esta competencia, con varias oraciones.',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-02-01T00:00:00Z',
