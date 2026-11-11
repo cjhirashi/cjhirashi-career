@@ -145,6 +145,7 @@ export const mockHome: HomeContent = {
     { category: 'Data Science & IA', skills: ['Machine Learning'] },
     { category: 'Cloud', skills: ['AWS'] },
   ],
+  soft_skills: ['Pensamiento Sistémico'],
 }
 
 export const mockAbout: AboutContent = {

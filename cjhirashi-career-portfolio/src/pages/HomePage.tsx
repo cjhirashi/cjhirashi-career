@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Layers, ShieldCheck } from 'lucide-react'
+import { BookOpen, Layers, ShieldCheck, Sparkles } from 'lucide-react'
 import { useHome } from '@/hooks/useHome'
 import { useTrackClick } from '@/hooks/useTracking'
 import { ProjectCard } from '@/components/Common/ProjectCard'
@@ -119,6 +119,25 @@ export const HomePage = () => {
             >
               Ver más en Sobre Mí →
             </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Habilidades - featured transferable competencies, separate from the
+          technical stack. */}
+      {home && home.soft_skills.length > 0 && (
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
+              <Sparkles size={22} className="text-primary" /> Habilidades
+            </h2>
+            <div className="flex flex-wrap justify-center gap-3">
+              {home.soft_skills.map(skill => (
+                <span key={skill} className="badge">
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
       )}

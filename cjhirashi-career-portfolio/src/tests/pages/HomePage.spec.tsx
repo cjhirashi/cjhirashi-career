@@ -196,6 +196,22 @@ describe('HomePage - Entry Point', () => {
     expect(screen.getByText('AWS')).toBeInTheDocument()
   })
 
+  it('renders the featured soft skills in their own "Habilidades" block, not in the stack', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({
+      ...mockHome,
+      skill_groups: [{ category: 'Herramientas', skills: ['Python'] }],
+      soft_skills: ['Adaptabilidad'],
+    })
+
+    render(<HomePage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Habilidades')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Adaptabilidad')).toBeInTheDocument()
+    expect(screen.getByText('Python')).toBeInTheDocument()
+  })
+
   it('omits the "Stack técnico" section when no competency is marked featured_on_home', async () => {
     vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_groups: [] })
 

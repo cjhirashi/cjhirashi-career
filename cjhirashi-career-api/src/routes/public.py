@@ -230,10 +230,15 @@ async def get_home(db: AsyncSession = Depends(get_db)):
             .order_by(Competency.id)
         )
     ).scalars().all()
-    # Featured competencies grouped by category, first-seen order.
+    # "Stack técnico" = featured technical competencies grouped by category
+    # (first-seen order); "Habilidades" = the featured transferable ones.
     groups: dict = {}
+    soft_skills: list = []
     for c in featured_competencies:
-        groups.setdefault(c.category or "Otras", []).append(c.name)
+        if c.type == "technical":
+            groups.setdefault(c.category or "Otras", []).append(c.name)
+        else:
+            soft_skills.append(c.name)
     skill_groups = [PublicSkillGroup(category=cat, skills=names) for cat, names in groups.items()]
     competency_names = await _competency_names_by_id(db)
 
@@ -248,6 +253,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         featured_projects=[_project_card(p, competency_names) for p in projects],
         featured_publications=[_publication_card(pub) for pub in publications],
         skill_groups=skill_groups,
+        soft_skills=soft_skills,
     )
 
 

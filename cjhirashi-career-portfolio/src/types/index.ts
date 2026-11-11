@@ -74,6 +74,7 @@ export interface HomeContent {
   featured_projects: Project[]
   featured_publications: BlogPost[]
   skill_groups: SkillGroup[]
+  soft_skills: string[]
 }
 
 export interface SkillGroup {

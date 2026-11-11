@@ -102,6 +102,8 @@ class PublicHomeResponse(BaseModel):
     # order) - the "Stack técnico" block. Curated by that flag rather than
     # showing every competency (About has the full breakdown).
     skill_groups: List[PublicSkillGroup] = []
+    # Featured transferable competencies ("Habilidades" block, separate from the stack).
+    soft_skills: List[str] = []
     notes: Optional[str] = None
 
 
