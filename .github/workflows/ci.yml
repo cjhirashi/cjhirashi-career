@@ -21,7 +21,6 @@ jobs:
         env:
           DATABASE_URL: sqlite+aiosqlite:///:memory:
           SECRET_KEY: test-secret-key-minimum-32-characters-long
-          QDRANT_URL: http://localhost:6333
           MINIO_ENDPOINT: localhost:9000
           MINIO_ROOT_USER: minio
           MINIO_ROOT_PASSWORD: minio123456789012345678

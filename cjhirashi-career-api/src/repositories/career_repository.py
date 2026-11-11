@@ -7,7 +7,6 @@ readable/writable by another user. Rather than duplicating that
 row-level-isolation logic 30 times, this generic repository implements it
 once and is parametrized by the SQLAlchemy model.
 """
-import asyncio
 import logging
 from typing import Generic, Optional, Sequence, Type, TypeVar
 
@@ -35,36 +34,6 @@ _VIRTUAL_FIELDS = {
     "agent-tasks": frozenset({"subtasks"}),
 }
 
-# Columnas que no se vuelcan al texto indexado en la KB (spec 007, D-13): la fecha
-# de cambio de etapa es ruido para la búsqueda semántica y forzaría reindexar.
-_KB_EXCLUDED_COLUMNS = {
-    "vacancies": frozenset({
-        "process_stage_updated_at",
-        # Spec 008, RF-006: textos largos descriptivos, fuera de la KB por ahora.
-        # TRANSITORIO: se retira con la spec 009 (que decide su indexado).
-        "company_overview",
-        "candidate_profile",
-        "offer_summary",
-        "work_culture",
-    }),
-}
-
-# ============================================================================
-# Utilidades — tareas en segundo plano
-# ============================================================================
-
-# Keeps a strong reference to fire-and-forget indexing tasks so they aren't
-# garbage-collected mid-flight (a well-known asyncio.create_task gotcha) -
-# self-removes once each task finishes, so this set never actually grows.
-_background_tasks: set = set()
-
-
-def _fire_and_forget(coro) -> None:
-    task = asyncio.create_task(coro)
-    _background_tasks.add(task)
-    task.add_done_callback(_background_tasks.discard)
-
-
 # ============================================================================
 # Repositorio de carrera — CRUD con aislamiento por usuario
 # ============================================================================
@@ -72,18 +41,13 @@ def _fire_and_forget(coro) -> None:
 class CareerRepository(Generic[ModelType]):
     """Generic CRUD repository enforcing per-user row-level isolation."""
 
-    def __init__(self, model: Type[ModelType], resource_key: Optional[str] = None, vectorize: bool = True):
+    def __init__(self, model: Type[ModelType], resource_key: Optional[str] = None):
         self.model = model
         # The router-prefix form of the resource (e.g. "operational-methodologies",
         # hyphenated - matches the frontend's CAREER_RESOURCES keys and what
         # Agent Bedrock's tools use), not `model.__tablename__` (underscored).
-        # Only set by `build_crud_router`; without it, indexing is skipped.
+        # Only set by `build_crud_router`.
         self.resource_key = resource_key
-        # False for PDF-content tables (e.g. `cv_versions`) - Carlos wants
-        # the agent to read those straight from Postgres, never copied into
-        # the Qdrant knowledge base. See `build_crud_router`'s `vectorize`
-        # param, which is what actually sets this per resource.
-        self.vectorize = vectorize
         # Computed once per model (not per request): every real column name
         # (for validating `sort_by`) and the string/text ones among them
         # (for the free-text `search` filter below).
@@ -304,7 +268,6 @@ class CareerRepository(Generic[ModelType]):
         await self._apply_virtual_fields(db, user_id, obj, virtual)
         await db.commit()
         loaded = await self._reload_after_write(db, user_id, obj.id, virtual)
-        _fire_and_forget(self._index_for_search(loaded or obj, user_id))
         return loaded or obj
 
     async def update_for_user(
@@ -331,7 +294,6 @@ class CareerRepository(Generic[ModelType]):
         await self._apply_virtual_fields(db, user_id, obj, virtual)
         await db.commit()
         loaded = await self._reload_after_write(db, user_id, item_id, virtual)
-        _fire_and_forget(self._index_for_search(loaded or obj, user_id))
         return loaded or obj
 
     async def delete_for_user(self, db: AsyncSession, user_id: str, item_id: str) -> bool:
@@ -341,7 +303,6 @@ class CareerRepository(Generic[ModelType]):
             return False
         await db.delete(obj)
         await db.commit()
-        _fire_and_forget(self._remove_from_search(item_id))
         return True
 
     async def _reload_after_write(
@@ -469,152 +430,3 @@ class CareerRepository(Generic[ModelType]):
         for child_id, child in existing.items():
             if child_id not in keep:
                 await db.delete(child)
-
-
-    # ------------------------------------------------------------------------
-    # Indexación vectorial — búsqueda semántica (Qdrant)
-    # ------------------------------------------------------------------------
-
-    def _record_to_text(self, obj: ModelType) -> str:
-        """Flatten a record into `column: value` lines for embedding - every
-        column except `id`/`user_id`, skipping empty values."""
-        lines = []
-        excluded = _KB_EXCLUDED_COLUMNS.get(self.resource_key or "", frozenset())
-        for col in self._indexable_columns:
-            if col in excluded:
-                continue
-            value = getattr(obj, col, None)
-            if value not in (None, "", []):
-                lines.append(f"{col}: {value}")
-        return "\n".join(lines)
-
-    def _legacy_record_id(self, record_id) -> Optional[str]:
-        """The pre-migration bare-integer id for this record, or None.
-
-        Ids used to be bare integers (`33`) and were migrated to a prefixed
-        form (`opm-33`). The old Qdrant point sits under a different
-        `_point_id`; `upsert_point` uses this to delete that twin (spec 003
-        RF-013). Returns None when `record_id` has no known prefix or isn't
-        the `{prefix}-{int}` shape."""
-        from services.id_generator import prefix_for_key
-
-        if not self.resource_key or not isinstance(record_id, str):
-            return None
-        prefix = prefix_for_key(self.resource_key)
-        if not prefix:
-            return None
-        head = f"{prefix}-"
-        if record_id.startswith(head):
-            tail = record_id[len(head):]
-            if tail.isdigit():
-                return tail
-        return None
-
-    async def reindex_for_user(self, db: AsyncSession, user_id: str) -> int:
-        """Re-embed and re-upsert every live row of this resource for
-        `user_id` into Qdrant, in pages (never one big SELECT). Awaits each
-        index call - unlike the fire-and-forget hook on writes - so the
-        caller (`services.bedrock.knowledge_base.reindex_knowledge_base`)
-        knows when it's done. Returns the number of rows reindexed. A no-op
-        for resources without a `resource_key` or with `vectorize=False`."""
-        if not self.resource_key or not self.vectorize:
-            return 0
-        from services import qdrant_service
-
-        total = 0
-        seen_ids: list = []
-        skip = 0
-        batch = 100
-        while True:
-            rows = await self.list_for_user(db, user_id, skip=skip, limit=batch)
-            if not rows:
-                break
-            for row in rows:
-                await self._index_for_search(row, user_id)
-                seen_ids.append(row.id)
-                total += 1
-            if len(rows) < batch:
-                break
-            skip += batch
-        # Rebuild semantics: drop points for rows that no longer exist in PG
-        # (deleted rows whose best-effort delete hook never reached Qdrant).
-        await qdrant_service.prune_stale_points(user_id, self.resource_key, seen_ids)
-        return total
-
-    async def _index_for_search(self, obj: ModelType, user_id: str) -> None:
-        """Best-effort: (re)index this record in Qdrant for Agent Bedrock's
-        knowledge base. Never lets an indexing failure fail the real write -
-        logs and moves on. Skipped entirely if this repository wasn't built
-        with a `resource_key` (see `build_crud_router`), or if `vectorize`
-        is False for this resource (PDF-content tables - the agent reads
-        those straight from Postgres instead)."""
-        if not self.resource_key or not self.vectorize:
-            return
-        try:
-            from services import bedrock_service, qdrant_service
-
-            text = self._record_to_text(obj)
-            if not text:
-                return
-            vector = await bedrock_service.embed_text(text)
-            resource_type = "methodology" if self.resource_key == "operational-methodologies" else "career_record"
-            extra_payload = None
-            if resource_type == "methodology":
-                # Structured metadata lets methodology search build concise snippets.
-                # arma extractos sin re-parsear el markdown (spec 003 RF-016).
-                extra_payload = {
-                    "agent_profile_ids": getattr(obj, "agent_profile_ids", None) or [],
-                    "section_ids": getattr(obj, "section_ids", None) or [],
-                    "title": getattr(obj, "title", None),
-                }
-            await qdrant_service.upsert_point(
-                user_id=user_id,
-                resource_type=resource_type,
-                resource_key=self.resource_key,
-                record_id=obj.id,
-                text=text,
-                vector=vector,
-                extra_payload=extra_payload,
-                legacy_record_id=self._legacy_record_id(obj.id),
-            )
-        except Exception as exc:
-            logger.warning(
-                "Bedrock knowledge-base indexing failed for %s#%s - continuing without it",
-                self.resource_key,
-                getattr(obj, "id", "?"),
-                exc_info=True,
-            )
-            from services.error_reporting import report_error
-
-            report_error(
-                str(exc) or "Fallo al indexar en la base de conocimiento",
-                "repository:career_repository.index_for_search",
-                error_type=type(exc).__name__, exc=exc,
-                context={"resource_key": self.resource_key, "record_id": getattr(obj, "id", None)},
-                severity="warning",
-            )
-
-    async def _remove_from_search(self, item_id: str) -> None:
-        """Best-effort counterpart to `_index_for_search`, called after a real delete."""
-        if not self.resource_key or not self.vectorize:
-            return
-        try:
-            from services import qdrant_service
-
-            await qdrant_service.delete_point(resource_key=self.resource_key, record_id=item_id)
-        except Exception as _cleanup_exc:
-            logger.warning(
-                "Bedrock knowledge-base cleanup failed for %s#%s - continuing without it",
-                self.resource_key,
-                item_id,
-                exc_info=True,
-            )
-            from services.error_reporting import report_error
-
-            report_error(
-                str(_cleanup_exc) or "Fallo al limpiar la base de conocimiento",
-                "repository:career_repository.remove_from_search",
-                error_type=type(_cleanup_exc).__name__, exc=_cleanup_exc,
-                context={"resource_key": self.resource_key, "record_id": item_id},
-                severity="warning",
-            )

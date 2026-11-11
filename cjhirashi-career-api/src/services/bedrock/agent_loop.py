@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 _TOOL_STATUS = {
     "describe_resource_schema": "Revisando la estructura de la tabla...",
-    "search_knowledge_base": "Consultando la base de conocimiento...",
     "list_career_record": "Buscando registros...",
     "count_career_records": "Contando registros...",
     "get_career_record": "Consultando el registro...",
@@ -70,7 +69,6 @@ _DEDUP_READ_TOOLS = frozenset({
     "list_career_record",
     "count_career_records",
     "describe_resource_schema",
-    "search_knowledge_base",
 })
 
 

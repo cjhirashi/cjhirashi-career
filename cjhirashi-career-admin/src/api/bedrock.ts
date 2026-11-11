@@ -16,7 +16,6 @@ import {
   BedrockToolCatalog,
   BedrockSectionDetail,
   BedrockMemoryEvent,
-  BedrockMemoryRecord,
   BedrockModelStatus,
   BedrockSessionType,
   BedrockUsageMetrics,
@@ -418,18 +417,6 @@ export const bedrockApi = {
       timeout: CONTROL_PLANE_TIMEOUT_MS,
     })
     return response.data
-  },
-
-  getMemoryRecords: async (query: string): Promise<BedrockMemoryRecord[]> => {
-    const response = await axiosInstance.get<BedrockMemoryRecord[]>('/bedrock/memory/records', {
-      params: { query },
-      timeout: CONTROL_PLANE_TIMEOUT_MS,
-    })
-    return response.data
-  },
-
-  addManualMemory: async (text: string): Promise<void> => {
-    await axiosInstance.post('/bedrock/memory/manual', { text }, { timeout: CONTROL_PLANE_TIMEOUT_MS })
   },
 
   // Conversations - server-persisted, same on every device (see

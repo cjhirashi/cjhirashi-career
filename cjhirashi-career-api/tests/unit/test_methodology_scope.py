@@ -89,9 +89,8 @@ def test_next_ids_noop_when_already_shared_and_assigning():
 
 @pytest.mark.asyncio
 @pytest.mark.requisito("RF-014")
-async def test_set_agent_methodologies_forces_reindex_without_net_change():
-    """RF-014: guardar la asignación reindexa TODAS las metodologías del
-    usuario en Qdrant aunque `agent_profile_ids` no cambie para ninguna."""
+async def test_set_agent_methodologies_without_net_change_updates_nothing():
+    """RF-014: guardar una asignación sin cambios no actualiza ninguna metodología."""
     from unittest.mock import AsyncMock, patch
 
     from services import methodology_scope as ms
@@ -120,20 +119,15 @@ async def test_set_agent_methodologies_forces_reindex_without_net_change():
         async def execute(self, *a, **k):
             return _Result()
 
-    reindex_spy = AsyncMock(return_value=2)
     update_spy = AsyncMock()
 
     with patch(
-        "repositories.career_repository.CareerRepository.reindex_for_user", new=reindex_spy
-    ), patch(
         "repositories.career_repository.CareerRepository.update_for_user", new=update_spy
     ):
         # wanted == todos los ids -> next_agent_profile_ids devuelve None para todos
         await ms.set_agent_methodologies(_DB(), "usr-2", AGENT_PDF_DESIGN, ["opm-1", "opm-2"])
 
     update_spy.assert_not_awaited()          # ninguna asignación cambió
-    reindex_spy.assert_awaited_once()        # ...pero igual se reindexó
-    assert reindex_spy.await_args.args[1:] == ("usr-2",)
 
 
 # ============================================================================

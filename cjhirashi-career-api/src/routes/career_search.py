@@ -126,8 +126,7 @@ router.include_router(build_crud_router(
     create_schema=CVVersionCreate, update_schema=CVVersionUpdate,
     response_schema=CVVersionResponse, entity_name="CV version",
     # PDF-content table: the agent should read a CV version's Markdown
-    # `content` straight from Postgres, not from a copy in Qdrant.
-    vectorize=False,
+    # `content` straight from Postgres.
 ))
 
 # ============================================================================
@@ -138,7 +137,7 @@ router.include_router(build_crud_router(
 # but identical in behaviour: `get_for_user` enforces the same row-level
 # ownership check (404 if the row doesn't belong to `current_user`) as every
 # other cv-versions endpoint.
-_cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions", vectorize=False)
+_cv_version_repo = CareerRepository(CVVersion, resource_key="cv-versions")
 
 
 # ============================================================================

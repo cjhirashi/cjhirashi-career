@@ -16,7 +16,6 @@ flowchart TB
     Factory --> Repo[CareerRepository]
     Repo --> Models[13 modelos Identidad]
     Models --> PG[(PostgreSQL)]
-    Repo --> Qdrant[(Qdrant)]
     Bedrock[tools Bedrock] --> Factory
 ```
 
@@ -77,7 +76,7 @@ AchievementCreate / AchievementUpdate / AchievementResponse
 El perfil **`identity`** (`agent_profiles.py`) tiene acceso a todos estos resource keys. Tools disponibles:
 
 - `list_career_record`, `get_career_record`, `create_career_record`, `update_career_record`, `delete_career_record`
-- `count_career_records`, `search_knowledge_base`, `describe_resource_schema`
+- `count_career_records`, `describe_resource_schema`
 
 El chat contextual en secciones de Identidad del Admin Panel enruta automáticamente a este perfil según `page_context.resource_key`.
 
@@ -124,7 +123,6 @@ curl -s -X POST http://localhost:8000/career/competencies \
 
 - **`personal-profile`** es un registro único por usuario: ficha biográfica de referencia (nombre legal, fecha de nacimiento, ubicación, contacto). El Admin y el agente de identidad la leen antes de redactar CVs o narrativa.
 - **`identity`** suele ser un registro único por usuario (el Admin lo trata como singleton): tagline, bio y UVP — no sustituye a `personal-profile`.
-- Los writes indexan automáticamente en **Qdrant** para búsqueda semántica del agente
 - IDs devueltos siempre en formato prefijado (`ach-17`, `cmp-42`)
 
 Ver también: [career-search](../career-search/README.md), [bedrock](../bedrock/README.md)

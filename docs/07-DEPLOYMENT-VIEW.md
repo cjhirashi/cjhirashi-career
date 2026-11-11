@@ -3,7 +3,7 @@
 **VISTA DE DESPLIEGUE** (arc42, sección 7)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 6 contenedores definidos en `docker-compose.yml` (3 de aplicación + PostgreSQL, MinIO y Qdrant) en la red externa `net-cjhirashi-career`; solo 2 puertos publicados al host (8002 y 8003). La fuente de verdad es el propio `docker-compose.yml`.
+**Resumen**: 5 contenedores definidos en `docker-compose.yml` (3 de aplicación + PostgreSQL y MinIO) en la red externa `net-cjhirashi-career`; solo 2 puertos publicados al host (8002 y 8003). La fuente de verdad es el propio `docker-compose.yml`.
 
 ---
 
@@ -19,7 +19,6 @@ graph TB
         API["cjhirashi-career-api<br/>8000 (sin publicar)"]
         PG[("postgres_db<br/>5432")]
         S3[("minio_storage<br/>API 9000 · consola 9001 interna")]
-        Q[("qdrant<br/>6333")]
     end
 
     Cliente --> Admin
@@ -41,7 +40,6 @@ graph TB
 | `api` | `cjhirashi-career-api` | build local (`python:3.11-slim`) | 8000 | Interna; el portal y el Admin la llaman por `/api/` y ella recibe las rutas sin el prefijo |
 | `postgres` | `postgres_db` | `postgres:15-alpine` | 5432 | Interna |
 | `minio` | `minio_storage` | `minio/minio:latest` | 9000 (API), 9001 (consola) | Interna (API en 9000); la consola (9001) no se publica |
-| `qdrant` | `qdrant` | `qdrant/qdrant:latest` | 6333 | Interna. Retiro decidido (ADR-029, etapa 3 de la spec 009); la API depende de él (`depends_on`) |
 
 No hay contenedor de MCP (se retiró el 2026-09-04, ADR-023) ni de `cjhirashi-career-ai`: ese harness (spec 009) está en construcción y no se despliega todavía.
 
@@ -61,7 +59,6 @@ Rutas absolutas en el disco de datos (`volumes: {}` en el compose):
 |---|---|
 | PostgreSQL | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/postgres` |
 | MinIO | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/minio` |
-| Qdrant | `/mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/qdrant` |
 
 ## Health checks
 
@@ -71,7 +68,6 @@ Rutas absolutas en el disco de datos (`volumes: {}` en el compose):
 | `api` | `GET /health` (urllib) cada 30 s, 40 s de arranque, 3 reintentos; `GET /system/readiness` para comprobaciones de preparación |
 | `postgres` | `pg_isready` cada 10 s |
 | `minio` | `curl` a `/minio/health/live` cada 10 s |
-| `qdrant` | sin healthcheck (la API arranca con `service_started`) |
 
 La API arranca solo cuando PostgreSQL y MinIO están sanos.
 

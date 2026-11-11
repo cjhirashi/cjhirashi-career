@@ -5,7 +5,7 @@ Componentes principales:
 - agent_loop.chat_stream — loop Converse + tools + SSE
 - converse_client — streaming Bedrock
 - tools — CRUD career, LinkedIn, job discovery, imágenes
-- history_manager / local_memory — historial PG + Qdrant
+- history_manager / local_memory — historial PG
 """
 
 from services.bedrock.agent_loop import chat_stream

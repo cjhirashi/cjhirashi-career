@@ -26,14 +26,12 @@ flowchart TB
 
     PG[(PostgreSQL)]
     MinIO[(MinIO)]
-    Qdrant[(Qdrant)]
     AWS[AWS Bedrock]
 
     Admin -->|JWT| Routes
     Portal -->|/public sin auth| Routes
     Models --> PG
     Services --> MinIO
-    Services --> Qdrant
     Services --> AWS
 ```
 

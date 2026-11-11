@@ -28,7 +28,6 @@ from schemas.bedrock import (
     BedrockAgentDelegationUpdateRequest,
     BedrockAgentMemoryResponse,
     BedrockAgentMethodologiesUpdateRequest,
-    BedrockAgentNote,
     BedrockAgentPhotoResponse,
     BedrockAgentPhotoUpdateRequest,
     BedrockAgentSectionsUpdateRequest,
@@ -44,12 +43,9 @@ from schemas.bedrock import (
     BedrockGlobalRulesUpdateRequest,
     BedrockInstructionsResponse,
     BedrockInstructionsUpdateRequest,
-    BedrockKnowledgeBaseReindexResult,
-    BedrockManualMemoryRequest,
     BedrockSectionDetail,
     BedrockSectionMethodologiesUpdateRequest,
     BedrockMemoryEventResponse,
-    BedrockMemoryRecordResponse,
     BedrockModelOption,
     BedrockModelStatusResponse,
     BedrockModelSwitchRequest,
@@ -651,7 +647,7 @@ async def get_agent_memory(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    from services.bedrock import history_manager, local_memory
+    from services.bedrock import history_manager
 
     try:
         profile = get_profile(profile_id)
@@ -661,61 +657,11 @@ async def get_agent_memory(
         db, current_user.id, agent_profile_id=profile.id
     )
     notes = []
-    if profile.user_facing:
-        notes = await local_memory.list_agent_notes(current_user.id, profile.id)
     return BedrockAgentMemoryResponse(
         has_own_memory=profile.user_facing,
         conversation_count=len(conversations),
         notes=notes,
     )
-
-
-@router.post(
-    "/agent-profiles/{profile_id}/memory/notes",
-    response_model=BedrockAgentNote,
-    summary="Añade una nota de memoria propia (solo L1/L2)",
-)
-async def create_agent_memory_note(
-    profile_id: str,
-    payload: BedrockManualMemoryRequest,
-    current_user: User = Depends(get_current_user),
-):
-    from services.bedrock import local_memory
-
-    try:
-        profile = get_profile(profile_id)
-    except KeyError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
-    if not profile.user_facing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Los agentes L3 no tienen memoria propia",
-        )
-    return await local_memory.create_agent_note(current_user.id, profile.id, payload.text)
-
-
-@router.delete(
-    "/agent-profiles/{profile_id}/memory/notes/{note_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Elimina una nota de memoria propia",
-)
-async def delete_agent_memory_note(
-    profile_id: str,
-    note_id: str,
-    current_user: User = Depends(get_current_user),
-):
-    from services.bedrock import local_memory
-
-    try:
-        profile = get_profile(profile_id)
-    except KeyError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown agent profile")
-    if not profile.user_facing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Los agentes L3 no tienen memoria propia",
-        )
-    await local_memory.delete_agent_note(note_id)
 
 
 # ---------------------------------------------------------------------------
@@ -746,84 +692,9 @@ async def get_tools_catalog(
     return {"builtin": builtin, "mcp": mcp}
 
 
-@router.post(
-    "/knowledge-base/reindex",
-    response_model=BedrockKnowledgeBaseReindexResult,
-    summary="Reindexa el knowledge base (Qdrant) desde Postgres y purga huérfanos",
-)
-async def reindex_knowledge_base_route(
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Operación de mantenimiento del operador (spec 003, RF-012). Síncrona;
-    reindexa a todos los usuarios. Idempotente: se puede reintentar sin
-    efectos secundarios."""
-    from services.bedrock import knowledge_base
-
-    try:
-        return await knowledge_base.reindex_knowledge_base(db, None)
-    except HTTPException:
-        raise
-    except Exception as exc:  # Qdrant/infra caído a media corrida
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Reindexado incompleto (reintentable, es idempotente): {exc}",
-        )
-
-
-@router.post("/tools", response_model=BedrockCustomToolResponse, status_code=status.HTTP_201_CREATED, summary="Register a new MCP tool server")
-async def create_tool(
-    payload: BedrockCustomToolCreateRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        return await bedrock_service.create_custom_tool(db, payload.name, payload.url, payload.headers)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.put("/tools/{tool_id}/enabled", response_model=BedrockCustomToolResponse, summary="Enable or disable a registered MCP tool server")
-async def set_tool_enabled(
-    tool_id: str,
-    is_enabled: bool,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    tool = await bedrock_service.set_custom_tool_enabled(db, tool_id, is_enabled)
-    if tool is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
-    return tool
-
-
-@router.delete("/tools/{tool_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove a registered MCP tool server")
-async def delete_tool(
-    tool_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    deleted = await bedrock_service.delete_custom_tool(db, tool_id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
-
-
 # ---------------------------------------------------------------------------
 # Memory (read-only)
 # ---------------------------------------------------------------------------
-
-@router.get("/knowledge/search", summary="Búsqueda semántica Qdrant (Harness local)")
-async def search_knowledge(
-    q: str = Query(..., min_length=1),
-    top_k: int = Query(5, ge=1, le=20),
-    current_user: User = Depends(get_current_user),
-):
-    from services.bedrock.embeddings import embed_text
-    from services import qdrant_service
-
-    vector = await embed_text(q)
-    results = await qdrant_service.search(user_id=current_user.id, vector=vector, top_k=top_k)
-    return {"results": results}
-
 
 @router.get("/memory/events", response_model=list[BedrockMemoryEventResponse], summary="Raw short-term memory events for one conversation")
 async def get_memory_events(
@@ -838,36 +709,6 @@ async def get_memory_events(
         return await local_memory.list_memory_events(db, current_user.id, session_id)
     except BedrockError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
-
-
-@router.get("/memory/records", response_model=list[BedrockMemoryRecordResponse], summary="Semantic search over durable facts the agent has learned about you")
-async def get_memory_records(
-    query: str = Query(..., min_length=1, description="What to search for, e.g. 'preferencias de vacantes'"),
-    top_k: int = Query(10, ge=1, le=50),
-    current_user: User = Depends(get_current_user),
-):
-    _require_configured()
-    from services.bedrock import local_memory
-
-    try:
-        return await local_memory.retrieve_memory_records(current_user.id, query, top_k)
-    except BedrockError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
-
-
-@router.post("/memory/manual", status_code=status.HTTP_201_CREATED, summary="Manually seed a fact into the agent's long-term memory")
-async def add_manual_memory(
-    payload: BedrockManualMemoryRequest,
-    current_user: User = Depends(get_current_user),
-):
-    _require_configured()
-    from services.bedrock import local_memory
-
-    try:
-        await local_memory.create_manual_memory(current_user.id, payload.text)
-    except BedrockError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e))
-    return {"status": "ok"}
 
 
 # ---------------------------------------------------------------------------

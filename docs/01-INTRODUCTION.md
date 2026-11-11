@@ -34,7 +34,6 @@ El portal y el Admin llaman a la API por `/api/`; la API recibe las rutas sin es
 | 3 | API REST | `cjhirashi-career-api` | FastAPI: autenticación, CRUD de carrera, Bedrock, PDF (WeasyPrint), archivos, analítica; dueña del esquema |
 | 4 | PostgreSQL | `postgres_db` | Persistencia de todo el negocio (69 modelos, 53 migraciones Alembic) |
 | 5 | MinIO | `minio_storage` | Archivos (bucket único; los públicos se sirven como archivos públicos) |
-| 6 | Qdrant | `qdrant` | Base de conocimiento vectorial de Agent Bedrock; **retiro decidido** (ADR-029, etapa 3), hoy en uso |
 | 7 | `cjhirashi-career-ai` | (sin desplegar) | Harness de agentes en construcción, con BD propia `career_ai_db` |
 
 Detalle de bloques: [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md). Despliegue: [07-DEPLOYMENT-VIEW.md](./07-DEPLOYMENT-VIEW.md).
@@ -60,7 +59,6 @@ Secuencias detalladas: [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md).
 | PDF | WeasyPrint + plantillas HTML | WeasyPrint 69 |
 | Archivos | MinIO (cliente `minio`) | — |
 | Base de datos | PostgreSQL | 15 (alpine) |
-| Base vectorial | Qdrant | imagen `latest` |
 | Orquestación | Docker Compose | red externa `net-cjhirashi-career` |
 
 ## Principios de diseño
@@ -69,7 +67,7 @@ Secuencias detalladas: [06-RUNTIME-VIEW.md](./06-RUNTIME-VIEW.md).
 - **Fuente única de verdad.** No hay copia paralela del contenido público: todo pasa por PostgreSQL vía la API, y se distingue por su condición de publicable.
 - **La API es la única que escribe en la base de carrera.** Ningún frontend mantiene estado de negocio propio.
 - **Agent Bedrock es una capacidad, no un canal.** Sin puerto propio ni exposición a Internet.
-- **Acceso restringido por diseño.** Solo Portal, Admin y archivos son alcanzables desde fuera; API, PostgreSQL y Qdrant, solo dentro de la red Docker.
+- **Acceso restringido por diseño.** Solo Portal, Admin y archivos son alcanzables desde fuera; API y PostgreSQL, solo dentro de la red Docker.
 - **Capas.** `routes → services → repositories → models` en Python; la lógica de negocio vive en `services/`.
 
 ## Modelo de seguridad

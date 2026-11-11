@@ -31,11 +31,11 @@ El plan original en tres fases (sistema manual, MCP Server, Agent Bedrock) se cu
 
 **Spec 009 — Harness de agentes fuera de la API y sin indexación** (ADR-029; `approved`, 62 de 163 tareas). Tres etapas reversibles:
 
-1. **Harness arriba, datos copiados**: `cjhirashi-career-ai` con su base `career_ai_db`, cambios aditivos de la API (claim `role`, rol `service`, `/notifications`, `/audit-log`) y migración de la memoria desde Qdrant. *No iniciada en producción.*
+1. **Harness arriba, datos copiados**: `cjhirashi-career-ai` con su base `career_ai_db`, cambios aditivos de la API (claim `role`, rol `service`, `/notifications`, `/audit-log`) y migración de la memoria del agente. *No iniciada en producción.*
 2. **El Admin llama al harness** bajo `/ai/` con paridad exacta del contrato `/bedrock/*` y `/agent-tasks/*`.
-3. **Retiro de la API**: se eliminan Bedrock, la KB, el indexado y Qdrant (con snapshot previo), y la migración borra las tablas `bedrock_*` de `career_db` solo tras verificar la copia.
+3. **Retiro de la API**: se elimina Bedrock y la migración borra las tablas `bedrock_*` de `career_db` solo tras verificar la copia.
 
-Hasta completar la etapa 3, Bedrock, la KB y Qdrant siguen operando dentro de la API.
+Qdrant y la KB ya se retiraron (2026-11-11, ADR-032).
 
 ## Pendiente
 

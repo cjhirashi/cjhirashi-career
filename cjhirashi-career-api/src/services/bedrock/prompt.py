@@ -15,7 +15,6 @@ from services.bedrock.agent_profiles import (
     AGENT_VACANCY_SEARCH,
     delegation_targets,
     get_profile,
-    profile_can_search_knowledge,
 )
 from services.bedrock import profile_prompts
 
@@ -159,35 +158,6 @@ def methodology_assignment_block(
             "En este momento no hay metodologías listadas para ti. "
             "Cuando Carlos te asigne una desde el Admin, aparecerá aquí y deberás consultarla."
         )
-    if profile_can_search_knowledge(profile):
-        lines.append(
-            "Antes de operar una tabla o protocolo, llama search_knowledge_base "
-            "con type=methodology. La tool ya filtra a las asignadas a tu perfil "
-            "(el guardián ve todas) y devuelve EXTRACTOS, no el texto completo. "
-            "Identifica cuál aplica a ESTE trabajo y léela entera con get_career_record "
-            "(resource_key=operational-methodologies, record_id=...). Lee sólo la que vas "
-            "a aplicar ahora — una por trabajo, no todas las asignadas. Si el catálogo "
-            "trae una metodología nueva, consúltala: es tuya."
-        )
-    else:
-        lines.append(
-            "No tienes search_knowledge_base. Los especialistas que sí la tienen "
-            "consultan solo las metodologías asignadas a su propio perfil."
-        )
-    return "\n".join(lines)
-
-
-def _agent_memory_block(notes: List[Dict[str, Any]]) -> str:
-    if not notes:
-        return (
-            "MEMORIA PROPIA: Carlos puede dejar notas para este perfil en el "
-            "catálogo de agentes. Ahora mismo no hay ninguna."
-        )
-    lines = ["MEMORIA PROPIA (notas de Carlos para este perfil; consúltalas siempre):"]
-    for note in notes:
-        text = (note.get("text") or "").strip()
-        if text:
-            lines.append(f"- {text}")
     return "\n".join(lines)
 
 
@@ -275,18 +245,6 @@ async def compose_system_prompt(
         methodology_assignment_block(profile, assigned),
         suffix,
     ]
-    if user_id and profile.user_facing:
-        try:
-            from services.bedrock.local_memory import list_agent_notes
-
-            notes = await list_agent_notes(user_id, profile.id)
-            parts.append(_agent_memory_block(notes))
-        except Exception:
-            logger.warning(
-                "No se pudo cargar la memoria propia de %s",
-                profile.id,
-                exc_info=True,
-            )
     if page_context and page_context.get("resource_key"):
         title = page_context.get("page_title") or page_context["resource_key"]
         parts.append(

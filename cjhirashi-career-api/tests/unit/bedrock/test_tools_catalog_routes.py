@@ -123,7 +123,6 @@ def test_get_tools_catalog_lists_builtin_and_mcp():
         assert "mcp" in data
         names = {t["name"] for t in data["builtin"]}
         assert "list_career_record" in names
-        assert "search_knowledge_base" in names
     finally:
         client.close()
         app.dependency_overrides.clear()
@@ -142,8 +141,8 @@ def test_get_tools_catalog_emits_scope_per_tool():
         assert by_name["delete_career_record"] == "section"
         # delegación es por nivel, nunca de sección
         assert by_name["delegate_to_specialist"] == "agent"
-        # search es útil en ambos
-        assert by_name["search_knowledge_base"] == "both"
+        # generate_image es útil en ambos
+        assert by_name["generate_image"] == "both"
     finally:
         client.close()
         app.dependency_overrides.clear()

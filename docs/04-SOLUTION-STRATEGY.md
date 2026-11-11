@@ -60,7 +60,7 @@
 
 **Motivación**: la indexación gastaba embeddings sin consumidor real y el harness acoplaba la API a un proveedor concreto.
 
-**Estado**: la decisión está aprobada pero **no ejecutada**: el corte es en tres etapas reversibles (harness arriba con datos copiados, Admin apuntando a `/ai/`, retirada de la API) y la spec 009 va en la etapa 1. Mientras no se complete la etapa 3, Bedrock, la base de conocimiento y Qdrant siguen dentro de la API y operando.
+**Estado**: la decisión está aprobada pero **no ejecutada**: el corte es en tres etapas reversibles (harness arriba con datos copiados, Admin apuntando a `/ai/`, retirada de la API) y la spec 009 va en la etapa 1. Qdrant y la base de conocimiento se retiraron de la API el 2026-11-11 (ADR-032); el resto del subsistema Bedrock sigue en el código sin operar.
 
 ## Organización en capas
 
@@ -78,7 +78,6 @@ graph TB
     subgraph Capa3["Capa 3 — Persistencia"]
         DB["PostgreSQL<br/>carrera · métricas · analítica · auditoría"]
         S3["MinIO<br/>archivos"]
-        Q["Qdrant<br/>base de conocimiento<br/>(retiro decidido, ADR-029)"]
     end
 
     AWS["AWS Bedrock"]
@@ -95,7 +94,7 @@ graph TB
 |---|---|---|
 | **1. Canales** | Portal público, Admin Panel | Cada uno responde a una audiencia y no depende del otro |
 | **2. API** | `cjhirashi-career-api` (incluye Bedrock y PDF) | Concentra las reglas de negocio; solo alcanzable desde fuera por los canales de la capa 1 (`/api/`) |
-| **3. Persistencia** | PostgreSQL, MinIO, Qdrant | La API es la única con acceso de lectura/escritura |
+| **3. Persistencia** | PostgreSQL, MinIO | La API es la única con acceso de lectura/escritura |
 
 `cjhirashi-career-ai` (harness, sin desplegar) se sumará como componente de la capa 2 cuando termine la etapa 1 de la spec 009.
 
@@ -119,10 +118,9 @@ graph TB
 | Agente externo | API (`/career/*`, `POST /bedrock/chat`, `POST /files`) | REST JSON | JWT de rol `agent` |
 | API | PostgreSQL | SQL (SQLAlchemy async / asyncpg) | Credenciales de servicio, red Docker interna |
 | API | MinIO | S3 | Credenciales de servicio |
-| API | Qdrant | HTTP (6333) | Red Docker interna |
 | API | AWS Bedrock | HTTPS (boto3) | Credenciales AWS por variable de entorno |
 
-Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a PostgreSQL, MinIO o Qdrant que no sea desde la API.
+Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a PostgreSQL o MinIO que no sea desde la API.
 
 ## Trazabilidad hacia ADR
 

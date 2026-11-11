@@ -35,10 +35,10 @@ from services.pdf_template_render import render_template_html
 # ============================================================================
 router = APIRouter(prefix="/pdf-templates", tags=["PDF Templates"])
 
-_repo = CareerRepository(PdfOutputTemplate, resource_key="pdf-output-templates", vectorize=False)
-_style_repo = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
-register_resource("pdf-output-templates", PdfOutputTemplate, vectorize=False)
-register_resource("pdf-template-styles", PdfTemplateStyle, vectorize=False)
+_repo = CareerRepository(PdfOutputTemplate, resource_key="pdf-output-templates")
+_style_repo = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles")
+register_resource("pdf-output-templates", PdfOutputTemplate)
+register_resource("pdf-template-styles", PdfTemplateStyle)
 
 
 async def _normalize_style_id(

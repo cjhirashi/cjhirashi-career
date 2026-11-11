@@ -163,9 +163,7 @@ async def set_section_methodologies(
     if unknown:
         raise ValueError(f"Unknown methodology ids: {unknown}")
 
-    repo = CareerRepository(
-        OperationalMethodology, resource_key="operational-methodologies", vectorize=True
-    )
+    repo = CareerRepository(OperationalMethodology, resource_key="operational-methodologies")
     touched: List[str] = []
     for row in rows:
         current = list(row.section_ids) if isinstance(row.section_ids, list) else []
@@ -176,8 +174,6 @@ async def set_section_methodologies(
         nxt = sorted(set(current) | {section_id}) if should else [s for s in current if s != section_id]
         await repo.update_for_user(db, user_id, row.id, {"section_ids": nxt})
         touched.append(row.id)
-    if touched:
-        await repo.reindex_for_user(db, user_id)
     return await section_methodology_ids(db, user_id, section_id)
 
 

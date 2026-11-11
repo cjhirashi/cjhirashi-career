@@ -398,7 +398,7 @@ _SECTIONS: List[AdminSectionSpec] = [
         views=_main_view(
             "Memoria",
             "Memoria semántica y de corto plazo.",
-            "Consulta lo que el agente ha aprendido (Qdrant) y los eventos de conversación.",
+            "Consulta los eventos de conversación del agente.",
         ),
         group="Agente IA",
         sort_order=52,
@@ -612,7 +612,6 @@ _TABLE_SECTION_TOOLS: Tuple[str, ...] = (
     "bulk_update_career_record",
     "count_career_records",
     "describe_resource_schema",
-    "search_knowledge_base",
 )
 
 
@@ -620,8 +619,6 @@ def tools_for_section(spec: AdminSectionSpec) -> set[str]:
     """Conjunto de herramientas que **controlan** esta sección (spec 004, RF-001).
 
     Derivado en código, no editable por el operador:
-    - `search_knowledge_base` SIEMPRE (baseline de **consulta**, no operativo: el
-      agente debe poder consultar la metodología de su sección en cualquier caso).
     - Sección tabla con `resource_key` → el CRUD genérico (operativo).
     - Sección funcional operativa → las `related_tools` que declara (meta-tools:
       `agent_catalog_settings`, `admin_section_settings`, `bedrock_global_settings`,
@@ -629,7 +626,7 @@ def tools_for_section(spec: AdminSectionSpec) -> set[str]:
     - Sección de **monitoreo** (métricas, visor de chat, bucket sin operación) →
       sólo el baseline; es correcto que no tenga tools operativas.
     """
-    names = {"search_knowledge_base"} | set(spec.related_tools)
+    names = set(spec.related_tools)
     if spec.section_type == SECTION_TABLE and spec.resource_key:
         names |= set(_TABLE_SECTION_TOOLS)
     return names

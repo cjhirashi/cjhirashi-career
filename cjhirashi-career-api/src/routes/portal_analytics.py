@@ -282,7 +282,6 @@ def build_portal_config_routers() -> List[APIRouter]:
     - portal-funnels
     - portal-annotations
 
-    All use build_crud_router with vectorize=False (not indexed).
     """
     routers = []
 
@@ -295,7 +294,6 @@ def build_portal_config_routers() -> List[APIRouter]:
         update_schema=PortalGoalUpdate,
         response_schema=PortalGoalOut,
         entity_name="portal goal",
-        vectorize=False,
     ))
 
     # PortalFunnel
@@ -307,7 +305,6 @@ def build_portal_config_routers() -> List[APIRouter]:
         update_schema=PortalFunnelUpdate,
         response_schema=PortalFunnelOut,
         entity_name="portal funnel",
-        vectorize=False,
     ))
 
     # PortalAnnotation
@@ -319,7 +316,6 @@ def build_portal_config_routers() -> List[APIRouter]:
         update_schema=PortalAnnotationUpdate,
         response_schema=PortalAnnotationOut,
         entity_name="portal annotation",
-        vectorize=False,
     ))
 
     return routers

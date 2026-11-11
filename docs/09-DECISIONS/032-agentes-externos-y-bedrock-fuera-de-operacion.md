@@ -24,4 +24,4 @@ El código del subsistema (rutas `/bedrock`, tablas `bedrock_*`, perfiles, panta
 - La documentación del subsistema (`docs/BEDROCK-SYSTEM.md`, `cjhirashi-career-api/docs/BEDROCK-HARNESS.md` y los documentos que lo describen) se conserva como referencia de diseño y lleva un aviso de estado.
 - La ficha pública del portafolio describe agentes externos con acceso acotado; no menciona agentes internos, Bedrock ni Qdrant.
 - La auditoría con estado anterior y posterior (`audit_logs`) existe solo en las rutas de Bedrock: las escrituras de un agente externo por `/career/*` no la generan.
-- Los contenedores `qdrant` y las variables de AWS siguen presentes en el despliegue hasta que se decida retirarlos.
+- Qdrant se **retiró el 2026-11-11** (orden del propietario): sin contenedor, sin `qdrant-client`, sin indexado en las escrituras, sin `search_knowledge_base` ni los endpoints de la base de conocimiento y de la memoria semántica. Las variables de AWS siguen en el despliegue; el resto del subsistema Bedrock sigue en el código.

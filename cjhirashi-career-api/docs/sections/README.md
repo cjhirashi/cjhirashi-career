@@ -43,7 +43,7 @@ flowchart TB
 | Sección | Descripción |
 |---------|-------------|
 | [auth](auth/README.md) | Login, registro, refresh token, perfil, cambio de contraseña |
-| [infrastructure](infrastructure/README.md) | JWT middleware, CRUD factory, repositorios, IDs prefijados, Qdrant |
+| [infrastructure](infrastructure/README.md) | JWT middleware, CRUD factory, repositorios, IDs prefijados |
 
 ---
 

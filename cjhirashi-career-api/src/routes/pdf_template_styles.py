@@ -21,7 +21,7 @@ from services.id_generator import normalize_prefixed_id
 
 router = APIRouter(prefix="/pdf-template-styles", tags=["PDF Template Styles"])
 
-_repo = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles", vectorize=False)
+_repo = CareerRepository(PdfTemplateStyle, resource_key="pdf-template-styles")
 
 
 @router.get("", response_model=list[PdfTemplateStyleResponse])

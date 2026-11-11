@@ -11,5 +11,4 @@ Cubren `services/bedrock/` y las rutas `/bedrock/*` sin invocar AWS. Documentaci
 | `test_history_manager` | Historial de conversación |
 | `test_usage_cost_cache`, `test_budget_no_double_count` | Costos, presupuesto diario y conteo de uso |
 | `test_image_client`, `test_image_pipeline_aspect_ratio`, `test_generate_image_tool` | Generación de imágenes (Stability) |
-| `test_knowledge_base_*`, `test_methodology_snippets`, `test_qdrant_orphan_purge` | Base de conocimiento en Qdrant: reindexado, purga de huérfanos y extractos de metodologías (se retiran con el ADR-029) |
 | `test_section_routes`, `test_tools_catalog_routes`, `test_admin_section_settings_views` | Rutas de secciones, catálogo de herramientas y vistas de configuración |

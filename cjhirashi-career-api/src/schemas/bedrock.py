@@ -300,14 +300,6 @@ class BedrockToolCatalogResponse(BaseModel):
     mcp: List[BedrockCustomToolResponse]
 
 
-class BedrockKnowledgeBaseReindexResult(BaseModel):
-    """Resultado de `POST /bedrock/knowledge-base/reindex` (spec 003, RF-012)."""
-
-    reindexed: Dict[str, int]
-    purged_orphans: int
-    users: int
-
-
 class BedrockSectionMethodology(BaseModel):
     id: str
     title: str
@@ -335,20 +327,6 @@ class BedrockSectionMethodologiesUpdateRequest(BaseModel):
 # Memoria — respuestas y solicitudes
 # ============================================================================
 
-class BedrockMemoryRecordResponse(BaseModel):
-    """Respuesta flexible para búsqueda semántica de hechos (Qdrant)."""
-
-    memoryRecordId: Optional[str] = None
-    content: Optional[Dict[str, Any]] = None
-    score: Optional[float] = None
-    createdAt: Optional[Any] = None
-    namespaces: Optional[List[str]] = None
-    notes: Optional[str] = None
-
-    class Config:
-        extra = "allow"
-
-
 class BedrockMemoryEventResponse(BaseModel):
     """Same rationale as BedrockMemoryRecordResponse - passes through the
     real Event shape (eventId, eventTimestamp, payload, ...)."""
@@ -360,10 +338,6 @@ class BedrockMemoryEventResponse(BaseModel):
 
     class Config:
         extra = "allow"
-
-
-class BedrockManualMemoryRequest(BaseModel):
-    text: str
 
 
 # ============================================================================

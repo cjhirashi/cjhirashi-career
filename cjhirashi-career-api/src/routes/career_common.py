@@ -34,23 +34,13 @@ from repositories.career_repository import CareerRepository
 # CareerResourceView.tsx's CAREER_RESOURCES does on the frontend.
 RESOURCE_REGISTRY: Dict[str, Type[Base]] = {}
 
-# resource_key -> whether this resource is indexed in Agent Bedrock's Qdrant
-# knowledge base. Populated alongside RESOURCE_REGISTRY (by `build_crud_router`
-# and by the few sites that build a `CareerRepository` by hand). Single source
-# of truth for "what gets reindexed" - never hand-maintain a separate list.
-# Absent key defaults to True (the `build_crud_router` default).
-RESOURCE_VECTORIZE: Dict[str, bool] = {}
-
-
-def register_resource(resource_key: str, model: Type[Base], *, vectorize: bool = True) -> None:
-    """Register a career resource and its knowledge-base indexing flag.
+def register_resource(resource_key: str, model: Type[Base]) -> None:
+    """Register a career resource in `RESOURCE_REGISTRY`.
 
     Called by `build_crud_router` and by the manual `CareerRepository`
-    construction sites (`cv-versions`, `pdf-*`) so `RESOURCE_VECTORIZE`
-    always mirrors `RESOURCE_REGISTRY`.
+    construction sites (`cv-versions`, `pdf-*`).
     """
     RESOURCE_REGISTRY[resource_key] = model
-    RESOURCE_VECTORIZE[resource_key] = vectorize
 
 
 # ============================================================================
@@ -65,24 +55,17 @@ def build_crud_router(
     update_schema: Type[BaseModel],
     response_schema: Type[BaseModel],
     entity_name: str,
-    vectorize: bool = True,
     after_write: Optional[Callable[[Any], None]] = None,
 ) -> APIRouter:
     """Create an APIRouter with standard CRUD endpoints for `model`.
 
     `create_schema=None` omits `POST` (resources the portal writes itself,
     e.g. `contact-messages`; the Admin and agents only read/update/delete).
-
-    `vectorize=False` opts this resource out of the Qdrant knowledge-base
-    indexing that otherwise happens automatically on every write (see
-    `CareerRepository._index_for_search`) - use it for PDF-content tables
-    (e.g. `cv-versions`): the agent should read those straight from
-    Postgres, never from a copy in the vector store.
     """
     router = APIRouter(prefix=prefix, tags=tags)
     resource_key = prefix.lstrip("/")
-    repository: CareerRepository = CareerRepository(model, resource_key=resource_key, vectorize=vectorize)
-    register_resource(resource_key, model, vectorize=vectorize)
+    repository: CareerRepository = CareerRepository(model, resource_key=resource_key)
+    register_resource(resource_key, model)
 
     class CountResponse(BaseModel):
         count: int

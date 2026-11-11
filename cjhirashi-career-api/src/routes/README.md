@@ -73,7 +73,7 @@ Monta 12 CRUD bajo `/career`: differentiators, identity, identity-reflections, c
 
 14 CRUD: fit-scoring-factors, market-segments, role-narratives, search-plans, networking-contacts, target-companies, vacancies, cv-versions, cover-letter-versions, applications, application-interactions, interviews, contact-interactions, networking-activities.
 
-Extra no-CRUD: export PDF de `cv-versions` vía `pdf_service.generate_markdown_document`. `cv-versions` no se vectoriza en Qdrant.
+Extra no-CRUD: export PDF de `cv-versions` vía `pdf_service.generate_markdown_document`.
 
 ### `career_digital.py` — Presencia digital
 

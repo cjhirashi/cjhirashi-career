@@ -2,7 +2,7 @@
 
 Bloque A: schemas (trim, vacío -> None, tope de 10 000 tras el trim).
 Bloque B: modelo. Bloque C: repositorio y KB. Bloque D: ruta HTTP.
-Sin Postgres, Bedrock ni Qdrant reales (SQLite en memoria, indexación neutralizada).
+Sin Postgres ni Bedrock reales (SQLite en memoria).
 """
 import pytest
 from pydantic import ValidationError
@@ -122,10 +122,6 @@ async def repo_env():
     factory = async_sessionmaker(engine, expire_on_commit=False)
     repo = CareerRepository(Vacancy, resource_key="vacancies")
 
-    async def _no_index(obj, user_id):  # sin Qdrant ni Bedrock (RNF-002)
-        return None
-
-    repo._index_for_search = _no_index
     async with factory() as session:
         yield repo, session
     await engine.dispose()
@@ -155,25 +151,6 @@ async def test_repo_via_tools_applies_no_trim_nor_limit_d07(repo_env):
     huge = "  " + "a" * (LIMIT + 1) + "  "
     vac = await repo.create_for_user(session, USER, {"id": "vac-1", **BASE, "company_overview": huge})
     assert vac.company_overview == huge
-
-
-@pytest.mark.requisito("RF-006")
-def test_kb_text_excludes_the_four_fields_but_keeps_stage_and_notes():
-    repo = CareerRepository(Vacancy, resource_key="vacancies")
-    vac = Vacancy(
-        id="vac-kb", user_id=USER, company="ACME", exact_role="Dev",
-        process_stage="hr_interview", analysis_notes="notas visibles",
-        company_overview="SECRETO-EMPRESA", candidate_profile="SECRETO-PERFIL",
-        offer_summary="SECRETO-OFERTA", work_culture="SECRETO-CULTURA",
-    )
-    text_ = repo._record_to_text(vac)
-    for f in FIELDS:
-        assert f not in text_
-    for secret in ("SECRETO-EMPRESA", "SECRETO-PERFIL", "SECRETO-OFERTA", "SECRETO-CULTURA"):
-        assert secret not in text_
-    assert "process_stage: hr_interview" in text_
-    assert "analysis_notes: notas visibles" in text_
-    assert "process_stage_updated_at" not in text_  # no regresión 007 D-13
 
 
 # ---------------------------------------------------------------------------
@@ -210,7 +187,6 @@ async def http_env(monkeypatch):
     async def _noop(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(CareerRepository, "_index_for_search", _noop)
     monkeypatch.setattr(app_module, "areport_error", _noop)
 
     async def _get_db():

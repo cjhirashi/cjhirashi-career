@@ -16,7 +16,7 @@
 #
 # Servicios Internos (red Docker):
 #   - API:      cjhirashi-career-api:8000  (Bedrock + PDF WeasyPrint)
-#   - Qdrant (6333), PostgreSQL (5432), MinIO (9000)
+#   - PostgreSQL (5432), MinIO (9000)
 
 version: '3.9'
 
@@ -122,12 +122,8 @@ services:
       BEDROCK_DAILY_BUDGET_USD: ${BEDROCK_DAILY_BUDGET_USD:-5.0}
       BEDROCK_MAX_ROUND_TRIPS: ${BEDROCK_MAX_ROUND_TRIPS:-6}
       BEDROCK_HISTORY_WINDOW: ${BEDROCK_HISTORY_WINDOW:-20}
-      BEDROCK_EMBEDDING_MODEL_ID: ${BEDROCK_EMBEDDING_MODEL_ID}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      # Qdrant (base de conocimiento local de Agent Bedrock)
-      QDRANT_URL: ${QDRANT_URL}
-      QDRANT_COLLECTION: ${QDRANT_COLLECTION}
       # MinIO (bucket de archivos). Hostname MUST be the Compose service
       # name (`minio`), not localhost and not interpolated from host .env:
       # a developer MINIO_ENDPOINT=localhost:9000 (pytest on the host)
@@ -150,34 +146,12 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-      qdrant:
-        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       start_period: 40s
       retries: 3
-
-  # =========================================================================
-  # Qdrant — Base de Conocimiento Vectorial de Agent Bedrock
-  # =========================================================================
-  # Responsabilidad: búsqueda semántica sobre las metodologías operativas y
-  #   los registros de las ~30 tablas de carrera (ver services/qdrant_service.py
-  #   y repositories/career_repository.py, que la mantiene sincronizada).
-  #   Instancia privada de este proyecto (ningún otro proyecto la usa; Synapse
-  #   no tiene Qdrant). Retiro decidido en el ADR-029 (etapa 3 de la spec 009):
-  #   hasta entonces la API depende de ella.
-  #
-  # INTERNO: No expuesto (accesible solo desde red Docker)
-  qdrant:
-    image: qdrant/qdrant:latest
-    container_name: qdrant
-    restart: unless-stopped
-    networks:
-      - net-cjhirashi-career
-    volumes:
-      - /mnt/disco1/cjhirashi-data/cjhirashi-career-volumes/qdrant:/qdrant/storage:rw
 
   # =========================================================================
   # PostgreSQL — Base de Datos Centralizada (única fuente de verdad)

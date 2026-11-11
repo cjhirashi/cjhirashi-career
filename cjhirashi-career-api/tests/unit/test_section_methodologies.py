@@ -99,9 +99,7 @@ async def test_set_section_methodologies_links_and_unlinks():
             if m.id == item_id:
                 m.section_ids = data["section_ids"]
 
-    with patch("repositories.career_repository.CareerRepository.update_for_user", new=fake_update), patch(
-        "repositories.career_repository.CareerRepository.reindex_for_user", new=AsyncMock(return_value=0)
-    ):
+    with patch("repositories.career_repository.CareerRepository.update_for_user", new=fake_update):
         # ligar opm-1 y opm-2 a sec-5; opm-3 (que ya tenía sec-5) se desliga
         await section_catalog.set_section_methodologies(_DB(rows), "usr-2", "sec-5", ["opm-1", "opm-2"])
 

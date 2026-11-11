@@ -6,7 +6,7 @@
 
 **Última actualización:** 2026-11-10
 
-Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock, MinIO, y Qdrant.
+Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock y MinIO.
 
 ---
 
@@ -38,9 +38,9 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 - Archivos (MinIO), plantillas PDF
 - Endpoints públicos read-only para el Portal
 
-**Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock) · Qdrant client
+**Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock)
 
-**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 53 migraciones Alembic. El harness de agentes y Qdrant se trasladarán/retirarán según el ADR-029 (spec 009, en curso; aún sin aplicar).
+**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 53 migraciones Alembic. El harness de agentes sigue en el código sin operar (ADR-032); Qdrant se retiró el 2026-11-11.
 
 ---
 
@@ -64,7 +64,6 @@ graph TD
     subgraph External["Servicios externos"]
         PG[(PostgreSQL)]
         MinIO[(MinIO)]
-        Qdrant[(Qdrant)]
         AWS[AWS Bedrock]
         GH[GitHub API]
     end
@@ -77,7 +76,6 @@ graph TD
     Repos --> Models
     Models --> PG
     Services --> MinIO
-    Services --> Qdrant
     Services --> AWS
     Services --> GH
 ```
@@ -117,7 +115,7 @@ Admin (8002) / Portal (8003)
 
 ### `src/config.py`
 
-`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, Qdrant, CORS, descubrimiento de vacantes y portal público.
+`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, CORS, descubrimiento de vacantes y portal público.
 
 ### `src/database.py`
 
@@ -164,13 +162,12 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 | `contact_message_service.py` | Mensajes del formulario de contacto |
 | `error_report_service.py`, `error_reporting.py` | Registro y deduplicación de errores |
 | `storage_service.py` | MinIO upload/presigned URLs |
-| `qdrant_service.py` | Indexación y búsqueda vectorial |
 | `pdf_service.py` | Generación PDF |
 | `id_generator.py` | IDs prefijados (`ach-17`, `usr-1`) |
 
 ### `src/repositories/`
 
-- `career_repository.py` — CRUD genérico con aislamiento `user_id`, indexación Qdrant
+- `career_repository.py` — CRUD genérico con aislamiento `user_id`
 - `user_repository.py` — queries de usuario
 
 ### `src/middleware/auth.py`
@@ -202,7 +199,7 @@ graph LR
     subgraph Agent["Agent Bedrock"]
         Chat[Chat SSE]
         Tools[Tools CRUD]
-        Mem[Memoria PG + Qdrant]
+        Mem[Memoria PG]
     end
 
     subgraph Integrations["Integraciones"]
@@ -245,7 +242,6 @@ sequenceDiagram
     participant M as get_current_user
     participant Repo as CareerRepository
     participant DB as PostgreSQL
-    participant Q as Qdrant
 
     C->>M: Bearer JWT
     M-->>R: User (usr-N)
@@ -272,7 +268,7 @@ sequenceDiagram
         L->>AWS: Converse + tools
         AWS-->>L: tool_use requests
         L->>T: execute_tool()
-        T->>DB: CRUD / Qdrant
+        T->>DB: CRUD
         T-->>L: tool results
     end
     L->>DB: guardar historial + usage
@@ -287,8 +283,7 @@ sequenceDiagram
 |----------|------------|--------|
 | PostgreSQL | Persistencia única | `DATABASE_URL` |
 | MinIO | Archivos, imágenes IA | `MINIO_*` |
-| Qdrant | Knowledge base Bedrock | `QDRANT_*` |
-| AWS Bedrock | Converse, embeddings (Titan) e imágenes (Stability) | `AWS_*`, `BEDROCK_*` |
+| AWS Bedrock | Converse e imágenes (Stability) | `AWS_*`, `BEDROCK_*` |
 | GitHub API | Repos públicos | Sin key (API pública) |
 
 ---

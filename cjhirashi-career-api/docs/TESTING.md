@@ -45,7 +45,7 @@ export TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55432/post
 
 1. Elige la capa: `unit/` si prueba un servicio o módulo aislado; `integration/` si recorre la ruta HTTP.
 2. Anota el requisito (`@pytest.mark.requisito("RF-NNN")`) y escribe primero la prueba en rojo.
-3. Sin red ni servicios externos: AWS Bedrock, Qdrant, MinIO y los proveedores de vacantes se simulan.
+3. Sin red ni servicios externos: AWS Bedrock, MinIO y los proveedores de vacantes se simulan.
 4. Las pruebas son `async` (`asyncio_mode = auto`); no necesitan decorador.
 
 ## Cobertura

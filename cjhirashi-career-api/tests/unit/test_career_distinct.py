@@ -17,7 +17,7 @@ def test_as_bool_maps_each_multi_select_value():
 
 
 def test_contract_type_is_a_distinct_text_field():
-    repo = CareerRepository(WorkHistory, resource_key="work-history", vectorize=False)
+    repo = CareerRepository(WorkHistory, resource_key="work-history")
     assert repo.is_distinct_field("contract_type") is True
     assert repo.is_distinct_field("industry_sector") is True
     assert repo.is_distinct_field("id") is False

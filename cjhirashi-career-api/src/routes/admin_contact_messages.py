@@ -22,6 +22,5 @@ router.include_router(
         update_schema=ContactMessageUpdate,
         response_schema=ContactMessageResponse,
         entity_name="contact message",
-        vectorize=False,
     )
 )

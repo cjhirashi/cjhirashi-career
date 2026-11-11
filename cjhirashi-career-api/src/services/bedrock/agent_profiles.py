@@ -93,7 +93,6 @@ _PROFILE_BY_RECORD_ID: dict[str, str] = {record_id: key for key, record_id in _A
 
 _L2_BASE_TOOL_NAMES = {
     "describe_resource_schema",
-    "search_knowledge_base",
     "list_career_record",
     "count_career_records",
     "get_career_record",
@@ -111,7 +110,6 @@ _JOB_DISCOVERY_TOOL_NAMES = {
 }
 
 _PDF_DESIGN_TOOL_NAMES = {
-    "search_knowledge_base",
     "pdf_template",
     "pdf_style",
     "describe_resource_schema",
@@ -128,7 +126,6 @@ _VISUAL_TOOL_NAMES = {
     "store_uploaded_image",
     "attach_image_to_record",
     "list_generated_images",
-    "search_knowledge_base",
     "update_career_record",
     "bulk_update_career_record",
 }
@@ -153,7 +150,6 @@ _VACANCY_SEARCH_TOOL_NAMES = set(_JOB_DISCOVERY_TOOL_NAMES)
 
 _DOCUMENT_WRITING_TOOL_NAMES = {
     "describe_resource_schema",
-    "search_knowledge_base",
     "list_career_record",
     "count_career_records",
     "get_career_record",
@@ -180,14 +176,12 @@ _GITHUB_TOOL_NAMES = {
 # ADR-022: `agent_configuration` (agent-20) opera la metaconfiguración del harness;
 # `agent_settings` (agent-19) queda solo con incidencias y bitácora.
 _CONFIGURATION_TOOL_NAMES = {
-    "search_knowledge_base",
     "agent_catalog_settings",
     "admin_section_settings",
     "bedrock_global_settings",
 }
 
 _SETTINGS_TOOL_NAMES = {
-    "search_knowledge_base",
     "error_report_settings",
 }
 
@@ -254,8 +248,8 @@ _PDF_DESIGN_SUFFIX = (
     "registro hasta que la tool devuelva el id.\n"
     "Flujo de diseño: (a) pdf_style action=get o create; (b) pdf_style action=update con style_guide; "
     "(c) pdf_template action=create con style_id y variables. Si reutilizas un estilo, lee su "
-    "style_guide antes de escribir HTML. Consulta `search_knowledge_base` (type=methodology) "
-    "solo para las metodologías asignadas a este perfil."
+    "style_guide antes de escribir HTML. "
+    "Las metodologías asignadas a este perfil están en el catálogo del prompt."
 )
 
 _METHODOLOGIES_SUFFIX = (
@@ -879,10 +873,3 @@ def tools_for_profile(profile: AgentProfile, all_tool_names: Set[str]) -> Set[st
     else:
         names.discard("delegate_to_specialist")
     return names
-
-
-def profile_can_search_knowledge(profile: AgentProfile) -> bool:
-    """True si el perfil tiene `search_knowledge_base` (consulta metodologías asignadas)."""
-    if profile.allowed_tool_names is not None:
-        return "search_knowledge_base" in profile.allowed_tool_names
-    return profile.level == 2

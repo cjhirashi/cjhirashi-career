@@ -28,7 +28,6 @@ Esquema PostgreSQL de cjhirashi-career: gestión de carrera, Agent Bedrock, inte
 - [Dominio: archivos y analítica](#dominio-archivos-y-analítica)
 - [Vistas SQL](#vistas-sql)
 - [Migraciones Alembic](#migraciones-alembic)
-- [Qdrant (externo)](#qdrant-externo)
 - [Consultas útiles](#consultas-útiles)
 - [Backups](#backups)
 
@@ -171,7 +170,6 @@ Documentación API: [sections/career-search/README.md](./sections/career-search/
 | `contact_interactions` | `ContactInteraction` | `cni` |
 | `networking_activities` | `NetworkingActivity` | `nwa` |
 
-**Nota:** `cv_versions` tiene `vectorize=False` — no se indexa en Qdrant (contenido leído directo de PG).
 
 **Job discovery** no persiste en tablas propias; el preview vive en memoria (`preview_store`) hasta `POST /save` crea filas en `vacancies`.
 
@@ -221,7 +219,6 @@ reconstruir. Los visitantes `legacy=true` salen de eventos v1 y no tienen origen
 | `tags` | `Tag` | `tag` | [career-support](./sections/career-support/README.md) |
 | `operational_methodologies` | `OperationalMethodology` | `opm` | [career-methodologies](./sections/career-methodologies/README.md) |
 
-Metodologías se indexan en Qdrant para `search_knowledge_base` del agente.
 
 ---
 
@@ -300,20 +297,6 @@ En Docker:
 ```bash
 docker exec cjhirashi-career-api alembic upgrade head
 ```
-
----
-
-## Qdrant (externo)
-
-No es PostgreSQL — colección vectorial separada para:
-
-- Registros de carrera indexados (`CareerRepository._index_for_search`)
-- Metodologías operativas
-- Memoria manual del agente (`POST /bedrock/memory/manual`)
-
-Config: `QDRANT_HOST`, `QDRANT_PORT`, `QDRANT_COLLECTION` en `.env`.
-
-Embeddings: Titan via `bedrock_service.embed_text()`.
 
 ---
 

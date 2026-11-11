@@ -24,7 +24,6 @@ flowchart TB
     Loop --> History[history_manager.py]
     Converse --> AWS[bedrock-runtime Converse]
     Tools --> PG[(PostgreSQL)]
-    Tools --> Qdrant[(Qdrant)]
     History --> PG
 ```
 
@@ -167,21 +166,12 @@ Historial en PostgreSQL (`bedrock_conversations`, `bedrock_conversation_messages
 
 | Método | Path | Descripción |
 |--------|------|-------------|
-| `GET` | `/bedrock/knowledge/search` | Búsqueda semántica Qdrant (`?q=&top_k=5`) |
 | `GET` | `/bedrock/memory/events` | Eventos de memoria corto plazo (`?session_id=`) |
 | `GET` | `/bedrock/memory/records` | Hechos duraderos semánticos (`?query=`) |
-| `POST` | `/bedrock/memory/manual` | Indexar hecho manual en Qdrant |
-| `POST` | `/bedrock/knowledge-base/reindex` | Reindexa Qdrant desde Postgres y purga huérfanos → `{reindexed, purged_orphans, users}` (síncrono, operador) |
 
-Historial en PostgreSQL; hechos semánticos en Qdrant.
+Historial en PostgreSQL.
 
-**Consistencia Qdrant ↔ Postgres (ADR-026, reapertura 2026-09-07).** El índice
-`career_knowledge` es una copia derivada de Postgres; una migración de ids/`user_id` sin
-re-indexar lo deja *stale* (el agente "no encuentra" metodologías/registros). `POST
-/bedrock/knowledge-base/reindex` lo reconstruye (idempotente); `scripts/check_kb_consistency.py`
-lo audita sin modificar. Correr ambos tras cualquier migración de ese tipo.
 
----
 
 ## Tools MCP custom
 
@@ -212,7 +202,7 @@ Ejecutadas en `services/bedrock/tools.py` → `bedrock_service._execute_tool`:
 | Categoría | Tools |
 |-----------|-------|
 | CRUD carrera | `list/get/create/update/delete_career_record`, `count_career_records` |
-| Conocimiento | `search_knowledge_base`, `describe_resource_schema` |
+| Conocimiento | `describe_resource_schema` |
 | Auditoría | `list_recent_changes`, `restore_deleted_record` |
 | PDF | `pdf_template` / `pdf_style` (L2 `agent_pdf_design`); `generate_pdf` / `render_record_pdf` (L3 `agent_pdf_render`) |
 | Imágenes | `generate_image`, `attach_image_to_record` (L3 `agent_visual_design`) |

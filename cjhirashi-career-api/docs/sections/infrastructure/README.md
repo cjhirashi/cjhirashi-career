@@ -13,7 +13,6 @@ flowchart TB
     Repo --> Models[models/]
     Models --> IDs[id_generator]
     Models --> PG[(PostgreSQL)]
-    Repo -->|vectorize| Qdrant[(Qdrant)]
     Routes --> Schemas[schemas/]
 ```
 
@@ -78,14 +77,6 @@ Este registro alimenta:
 
 **37 resource keys** registrados en total (ver secciones career-*).
 
-### Vectorización Qdrant
-
-Por defecto `vectorize=True`: cada create/update/delete indexa el registro en Qdrant para `search_knowledge_base`.
-
-Excepción: `cv-versions` usa `vectorize=False` — el contenido PDF/markdown se lee directo de PostgreSQL.
-
----
-
 ## CareerRepository
 
 **Archivo:** `src/repositories/career_repository.py`
@@ -102,7 +93,6 @@ Operaciones centrales:
 | `delete_for_user` | Soft/hard delete según modelo |
 
 Side effects en writes:
-- Indexación Qdrant (si `vectorize=True`)
 - Entrada en `audit_logs` cuando Bedrock modifica datos
 
 ---
@@ -139,7 +129,6 @@ Variables clave:
 | `PUBLIC_PORTAL_USER_ID` | Usuario cuyos datos sirve `/public/*` |
 | `BEDROCK_*` | Harness local, modelos, presupuesto |
 | `MINIO_*` | Almacenamiento de archivos |
-| `QDRANT_*` | Base vectorial |
 
 ---
 
@@ -184,9 +173,7 @@ graph LR
     Auth --> Bedrock[bedrock]
     Auth --> Files[files]
     Career --> Repo[CareerRepository]
-    Career --> Qdrant[qdrant_service]
     Bedrock --> Repo
-    Bedrock --> Qdrant
     Public[public] --> Models[models directo]
 ```
 

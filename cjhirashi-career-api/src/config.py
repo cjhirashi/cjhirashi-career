@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     MAX_LIMIT: int = 100
 
     # -------------------------------------------------------------------------
-    # AWS Bedrock — Converse API, embeddings Titan, generación de imágenes
+    # AWS Bedrock — Converse API, generación de imágenes
     # Ver docs/BEDROCK-SYSTEM.md para arquitectura del agente.
     # -------------------------------------------------------------------------
     BEDROCK_REGION: str = "us-east-1"
@@ -126,7 +126,6 @@ class Settings(BaseSettings):
     BEDROCK_MAX_ROUND_TRIPS: int = 6
     BEDROCK_MAX_DELEGATIONS_PER_TURN: int = 3
     BEDROCK_DAILY_BUDGET_USD: float = 5.0
-    BEDROCK_EMBEDDING_MODEL_ID: str = "amazon.titan-embed-text-v2:0"
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
 
@@ -177,12 +176,6 @@ class Settings(BaseSettings):
             "supports_prompt_cache": True,
         },
     }
-
-    # -------------------------------------------------------------------------
-    # Qdrant — base de conocimiento vectorial del agente Bedrock
-    # -------------------------------------------------------------------------
-    QDRANT_URL: str = "http://qdrant:6333"
-    QDRANT_COLLECTION: str = "career_knowledge"
 
     # -------------------------------------------------------------------------
     # Job discovery — agregadores externos (Adzuna, boards públicos, etc.)

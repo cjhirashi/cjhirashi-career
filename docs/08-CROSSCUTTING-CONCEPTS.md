@@ -28,14 +28,12 @@
 - **Esquema**: Alembic es la fuente de verdad para despliegues (`alembic upgrade head`); 53 migraciones. Detalle y dominios: [`cjhirashi-career-api/docs/DATABASE.md`](../cjhirashi-career-api/docs/DATABASE.md).
 - **IDs prefijados** por recurso (p. ej. `comp-12`) y secciones del Admin con PK sintético `sec-N` ([ADR-021](./09-DECISIONS/021-admin-sections-synthetic-pk.md)).
 - **Archivos** en MinIO (bucket único), con metadatos y visibilidad en `file_uploads`.
-- **Base vectorial** (Qdrant): índice derivado, reconstruible desde PostgreSQL; el retiro está decidido ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md)).
 - **Respaldo** de PostgreSQL antes de cualquier migración con datos.
 
 ## Manejo de errores
 
 - La API responde `{"detail": …}` (formato estándar de FastAPI); los 422 de validación llevan además la lista de errores. La norma del arnés (Constitución Art. 6) pide Problem Details (RFC 9457) para contratos nuevos.
 - Los manejadores globales (`app.py`) registran cada fallo relevante en `error_reports` con huella para deduplicar (ADR-018): se omiten 401 y 404 por ruido, y todos los 5xx se registran. El Admin los gestiona en `/settings/error-reports`, y el cliente también puede reportar (`POST /system/error-report`).
-- Los fallos del indexado en Qdrant nunca fallan la escritura (best-effort); en cambio el registro de auditoría del agente sí falla en voz alta.
 
 ## Registro y auditoría
 
@@ -46,7 +44,7 @@
 ## Seguridad
 
 - **Transporte**: el tráfico interno viaja por `net-cjhirashi-career`.
-- **Superficie**: solo Portal, Admin y archivos públicos están expuestos; API, PostgreSQL y Qdrant, no.
+- **Superficie**: solo Portal, Admin y archivos públicos están expuestos; API y PostgreSQL, no.
 - **Límites de tasa** (ventana deslizante) en el formulario de contacto (3 por hora por IP y por correo) y en la ingesta de analítica; clasificación de bots (umbral 70).
 - **Privacidad del visitante**: id seudónimo, respeto a DNT/GPC y borrado propio en `/privacy`.
 - **Secretos** en `.env` (nunca versionado): `SECRET_KEY` de 32+ caracteres, credenciales de AWS y MinIO. Política y variables: [ENVIRONMENT-SECURITY.md](./ENVIRONMENT-SECURITY.md).

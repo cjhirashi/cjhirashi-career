@@ -14,7 +14,6 @@ flowchart TB
     UserRepo --> User[models.User]
     Models --> PG[(PostgreSQL)]
     User --> PG
-    CareerRepo -->|vectorize| Qdrant[(Qdrant)]
 ```
 
 ---
@@ -46,10 +45,10 @@ Un repositorio parametrizado por modelo. Todas las tablas de carrera tienen la m
 | `list_for_user` | Paginación, `search` en columnas texto, `sort_by` validado |
 | `count_for_user` | Conteo con el mismo filtro |
 | `get_for_user` | 404 lógico si el id no es del usuario |
-| `create_for_user` | Fuerza `user_id` del token; indexa Qdrant en background |
+| `create_for_user` | Fuerza `user_id` del token |
 | `update_for_user` / `delete_for_user` | Aislamiento + reindex / delete vector |
 
-`resource_key` (hyphenated, p. ej. `operational-methodologies`) lo setea `build_crud_router`. `vectorize=False` en CVs y plantillas PDF: el agente lee Postgres, no Qdrant.
+`resource_key` (hyphenated, p. ej. `operational-methodologies`) lo setea `build_crud_router`.
 
 Tareas de indexado se guardan en `_background_tasks` para que asyncio no las recoja a mitad de vuelo.
 

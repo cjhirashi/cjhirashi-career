@@ -143,11 +143,7 @@ async def set_agent_methodologies(
     result = await db.execute(
         select(OperationalMethodology).where(OperationalMethodology.user_id == user_id)
     )
-    repo = CareerRepository(
-        OperationalMethodology,
-        resource_key="operational-methodologies",
-        vectorize=True,
-    )
+    repo = CareerRepository(OperationalMethodology, resource_key="operational-methodologies")
     for row in result.scalars().all():
         nxt = next_agent_profile_ids(
             row.agent_profile_ids,
@@ -158,13 +154,6 @@ async def set_agent_methodologies(
         if nxt is None:
             continue
         await repo.update_for_user(db, user_id, row.id, {"agent_profile_ids": nxt})
-    # Re-index EVERY methodology of this user in Qdrant, awaited, even when no
-    # `agent_profile_ids` changed above. The catalog injected into the prompt
-    # reads straight from Postgres and was already correct; the bug (spec 003
-    # reopening, RF-014) is that `search_knowledge_base type=methodology` reads
-    # Qdrant, whose index drifted. Forcing the re-index here makes every save
-    # from the agent catalog self-heal the vector store.
-    await repo.reindex_for_user(db, user_id)
     return await list_methodologies_for_catalog(db, user_id, profile_id)
 
 

@@ -95,7 +95,6 @@ def test_cv_writing_is_l3():
     names = tools_for_profile(profile, all_tool_names())
     assert "create_career_record" in names
     assert "update_career_record" in names
-    assert "search_knowledge_base" in names
     assert "generate_pdf" not in names
     assert "render_record_pdf" not in names
     assert "delegate_to_specialist" not in names
@@ -212,7 +211,6 @@ def test_incident_routes_resolve_to_agent_settings():
 def test_agent_settings_owns_its_tools_only():
     names = tools_for_profile(get_profile(AGENT_SETTINGS), all_tool_names())
     assert "error_report_settings" in names
-    assert "search_knowledge_base" in names
     assert "agent_catalog_settings" not in names
     assert "admin_section_settings" not in names
     assert "bedrock_global_settings" not in names
@@ -228,7 +226,6 @@ def test_agent_configuration_owns_config_tools():
     assert "agent_catalog_settings" in names
     assert "admin_section_settings" in names
     assert "bedrock_global_settings" in names
-    assert "search_knowledge_base" in names
     assert "delegate_to_specialist" in names
     assert "error_report_settings" not in names
     assert "create_career_record" not in names

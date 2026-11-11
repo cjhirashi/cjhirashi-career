@@ -31,8 +31,7 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
 
-Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`), **Qdrant**
-(búsqueda vectorial del subsistema Bedrock, fuera de operación desde el ADR-032; el contenedor sigue arriba y su retiro no se ha ejecutado), **MinIO** (objetos). Routing externo por **Caddy** vía
+Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`) y **MinIO** (objetos). Qdrant se retiró el 2026-11-11 (ADR-032). Routing externo por **Caddy** vía
 `caddy.json` (contrato con el repo `cjhirashi-srv`; vive solo en local, no se versiona).
 
 > El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el

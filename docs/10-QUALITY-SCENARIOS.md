@@ -28,7 +28,7 @@ Cada escenario tiene **Estímulo**, **Medida**, **Estado** (✅ cumple · ⚠️
 | D1 | Disponibilidad del sistema | 99,5 % | ❌ no medido | No hay monitoreo de uptime externo ni SLA definido |
 | D2 | Recuperación ante incidente (RTO) | < 1 h | ❌ pendiente | Sin runbook ni ensayo; los contenedores tienen `restart: unless-stopped` |
 | D3 | Pérdida máxima de datos (RPO) | < 5 min | ❌ pendiente | No hay respaldo automático de PostgreSQL; se hace `pg_dump` manual antes de migraciones con datos y una exportación mensual de eventos del portal (cron, día 1) |
-| D4 | Detección de contenedor caído | Healthcheck y reinicio automático | ✅ cumple | `docker-compose.yml`: healthcheck en admin, portfolio, api, postgres y minio (Qdrant sin healthcheck); `docker compose ps` los muestra `healthy` |
+| D4 | Detección de contenedor caído | Healthcheck y reinicio automático | ✅ cumple | `docker-compose.yml`: healthcheck en admin, portfolio, api, postgres y minio; `docker compose ps` los muestra `healthy` |
 
 ## Mantenibilidad
 

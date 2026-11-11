@@ -1,6 +1,6 @@
 # Paquete `services/`
 
-Lógica de negocio e integraciones externas. Las rutas no hablan con AWS, MinIO ni Qdrant directamente: pasan por estos módulos.
+Lógica de negocio e integraciones externas. Las rutas no hablan con AWS, ni MinIO directamente: pasan por estos módulos.
 
 ## Arquitectura
 
@@ -12,7 +12,6 @@ flowchart TB
     Routes --> PDF[pdf_service]
     Routes --> GH[github_service]
     Routes --> IDs[id_generator]
-    Routes --> Qdrant[qdrant_service]
     BedrockS --> Harness[bedrock/]
     Routes --> JD[job_discovery/]
     Routes --> TaskSched[task_scheduler]
@@ -21,7 +20,6 @@ flowchart TB
     PDF --> CSS[pdf_template_css]
     Harness --> AWS[AWS Bedrock]
     Storage --> MinIO[(MinIO)]
-    Qdrant --> Q[(Qdrant)]
     JD --> Boards[Adzuna / Getonboard / …]
 ```
 
@@ -69,7 +67,7 @@ El loop de chat vive en `services/bedrock/` ([guía por módulo](bedrock/README.
 
 - Tools CRUD de carrera (`_execute_tool` + `RESOURCE_REGISTRY`).
 - Bitácora / restore de deletes.
-- Conversaciones PG y embeddings Titan usados por el harness y por `CareerRepository` al indexar.
+- Conversaciones PG usadas por el harness.
 
 `BedrockError` se traduce a HTTP 502/503 en las rutas.
 
@@ -91,10 +89,6 @@ I/O de bucket S3-compatible. Sin acceso a BD.
 
 `ensure_bucket`, `upload_file`, `set_visibility` (mueve entre `public/` y `private/`), `delete_file`, `get_public_url`, `get_presigned_url`, `get_object_stream`. Tráfico interno sin TLS.
 
-### `qdrant_service.py` — Búsqueda semántica
-
-Colección de vectores Titan. `upsert_point` / `delete_point` / `set_point_payload` (id determinista `resource_key` + `record_id`), `search` por embedding. `CareerRepository` indexa en background tras create/update/delete si `vectorize=True`. Metodologías llevan `agent_profile_ids` en el payload.
-
 ### `pdf_service.py` — Generación PDF (WeasyPrint in-process)
 
 `generate_markdown_document` y `generate_html_template_pdf` → bytes PDF. WeasyPrint corre en un `ProcessPoolExecutor` (fork en Linux) para que un crash nativo no tumbe uvicorn. Timeout 60 s. `PDFGeneratorError` si falla el render.
@@ -109,11 +103,11 @@ Sustitución `{{variable}}` en HTML de plantillas antes de WeasyPrint.
 
 ### `methodology_scope.py`
 
-`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al filtrar `search_knowledge_base` type=methodology y al armar el catálogo del system prompt.
+`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al armar el catálogo del system prompt.
 
 `list_assigned_methodologies(db, user_id, caller_id)`: títulos vigentes asignados al agente (Admin → Agentes). Se inyecta cada turno en `compose_system_prompt` para que una metodología nueva asignada se asuma sin cambiar código.
 
-`set_agent_methodologies(db, user_id, profile_id, ids)`: asigna desde el catálogo de agentes (Admin). Vacío = compartida; al quitar el último dueño se aparca en `agent_methodologies`. Tras persistir, **fuerza el reindex** de todas las metodologías del usuario en Qdrant (awaited) aunque `agent_profile_ids` no cambie — el catálogo del prompt ya sale de PG, pero `search_knowledge_base` lee del índice y este puede haber driftado (spec 003, RF-014). Ver `bedrock/knowledge_base.py`.
+`set_agent_methodologies(db, user_id, profile_id, ids)`: asigna desde el catálogo de agentes (Admin). Vacío = compartida; al quitar el último dueño se aparca en `agent_methodologies`.
 
 **spec 004 (ADR-027) — L2 por sección:** `applies_to_caller(agent_profile_ids, section_ids, caller_id, caller_section_ids)` reemplaza a `applies_to_agent`: un **L2** ve una metodología si alguna de sus secciones está en `section_ids`; un **L1/L3** si su id está en `agent_profile_ids`; compartida si ambos vacíos. `applies_to_agent` queda como shim. `strip_l2_from_agent_ids` lo usa la migración `b3d4e5f6a7c8`.
 

@@ -292,19 +292,9 @@ export interface BedrockToolCatalog {
   mcp: BedrockCustomTool[]
 }
 
-// Flexible shape for semantic memory hits from Qdrant (memoryRecordId, content, score, …).
 export interface BedrockMemoryEvent {
   eventId?: string
   eventTimestamp?: string | number
   payload?: Array<Record<string, unknown>>
-  [key: string]: unknown
-}
-
-export interface BedrockMemoryRecord {
-  memoryRecordId?: string
-  content?: Record<string, unknown>
-  score?: number
-  createdAt?: string | number
-  namespaces?: string[]
   [key: string]: unknown
 }

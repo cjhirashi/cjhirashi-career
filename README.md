@@ -28,7 +28,7 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 
 - **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. La generación de PDF (WeasyPrint) es una capacidad de la API, no un módulo ni un contenedor aparte. Los agentes de IA son externos: se conectan a la API con un token de rol `agent` (solo `/career/*` y la subida de archivos).
 - **`cjhirashi-career-ai`** (spec 009, **aplazada**, ADR-032): andamiaje de un harness de agentes con base de datos propia. No se despliega: no está en `docker-compose.yml`. Diseñar de nuevo un arnés de agentes propio queda como evolución contemplada, sin fecha.
-- **Infraestructura**: PostgreSQL 15 (`postgres_db`), MinIO (`minio_storage`) y un contenedor `qdrant` que quedó sin consumidor operativo al dejar de operar el subsistema Bedrock (su retiro no se ha ejecutado).
+- **Infraestructura**: PostgreSQL 15 (`postgres_db`) y MinIO (`minio_storage`). Qdrant se retiró el 2026-11-11 (ver ADR-032).
 - **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), WeasyPrint.
 - **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `6b2d8f4a1c57`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
 

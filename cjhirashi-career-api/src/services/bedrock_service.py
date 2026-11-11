@@ -2,20 +2,14 @@
 Agent Bedrock — fachada del asistente IA del Admin Panel.
 
 El loop de chat vive en `services/bedrock/` (Harness local Converse API).
-Este módulo conserva herramientas CRUD, bitácora, conversaciones PG y
-embeddings Titan usados por el harness y por CareerRepository.
+Este módulo conserva herramientas CRUD, bitácora y conversaciones PG.
 """
-import asyncio
-import json
 import logging
 from typing import Any, Dict, List, Optional
-
-import boto3
 
 from config import settings
 from repositories.career_repository import CareerRepository
 from routes.career_common import RESOURCE_REGISTRY
-from services import qdrant_service
 
 logger = logging.getLogger(__name__)
 
@@ -24,33 +18,12 @@ class BedrockError(Exception):
     """Raised for any Bedrock/agent failure - callers turn this into an HTTP error."""
 
 
-# ---------------------------------------------------------------------------
-# AWS — cliente bedrock-runtime solo para Titan Embeddings (embed_text).
-# El chat Converse vive en services/bedrock/converse_client.py.
-# ---------------------------------------------------------------------------
-
-_embedding_client = None
 _repositories: Dict[str, CareerRepository] = {}
 
 
 def _require_configured() -> None:
     if not settings.AWS_ACCESS_KEY_ID or not settings.AWS_SECRET_ACCESS_KEY:
         raise BedrockError("Bedrock is not configured (missing AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY)")
-
-
-def _get_embedding_client():
-    """`bedrock-runtime` client, used only for Titan Embeddings - the
-    knowledge base embeds text directly, outside of the harness."""
-    global _embedding_client
-    _require_configured()
-    if _embedding_client is None:
-        _embedding_client = boto3.client(
-            "bedrock-runtime",
-            region_name=settings.BEDROCK_REGION,
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        )
-    return _embedding_client
 
 
 def _get_repository(resource_key: str) -> CareerRepository:
@@ -65,25 +38,6 @@ def _get_repository(resource_key: str) -> CareerRepository:
     if resource_key not in _repositories:
         _repositories[resource_key] = CareerRepository(RESOURCE_REGISTRY[resource_key], resource_key=resource_key)
     return _repositories[resource_key]
-
-
-async def embed_text(text: str) -> List[float]:
-    """Embed `text` with Bedrock Titan Embeddings. Runs boto3's sync call in
-    a thread since boto3 has no native async support."""
-    client = _get_embedding_client()
-
-    def _invoke():
-        response = client.invoke_model(
-            modelId=settings.BEDROCK_EMBEDDING_MODEL_ID,
-            body=json.dumps({"inputText": text}),
-        )
-        return json.loads(response["body"].read())
-
-    try:
-        result = await asyncio.to_thread(_invoke)
-    except Exception as e:
-        raise BedrockError(f"Embedding request failed: {e}") from e
-    return result["embedding"]
 
 
 # ---------------------------------------------------------------------------
@@ -174,8 +128,7 @@ async def delete_custom_tool(db, tool_id: str) -> bool:
 # `chat_stream` llama cada vez que el harness se pausa con
 # `stop_reason == "tool_use"` (cada herramienta `inline_function` definida
 # arriba corresponde a un `if` aquí, según su nombre). Todo esto corre
-# LOCALMENTE, en este proceso - el harness nunca toca la base de datos ni
-# Qdrant directamente, solo decide *qué* herramienta llamar y *con qué
+# LOCALMENTE, en este proceso - el harness nunca toca la base de datos, solo decide *qué* herramienta llamar y *con qué
 # argumentos*; esta función es la que realmente hace el trabajo y devuelve
 # el resultado.
 # ---------------------------------------------------------------------------
@@ -237,49 +190,6 @@ def _normalize_record_id(resource_key: str, record_id: Any) -> str:
     return normalize_prefixed_id(resource_key, record_id)
 
 
-_METHODOLOGY_EXCERPT_CHARS = 800
-
-
-def _methodology_snippet(row: Dict[str, Any]) -> Dict[str, Any]:
-    """Extracto de un acierto de `search_knowledge_base type=methodology`:
-    lo justo para que el agente decida si ES la que necesita, sin traerse el
-    procedimiento completo (spec 003 Bloque J, RF-016). `title`/`section_ids`
-    vienen en el payload de Qdrant (RF-016); el `excerpt` sale del `text`
-    (producido por `CareerRepository._record_to_text` como líneas `campo:
-    valor`), quitándole las líneas de metadatos del principio."""
-    text = row.get("text") or ""
-    body = text
-    for prefix in ("title:", "section_ids:", "description:", "agent_profile_ids:"):
-        # cada metadato ocupa una línea al principio; salta hasta el cuerpo real
-        while body.lstrip().startswith(prefix):
-            body = body.split("\n", 1)[1] if "\n" in body else ""
-            body = body.lstrip("\n")
-    if body.lstrip().startswith("content:"):
-        body = body.lstrip()[len("content:"):].lstrip()
-    if len(body) > _METHODOLOGY_EXCERPT_CHARS:
-        excerpt = body[: _METHODOLOGY_EXCERPT_CHARS - 1] + "…"
-    else:
-        excerpt = body
-    record_id = row.get("record_id")
-    from services.admin_sections import get_section_spec
-
-    sections = []
-    for section_id in row.get("section_ids") or []:
-        try:
-            sections.append(get_section_spec(section_id).label)
-        except KeyError:
-            continue
-    return {
-        "record_id": record_id,
-        "title": row.get("title"),
-        "sections": sections,
-        "score": row.get("score"),
-        "shared": not (row.get("agent_profile_ids") or []),
-        "excerpt": excerpt,
-        "read_full": (
-            f"get_career_record resource_key=operational-methodologies record_id={record_id}"
-        ),
-    }
 
 
 async def _record_audit(
@@ -295,8 +205,8 @@ async def _record_audit(
 ) -> None:
     """Every write the agent makes, logged with the full before/after record
     state - specifically so a mistaken delete is recoverable (old_values has
-    the complete row, not just its id). Not best-effort like the Qdrant
-    indexing hook: an audit trail that can silently fail to record a delete
+    the complete row, not just its id). Not best-effort:
+    an audit trail that can silently fail to record a delete
     defeats its own purpose, so a failure here raises and the caller
     (chat_stream) surfaces it as a tool error rather than pretending the
     write was clean."""
@@ -328,46 +238,6 @@ async def _execute_tool(
 ) -> Dict[str, Any]:
     """Run one tool call, scoped to `user_id` throughout - same isolation
     guarantee as every other authenticated route in this API."""
-    if name == "search_knowledge_base":
-        from services.methodology_scope import applies_to_caller
-
-        vector = await embed_text(tool_input["query"])
-        resource_type = tool_input.get("type")
-        top_k = tool_input.get("top_k", 5)
-        fetch_k = top_k * 3 if resource_type == "methodology" else top_k
-        results = await qdrant_service.search(
-            user_id=user_id,
-            vector=vector,
-            top_k=fetch_k,
-            resource_type=resource_type,
-        )
-        if resource_type == "methodology":
-            results = [
-                row
-                for row in results
-                if applies_to_caller(
-                    row.get("agent_profile_ids"),
-                    row.get("section_ids"),
-                    caller_profile_id,
-                    caller_section_ids,
-                )
-            ][:top_k]
-            # El agente sólo aplica UNA metodología por trabajo. Devolver el
-            # texto completo de cada acierto (una metodología ≈ varios KB)
-            # revienta el presupuesto de tool-results y le da procedimientos
-            # que no va a usar. Se devuelven EXTRACTOS para que elija, y lee la
-            # elegida entera con get_career_record (spec 003 Bloque J, RF-016).
-            return {
-                "results": [_methodology_snippet(row) for row in results],
-                "instruction": (
-                    "Extractos, no el contenido completo. Identifica cuál aplica a "
-                    "ESTE trabajo y léela entera con get_career_record "
-                    "(resource_key=operational-methodologies, record_id=...). "
-                    "Lee sólo la que vas a aplicar ahora, no todas."
-                ),
-            }
-        return {"results": results}
-
     if name == "list_career_record":
         repo = _get_repository(tool_input["resource_key"])
         skip = tool_input.get("skip", 0)
@@ -597,7 +467,7 @@ def _invalid_fields_error(
     before they ever reach SQLAlchemy, with the real column list in the
     error - without this, a wrong guess (e.g. `name` instead of `tag_name`)
     surfaces as a generic ORM TypeError that tells the model nothing about
-    what the right field is, burning an extra search_knowledge_base + retry
+    what the right field is, burning an extra retry
     round-trip (measured: 4-6 tool calls for what should take 1-2) just to
     rediscover the schema by trial and error.
 
@@ -640,12 +510,11 @@ def default_system_prompt() -> str:
         "sin pedir confirmación adicional del sistema (Carlos ya te la dio al usarte). "
         "Redactar el contenido en el chat no lo persiste: debes llamar las tools de escritura "
         "en el mismo turno; no afirmes que guardaste hasta que la tool devuelva el id. "
-        "Antes de operar una tabla que no conozcas bien, usa search_knowledge_base (type=methodology) "
-        "para consultar SOLO las metodologías operativas asignadas a tu perfil "
-        "(campo Agentes / agent_profile_ids) más las compartidas (lista vacía). "
-        "Ahí está documentado cómo se relacionan las tablas y qué disciplina seguir. "
-        "Una metodología nueva que Carlos te asigne desde el Admin es tuya de inmediato: consúltala; "
-        "no esperes que el código la nombre. No apliques metodologías de otros agentes. "
+        "Antes de operar una tabla que no conozcas bien, lee las metodologías operativas asignadas a tu "
+        "perfil (campo Agentes / agent_profile_ids) más las compartidas (lista vacía) con list_career_record "
+        "y get_career_record sobre operational-methodologies. "
+        "Una metodología nueva que Carlos te asigne desde el Admin es tuya de inmediato. "
+        "No apliques metodologías de otros agentes. "
         "Mantener el texto de las metodologías (crear/editar operational-methodologies) es del "
         "guardián agent_methodologies, salvo que Carlos te pida lo contrario. "
         "Antes de crear un registro en un recurso cuyos campos exactos no tengas ya confirmados (por un "

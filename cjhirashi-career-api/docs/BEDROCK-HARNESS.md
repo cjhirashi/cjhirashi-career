@@ -1,5 +1,7 @@
 # Bedrock Harness local — API
 
+> **Qdrant retirado (2026-11-11, ADR-032).** Ya no hay indexado vectorial, `search_knowledge_base`, `/bedrock/knowledge/search`, `/bedrock/knowledge-base/reindex`, `/bedrock/memory/records` ni `/bedrock/memory/manual`. Las secciones de este documento que los describen quedan solo como referencia histórica del diseño.
+
 > **Estado (2026-11-10, [ADR-032](../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
 
 ## Paquete
@@ -31,7 +33,6 @@ Body (`BedrockChatRequest`):
 ## Otros
 
 - `GET /bedrock/conversations?session_type=general|contextual&agent_profile_id=agent_professional_identity|agent_orchestrator|…`
-- `GET /bedrock/knowledge/search?q=...` — búsqueda semántica Qdrant
 
 Documentación HTTP completa: [sections/bedrock/README.md](sections/bedrock/README.md). Índice de docs API: [README.md](README.md).
 

@@ -36,8 +36,8 @@ def test_effective_override_replaces_default():
         "list_career_record",
         "delegate_to_specialist",
     }
-    # un tool que el default tenía (search_knowledge_base) ya no está
-    assert "search_knowledge_base" not in effective_tool_names(
+    # un tool que el default tenía (list_recent_changes) ya no está
+    assert "list_recent_changes" not in effective_tool_names(
         profile, ["list_career_record"]
     )
 
@@ -60,15 +60,15 @@ def test_override_ignores_unknown_tool_names():
 
 
 def test_validate_tool_names_normalizes_and_dedupes():
-    # tools scope!=section (spec 004): search_knowledge_base + generate_image
+    # tools scope!=section (spec 004): list_recent_changes + generate_image
     assert validate_tool_names(
-        ["generate_image", "search_knowledge_base", "generate_image"]
-    ) == ["generate_image", "search_knowledge_base"]
+        ["generate_image", "list_recent_changes", "generate_image"]
+    ) == ["generate_image", "list_recent_changes"]
 
 
 def test_validate_tool_names_rejects_unknown():
     with pytest.raises(ValueError):
-        validate_tool_names(["search_knowledge_base", "not_a_tool"])
+        validate_tool_names(["list_recent_changes", "not_a_tool"])
 
 
 def test_orchestrator_default_is_delegate_only():
@@ -87,7 +87,7 @@ def test_list_builtin_tool_catalog_has_name_and_description():
     assert all("name" in t and "description" in t for t in catalog)
     names = {t["name"] for t in catalog}
     assert "list_career_record" in names
-    assert "search_knowledge_base" in names
+    assert "list_recent_changes" in names
 
 
 # ============================================================================
@@ -104,7 +104,7 @@ async def test_resolve_effective_tools_l2_from_sections():
 
     profile = get_profile(AGENT_PROFESSIONAL_IDENTITY)  # L2
     assert profile.level == 2
-    derived = {"list_career_record", "get_career_record", "search_knowledge_base"}
+    derived = {"list_career_record", "get_career_record", "list_recent_changes"}
 
     with patch(
         "services.section_catalog.derived_tools_for_agent",
@@ -165,5 +165,5 @@ def test_validate_tool_names_rejects_section_scope():
     # create_career_record es scope=section → no asignable directo a L1/L3
     with _pytest.raises(ValueError):
         validate_tool_names(["create_career_record"])
-    # search_knowledge_base es scope=both → permitido
-    assert validate_tool_names(["search_knowledge_base"]) == ["search_knowledge_base"]
+    # list_recent_changes es scope=both → permitido
+    assert validate_tool_names(["list_recent_changes"]) == ["list_recent_changes"]

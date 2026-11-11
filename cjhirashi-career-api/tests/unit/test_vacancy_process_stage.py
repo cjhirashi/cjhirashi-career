@@ -306,10 +306,6 @@ async def repo_env():
     factory = async_sessionmaker(engine, expire_on_commit=False)
     repo = CareerRepository(Vacancy, resource_key="vacancies")
 
-    async def _no_index(obj, user_id):  # la indexación en la KB no es objeto de estos tests
-        return None
-
-    repo._index_for_search = _no_index
     async with factory() as session:
         yield repo, session
     await engine.dispose()
@@ -445,20 +441,6 @@ async def test_column_filter_of_other_resource_is_unchanged():
     assert "process_stage" in str(stmt.whereclause)
 
 
-@pytest.mark.requisito("RF-023")
-def test_kb_text_has_process_stage_but_not_timestamp_or_status():
-    repo = CareerRepository(Vacancy, resource_key="vacancies")
-    vac = Vacancy(
-        id="vac-kb", user_id=USER, company="ACME", exact_role="Dev",
-        process_stage="hr_interview", process_stage_updated_at=NOW,
-    )
-    text_ = repo._record_to_text(vac)
-    assert "process_stage: hr_interview" in text_
-    assert "process_stage_updated_at" not in text_
-    assert "vacancy_status" not in text_
-    assert "company: ACME" in text_
-
-
 # ---------------------------------------------------------------------------
 # Bloque D — ruta HTTP `/career/vacancies` y job discovery
 #
@@ -497,7 +479,6 @@ async def http_env(monkeypatch):
     async def _noop(*args, **kwargs):
         return None
 
-    monkeypatch.setattr(CareerRepository, "_index_for_search", _noop)
     monkeypatch.setattr(app_module, "areport_error", _noop)
 
     async def _get_db():

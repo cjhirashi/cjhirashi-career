@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
-import { Brain, Search, ChevronDown, ChevronRight, Plus } from 'lucide-react'
-import {
-  useBedrockConversations,
-  useBedrockManualMemory,
-  useBedrockMemoryEvents,
-  useBedrockMemoryRecords,
-} from '@/hooks/useBedrockChat'
+import { Brain, ChevronDown, ChevronRight } from 'lucide-react'
+import { useBedrockConversations, useBedrockMemoryEvents } from '@/hooks/useBedrockChat'
 import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { getErrorMessage } from '@/utils/errors'
@@ -28,113 +23,6 @@ const SectionCard: React.FC<{ title: string; subtitle?: string; icon: React.Elem
     <div className="card-body">{children}</div>
   </div>
 )
-
-const RecordsSection: React.FC = () => {
-  const [query, setQuery] = useState('')
-  const [submittedQuery, setSubmittedQuery] = useState('')
-  const { data, isLoading, isError, error } = useBedrockMemoryRecords(submittedQuery)
-
-  return (
-    <SectionCard
-      title="Hechos que recuerda"
-      subtitle="Búsqueda semántica sobre la base de conocimiento Qdrant (registros de carrera + hechos manuales)"
-      icon={Brain}
-    >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          setSubmittedQuery(query)
-        }}
-        className="flex gap-2 mb-4"
-      >
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="ej. preferencias de vacantes, empresas de interés..."
-          className="input-field flex-1"
-        />
-        <button type="submit" className="btn-primary flex items-center gap-2 flex-shrink-0">
-          <Search size={15} aria-hidden="true" />
-          Buscar
-        </button>
-      </form>
-
-      {isLoading && <LoadingSpinner fullScreen={false} message="Buscando..." />}
-      {isError && <p className="text-red-600 dark:text-red-400 text-sm">{getErrorMessage(error)}</p>}
-      {!isLoading && submittedQuery && data?.length === 0 && (
-        <p className="text-text-secondary text-sm text-center py-4">
-          No se encontró nada en Qdrant para esa búsqueda.
-        </p>
-      )}
-      {data && data.length > 0 && (
-        <div className="space-y-2">
-          {data.map((record, i) => (
-            <div key={record.memoryRecordId ?? i} className="p-3 rounded-xl bg-glass">
-              <p className="text-sm text-text whitespace-pre-wrap break-words">
-                {(record.content as { text?: string } | undefined)?.text ??
-                  JSON.stringify(record.content ?? record, null, 2)}
-              </p>
-              {typeof record.score === 'number' && (
-                <p className="text-[11px] text-text-muted mt-1">relevancia: {record.score.toFixed(2)}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </SectionCard>
-  )
-}
-
-const ManualMemorySection: React.FC = () => {
-  const [text, setText] = useState('')
-  const [savedAt, setSavedAt] = useState<number | null>(null)
-  const manualMemory = useBedrockManualMemory()
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!text.trim()) return
-    manualMemory.mutate(text.trim(), {
-      onSuccess: () => {
-        setText('')
-        setSavedAt(Date.now())
-      },
-    })
-  }
-
-  return (
-    <SectionCard
-      title="Cargar una memoria manualmente"
-      subtitle="Dile directamente al agente algo que debe recordar — se indexa en Qdrant al instante"
-      icon={Plus}
-    >
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={3}
-          placeholder="ej. Prefiero que las vacantes remotas siempre se marquen con track_category = remote"
-          className="input-field text-sm"
-        />
-        {manualMemory.isError && (
-          <p className="text-red-600 dark:text-red-400 text-xs">{getErrorMessage(manualMemory.error)}</p>
-        )}
-        {savedAt && !manualMemory.isPending && (
-          <p className="text-xs text-text-secondary">
-            Guardado — ya debería aparecer en la búsqueda de "Hechos que recuerda".
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={manualMemory.isPending || !text.trim()}
-          className="btn-primary flex items-center gap-2 disabled:opacity-50"
-        >
-          <Plus size={15} aria-hidden="true" />
-          Guardar memoria
-        </button>
-      </form>
-    </SectionCard>
-  )
-}
 
 const EventsSection: React.FC = () => {
   const { data: conversations = [] } = useBedrockConversations()
@@ -224,12 +112,10 @@ export const AgentMemoryPage: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-text">Memoria del Agente</h1>
         <p className="text-text-secondary mt-2">
-          Base de conocimiento Qdrant + historial de conversaciones en PostgreSQL (Harness local).
+          Historial de conversaciones en PostgreSQL (Harness local).
         </p>
       </div>
       <div className="space-y-6">
-        <ManualMemorySection />
-        <RecordsSection />
         <EventsSection />
       </div>
     </div>

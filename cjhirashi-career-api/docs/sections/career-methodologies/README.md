@@ -1,6 +1,6 @@
 # Carrera — Metodologías Operativas
 
-Metodologías de trabajo documentadas, indexadas en Qdrant para que el agente las consulte semánticamente.
+Metodologías de trabajo documentadas para que los agentes las consulten.
 
 **Prefijo:** `/career/operational-methodologies`  
 **Tag OpenAPI:** `Career - Methodologies`  
@@ -16,8 +16,6 @@ flowchart LR
     Factory --> Repo[CareerRepository]
     Repo --> Model[operational_methodology]
     Model --> PG[(PostgreSQL)]
-    Repo -->|vectorize| Qdrant[(Qdrant)]
-    Agent[search_knowledge_base] --> Qdrant
 ```
 
 ---
@@ -38,7 +36,7 @@ flowchart LR
 |--------------|------|--------|
 | `operational-methodologies` | `/career/operational-methodologies` | `OperationalMethodology` |
 
-CRUD estándar de 6 endpoints. **`vectorize=True`** — cada write indexa en Qdrant.
+CRUD estándar de 6 endpoints.
 
 ---
 
@@ -60,7 +58,6 @@ CRUD estándar de 6 endpoints. **`vectorize=True`** — cada write indexa en Qdr
 
 Perfil **`methodologies`** — especializado en consultar y editar metodologías.
 
-Tool principal: `search_knowledge_base` con `type=methodology` para búsqueda semántica.
 
 El Admin Panel muestra metodologías por sección. El campo `agent_profile_ids` es la fuente de verdad de **qué agente consulta qué metodología**:
 
@@ -70,7 +67,6 @@ El Admin Panel muestra metodologías por sección. El campo `agent_profile_ids` 
 
 Cada turno, `compose_system_prompt` inyecta el catálogo asignado al caller. Si Carlos crea una metodología nueva y se la asigna a un agente **desde el catálogo de agentes** (`/agent/catalog`) o desde esta tabla (campo Agentes), ese agente la consulta en el siguiente mensaje — no hace falta nombrarla en código.
 
-`search_knowledge_base` (type=methodology) filtra por el mismo campo.
 
 ---
 
@@ -81,4 +77,4 @@ curl -s "http://localhost:8000/career/operational-methodologies?search=STAR&limi
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Ver también: [bedrock](../bedrock/README.md) (memoria Qdrant)
+Ver también: [bedrock](../bedrock/README.md)

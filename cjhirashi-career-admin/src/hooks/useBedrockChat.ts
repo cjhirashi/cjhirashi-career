@@ -292,18 +292,6 @@ export function useBedrockMemoryEvents(sessionId: string | null) {
   })
 }
 
-export function useBedrockMemoryRecords(query: string) {
-  return useQuery({
-    queryKey: ['bedrock', 'memory', 'records', query],
-    queryFn: () => bedrockApi.getMemoryRecords(query),
-    enabled: query.trim().length > 0,
-  })
-}
-
-export function useBedrockManualMemory() {
-  return useMutation({ mutationFn: bedrockApi.addManualMemory })
-}
-
 export function useBedrockAuditLog(limit = 50) {
   return useQuery({
     queryKey: ['bedrock', 'audit-log', limit],

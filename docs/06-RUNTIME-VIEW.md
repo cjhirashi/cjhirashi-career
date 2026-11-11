@@ -82,7 +82,7 @@ sequenceDiagram
 **Pasos:**
 1. El Admin envía el cambio al CRUD genérico `/career/{recurso}` (IDs prefijados, p. ej. `comp-12`).
 2. La API valida el esquema y limita todo al `user_id` del token.
-3. Mientras Qdrant siga en uso, la escritura dispara un indexado **best-effort** del registro en la base de conocimiento (embedding + `upsert`); un fallo del indexado nunca falla la escritura. Se retira con el ADR-029.
+3. La escritura no dispara ningún indexado: Qdrant y la base de conocimiento se retiraron el 2026-11-11.
 4. Las ediciones manuales no generan `audit_logs`: ese registro es del agente (Escenario 4).
 
 ## Escenario 4 — Carlos usa Agent Bedrock
@@ -107,7 +107,7 @@ sequenceDiagram
 
 **Pasos:**
 1. El Admin llama a `POST /bedrock/chat` con la sesión autenticada; el bucle del agente corre dentro de la API (hasta que `cjhirashi-career-ai` lo reemplace, ADR-029).
-2. El agente (L1 orquestador, L2 por área, L3 por tarea: ADR-012) usa herramientas con el alcance del usuario; puede consultar la base de conocimiento en Qdrant y la memoria del agente.
+2. El agente (L1 orquestador, L2 por área, L3 por tarea: ADR-012) usa herramientas con el alcance del usuario; puede consultar la memoria del agente.
 3. **Toda escritura del agente** queda en `audit_logs` con el estado completo antes y después, para poder recuperar un borrado erróneo; si el registro falla, la herramienta falla en lugar de escribir sin rastro.
 4. El uso y el costo de cada ronda se guardan en `bedrock_usage_logs` y `bedrock_usage_round_logs`, con un presupuesto diario configurable.
 

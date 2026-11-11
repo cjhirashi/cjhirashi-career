@@ -20,7 +20,7 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **Aislamiento por usuario** — Todo endpoint de carrera filtra por el `user_id` del token.
 
-**API REST** — `cjhirashi-career-api` (FastAPI). Único componente con acceso a PostgreSQL, MinIO y Qdrant; dueña del esquema. No se publica: se alcanza por `/api/` de los hosts del Admin y del Portal.
+**API REST** — `cjhirashi-career-api` (FastAPI). Único componente con acceso a PostgreSQL y MinIO; dueña del esquema. No se publica: se alcanza por `/api/` de los hosts del Admin y del Portal.
 
 **Arc42** — Plantilla de documentación de arquitectura (12 secciones, `docs/01` a `docs/12`).
 
@@ -28,7 +28,6 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **Audit log (`audit_logs`)** — Registro de cada escritura del agente con el estado completo antes y después.
 
-**Base de conocimiento (KB)** — Índice vectorial en Qdrant de los registros de carrera y las metodologías, para la búsqueda semántica del agente. Se retira con ADR-029.
 
 **Canal (de entrada)** — Punto de acceso autónomo al sistema: hoy son dos, Portal y Admin.
 
@@ -72,7 +71,6 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **PostgreSQL** — Base de datos única de negocio (`career_db` en `postgres_db`).
 
-**Qdrant** — Base vectorial (`qdrant`) de la KB de Agent Bedrock. Retiro decidido (ADR-029), pendiente de la etapa 3 de la spec 009.
 
 **Rol `agent`** — Valor de `access_role` de las cuentas de agente; ver *Agente externo*.
 

@@ -1,6 +1,6 @@
 # Tests unitarios (`tests/unit/`)
 
-Prueban módulos aislados (servicios, middleware, modelos, esquemas, migraciones) sin red ni servicios externos (AWS, Qdrant y MinIO se simulan). Por defecto usan SQLite en memoria; las que necesitan secuencias de IDs prefijados requieren `TEST_DATABASE_URL` ([../../docs/TESTING.md](../../docs/TESTING.md)).
+Prueban módulos aislados (servicios, middleware, modelos, esquemas, migraciones) sin red ni servicios externos (AWS y MinIO se simulan). Por defecto usan SQLite en memoria; las que necesitan secuencias de IDs prefijados requieren `TEST_DATABASE_URL` ([../../docs/TESTING.md](../../docs/TESTING.md)).
 
 **Última actualización**: 2026-11-05. Los archivos se agrupan por **patrón de nombre**; no hay lista por archivo (se desactualiza): usa `ls tests/unit/` o `pytest --collect-only -q`.
 

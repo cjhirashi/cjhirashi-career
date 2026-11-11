@@ -27,10 +27,9 @@ def test_orchestrator_tools_are_delegate_only():
     assert tools == ["delegate_to_specialist"]
 
 
-def test_identity_has_career_crud_and_search():
+def test_identity_has_career_crud():
     tools = resolved_tool_names(get_profile(AGENT_PROFESSIONAL_IDENTITY))
     assert "list_career_record" in tools
-    assert "search_knowledge_base" in tools
     assert "delegate_to_specialist" in tools
     assert "generate_pdf" not in tools
 
