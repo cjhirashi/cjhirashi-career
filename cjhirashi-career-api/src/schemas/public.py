@@ -66,11 +66,6 @@ class PublicStat(BaseModel):
     value: str
 
 
-class PublicSkillGroup(BaseModel):
-    category: str
-    skills: List[str]
-
-
 class PublicHeroCta(BaseModel):
     label: str
     url: str

@@ -42,7 +42,7 @@ from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
-    PublicBlogPost, PublicHeroCta, PublicSkillGroup, PublicStat, PublicAchievementDetail,
+    PublicBlogPost, PublicHeroCta, PublicStat, PublicAchievementDetail,
 )
 
 # ============================================================================
