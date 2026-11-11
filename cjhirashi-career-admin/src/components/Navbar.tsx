@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, PanelRight } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useThemeStore } from '@/stores/themeStore'
 import { ThemeToggle } from './ThemeToggle'
@@ -14,15 +14,11 @@ interface NavbarProps {
   /** Shows/hides the right panel (chat/instructions). Only rendered here on
    * mobile (<md) - at md and up the panel is controlled solely by its own
    * lateral edge tab (see Layout.tsx), not from the Navbar. */
-  onRightPanelToggle?: () => void
-  rightPanelOpen?: boolean
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
   onMenuToggle,
-  onRightPanelToggle,
-  rightPanelOpen,
 }) => {
   const { user } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -144,24 +140,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
           </div>
-
-          {/* Panel toggle - mobile only. At md and up the right panel is
-              controlled solely by its own lateral edge tab (see
-              Layout.tsx), which keeps the spatial link between the control
-              and what it controls instead of tucking it among unrelated
-              view/account controls in the Navbar. */}
-          {onRightPanelToggle && (
-            <button
-              type="button"
-              onClick={onRightPanelToggle}
-              aria-label={rightPanelOpen ? 'Ocultar panel de asistencia' : 'Mostrar panel de asistencia'}
-              aria-pressed={rightPanelOpen}
-              title={rightPanelOpen ? 'Ocultar panel' : 'Mostrar panel'}
-              className="flex md:hidden p-2 rounded-xl text-text-secondary hover:bg-glass hover:text-text focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
-            >
-              <PanelRight size={20} aria-hidden="true" />
-            </button>
-          )}
         </div>
       </div>
     </header>

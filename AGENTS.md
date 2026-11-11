@@ -27,7 +27,6 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 | Servicio | Stack | Rol | Puerto (compose) |
 |---|---|---|---|
 | `cjhirashi-career-api` | Python 3.11 (imagen) · FastAPI · SQLAlchemy 2 · Alembic | Sistema de registro (419 operaciones HTTP, 69 modelos, 53 migraciones; dueño del schema) | 8000 (interno, sin publicar) |
-| `cjhirashi-career-ai` | Python 3.11 · FastAPI **async** · asyncpg · boto3 | Harness de agentes (spec 009, **aplazada**, ADR-032; no desplegado: sin servicio en `docker-compose.yml` ni ruta en `caddy.json`) | 8010 (previsto) |
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
 
@@ -68,7 +67,7 @@ guía para recrearlos.
 ## Mapa de documentación (producto)
 
 `docs/01`–`docs/12` (arc42) · `docs/09-DECISIONS/` (ADRs de producto) ·
-`docs/BEDROCK-SYSTEM.md` · `docs/ADMIN_PANEL_SETUP.md` · `docs/ENVIRONMENT-SECURITY.md` ·
+`docs/ADMIN_PANEL_SETUP.md` · `docs/ENVIRONMENT-SECURITY.md` ·
 `docs/IMPLEMENTATION_PLAN.md` · `caddy.json` · `docker-compose.yml` · READMEs de servicio.
 Tabla completa (con "se actualiza cuando cambia…"): `.harness/constitution.md` Art. 11.
 

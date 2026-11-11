@@ -1,5 +1,4 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import {
   Calendar,
@@ -11,8 +10,6 @@ import {
   Pencil,
   type LucideIcon,
 } from 'lucide-react'
-import { useAdminSections } from '@/hooks/useAdminSections'
-import { matchAdminSection } from '@/types/adminSections'
 
 export interface SectionViewTab {
   key: string
@@ -28,16 +25,6 @@ const VIEW_TAB_ICONS: Record<string, LucideIcon> = {
   record: Eye,
   edit: Pencil,
   main: FileText,
-}
-
-export function useSectionViewTabs(fallback: SectionViewTab[]): SectionViewTab[] {
-  const { pathname } = useLocation()
-  const { data: sections } = useAdminSections()
-  const matched = matchAdminSection(pathname, sections ?? [])
-  if (matched?.section.views.length) {
-    return matched.section.views.map((view) => ({ key: view.key, label: view.label }))
-  }
-  return fallback
 }
 
 interface SectionViewTabsProps {

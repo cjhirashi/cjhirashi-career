@@ -4,9 +4,7 @@ import { careerApi } from '@/api/career'
 import { filesApi } from '@/api/files'
 import { pdfTemplatesApi } from '@/api/pdfTemplates'
 import { pdfTemplateStylesApi } from '@/api/pdfTemplateStyles'
-import { bedrockApi } from '@/api/bedrock'
 import { agentTasksApi } from '@/api/agentTasks'
-import { adminSectionsApi } from '@/api/adminSections'
 import { errorReportsApi } from '@/api/errorReports'
 import { CAREER_DOMAINS, CAREER_RESOURCES, isTableResource } from '@/config/careerResources'
 import { careerQueryKey } from '@/hooks/useCareerResource'
@@ -70,30 +68,9 @@ export function useSidebarCounts(expandedDomain: string | null) {
     ...countQueryOptions,
   })
 
-  const catalogQuery = useQuery({
-    queryKey: ['bedrock', 'agent-catalog'],
-    queryFn: bedrockApi.listAgentCatalog,
-    enabled: loadSettings,
-    ...countQueryOptions,
-  })
-
-  const sectionsQuery = useQuery({
-    queryKey: ['admin', 'sections'],
-    queryFn: adminSectionsApi.list,
-    enabled: loadSettings,
-    ...countQueryOptions,
-  })
-
   const errorReportsQuery = useQuery({
     queryKey: ['error-reports', 'summary'],
     queryFn: errorReportsApi.summary,
-    enabled: loadSettings,
-    ...countQueryOptions,
-  })
-
-  const toolsQuery = useQuery({
-    queryKey: ['bedrock', 'tools'],
-    queryFn: bedrockApi.listTools,
     enabled: loadSettings,
     ...countQueryOptions,
   })
@@ -118,9 +95,6 @@ export function useSidebarCounts(expandedDomain: string | null) {
       pdfTemplates: pdfTemplatesQuery.data,
       pdfStyles: pdfStylesQuery.data,
       methodologies: methodologiesQuery.data,
-      tools: toolsQuery.data?.length,
-      catalog: catalogQuery.data?.length,
-      sections: sectionsQuery.data?.length,
       errorsPending: errorReportsQuery.data?.pending,
     },
   }

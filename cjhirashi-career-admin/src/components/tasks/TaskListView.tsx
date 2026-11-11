@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Play, Search, Trash2, X } from 'lucide-react'
-import { BedrockTask } from '@/types/bedrock'
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Search, Trash2, X } from 'lucide-react'
+import { Task } from '@/types/tasks'
 import { ColumnConfig, SelectOption } from '@/config/careerResources'
 import { formatCellValue } from '@/components/career/careerFieldUtils'
 import { TableColumnSettings } from '@/components/career/TableColumnSettings'
@@ -13,7 +13,6 @@ import {
   assigneeDisplay,
   assigneeLabel,
   AssigneeContext,
-  canRunAgentTask,
   TASK_PRIORITY_LABELS,
   TASK_STATUS_LABELS,
 } from './taskUtils'
@@ -41,8 +40,6 @@ const PRIORITY_OPTIONS: SelectOption[] = Object.entries(TASK_PRIORITY_LABELS).ma
   label,
 }))
 
-const ASSIGNEE_TYPE_OPTIONS_BASE: SelectOption[] = [{ value: 'agent', label: 'Agente' }]
-
 type TaskFilters = {
   status: string[]
   assignee_type: string[]
@@ -52,19 +49,17 @@ type TaskFilters = {
 const EMPTY_FILTERS: TaskFilters = { status: [], assignee_type: [], priority: [] }
 
 interface TaskListViewProps {
-  tasks: BedrockTask[]
+  tasks: Task[]
   assignees: AssigneeContext
   subtaskCount?: Record<string, number>
-  onOpen: (task: BedrockTask) => void
-  onEdit: (task: BedrockTask) => void
-  onDelete: (task: BedrockTask) => void
-  onRun: (task: BedrockTask) => void
-  runningId?: string
+  onOpen: (task: Task) => void
+  onEdit: (task: Task) => void
+  onDelete: (task: Task) => void
 }
 
-const cellValue = (task: BedrockTask, key: string, assignees: AssigneeContext): unknown => {
+const cellValue = (task: Task, key: string, assignees: AssigneeContext): unknown => {
   if (key === 'assignee') return assigneeLabel(task, assignees)
-  return task[key as keyof BedrockTask]
+  return task[key as keyof Task]
 }
 
 const compareCells = (a: unknown, b: unknown, dir: 'asc' | 'desc'): number => {
@@ -81,8 +76,6 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
   onOpen,
   onEdit,
   onDelete,
-  onRun,
-  runningId,
 }) => {
   const { columns, selectedKeys, toggleColumn, moveColumn, options, pinnedKeys } = useVisibleTableColumns(
     'agent-tasks',
@@ -103,10 +96,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
   const filtersActive = filters.status.length + filters.assignee_type.length + filters.priority.length > 0
 
-  const assigneeTypeOptions: SelectOption[] = [
-    { value: 'user', label: assignees.userName },
-    ...ASSIGNEE_TYPE_OPTIONS_BASE,
-  ]
+  const assigneeTypeOptions: SelectOption[] = [{ value: 'user', label: assignees.userName }]
 
   const rows = useMemo(() => {
     let next = tasks
@@ -336,18 +326,6 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                   })}
                   <td className="px-6 py-2 text-right whitespace-nowrap" onClick={(event) => event.stopPropagation()}>
                     <div className="flex justify-end items-center gap-1">
-                      {canRunAgentTask(task) && (subtaskCount[task.id] ?? 0) === 0 && (
-                        <button
-                          type="button"
-                          className="p-1.5 rounded text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-cyan-600"
-                          aria-label={`Ejecutar "${task.title}"`}
-                          title="Ejecutar ahora"
-                          disabled={runningId === task.id}
-                          onClick={() => onRun(task)}
-                        >
-                          <Play size={15} />
-                        </button>
-                      )}
                       <button
                         type="button"
                         onClick={() => onEdit(task)}

@@ -5,15 +5,15 @@ import { Trash2 } from 'lucide-react'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { MarkdownTable } from '@/components/MarkdownTable'
 import { PersonChip } from '@/components/PersonAvatar'
-import { BedrockTask, TaskStatus } from '@/types/bedrock'
+import { Task, TaskStatus } from '@/types/tasks'
 import { assigneeDisplay, AssigneeContext, TASK_STATUS_COLUMNS, TASK_STATUS_LABELS } from './taskUtils'
 
 interface TaskKanbanViewProps {
-  tasks: BedrockTask[]
+  tasks: Task[]
   assignees: AssigneeContext
-  onOpen: (task: BedrockTask) => void
-  onStatus: (task: BedrockTask, status: TaskStatus) => void
-  onDelete: (task: BedrockTask) => void
+  onOpen: (task: Task) => void
+  onStatus: (task: Task, status: TaskStatus) => void
+  onDelete: (task: Task) => void
 }
 
 export const TaskKanbanView: React.FC<TaskKanbanViewProps> = ({

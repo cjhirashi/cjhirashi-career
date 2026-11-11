@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 
 // Components
@@ -18,17 +18,8 @@ import { ChangePasswordPage } from '@/pages/ChangePasswordPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { CareerResourcePage } from '@/pages/CareerResourcePage'
 import { FilesPage } from '@/pages/FilesPage'
-import { AgentMetricsPage } from '@/pages/AgentMetricsPage'
-import { AgentInstructionsPage } from '@/pages/AgentInstructionsPage'
-import { AgentPromptsSettingsPage } from '@/pages/AgentPromptsSettingsPage'
 import { ErrorReportsPage, ErrorReportDetailPage } from '@/pages/ErrorReportsPage'
-import { AgentCatalogPage } from '@/pages/AgentCatalogPage'
-import { AdminSectionsPage, AdminSectionDetailPage } from '@/pages/AdminSectionsPage'
-import { AgentToolsPage } from '@/pages/AgentToolsPage'
-import { AgentMemoryPage } from '@/pages/AgentMemoryPage'
-import { AgentAuditLogPage } from '@/pages/AgentAuditLogPage'
 import { TasksPage } from '@/pages/TasksPage'
-import { AgentGeneralChatPage } from '@/pages/AgentGeneralChatPage'
 import { AgentPdfTemplatesPage } from '@/pages/AgentPdfTemplatesPage'
 import { AgentPdfTemplateStylesPage } from '@/pages/AgentPdfTemplateStylesPage'
 
@@ -186,20 +177,7 @@ export const App: React.FC = () => {
             }
           />
 
-          {/* Agent Bedrock administration - metrics, methodologies (reuses
-              /career/operational-methodologies, not duplicated here),
-              memory, instructions, and MCP tools. See Sidebar.tsx's
-              "Agente IA" section. */}
-          <Route
-            path="/agent/chat"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentGeneralChatPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
+          {/* PDF templates and styles */}
           <Route
             path="/agent/pdf-templates/:recordSlug?"
             element={
@@ -216,56 +194,6 @@ export const App: React.FC = () => {
               <PrivateRoute>
                 <Layout>
                   <AgentPdfTemplateStylesPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/agent/metrics"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentMetricsPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/agents/:profileId?"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentCatalogPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/sections"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AdminSectionsPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/sections/:sectionId"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AdminSectionDetailPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/settings/agent-prompts"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentPromptsSettingsPage />
                 </Layout>
               </PrivateRoute>
             }
@@ -290,48 +218,6 @@ export const App: React.FC = () => {
               </PrivateRoute>
             }
           />
-          <Route path="/agent/catalog" element={<Navigate to="/settings/agents" replace />} />
-          <Route path="/agent/catalog/:profileId" element={<LegacyAgentCatalogRedirect />} />
-          <Route
-            path="/agent/memory"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentMemoryPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/agent/instructions"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentInstructionsPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/agent/tools"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentToolsPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/agent/audit-log"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <AgentAuditLogPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
           <Route path="/agent/tasks" element={<Navigate to="/tasks" replace />} />
 
           {/* Fallback - redirect to dashboard */}
@@ -342,11 +228,6 @@ export const App: React.FC = () => {
     </QueryClientProvider>
     </ErrorBoundary>
   )
-}
-
-const LegacyAgentCatalogRedirect: React.FC = () => {
-  const { profileId } = useParams()
-  return <Navigate to={`/settings/agents/${profileId}`} replace />
 }
 
 export default App

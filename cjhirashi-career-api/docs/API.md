@@ -115,7 +115,7 @@ Patrón por cada resource key (37 recursos):
 
 ## Agent Bedrock — `/bedrock`
 
-→ [sections/bedrock/README.md](sections/bedrock/README.md)
+→ sections/bedrock/README.md (retirado, ADR-033)
 
 | Método | Path |
 |--------|------|

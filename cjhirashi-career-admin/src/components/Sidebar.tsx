@@ -9,20 +9,12 @@ import {
   FolderOpen,
   LineChart,
   Search,
-  Bot,
   Workflow,
-  Brain,
-  Library,
   FileText,
   FileType,
   Palette,
-  Plug,
-  ScrollText,
   ClipboardList,
-  MessageCircle,
   Settings,
-  LayoutGrid,
-  SlidersHorizontal,
   AlertTriangle,
   type LucideIcon,
 } from 'lucide-react'
@@ -47,7 +39,6 @@ const menuItems = [
 ]
 
 const SEARCH_METRICS_DOMAIN_KEY = 'search'
-const AGENT_DOMAIN_KEY = 'agent'
 const PDF_DOMAIN_KEY = 'pdf'
 const SETTINGS_DOMAIN_KEY = 'settings'
 
@@ -55,9 +46,6 @@ type SidebarCountKey =
   | 'pdfTemplates'
   | 'pdfStyles'
   | 'methodologies'
-  | 'tools'
-  | 'catalog'
-  | 'sections'
   | 'errorsPending'
 
 interface NavLink {
@@ -67,20 +55,12 @@ interface NavLink {
   countKey?: SidebarCountKey
 }
 
-const AGENT_LINKS: NavLink[] = [
-  { label: 'Chat General', path: '/agent/chat', icon: MessageCircle },
-  { label: 'Costo y Uso', path: '/agent/metrics', icon: BarChart3 },
-]
-
 const PDF_LINKS: NavLink[] = [
   { label: 'Plantillas PDF', path: '/agent/pdf-templates', icon: FileText, countKey: 'pdfTemplates' },
   { label: 'Estilos PDF', path: '/agent/pdf-template-styles', icon: Palette, countKey: 'pdfStyles' },
 ]
 
 const SETTINGS_LINKS: NavLink[] = [
-  { label: 'Catálogo de Agentes', path: '/settings/agents', icon: Library, countKey: 'catalog' },
-  { label: 'Secciones del Admin', path: '/settings/sections', icon: LayoutGrid, countKey: 'sections' },
-  { label: 'Prompts Globales', path: '/settings/agent-prompts', icon: SlidersHorizontal },
   { label: 'Reportes de Falla', path: '/settings/error-reports', icon: AlertTriangle, countKey: 'errorsPending' },
   {
     label: 'Metodologías Operativas',
@@ -88,10 +68,6 @@ const SETTINGS_LINKS: NavLink[] = [
     icon: Workflow,
     countKey: 'methodologies',
   },
-  { label: 'Memoria', path: '/agent/memory', icon: Brain },
-  { label: 'Instrucciones', path: '/agent/instructions', icon: FileText },
-  { label: 'Herramientas', path: '/agent/tools', icon: Plug, countKey: 'tools' },
-  { label: 'Bitácora', path: '/agent/audit-log', icon: ScrollText },
 ]
 
 const RecordCount: React.FC<{ count?: number }> = ({ count }) => {
@@ -312,19 +288,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             )
           })}
         </div>
-
-        <NavAccordion
-          domainKey={AGENT_DOMAIN_KEY}
-          label="Agente IA"
-          icon={Bot}
-          links={AGENT_LINKS}
-          isOpen={isOpen}
-          isExpanded={expandedDomain === AGENT_DOMAIN_KEY}
-          onToggle={handleDomainToggle}
-          isActive={isActive}
-          counts={counts.nav}
-          onLinkClick={closeMobileDrawer}
-        />
 
         <NavAccordion
           domainKey={PDF_DOMAIN_KEY}

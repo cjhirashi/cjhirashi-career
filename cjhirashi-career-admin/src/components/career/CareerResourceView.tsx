@@ -21,7 +21,6 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { useThemeStore } from '@/stores/themeStore'
 import { FieldConfig, FieldType, ResourceConfig } from '@/config/careerResources'
-import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { useCareerList, useCareerMutations, useCareerCount } from '@/hooks/useCareerResource'
 import { usePdfTemplateList, usePdfTemplateMutations, usePdfTemplateCount } from '@/hooks/usePdfTemplateResource'
 import {
@@ -38,7 +37,6 @@ import { getBlobErrorMessage, getErrorMessage, assertPdfBlob } from '@/utils/err
 import { matchesRecordSegment, recordSegmentFromPath, recordUrlSegment } from '@/utils/recordUrl'
 import { hasActiveFilters } from '@/utils/listFilters'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { useSectionViewTabs } from '@/components/SectionViewTabs'
 import {
   SectionShell,
   SectionToolbar,
@@ -365,7 +363,7 @@ const FkSelectCapsule: React.FC<{
   id: string
   fkResource: string
   fkLabelField?: string | string[]
-  fkApi?: 'career' | 'pdf-template-styles' | 'admin-sections'
+  fkApi?: 'career' | 'pdf-template-styles'
 }> = ({ id, fkResource, fkLabelField, fkApi = 'career' }) => {
   const name = useFkLabel(fkResource, id, fkLabelField, fkApi)
   return <SelectCapsule code={id} label={name} />
@@ -380,12 +378,12 @@ const SelectFieldCapsules: React.FC<{
 
   if (type === 'multi-select') {
     if (!Array.isArray(value) || value.length === 0) {
-      return <span className="text-text-muted">Todos los agentes</span>
+      return <span className="text-text-muted">—</span>
     }
     return (
       <SelectCapsuleGroup>
         {value.map((id) => (
-          <SelectCapsule key={String(id)} code={String(id)} label={getAgentProfileLabel(String(id))} />
+          <SelectCapsule key={String(id)} code={String(id)} label={String(id)} />
         ))}
       </SelectCapsuleGroup>
     )
@@ -636,7 +634,7 @@ export const CareerResourceView: React.FC<CareerResourceViewProps> = ({
   const usesExternalPdfApi = usesPdfTemplatesApi || usesPdfTemplateStylesApi
   const isSingleton = config.mode === 'singleton'
   const isNested = !!parentFilter
-  const sectionViews = useSectionViewTabs(isSingleton ? SINGLETON_VIEW_TABS : LIST_VIEW_TABS)
+  const sectionViews = isSingleton ? SINGLETON_VIEW_TABS : LIST_VIEW_TABS
   const urlEnabled = Boolean(listPath) && !isNested && !isSingleton
   const recordSegment = urlEnabled && listPath
     ? recordSegmentFromPath(location.pathname, listPath)

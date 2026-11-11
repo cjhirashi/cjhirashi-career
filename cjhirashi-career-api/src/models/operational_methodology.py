@@ -26,14 +26,6 @@ class OperationalMethodology(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     content = Column(Text, nullable=False)
-    # IDs canónicos agent_* para quienes aplica esta metodología — SÓLO L1/L3
-    # desde spec 004 (los L2 la reciben vía sección). Vacío/null + section_ids
-    # vacío/null = compartida (todos). Lista = sólo esos perfiles L1/L3.
-    agent_profile_ids = Column(JSONB, nullable=True)
-    # IDs sec-N de las secciones del Admin a las que está ligada esta
-    # metodología (spec 004). Un agente L2 ligado a alguna de esas secciones la
-    # recibe. Vacío/null = no ligada a ninguna sección.
-    section_ids = Column(JSONB, nullable=True)
 
     # --- Auditoría temporal ---
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

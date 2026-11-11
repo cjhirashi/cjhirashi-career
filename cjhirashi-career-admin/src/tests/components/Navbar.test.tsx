@@ -232,19 +232,6 @@ describe('Navbar', () => {
     })
   })
 
-  describe('right panel toggle', () => {
-    it('should only be visible on mobile - md and up use the lateral edge tab instead', () => {
-      render(<Navbar onLogout={mockLogout} onRightPanelToggle={vi.fn()} rightPanelOpen />)
-      const toggle = screen.getByRole('button', { name: /panel de asistencia/i })
-      expect(toggle.className).toContain('md:hidden')
-    })
-
-    it('should not render when onRightPanelToggle is not provided', () => {
-      render(<Navbar onLogout={mockLogout} />)
-      expect(screen.queryByRole('button', { name: /panel de asistencia/i })).not.toBeInTheDocument()
-    })
-  })
-
   describe('styling', () => {
     it('should have header with border', () => {
       const { container } = render(<Navbar onLogout={mockLogout} />)

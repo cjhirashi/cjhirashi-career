@@ -65,17 +65,7 @@ from models.tag import Tag
 # Dominio 5: Metodologías Operativas
 from models.operational_methodology import OperationalMethodology
 
-# Agent Bedrock
-from models.bedrock_usage_log import BedrockUsageLog
-from models.bedrock_usage_round_log import BedrockUsageRoundLog
-from models.bedrock_settings import BedrockSettings
-from models.bedrock_agent_profile_prompt import BedrockAgentProfilePrompt
-from models.bedrock_agent_profile_photo import BedrockAgentProfilePhoto
-from models.bedrock_agent_delegation import BedrockAgentDelegation
-from models.bedrock_agent_profile_tool import BedrockAgentProfileTool
-from models.admin_section_override import AdminSectionOverride
-from models.bedrock_custom_tool import BedrockCustomTool
-from models.bedrock_conversation import BedrockConversation, BedrockConversationMessage
+# Tablero de tareas
 from models.bedrock_task import BedrockTask
 from models.user_notification import UserNotification
 from models.error_report import ErrorReport
@@ -151,18 +141,7 @@ __all__ = [
     "Tag",
     # Operational methodologies domain
     "OperationalMethodology",
-    # Agent Bedrock
-    "BedrockUsageLog",
-    "BedrockUsageRoundLog",
-    "BedrockSettings",
-    "BedrockAgentProfilePrompt",
-    "BedrockAgentProfilePhoto",
-    "BedrockAgentDelegation",
-    "BedrockAgentProfileTool",
-    "AdminSectionOverride",
-    "BedrockCustomTool",
-    "BedrockConversation",
-    "BedrockConversationMessage",
+    # Tablero de tareas
     "BedrockTask",
     "UserNotification",
     "ErrorReport",

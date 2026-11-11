@@ -358,7 +358,6 @@ Ver [TESTING.md](./TESTING.md).
 | Endpoints | [API.md](./API.md) | Referencia rápida |
 | Base de datos | [DATABASE.md](./DATABASE.md) | Esquema PostgreSQL |
 | Seguridad | [SECURITY.md](./SECURITY.md) | JWT, CORS, OWASP |
-| Bedrock IAM | [BEDROCK-HARNESS.md](./BEDROCK-HARNESS.md) | Permisos AWS |
 | Setup | [SETUP.md](./SETUP.md) | Instalación y Docker |
 
 ---

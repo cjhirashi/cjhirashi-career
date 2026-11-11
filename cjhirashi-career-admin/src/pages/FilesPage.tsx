@@ -18,7 +18,6 @@ import { filesApi } from '@/api/files'
 import { FileUploadEntity } from '@/types/files'
 import { getErrorMessage } from '@/utils/errors'
 import { formatFileSize, formatDateTime } from '@/utils/formatters'
-import { useSectionViewTabs } from '@/components/SectionViewTabs'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedSwitch } from '@/components/ThemedSwitch'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -246,7 +245,7 @@ export const FilesPage: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [uploadCategory, setUploadCategory] = useState('')
   const [uploadIsPublic, setUploadIsPublic] = useState(true)
-  const sectionViews = useSectionViewTabs([{ key: 'main', label: 'Principal' }])
+  const sectionViews = [{ key: 'main', label: 'Principal' }]
   const { columns: fileColumns, selectedKeys: visibleFileKeys, toggleColumn: toggleFileColumn, moveColumn: moveFileColumn, pinnedKeys: filePinnedKeys, options: fileColumnOptions } =
     useVisibleTableColumns('files', FILE_TABLE_COLUMNS, FILE_TABLE_DEFAULT_KEYS, FILE_PINNED_KEYS)
   const { data, isLoading, isError, error, refetch } = useFilesList(

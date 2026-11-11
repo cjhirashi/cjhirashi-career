@@ -51,7 +51,6 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { allAgentSelectOptions } from '@/config/agentProfiles'
 
 export type FieldType =
   | 'text'
@@ -128,7 +127,7 @@ export interface FieldConfig {
    */
   fkLabelField?: string | string[]
   /** For type='fk-select' or 'fk-multi-select': API source when not under /career/{key}. */
-  fkApi?: 'career' | 'pdf-template-styles' | 'admin-sections'
+  fkApi?: 'career' | 'pdf-template-styles'
   /**
    * For type='fk-multi-select': lets Carlos type a value not yet in
    * `fkResource`'s options - it is sent as-is and the backend creates the
@@ -139,7 +138,7 @@ export interface FieldConfig {
   jsonList?: JsonListConfig
 }
 
-export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number' | 'agents'
+export type ColumnFormat = 'text' | 'date' | 'datetime' | 'boolean' | 'badge' | 'truncate' | 'number'
 
 export interface ColumnConfig {
   key: string
@@ -1991,33 +1990,12 @@ export const operationalMethodologiesConfig: ResourceConfig = {
   labelSingular: 'Metodología Operativa',
   genderFeminine: true,
   description:
-    'Instrucciones para el agente sobre cómo trabajar en las distintas tablas de carrera y cómo se relacionan entre ellas - protocolos y frameworks operativos, uno por registro.',
+    'Protocolos y frameworks operativos de trabajo sobre las tablas de carrera y cómo se relacionan entre ellas, uno por registro.',
   columns: [
     { key: 'title', label: 'Título' },
-    { key: 'section_ids', label: 'Secciones' },
-    { key: 'agent_profile_ids', label: 'Agentes', format: 'agents' },
   ],
   fields: [
     { name: 'title', label: 'Título', type: 'text', required: true, fullWidth: true },
-    {
-      name: 'section_ids',
-      label: 'Secciones del Admin',
-      type: 'fk-multi-select',
-      fkResource: 'admin-sections',
-      fkLabelField: 'label',
-      fkApi: 'admin-sections',
-      fullWidth: true,
-      helpText: 'Vincula la metodología con una o más secciones del panel.',
-    },
-    {
-      name: 'agent_profile_ids',
-      label: 'Agentes destinatarios',
-      type: 'multi-select',
-      fullWidth: true,
-      options: allAgentSelectOptions(),
-      helpText:
-        'Los agentes consultan automáticamente las metodologías que les asignes aquí. Sin selección = compartida (todos los agentes).',
-    },
     { name: 'description', label: 'Descripción breve', type: 'textarea', fullWidth: true },
     {
       name: 'content',

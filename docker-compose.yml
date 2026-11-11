@@ -15,7 +15,7 @@
 #   - Portal:   cjhirashi-career-portfolio:8000  (host 8003)
 #
 # Servicios Internos (red Docker):
-#   - API:      cjhirashi-career-api:8000  (Bedrock + PDF WeasyPrint)
+#   - API:      cjhirashi-career-api:8000  (PDF WeasyPrint)
 #   - PostgreSQL (5432), MinIO (9000)
 
 version: '3.9'
@@ -25,7 +25,6 @@ services:
   # Admin Panel — Interface Privada para Carlos Jiménez Hirashi
   # =========================================================================
   # Responsabilidad: Gestión manual de identidad, competencias, evidencia
-  #                  Asistencia IA (Bedrock)
   #                  Generación de documentos (PDF)
   #
   # ESTADO: ✅ Implementado (React SPA con Vite)
@@ -112,18 +111,6 @@ services:
       APP_VERSION: ${APP_VERSION}
       DEBUG: ${DEBUG}
       UPLOADS_DIR: ${UPLOADS_DIR}
-      # AWS Bedrock — Converse API. Ver docs/BEDROCK-SYSTEM.md
-      BEDROCK_REGION: ${BEDROCK_REGION}
-      BEDROCK_DEFAULT_MODEL_ID: ${BEDROCK_DEFAULT_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_ORCHESTRATOR_MODEL_ID: ${BEDROCK_ORCHESTRATOR_MODEL_ID:-us.anthropic.claude-haiku-4-5-20251001-v1:0}
-      BEDROCK_IMAGE_REGION: ${BEDROCK_IMAGE_REGION:-us-west-2}
-      BEDROCK_IMAGE_MODEL_ID: ${BEDROCK_IMAGE_MODEL_ID:-stability.stable-image-core-v1:1}
-      BEDROCK_MAX_IMAGES_PER_DAY: ${BEDROCK_MAX_IMAGES_PER_DAY:-20}
-      BEDROCK_DAILY_BUDGET_USD: ${BEDROCK_DAILY_BUDGET_USD:-5.0}
-      BEDROCK_MAX_ROUND_TRIPS: ${BEDROCK_MAX_ROUND_TRIPS:-6}
-      BEDROCK_HISTORY_WINDOW: ${BEDROCK_HISTORY_WINDOW:-20}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       # MinIO (bucket de archivos). Hostname MUST be the Compose service
       # name (`minio`), not localhost and not interpolated from host .env:
       # a developer MINIO_ENDPOINT=localhost:9000 (pytest on the host)

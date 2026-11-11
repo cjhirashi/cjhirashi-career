@@ -224,7 +224,7 @@ reconstruir. Los visitantes `legacy=true` salen de eventos v1 y no tienen origen
 
 ## Dominio: Agent Bedrock
 
-Documentación API: [sections/bedrock/README.md](./sections/bedrock/README.md)
+Documentación API: sections/bedrock/README.md (retirado, ADR-033)
 
 | Tabla | Modelo | Propósito |
 |-------|--------|-----------|
@@ -354,7 +354,7 @@ Ajustar usuario/BD según `.env` del proyecto (`POSTGRES_USER`, `POSTGRES_DB`).
 | digital (6 tablas) | [career-digital](./sections/career-digital/README.md) |
 | tags | [career-support](./sections/career-support/README.md) |
 | operational_methodologies | [career-methodologies](./sections/career-methodologies/README.md) |
-| bedrock_* , pdf_output_templates | [bedrock](./sections/bedrock/README.md), [pdf-templates](./sections/pdf-templates/README.md) |
+| bedrock_* , pdf_output_templates | bedrock (retirado, ADR-033), [pdf-templates](./sections/pdf-templates/README.md) |
 | bedrock_tasks | [bedrock-tasks](./sections/bedrock-tasks/README.md) |
 | file_uploads | [files](./sections/files/README.md) |
 | portal + projects (lectura) | [public](./sections/public/README.md) |

@@ -90,9 +90,8 @@ async def get_current_user(
     # (resumes, certificates, ...) via that bucket.
     if user.access_role == "agent":
         career_path = request.url.path.startswith("/career/")
-        bedrock_chat = request.url.path == "/bedrock/chat" and request.method == "POST"
         file_upload = request.url.path == "/files" and request.method == "POST"
-        if not career_path and not bedrock_chat and not file_upload:
+        if not career_path and not file_upload:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Agent token is not authorized for this endpoint",

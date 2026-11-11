@@ -63,14 +63,7 @@ class _TaskWriteValidation:
     @field_validator("agent_profile_id")
     @classmethod
     def validate_agent_profile_id(cls, value: Optional[str]) -> Optional[str]:
-        normalized = _normalize_optional_str(value)
-        if normalized is None:
-            return None
-        from services.bedrock.agent_profiles import known_agent_profile_ids
-
-        if normalized not in known_agent_profile_ids():
-            raise ValueError(f"Agente desconocido: {normalized}")
-        return normalized
+        return _normalize_optional_str(value)
 
     @model_validator(mode="after")
     def assignee_consistency(self):
@@ -141,14 +134,7 @@ class BedrockTaskUpdate(BaseModel):
     @field_validator("agent_profile_id")
     @classmethod
     def validate_agent_profile_id(cls, value: Optional[str]) -> Optional[str]:
-        normalized = _normalize_optional_str(value)
-        if normalized is None:
-            return None
-        from services.bedrock.agent_profiles import known_agent_profile_ids
-
-        if normalized not in known_agent_profile_ids():
-            raise ValueError(f"Agente desconocido: {normalized}")
-        return normalized
+        return _normalize_optional_str(value)
 
     @model_validator(mode="after")
     def assignee_consistency(self):

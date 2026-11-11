@@ -1,5 +1,4 @@
 import { FieldConfig, FieldType } from '@/config/careerResources'
-import { getAgentProfileLabel } from '@/config/agentProfiles'
 import { formatDate, formatDateTime, truncate } from '@/utils/formatters'
 import { jsonListConfigOf, parseEditorRows, summarizeJsonList, toApiValue, toEditorRows } from './jsonListUtils'
 
@@ -128,9 +127,6 @@ export const formatCellValue = (value: unknown, format?: string): string => {
       return typeof value === 'string' ? truncate(value, 60) : String(value)
     case 'number':
       return String(value)
-    case 'agents':
-      if (!Array.isArray(value) || value.length === 0) return 'Todos'
-      return value.map((id) => getAgentProfileLabel(String(id))).join(', ')
     default:
       if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
         return summarizeJsonList(value, jsonListConfigOf())

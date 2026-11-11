@@ -62,7 +62,7 @@ Cada dominio tiene su README detallado en [`docs/sections/`](docs/sections/READM
 | Carrera — Métricas | `/career/metrics` | [career-metrics](docs/sections/career-metrics/README.md) |
 | Carrera — Metodologías | `/career/operational-methodologies` | [career-methodologies](docs/sections/career-methodologies/README.md) |
 | Job Discovery | `/career/job-discoveries` | [job-discovery](docs/sections/job-discovery/README.md) |
-| Agent Bedrock | `/bedrock` | [bedrock](docs/sections/bedrock/README.md) |
+| Agent Bedrock | `/bedrock` | bedrock (retirado, ADR-033) |
 | Tareas del agente | `/agent-tasks` | [bedrock-tasks](docs/sections/bedrock-tasks/README.md) |
 | Plantillas PDF | `/pdf-templates` | [pdf-templates](docs/sections/pdf-templates/README.md) |
 | Estilos PDF | `/pdf-template-styles` | [pdf-template-styles](docs/sections/pdf-template-styles/README.md) |
@@ -126,7 +126,7 @@ Cada paquete Python describe **qué hace cada módulo** (no el contrato HTTP):
 | Raíz (`app.py`, `config.py`, `database.py`) | [src/README.md](src/README.md) |
 | `routes/` | [src/routes/README.md](src/routes/README.md) |
 | `services/` | [src/services/README.md](src/services/README.md) |
-| `services/bedrock/` | [src/services/bedrock/README.md](src/services/bedrock/README.md) |
+| `services/bedrock/` | src/services/bedrock/README.md (retirado, ADR-033) |
 | `services/job_discovery/` | [src/services/job_discovery/README.md](src/services/job_discovery/README.md) |
 | `models/` | [src/models/README.md](src/models/README.md) |
 | `schemas/` | [src/schemas/README.md](src/schemas/README.md) |

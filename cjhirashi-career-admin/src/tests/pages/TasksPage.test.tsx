@@ -3,28 +3,22 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen, fireEvent, waitFor } from '../utils'
 import { TasksPage } from '@/pages/TasksPage'
 import { agentTasksApi } from '@/api/agentTasks'
-import { bedrockApi } from '@/api/bedrock'
 import { mockUser } from '../fixtures/mockData'
 import { useAuthStore } from '@/stores/authStore'
-import { BedrockTask } from '@/types/bedrock'
+import { Task } from '@/types/tasks'
 
 vi.mock('@/api/agentTasks')
-vi.mock('@/api/bedrock', () => ({
-  bedrockApi: { listAgentCatalog: vi.fn() },
-}))
 
 const mockedTasksApi = vi.mocked(agentTasksApi)
-const mockedBedrockApi = vi.mocked(bedrockApi)
 
-const sampleTask: BedrockTask = {
+const sampleTask: Task = {
   id: 'btk-1',
   user_id: 'usr-1',
   title: 'Buscar vacantes DevOps',
   description: 'Indeed y RemoteOK',
   status: 'pending',
   notes: null,
-  assignee_type: 'agent',
-  agent_profile_id: 'agent_vacancy_search',
+  assignee_type: 'user',
   scheduled_at: '2026-08-27T15:00:00Z',
   due_at: '2026-08-27T18:00:00Z',
   priority: 'high',
@@ -54,22 +48,12 @@ describe('TasksPage', () => {
     mockedTasksApi.count.mockResolvedValue(1)
     mockedTasksApi.create.mockResolvedValue(sampleTask)
     mockedTasksApi.update.mockResolvedValue(sampleTask)
-    mockedBedrockApi.listAgentCatalog.mockResolvedValue([
-      {
-        profile_id: 'agent_vacancy_search',
-        label: 'Control de búsqueda de vacantes',
-        level: 3,
-        user_facing: false,
-        photo_url: 'https://example.com/agent.png',
-      } as never,
-    ])
   })
 
   it('shows the task in the list view', async () => {
     renderPage()
     expect(await screen.findByText('Buscar vacantes DevOps')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Lista' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByText('Control de búsqueda de vacantes')).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/buscar en tareas/i)).toBeInTheDocument()
     expect(screen.getByText('btk-1')).toBeInTheDocument()
     expect(screen.getByText('Pendiente')).toBeInTheDocument()
@@ -78,15 +62,11 @@ describe('TasksPage', () => {
     expect(screen.queryByText('high')).not.toBeInTheDocument()
     expect(screen.getByText('Pendiente').closest('[data-tone]')).toHaveAttribute('data-tone', 'pending')
     expect(screen.getByText('Alta').closest('[data-tone]')).toHaveAttribute('data-tone', 'high')
-    const assignee = screen.getByText('Control de búsqueda de vacantes').closest('.actor-capsule')
-    expect(assignee).toBeTruthy()
-    expect(assignee?.querySelector('img')?.getAttribute('src')).toBe('https://example.com/agent.png')
-    expect(screen.queryByText('agent_vacancy_search')).not.toBeInTheDocument()
   })
 
   it('shows a user assignee as photo + name, not the user|Tú chip', async () => {
     mockedTasksApi.list.mockResolvedValue([
-      { ...sampleTask, assignee_type: 'user', agent_profile_id: null },
+      { ...sampleTask },
     ])
     useAuthStore.setState({
       user: { ...mockUser, photo_url: 'https://example.com/me.jpg' },
@@ -130,9 +110,8 @@ describe('TasksPage', () => {
     expect(screen.getByRole('tab', { name: 'Lista' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Vista' })).toHaveClass('is-indicator')
     expect(screen.queryByRole('tab', { name: 'Kanban' })).not.toBeInTheDocument()
-    expect(screen.getByLabelText(/responsable/i)).toBeInTheDocument()
-    expect(screen.getAllByText('Demo User').length).toBeGreaterThan(0)
-    expect(screen.queryByText(/Tú \(manual\)/)).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/prioridad/i)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/responsable/i)).not.toBeInTheDocument()
   })
 
   it('opens record and edit views when a task is selected', async () => {
@@ -180,7 +159,6 @@ describe('TasksPage', () => {
         parent_id: 'btk-1',
         title: 'Revisar resultados',
         assignee_type: 'user',
-        agent_profile_id: null,
         sort_order: 0,
         is_blocking: true,
       },

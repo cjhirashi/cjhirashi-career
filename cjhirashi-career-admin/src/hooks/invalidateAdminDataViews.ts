@@ -18,12 +18,6 @@ export const ADMIN_DATA_QUERY_PREFIXES = [
   ['github-repos'],
   ['job-providers'],
   ['target-roles'],
-  ['bedrock', 'audit-log'],
-  ['bedrock', 'memory'],
-  ['bedrock', 'tools'],
-  ['bedrock', 'usage-metrics'],
-  ['bedrock', 'instructions'],
-  ['bedrock', 'agent-profiles'],
 ] as const
 
 export function invalidateAdminDataViews(queryClient: QueryClient): Promise<void> {

@@ -11,12 +11,12 @@ import {
 } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { BedrockTask } from '@/types/bedrock'
+import { Task } from '@/types/tasks'
 import { statusChipClass, taskStartDate } from './taskUtils'
 
 interface TaskCalendarViewProps {
-  tasks: BedrockTask[]
-  onOpen: (task: BedrockTask) => void
+  tasks: Task[]
+  onOpen: (task: Task) => void
 }
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -31,7 +31,7 @@ export const TaskCalendarView: React.FC<TaskCalendarViewProps> = ({ tasks, onOpe
   }, [cursor])
 
   const tasksByDay = useMemo(() => {
-    const map = new Map<string, BedrockTask[]>()
+    const map = new Map<string, Task[]>()
     for (const task of tasks) {
       const start = taskStartDate(task)
       if (!start) continue

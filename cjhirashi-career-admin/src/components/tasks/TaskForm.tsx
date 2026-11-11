@@ -4,17 +4,16 @@ import { ThemedSelect } from '@/components/ThemedSelect'
 import { ThemedSwitch } from '@/components/ThemedSwitch'
 import { SelectOption } from '@/config/careerResources'
 import { useAuthStore } from '@/stores/authStore'
-import { BedrockAgentCatalogItem, BedrockTask, BedrockTaskPayload } from '@/types/bedrock'
+import { Task, TaskPayload } from '@/types/tasks'
 import { getErrorMessage } from '@/utils/errors'
 import { datetimeLocalToIso, isoToDatetimeLocal, TASK_PRIORITY_LABELS, TASK_STATUS_LABELS } from './taskUtils'
 
 export const TASK_FORM_ID = 'task-record-form'
 
 interface TaskFormProps {
-  task: BedrockTask | null
-  subtasks?: BedrockTask[]
-  agents: BedrockAgentCatalogItem[]
-  onSave: (payload: BedrockTaskPayload & { title: string }) => Promise<unknown> | unknown
+  task: Task | null
+  subtasks?: Task[]
+  onSave: (payload: TaskPayload & { title: string }) => Promise<unknown> | unknown
   isSaving: boolean
   formId?: string
   hideActions?: boolean
@@ -25,8 +24,6 @@ const emptyForm = {
   title: '',
   description: '',
   status: 'pending',
-  assignee_type: 'user',
-  agent_profile_id: '',
   scheduled_at: '',
   due_at: '',
   priority: 'medium',
@@ -36,8 +33,6 @@ interface SubtaskDraft {
   key: string
   id?: string
   title: string
-  assignee_type: string
-  agent_profile_id: string
   is_blocking: boolean
   execute_on_turn: boolean
   scheduled_at: string
@@ -48,8 +43,6 @@ interface SubtaskDraft {
 const emptySubtask = (): SubtaskDraft => ({
   key: `new-${Math.random().toString(36).slice(2, 8)}`,
   title: '',
-  assignee_type: 'user',
-  agent_profile_id: '',
   is_blocking: true,
   execute_on_turn: false,
   scheduled_at: '',
@@ -57,12 +50,10 @@ const emptySubtask = (): SubtaskDraft => ({
   priority: 'medium',
 })
 
-const toDraft = (task: BedrockTask): SubtaskDraft => ({
+const toDraft = (task: Task): SubtaskDraft => ({
   key: task.id,
   id: task.id,
   title: task.title,
-  assignee_type: task.assignee_type === 'agent' ? 'agent' : 'user',
-  agent_profile_id: task.agent_profile_id ?? '',
   is_blocking: task.is_blocking !== false,
   execute_on_turn: Boolean(task.execute_on_turn),
   scheduled_at: isoToDatetimeLocal(task.scheduled_at),
@@ -73,7 +64,6 @@ const toDraft = (task: BedrockTask): SubtaskDraft => ({
 export const TaskForm: React.FC<TaskFormProps> = ({
   task,
   subtasks = [],
-  agents,
   onSave,
   isSaving,
   formId = TASK_FORM_ID,
@@ -98,8 +88,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       title: task.title,
       description: task.description ?? '',
       status: task.status,
-      assignee_type: task.assignee_type === 'agent' ? 'agent' : 'user',
-      agent_profile_id: task.agent_profile_id ?? '',
       scheduled_at: isoToDatetimeLocal(task.scheduled_at),
       due_at: isoToDatetimeLocal(task.due_at),
       priority: task.priority || 'medium',
@@ -108,25 +96,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     setError(null)
   }, [task, subtasks, isChild])
 
-  const responsableOptions = useMemo<SelectOption[]>(
-    () => [
-      { value: 'user', label: userName, imageUrl: user?.photo_url ?? null },
-      ...[...agents]
-        .sort((a, b) => a.level - b.level || a.label.localeCompare(b.label))
-        .map((agent) => ({
-          value: agent.profile_id,
-          label: agent.label,
-          imageUrl: agent.photo_url ?? null,
-        })),
-    ],
-    [agents, userName, user?.photo_url]
-  )
-
-  const applyResponsable = (value: string): { assignee_type: string; agent_profile_id: string } =>
-    value === 'user' || !value
-      ? { assignee_type: 'user', agent_profile_id: '' }
-      : { assignee_type: 'agent', agent_profile_id: value }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -134,24 +103,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       setError('El título es obligatorio.')
       return
     }
-    if (form.assignee_type === 'agent' && !form.agent_profile_id) {
-      setError('Elige el agente que ejecutará la tarea.')
-      return
-    }
     const nested = drafts.filter((row) => row.title.trim())
-    for (const row of nested) {
-      if (row.assignee_type === 'agent' && !row.agent_profile_id) {
-        setError(`La subtarea "${row.title.trim()}" necesita un agente.`)
-        return
-      }
-    }
     try {
       await onSave({
         title: form.title.trim(),
         description: form.description.trim() || null,
         status: form.status,
-        assignee_type: form.assignee_type,
-        agent_profile_id: form.assignee_type === 'agent' ? form.agent_profile_id : null,
+        assignee_type: 'user',
         scheduled_at: datetimeLocalToIso(form.scheduled_at),
         due_at: datetimeLocalToIso(form.due_at),
         priority: form.priority,
@@ -161,10 +119,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({
               subtasks: nested.map((row, index) => ({
                 id: row.id,
                 title: row.title.trim(),
-                assignee_type: row.assignee_type,
-                agent_profile_id: row.assignee_type === 'agent' ? row.agent_profile_id : null,
+                assignee_type: 'user',
                 is_blocking: row.is_blocking,
-                execute_on_turn: row.assignee_type === 'agent' ? row.execute_on_turn : false,
+                execute_on_turn: false,
                 scheduled_at: datetimeLocalToIso(row.scheduled_at),
                 due_at: datetimeLocalToIso(row.due_at),
                 priority: row.priority,
@@ -209,26 +166,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           className="input-field min-h-[6rem]"
           value={form.description}
           onChange={(e) => setField('description', e.target.value)}
-          placeholder="Qué hay que hacer. Si es para un agente, sé concreto: el agente no podrá preguntarte."
+          placeholder="Qué hay que hacer."
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="form-group">
-          <label className="form-label" htmlFor="task-assignee">
-            Responsable
-          </label>
-          <ThemedSelect
-            id="task-assignee"
-            value={form.assignee_type === 'agent' ? form.agent_profile_id : 'user'}
-            onChange={(v) => {
-              const next = applyResponsable(v)
-              setForm((current) => ({ ...current, ...next }))
-            }}
-            allowEmpty={false}
-            options={responsableOptions}
-          />
-        </div>
         <div className="form-group">
           <label className="form-label" htmlFor="task-priority">
             Prioridad
@@ -260,7 +202,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="form-group">
           <label htmlFor="task-scheduled" className="form-label">
-            Inicio / ejecución
+            Inicio
           </label>
           <input
             id="task-scheduled"
@@ -269,11 +211,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             value={form.scheduled_at}
             onChange={(e) => setField('scheduled_at', e.target.value)}
           />
-          {form.assignee_type === 'agent' && (
-            <p className="text-xs text-text-muted mt-1">
-              Si no usas “al turno”, el agente ejecuta a esta hora (Ciudad de México) aunque no estés en sesión.
-            </p>
-          )}
         </div>
         <div className="form-group">
           <label htmlFor="task-due" className="form-label">
@@ -304,11 +241,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({
             </button>
           </div>
           <p className="text-xs text-text-muted">
-            El responsable de arriba orquesta el plan. Cada subtarea puede ir a {userName} o a un agente, ser
-            bloqueante (las siguientes esperan) y ejecutarse a una hora o cuando le toque el turno.
+            Cada subtarea puede ser bloqueante (las siguientes esperan) y tener su propia fecha de inicio y límite.
           </p>
           {drafts.length === 0 && (
-            <p className="text-sm text-text-secondary">Sin subtareas. El padre se ejecuta como una tarea suelta.</p>
+            <p className="text-sm text-text-secondary">Sin subtareas.</p>
           )}
           {drafts.map((row, index) => (
             <div key={row.key} className="rounded-xl border border-border bg-glass/40 p-3 space-y-3">
@@ -331,19 +267,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                 aria-label={`Título de subtarea ${index + 1}`}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <ThemedSelect
-                  value={row.assignee_type === 'agent' ? row.agent_profile_id : 'user'}
-                  onChange={(v) => {
-                    const next = applyResponsable(v)
-                    setDraft(row.key, {
-                      ...next,
-                      execute_on_turn: next.assignee_type === 'agent' ? row.execute_on_turn : false,
-                    })
-                  }}
-                  allowEmpty={false}
-                  aria-label={`Responsable de subtarea ${index + 1}`}
-                  options={responsableOptions}
-                />
                 <input
                   type="datetime-local"
                   className="input-field"
@@ -368,16 +291,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                   />
                   Bloqueante
                 </label>
-                {row.assignee_type === 'agent' && (
-                  <label className="flex items-center gap-2 text-sm text-text">
-                    <ThemedSwitch
-                      checked={row.execute_on_turn}
-                      onChange={(checked) => setDraft(row.key, { execute_on_turn: checked })}
-                      aria-label={`Ejecutar al turno subtarea ${index + 1}`}
-                    />
-                    Ejecutar al turno
-                  </label>
-                )}
               </div>
             </div>
           ))}

@@ -1,6 +1,6 @@
 import { addDays, format, parseISO, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { BedrockTask, TaskStatus } from '@/types/bedrock'
+import { Task, TaskStatus } from '@/types/tasks'
 
 export const TASK_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente',
@@ -53,11 +53,11 @@ export function datetimeLocalToIso(value: string): string | null {
   return iso
 }
 
-export function taskStartIso(task: BedrockTask): string | null {
+export function taskStartIso(task: Task): string | null {
   return task.scheduled_at || task.due_at || null
 }
 
-export function taskStartDate(task: BedrockTask): Date | null {
+export function taskStartDate(task: Task): Date | null {
   const iso = taskStartIso(task)
   if (!iso) return null
   try {
@@ -67,7 +67,7 @@ export function taskStartDate(task: BedrockTask): Date | null {
   }
 }
 
-export function taskEndDate(task: BedrockTask): Date | null {
+export function taskEndDate(task: Task): Date | null {
   if (task.due_at) {
     try {
       return parseISO(task.due_at)
@@ -79,20 +79,12 @@ export function taskEndDate(task: BedrockTask): Date | null {
   return start ? addDays(start, 1) : null
 }
 
-export function canRunAgentTask(task: BedrockTask): boolean {
-  return (
-    task.assignee_type === 'agent' &&
-    Boolean(task.agent_profile_id) &&
-    (task.status === 'pending' || task.status === 'failed')
-  )
-}
-
-export function isRootTask(task: BedrockTask): boolean {
+export function isRootTask(task: Task): boolean {
   return !task.parent_id
 }
 
-export function groupSubtasks(tasks: BedrockTask[]): Map<string, BedrockTask[]> {
-  const grouped = new Map<string, BedrockTask[]>()
+export function groupSubtasks(tasks: Task[]): Map<string, Task[]> {
+  const grouped = new Map<string, Task[]>()
   for (const task of tasks) {
     if (!task.parent_id) continue
     const list = grouped.get(task.parent_id) ?? []
@@ -105,7 +97,7 @@ export function groupSubtasks(tasks: BedrockTask[]): Map<string, BedrockTask[]> 
   return grouped
 }
 
-export function isTaskBlocked(task: BedrockTask, siblings: BedrockTask[]): boolean {
+export function isTaskBlocked(task: Task, siblings: Task[]): boolean {
   if (!task.parent_id) return false
   const ordered = [...siblings].sort(
     (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.id.localeCompare(b.id)
@@ -122,25 +114,16 @@ export function isTaskBlocked(task: BedrockTask, siblings: BedrockTask[]): boole
 export interface AssigneeContext {
   userName: string
   userPhoto: string | null
-  agentLabels: Record<string, string>
-  agentPhotos: Record<string, string | null>
 }
 
 export function assigneeDisplay(
-  task: BedrockTask,
+  _task: Task,
   ctx: AssigneeContext
 ): { name: string; imageUrl: string | null } {
-  if (task.assignee_type === 'agent') {
-    const profileId = task.agent_profile_id ?? ''
-    return {
-      name: (profileId && ctx.agentLabels[profileId]) || profileId || 'Agente',
-      imageUrl: (profileId && ctx.agentPhotos[profileId]) || null,
-    }
-  }
   return { name: ctx.userName, imageUrl: ctx.userPhoto }
 }
 
-export function assigneeLabel(task: BedrockTask, ctx: AssigneeContext): string {
+export function assigneeLabel(task: Task, ctx: AssigneeContext): string {
   return assigneeDisplay(task, ctx).name
 }
 

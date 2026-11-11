@@ -1,1 +1,1 @@
-export { TasksPage, AgentTasksPage } from './TasksPage'
+export { TasksPage } from './TasksPage'

@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react'
 import { addDays, differenceInCalendarDays, format, max, min, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { BedrockTask } from '@/types/bedrock'
+import { Task } from '@/types/tasks'
 import { assigneeDisplay, AssigneeContext, priorityBarClass, taskEndDate, taskStartDate } from './taskUtils'
 
 interface TaskGanttViewProps {
-  tasks: BedrockTask[]
+  tasks: Task[]
   assignees: AssigneeContext
-  onOpen: (task: BedrockTask) => void
+  onOpen: (task: Task) => void
 }
 
 export const TaskGanttView: React.FC<TaskGanttViewProps> = ({ tasks, assignees, onOpen }) => {
@@ -22,7 +22,7 @@ export const TaskGanttView: React.FC<TaskGanttViewProps> = ({ tasks, assignees, 
           const endDay = startOfDay(end ?? addDays(start, 1))
           return { task, start: startDay, end: endDay < startDay ? addDays(startDay, 1) : endDay }
         })
-        .filter((row): row is { task: BedrockTask; start: Date; end: Date } => row !== null),
+        .filter((row): row is { task: Task; start: Date; end: Date } => row !== null),
     [tasks]
   )
 

@@ -68,7 +68,6 @@ Solo en `.env` (nunca versionado); `docker-compose.yml` usa `${VARIABLE}`. Detal
 | 3 | `SECRET_KEY` única (HS256) | Sin rotación programada. |
 | 4 | Sin Row-Level Security | El aislamiento es solo de aplicación. |
 | 5 | Sin escaneo automático de dependencias | El CI solo corre pruebas. |
-| 6 | Credenciales de AWS en variables de entorno | Rotación y alcance del rol IAM pendientes ([BEDROCK-HARNESS.md](./BEDROCK-HARNESS.md)). |
 
 ## Checklist de producción
 

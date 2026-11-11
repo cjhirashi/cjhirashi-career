@@ -4,7 +4,7 @@ Punto de entrada de la aplicación FastAPI.
 Responsabilidades:
 - Lifecycle (startup/shutdown): BD, MinIO, tareas de agentes
 - Middleware CORS y manejadores globales de errores
-- Registro de todos los routers (auth, career, bedrock, public, …)
+- Registro de todos los routers (auth, career, public, …)
 - Endpoints de sistema: /health, /
 """
 from fastapi import FastAPI, Request, status
@@ -21,9 +21,7 @@ from config import settings
 from database import init_db, close_db
 from routes import auth_enhanced
 from routes import career_identity, career_search, career_digital, career_support, career_metrics, career_methodologies, job_discovery
-from routes import bedrock
 from routes import bedrock_tasks
-from routes import admin_sections
 from routes import admin_contact_messages
 from routes import pdf_templates, pdf_template_styles
 from routes import files
@@ -33,7 +31,7 @@ from routes import error_reports
 from routes import events
 from routes import portal_metrics
 from routes import portal_analytics
-from services import storage_service, task_scheduler
+from services import storage_service
 from services.error_reporting import areport_error
 
 # ============================================================================
@@ -73,7 +71,7 @@ async def lifespan(app: FastAPI):
         logger.info("MinIO bucket ready")
     except Exception as e:
         # Files/uploads will fail until MinIO is reachable, but the rest of
-        # the API (career CRUD, PDF templates, auth, Bedrock) must stay up.
+        # the API (career CRUD, PDF templates, auth) must stay up.
         # A hard raise here used to crash uvicorn on a bad MINIO_ENDPOINT,
         # which Cloudflare surfaces as error 520 on every /api request.
         logger.error(
@@ -81,14 +79,10 @@ async def lifespan(app: FastAPI):
             e,
         )
 
-    agent_task_loop = asyncio.create_task(task_scheduler.scheduler_loop())
-    logger.info("Agent task scheduler started")
-
     yield
 
     # Shutdown
     logger.info("Shutting down API server...")
-    agent_task_loop.cancel()
     await close_db()
 
 
@@ -267,10 +261,8 @@ app.include_router(career_digital.router)
 app.include_router(career_support.router)
 app.include_router(career_metrics.router)
 app.include_router(career_methodologies.router)
-app.include_router(bedrock.router)
 app.include_router(bedrock_tasks.router)
 app.include_router(notifications.router)
-app.include_router(admin_sections.router)
 app.include_router(admin_contact_messages.router)
 app.include_router(pdf_templates.router)
 app.include_router(pdf_template_styles.router)

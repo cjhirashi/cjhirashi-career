@@ -665,8 +665,6 @@ export interface OperationalMethodology {
   title: string
   description?: string | null
   content: string
-  agent_profile_ids?: string[] | null
-  section_ids?: string[] | null
   created_at: ISODateTime
   updated_at: ISODateTime
 }

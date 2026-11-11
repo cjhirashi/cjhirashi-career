@@ -6,7 +6,7 @@ import { MarkdownTable } from '@/components/MarkdownTable'
 import { ThemedSelect } from '@/components/ThemedSelect'
 import { StateCapsule } from '@/components/StateCapsule'
 import { PersonChip } from '@/components/PersonAvatar'
-import { BedrockTask, TaskStatus } from '@/types/bedrock'
+import { Task, TaskStatus } from '@/types/tasks'
 import { formatDateTime } from '@/utils/formatters'
 import {
   assigneeDisplay,
@@ -17,11 +17,11 @@ import {
 } from './taskUtils'
 
 interface TaskRecordViewProps {
-  task: BedrockTask
-  subtasks?: BedrockTask[]
+  task: Task
+  subtasks?: Task[]
   assignees: AssigneeContext
-  onStatus: (task: BedrockTask, status: TaskStatus) => void
-  onOpenSubtask?: (task: BedrockTask) => void
+  onStatus: (task: Task, status: TaskStatus) => void
+  onOpenSubtask?: (task: Task) => void
 }
 
 const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean }> = ({
@@ -36,8 +36,8 @@ const Field: React.FC<{ label: string; children: React.ReactNode; wide?: boolean
 )
 
 const StatusSelect: React.FC<{
-  task: BedrockTask
-  onStatus: (task: BedrockTask, status: TaskStatus) => void
+  task: Task
+  onStatus: (task: Task, status: TaskStatus) => void
 }> = ({ task, onStatus }) => (
   <ThemedSelect
     id={`task-status-${task.id}`}

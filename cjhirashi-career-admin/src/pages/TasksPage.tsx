@@ -1,20 +1,20 @@
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, ClipboardList, Pencil, Play, Plus, Trash2, X } from 'lucide-react'
-import { useAgentCatalog, useAgentTaskMutations, useAgentTasks } from '@/hooks/useBedrockChat'
+import { useTaskMutations, useTasks } from '@/hooks/useTasks'
 import { useAuthStore } from '@/stores/authStore'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { SectionViewTab } from '@/components/SectionViewTabs'
 import { SectionShell } from '@/components/section'
 import { getErrorMessage } from '@/utils/errors'
-import { BedrockTask, BedrockTaskPayload, TaskStatus } from '@/types/bedrock'
+import { Task, TaskPayload, TaskStatus } from '@/types/tasks'
 import { TaskForm, TASK_FORM_ID } from '@/components/tasks/TaskForm'
 import { TaskRecordView } from '@/components/tasks/TaskRecordView'
 import { TaskListView } from '@/components/tasks/TaskListView'
 import { TaskKanbanView } from '@/components/tasks/TaskKanbanView'
 import { TaskCalendarView } from '@/components/tasks/TaskCalendarView'
 import { TaskGanttView } from '@/components/tasks/TaskGanttView'
-import { canRunAgentTask, groupSubtasks, isRootTask, isTaskBlocked, AssigneeContext } from '@/components/tasks/taskUtils'
+import { groupSubtasks, isRootTask, AssigneeContext } from '@/components/tasks/taskUtils'
 
 const BOARD_VIEW_TABS: SectionViewTab[] = [
   { key: 'list', label: 'Lista' },
@@ -43,28 +43,19 @@ export const TasksPage: React.FC = () => {
   const boardView: BoardViewId = isBoardView(searchParams.get('view'))
     ? (searchParams.get('view') as BoardViewId)
     : 'list'
-  const { data: tasks, isLoading, isError, error } = useAgentTasks()
-  const { data: catalog } = useAgentCatalog()
-  const { createMutation, updateMutation, deleteMutation, runMutation } = useAgentTaskMutations()
+  const { data: tasks, isLoading, isError, error } = useTasks()
+  const { createMutation, updateMutation, deleteMutation } = useTaskMutations()
   const [recordState, setRecordState] = useState<RecordState>('board')
-  const [activeTask, setActiveTask] = useState<BedrockTask | null>(null)
+  const [activeTask, setActiveTask] = useState<Task | null>(null)
   const formOpenGuardAt = useRef(0)
 
   const user = useAuthStore((state) => state.user)
   const assignees = useMemo<AssigneeContext>(() => {
-    const agentLabels: Record<string, string> = {}
-    const agentPhotos: Record<string, string | null> = {}
-    for (const agent of catalog ?? []) {
-      agentLabels[agent.profile_id] = agent.label
-      agentPhotos[agent.profile_id] = agent.photo_url ?? null
-    }
     return {
       userName: user?.full_name?.trim() || user?.username || 'Usuario',
       userPhoto: user?.photo_url ?? null,
-      agentLabels,
-      agentPhotos,
     }
-  }, [catalog, user])
+  }, [user])
 
   const list = tasks ?? []
   const roots = useMemo(() => list.filter(isRootTask), [list])
@@ -117,12 +108,12 @@ export const TasksPage: React.FC = () => {
     setActiveTask(null)
   }
 
-  const openView = (task: BedrockTask) => {
+  const openView = (task: Task) => {
     setActiveTask(task)
     setRecordState('view')
   }
 
-  const openEdit = (task: BedrockTask) => {
+  const openEdit = (task: Task) => {
     guardFormOpenFromClick()
     setActiveTask(task)
     setRecordState('edit')
@@ -158,7 +149,7 @@ export const TasksPage: React.FC = () => {
     }
   }
 
-  const handleSave = async (payload: BedrockTaskPayload & { title: string }) => {
+  const handleSave = async (payload: TaskPayload & { title: string }) => {
     if (recordState === 'edit' && activeTask) {
       const updated = await updateMutation.mutateAsync({ id: activeTask.id, payload })
       setActiveTask(updated)
@@ -170,21 +161,14 @@ export const TasksPage: React.FC = () => {
     setRecordState('view')
   }
 
-  const handleDelete = (task: BedrockTask) => {
+  const handleDelete = (task: Task) => {
     if (!window.confirm(`¿Eliminar la tarea "${task.title}"?`)) return
     deleteMutation.mutate(task.id)
     if (activeTask?.id === task.id) backToBoard()
   }
 
-  const handleStatus = (task: BedrockTask, status: TaskStatus) => {
+  const handleStatus = (task: Task, status: TaskStatus) => {
     updateMutation.mutate({ id: task.id, payload: { status } })
-  }
-
-  const handleRun = (task: BedrockTask) => {
-    const siblings = childrenByParent.get(task.parent_id ?? '') ?? []
-    if (isTaskBlocked(task, siblings)) return
-    if ((childrenByParent.get(task.id) ?? []).length > 0) return
-    runMutation.mutate(task.id)
   }
 
   const submitTaskForm = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -214,20 +198,6 @@ export const TasksPage: React.FC = () => {
     </button>
   ) : recordState === 'view' && activeTask ? (
     <>
-      {canRunAgentTask(activeTask) &&
-        !isTaskBlocked(activeTask, childrenByParent.get(activeTask.parent_id ?? '') ?? []) &&
-        (childrenByParent.get(activeTask.id) ?? []).length === 0 && (
-        <button
-          type="button"
-          onClick={() => handleRun(activeTask)}
-          disabled={runMutation.isPending}
-          className="btn-icon btn-icon-sm"
-          aria-label="Ejecutar ahora"
-          title="Ejecutar ahora"
-        >
-          <Play size={13} />
-        </button>
-      )}
       <button
         type="button"
         onClick={() => openEdit(activeTask)}
@@ -300,7 +270,7 @@ export const TasksPage: React.FC = () => {
             <div className="py-8 text-center">
               <ClipboardList className="mx-auto text-text-muted mb-2" size={28} aria-hidden="true" />
               <p className="text-text-secondary text-sm">
-                Aún no hay tareas. Crea una para ti o asígnasela a un agente con fecha y hora.
+                Aún no hay tareas. Crea una con fecha y hora.
               </p>
             </div>
           )}
@@ -313,8 +283,6 @@ export const TasksPage: React.FC = () => {
               onOpen={openView}
               onEdit={openEdit}
               onDelete={handleDelete}
-              onRun={handleRun}
-              runningId={runMutation.isPending ? runMutation.variables : undefined}
             />
           )}
           {isBoard && !isLoading && roots.length > 0 && boardView === 'kanban' && (
@@ -346,7 +314,6 @@ export const TasksPage: React.FC = () => {
             <TaskForm
               task={recordState === 'create' ? null : activeTask}
               subtasks={activeTask ? childrenByParent.get(activeTask.id) ?? [] : []}
-              agents={catalog ?? []}
               onSave={handleSave}
               isSaving={isSaving}
               formId={formId}
@@ -358,4 +325,3 @@ export const TasksPage: React.FC = () => {
   )
 }
 
-export { TasksPage as AgentTasksPage }
