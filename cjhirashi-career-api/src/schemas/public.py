@@ -81,6 +81,11 @@ class PublicAchievementDetail(BaseModel):
     documentation_urls: Optional[str] = None
 
 
+class PublicSkillGroup(BaseModel):
+    category: str
+    skills: List[str]
+
+
 class PublicHomeResponse(BaseModel):
     hero_photo_url: Optional[str] = None
     hero_title: Optional[str] = None
@@ -118,11 +123,6 @@ class PublicWorkHistoryEntry(BaseModel):
     description: Optional[str] = None
     achievements: List[PublicWorkAchievement] = []
     key_metrics: Optional[Any] = None
-
-
-class PublicSkillGroup(BaseModel):
-    category: str
-    skills: List[str]
 
 
 class PublicCertification(BaseModel):
