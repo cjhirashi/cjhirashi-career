@@ -73,7 +73,12 @@ export interface HomeContent {
   home_achievement: HomeAchievement | null
   featured_projects: Project[]
   featured_publications: BlogPost[]
-  skill_categories: string[]
+  skill_groups: SkillGroup[]
+}
+
+export interface SkillGroup {
+  category: string
+  skills: string[]
 }
 
 // About

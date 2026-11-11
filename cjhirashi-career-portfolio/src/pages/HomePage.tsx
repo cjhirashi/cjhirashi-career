@@ -89,20 +89,27 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Stack técnico - categories of whichever competencies are marked
-          featured_on_home (see api/src/routes/public.py's get_home), the
-          full skill breakdown lives on About. */}
-      {home && home.skill_categories.length > 0 && (
+      {/* Stack técnico - the competencies marked featured_on_home, grouped
+          by category (see api/src/routes/public.py's get_home); the full
+          skill breakdown lives on About. */}
+      {home && home.skill_groups.length > 0 && (
         <section className="section-alt py-24 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
               <Layers size={22} className="text-primary" /> Stack técnico
             </h2>
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
-              {home.skill_categories.map(category => (
-                <span key={category} className="badge mono">
-                  {category}
-                </span>
+            <div className="space-y-6 mb-8">
+              {home.skill_groups.map(group => (
+                <div key={group.category}>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted mb-3">{group.category}</h3>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {group.skills.map(skill => (
+                      <span key={skill} className="badge mono">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             <Link

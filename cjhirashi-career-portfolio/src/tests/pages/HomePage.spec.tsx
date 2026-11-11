@@ -153,7 +153,7 @@ describe('HomePage - Entry Point', () => {
   })
 
   it('does not render the home achievement and places "Stack técnico" before the featured projects', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: ['Frontend'] })
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_groups: [{ category: 'Frontend', skills: ['React'] }] })
 
     render(<HomePage />)
 
@@ -175,8 +175,14 @@ describe('HomePage - Entry Point', () => {
     })
   })
 
-  it('renders the featured competencies\' categories as a "Stack técnico" teaser', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: ['Frontend', 'Cloud'] })
+  it('renders the featured competencies, grouped by category, in "Stack técnico"', async () => {
+    vi.mocked(homeApi.getHome).mockResolvedValue({
+      ...mockHome,
+      skill_groups: [
+        { category: 'Frontend', skills: ['React', 'TypeScript'] },
+        { category: 'Cloud', skills: ['AWS'] },
+      ],
+    })
 
     render(<HomePage />)
 
@@ -185,10 +191,13 @@ describe('HomePage - Entry Point', () => {
     })
     expect(screen.getByText('Frontend')).toBeInTheDocument()
     expect(screen.getByText('Cloud')).toBeInTheDocument()
+    expect(screen.getByText('React')).toBeInTheDocument()
+    expect(screen.getByText('TypeScript')).toBeInTheDocument()
+    expect(screen.getByText('AWS')).toBeInTheDocument()
   })
 
   it('omits the "Stack técnico" section when no competency is marked featured_on_home', async () => {
-    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_categories: [] })
+    vi.mocked(homeApi.getHome).mockResolvedValue({ ...mockHome, skill_groups: [] })
 
     render(<HomePage />)
 

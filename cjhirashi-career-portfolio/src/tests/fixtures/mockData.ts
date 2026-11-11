@@ -141,7 +141,10 @@ export const mockHome: HomeContent = {
   home_achievement: mockHomeAchievement,
   featured_projects: mockProjects.filter(p => p.is_featured),
   featured_publications: mockBlogPosts.slice(0, 1),
-  skill_categories: ['Data Science & IA', 'Cloud'],
+  skill_groups: [
+    { category: 'Data Science & IA', skills: ['Machine Learning'] },
+    { category: 'Cloud', skills: ['AWS'] },
+  ],
 }
 
 export const mockAbout: AboutContent = {

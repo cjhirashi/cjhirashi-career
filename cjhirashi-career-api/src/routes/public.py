@@ -42,7 +42,7 @@ from schemas.public import (
     PublicHomeResponse, PublicProjectCard, PublicProjectDetail, PublicPublicationCard,
     PublicAboutResponse, PublicWorkHistoryEntry, PublicWorkAchievement, PublicSkillGroup, PublicCertification,
     PublicContactResponse,
-    PublicBlogPost, PublicHeroCta, PublicStat, PublicAchievementDetail,
+    PublicBlogPost, PublicHeroCta, PublicSkillGroup, PublicStat, PublicAchievementDetail,
 )
 
 # ============================================================================
@@ -230,9 +230,11 @@ async def get_home(db: AsyncSession = Depends(get_db)):
             .order_by(Competency.id)
         )
     ).scalars().all()
-    # Distinct categories, first-seen order - a category can have several
-    # featured competencies, it should still only produce one badge.
-    skill_categories = list(dict.fromkeys(c.category for c in featured_competencies if c.category))
+    # Featured competencies grouped by category, first-seen order.
+    groups: dict = {}
+    for c in featured_competencies:
+        groups.setdefault(c.category or "Otras", []).append(c.name)
+    skill_groups = [PublicSkillGroup(category=cat, skills=names) for cat, names in groups.items()]
     competency_names = await _competency_names_by_id(db)
 
     return PublicHomeResponse(
@@ -245,7 +247,7 @@ async def get_home(db: AsyncSession = Depends(get_db)):
         home_achievement=_achievement_detail(home_achievement) if home_achievement else None,
         featured_projects=[_project_card(p, competency_names) for p in projects],
         featured_publications=[_publication_card(pub) for pub in publications],
-        skill_categories=skill_categories,
+        skill_groups=skill_groups,
     )
 
 
