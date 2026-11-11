@@ -89,114 +89,117 @@ export const HomePage = () => {
         </section>
       )}
 
-      {/* Stack técnico - the competencies marked featured_on_home, grouped
-          by category (see api/src/routes/public.py's get_home); the full
-          skill breakdown lives on About. */}
-      {home && home.skill_groups.length > 0 && (
-        <section className="section-alt py-24 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
-              <Layers size={22} className="text-primary" /> Stack técnico
-            </h2>
-            <div className="space-y-6 mb-8">
-              {home.skill_groups.map(group => (
-                <div key={group.category}>
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted mb-3">{group.category}</h3>
-                  <div className="flex flex-wrap justify-center gap-3">
-                    {group.skills.map(skill => (
-                      <span key={skill} className="badge mono">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Link
-              to="/about"
-              onClick={() => trackClick('home-ver-stack-completo')}
-              className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
-            >
-              Ver más en Sobre Mí →
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* Habilidades - featured transferable competencies, separate from the
-          technical stack. */}
-      {home && home.soft_skills.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
-              <Sparkles size={22} className="text-primary" /> Habilidades
-            </h2>
-            <div className="flex flex-wrap justify-center gap-3">
-              {home.soft_skills.map(skill => (
-                <span key={skill} className="badge">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Featured Projects */}
-      {home && home.featured_projects.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex justify-between items-center mb-12">
-              <h2 className="text-3xl font-bold text-text">Proyectos</h2>
-              <Link
-                to="/projects"
-                className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
-              >
-                Ver todos →
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
-              {home.featured_projects.map(project => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Featured Publications */}
-      {home && home.featured_publications.length > 0 && (
-        <section className="section-alt py-16 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="flex justify-between items-center mb-12">
-              <h2 className="text-3xl font-bold text-text flex items-center gap-2">
-                <BookOpen size={22} className="text-primary" /> Del blog
+      {/* Sections below the stats alternate background (odd = card, even = page), whichever of them render. */}
+      <div className="home-sections">
+        {/* Stack técnico - the competencies marked featured_on_home, grouped
+            by category (see api/src/routes/public.py's get_home); the full
+            skill breakdown lives on About. */}
+        {home && home.skill_groups.length > 0 && (
+          <section className="py-24 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
+                <Layers size={22} className="text-primary" /> Stack técnico
               </h2>
+              <div className="space-y-6 mb-8">
+                {home.skill_groups.map(group => (
+                  <div key={group.category}>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted mb-3">{group.category}</h3>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      {group.skills.map(skill => (
+                        <span key={skill} className="badge mono">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
               <Link
-                to="/blog"
+                to="/about"
+                onClick={() => trackClick('home-ver-stack-completo')}
                 className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
               >
-                Ver todos →
+                Ver más en Sobre Mí →
               </Link>
             </div>
+          </section>
+        )}
 
-            <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
-              {home.featured_publications.map(post => (
-                <BlogCard key={post.id} post={post} />
-              ))}
+        {/* Habilidades - featured transferable competencies, separate from the
+            technical stack. */}
+        {home && home.soft_skills.length > 0 && (
+          <section className="py-16 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="text-3xl font-bold text-text flex items-center justify-center gap-2 mb-8">
+                <Sparkles size={22} className="text-primary" /> Habilidades
+              </h2>
+              <div className="flex flex-wrap justify-center gap-3">
+                {home.soft_skills.map(skill => (
+                  <span key={skill} className="badge">
+                    {skill}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Footer CTA */}
-      <section className="section-alt py-16 px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-text mb-6">¿Hablamos de tu próximo sistema?</h2>
-        <Link to="/contact" onClick={() => trackClick('home-footer-cta')} className="btn inline-flex px-8 py-3 font-semibold">
-          Hablemos
-        </Link>
-      </section>
+        {/* Featured Projects */}
+        {home && home.featured_projects.length > 0 && (
+          <section className="py-16 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-6xl">
+              <div className="flex justify-between items-center mb-12">
+                <h2 className="text-3xl font-bold text-text">Proyectos</h2>
+                <Link
+                  to="/projects"
+                  className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+                >
+                  Ver todos →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
+                {home.featured_projects.map(project => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Featured Publications */}
+        {home && home.featured_publications.length > 0 && (
+          <section className="py-16 px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-6xl">
+              <div className="flex justify-between items-center mb-12">
+                <h2 className="text-3xl font-bold text-text flex items-center gap-2">
+                  <BookOpen size={22} className="text-primary" /> Del blog
+                </h2>
+                <Link
+                  to="/blog"
+                  className="text-primary hover:[text-shadow:0_0_10px_var(--primary-glow)] font-semibold"
+                >
+                  Ver todos →
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 content:grid-cols-3 gap-6">
+                {home.featured_publications.map(post => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Footer CTA */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-text mb-6">¿Hablamos de tu próximo sistema?</h2>
+          <Link to="/contact" onClick={() => trackClick('home-footer-cta')} className="btn inline-flex px-8 py-3 font-semibold">
+            Hablemos
+          </Link>
+        </section>
+      </div>
     </div>
   )
 }

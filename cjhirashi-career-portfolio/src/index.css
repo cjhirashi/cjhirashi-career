@@ -326,6 +326,15 @@ textarea:focus-visible {
   border-bottom: 1px solid var(--border-glass);
 }
 
+/* Home: the sections after the stats alternate background so two neighbours never share one. */
+.home-sections > section:nth-child(odd) {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+}
+
 /* Primary gradient button (cyan -> cyan-hover), glowing on hover. */
 .btn {
   display: inline-flex;
