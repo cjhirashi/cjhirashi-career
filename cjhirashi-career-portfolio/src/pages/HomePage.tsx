@@ -22,7 +22,7 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50/40 to-slate-50/40 dark:from-slate-900/40 dark:to-slate-950/40">
       {/* Hero - single centered column: photo, role badge, headline, tagline, CTAs, over the animated SVG background */}
-      <section data-theme="dark" className="hero-animated py-20 px-4 sm:px-6 lg:px-8 text-center">
+      <section className="hero-animated py-20 px-4 sm:px-6 lg:px-8 text-center">
         <div className="mx-auto max-w-3xl flex flex-col items-center">
           {home?.hero_photo_url && (
             <img

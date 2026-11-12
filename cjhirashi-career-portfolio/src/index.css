@@ -515,30 +515,29 @@ textarea:focus-visible {
 }
 
 /*
- * Animated hero background (HomePage). The SVG (from Rand's design folder) is dark
- * in both themes, so the hero always uses the dark palette (data-theme="dark" on the
- * section) and re-derives the aliases that :root resolved for the page theme.
- * Bump ?v= when the SVG changes (Cloudflare caches /public assets).
+ * Animated hero background (HomePage). Rand's SVGs come in two versions: dark
+ * (hero-bg-*.svg) and light (hero-bg-claro-*.svg); the hero follows the page theme.
+ * Bump ?v= when an SVG changes (Cloudflare caches /public assets).
  */
 .hero-animated {
-  --bg: var(--bg-primary);
-  --primary: var(--primary-color);
-  --primary-container: var(--primary-light);
-  --secondary: var(--secondary-color);
-  --secondary-container: var(--secondary-light);
-  --surface: var(--bg-secondary);
-  --surface-card: var(--bg-card);
-  --border: var(--border-glass);
-  --text: var(--text-primary);
-  background-color: #071018;
-  background-image: url('/hero-bg-horizontal.svg?v=1');
+  background-color: #f0fafb;
+  background-image: url('/hero-bg-claro-horizontal.svg?v=1');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
+html[data-theme='dark'] .hero-animated {
+  background-color: #071018;
+  background-image: url('/hero-bg-horizontal.svg?v=1');
+}
+
 @media (max-aspect-ratio: 1/1) {
   .hero-animated {
+    background-image: url('/hero-bg-claro-vertical.svg?v=1');
+  }
+
+  html[data-theme='dark'] .hero-animated {
     background-image: url('/hero-bg-vertical.svg?v=1');
   }
 }
