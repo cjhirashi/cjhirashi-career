@@ -32,8 +32,6 @@ class TargetCompany(Base):
     priority = Column(String(10), nullable=True)
     status = Column(String(30), nullable=True)
     notes = Column(Text, nullable=True)
-    career_board_provider = Column(String(30), nullable=True)
-    career_board_token = Column(String(100), nullable=True)
     # --- Atributos nuevos (checklist Paulina #10) ---
     industry_sector = Column(String(100), nullable=True)
     company_culture = Column(Text, nullable=True)

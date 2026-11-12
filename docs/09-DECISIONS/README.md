@@ -107,7 +107,7 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 | 008 | [Bedrock Harness local (Converse API)](./008-bedrock-harness-local.md) | ✅ Aceptado (revisado parcialmente) |
 | 009 | [Multi-agente — dos chats y delegación](./009-bedrock-multi-agent-profiles.md) | ⛔ Deprecado |
 | 010 | [Agentes agent_pdf_design y agent_visual_design](./010-bedrock-visual-pdf-agents.md) | ✅ Aceptado |
-| 011 | [Descubrimiento de vacantes por adaptadores (sin scraping)](./011-job-discovery-adapters.md) | ✅ Aceptado |
+| 011 | [Descubrimiento de vacantes por adaptadores (sin scraping)](./011-job-discovery-adapters.md) | ⛔ Retirado por ADR-034 |
 | 012 | [Jerarquía de agentes en 3 niveles](./012-bedrock-three-level-agents.md) | ✅ Aceptado |
 | 013 | [L3 consulta web y L3 GitHub (solo lectura)](./013-l3-web-and-github-agents.md) | ✅ Aceptado |
 | 014 | [Cuatro módulos de aplicación](./014-four-application-modules.md) | ✅ Aceptado (revisado parcialmente) |
@@ -129,6 +129,8 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 | 030 | [Documentación de proyectos en 3 campos markdown](./030-proyectos-tres-campos-markdown.md) | ✅ Aceptado |
 | 031 | [Embeber HTML e imágenes de Synapse en las fichas](./031-embeber-html-de-synapse-en-fichas.md) | ✅ Aceptado |
 | 032 | [Agentes externos por la API; el subsistema Bedrock queda fuera de operación](./032-agentes-externos-y-bedrock-fuera-de-operacion.md) | ✅ Aceptado |
+| 033 | [Se retira el subsistema Bedrock y el catálogo de agentes](./033-retiro-del-subsistema-bedrock.md) | ✅ Aceptado |
+| 034 | [Se retira el descubrimiento de vacantes](./034-retiro-del-descubrimiento-de-vacantes.md) | ✅ Aceptado |
 
 **Revisiones cruzadas vigentes**: ADR-009 deprecado por ADR-012; ADR-014 revisado parcialmente por ADR-023 (MCP retirado) y por ADR-029 (harness fuera de la API); ADR-008 y ADR-025 revisados parcialmente por ADR-029; ADR-026 parcialmente superado por ADR-027 para los agentes L2.
 

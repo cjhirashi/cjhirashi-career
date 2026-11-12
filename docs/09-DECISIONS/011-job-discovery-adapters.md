@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado
+Retirado por el [ADR-034](034-retiro-del-descubrimiento-de-vacantes.md) (2026-11-12)
 
 ## Contexto
 
@@ -56,4 +56,4 @@ Ninguno.
 
 **Creado por**: Arquitecto de Soluciones
 **Fecha de creación**: 2026-08-23
-**Estado de vigencia**: Vigente
+**Estado de vigencia**: Retirado

@@ -87,14 +87,6 @@ class Settings(BaseSettings):
     MAX_LIMIT: int = 100
 
     # -------------------------------------------------------------------------
-    # Job discovery — agregadores externos (Adzuna, boards públicos, etc.)
-    # -------------------------------------------------------------------------
-    ADZUNA_APP_ID: str = ""
-    ADZUNA_APP_KEY: str = ""
-    ADZUNA_COUNTRY: str = "mx"
-    JOB_DISCOVERY_TIMEOUT_SECONDS: float = 8.0
-    JOB_DISCOVERY_MAX_RESULTS: int = 50
-    JOB_DISCOVERY_USER_AGENT: str = "cjhirashi-career/1.0 (job-discovery; +https://cjhirashi.com)"
 
     # -------------------------------------------------------------------------
     # GitHub — PAT de solo lectura para el L3 agent_github

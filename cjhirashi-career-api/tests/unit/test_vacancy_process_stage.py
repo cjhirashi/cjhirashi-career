@@ -579,24 +579,3 @@ async def test_http_list_and_count_filter_by_vacancy_status(http_env):
         expected = _expected(*statuses)
         assert sorted(r["process_stage"] for r in rows) == expected
         assert count["count"] == len(expected)
-
-
-@pytest.mark.requisito("RF-003")
-async def test_job_discovery_saved_vacancy_is_not_applied_with_stage_date(http_env):
-    from services.job_discovery.service import save_listings
-
-    _, factory, user_id = http_env
-    async with factory() as session:
-        result = await save_listings(
-            session,
-            user_id,
-            [{
-                "company": "Acme", "exact_role": "Engineer",
-                "vacancy_url": "https://example.com/job/007", "source": "getonboard",
-                "listing_kind": "job",
-            }],
-        )
-        assert len(result["created"]) == 1
-        row = await session.get(Vacancy, result["created"][0]["id"])
-        assert row.process_stage == "not_applied"
-        assert row.process_stage_updated_at is not None

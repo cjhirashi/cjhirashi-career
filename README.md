@@ -33,11 +33,11 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 
 ## Qué hace cada módulo
 
-**Admin Panel**: panel y métricas de búsqueda; recursos de carrera (identidad, competencias, evidencia, vacantes, aplicaciones, networking, CVs y cartas); descubrimiento de vacantes; archivos; plantillas y estilos de PDF; mensajes de contacto; analítica del portafolio (tablero, metas, embudos, anotaciones); registro de errores; secciones del Admin configurables; y tareas. El panel conserva el área del subsistema de agentes Bedrock (catálogo, instrucciones, herramientas, memoria, auditoría, métricas y chat), fuera de operación ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)).
+**Admin Panel**: panel y métricas de búsqueda; recursos de carrera (identidad, competencias, evidencia, vacantes, aplicaciones, networking, CVs y cartas); archivos; plantillas y estilos de PDF; mensajes de contacto; analítica del portafolio (tablero, metas, embudos, anotaciones); registro de errores; secciones del Admin configurables; y tareas. El panel conserva el área del subsistema de agentes Bedrock (catálogo, instrucciones, herramientas, memoria, auditoría, métricas y chat), fuera de operación ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)).
 
 **Portal público** (9 páginas): Inicio, Sobre mí, Proyectos (y detalle), Blog (y entrada), Contacto (los mensajes llegan al Admin), Privacidad (con borrado de los datos propios del visitante) y 404. Incluye un rastreador de analítica con respeto a DNT/GPC.
 
-**API**: autenticación JWT (el rol `agent` está restringido a `/career/*` y a la subida de archivos nuevos); CRUD de carrera; descubrimiento de vacantes (Adzuna, Greenhouse, Lever, LinkedIn, Remotive y otros); generación de PDF; archivos en MinIO; endpoints públicos del portal; registro de errores; analítica del portafolio (ingesta, métricas, metas y embudos). Detalle y contrato: [`cjhirashi-career-api/docs/API.md`](cjhirashi-career-api/docs/API.md).
+**API**: autenticación JWT (el rol `agent` está restringido a `/career/*` y a la subida de archivos nuevos); CRUD de carrera; generación de PDF; archivos en MinIO; endpoints públicos del portal; registro de errores; analítica del portafolio (ingesta, métricas, metas y embudos). Detalle y contrato: [`cjhirashi-career-api/docs/API.md`](cjhirashi-career-api/docs/API.md).
 
 ## Specs del arnés
 

@@ -29,9 +29,6 @@ import { AgentPdfTemplateStylesPage } from '@/pages/AgentPdfTemplateStylesPage'
 const SearchMetricsPage = React.lazy(() =>
   import('@/pages/SearchMetricsPage').then((m) => ({ default: m.SearchMetricsPage }))
 )
-const JobDiscoveryPage = React.lazy(() =>
-  import('@/pages/JobDiscoveryPage').then((m) => ({ default: m.JobDiscoveryPage }))
-)
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,19 +98,6 @@ export const App: React.FC = () => {
                 <Layout>
                   <Suspense fallback={<LoadingSpinner fullScreen={false} message="Cargando métricas..." />}>
                     <SearchMetricsPage />
-                  </Suspense>
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/job-discovery"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Suspense fallback={<LoadingSpinner fullScreen={false} message="Cargando descubrimiento..." />}>
-                    <JobDiscoveryPage />
                   </Suspense>
                 </Layout>
               </PrivateRoute>

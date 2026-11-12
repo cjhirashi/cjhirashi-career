@@ -171,7 +171,6 @@ Documentación API: [sections/career-search/README.md](./sections/career-search/
 | `networking_activities` | `NetworkingActivity` | `nwa` |
 
 
-**Job discovery** no persiste en tablas propias; el preview vive en memoria (`preview_store`) hasta `POST /save` crea filas en `vacancies`.
 
 ---
 
@@ -277,7 +276,7 @@ Definida en migraciones o scripts SQL; agrega métricas semanales de búsqueda.
 | `7e2f1a9c4b3d` | Syllabus y document_url en certifications |
 | `9c4d7e1f2a8b` | Status en certifications |
 | `a1b2c3d4e5f6` | Bedrock harness local (tablas + columnas) |
-| `b7c8d9e0f1a2` | Job discovery + company boards |
+| `b7c8d9e0f1a2` | Job discovery + company boards (columnas retiradas en `9e5a3b7d2c04`) |
 | `c2d3e4f5a6b7` | Bedrock agent profile prompts |
 | `d1e2f3a4b5c6` | IDs prefijados + campo notes |
 | `e3f4a5b6c7d8` | Fix user_id en tablas telemetría |

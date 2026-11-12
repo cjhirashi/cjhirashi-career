@@ -34,7 +34,6 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 - Autenticación JWT (access + refresh)
 - CRUD de ≈48 recursos de carrera profesional bajo `/career`
 - Agent Bedrock (Harness local Converse API)
-- Job discovery multi-proveedor
 - Archivos (MinIO), plantillas PDF
 - Endpoints públicos read-only para el Portal
 
@@ -83,7 +82,7 @@ graph TD
 | Capa | Responsabilidad | Ejemplos |
 |------|-----------------|----------|
 | **Routes** | HTTP, validación Pydantic, auth deps, SSE | `routes/bedrock.py`, `routes/career_identity.py` |
-| **Services** | Reglas de negocio, integraciones externas | `bedrock/agent_loop.py`, `job_discovery/` |
+| **Services** | Reglas de negocio, integraciones externas | `bedrock/agent_loop.py` |
 | **Repositories** | Queries SQLAlchemy, aislamiento por user | `career_repository.py`, `user_repository.py` |
 | **Models** | Esquema ORM, relaciones | `models/vacancy.py`, `models/bedrock_conversation.py` |
 
@@ -115,7 +114,7 @@ Admin (8002) / Portal (8003)
 
 ### `src/config.py`
 
-`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, CORS, descubrimiento de vacantes y portal público.
+`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, CORS y portal público.
 
 ### `src/database.py`
 
@@ -133,7 +132,6 @@ Engine async, `AsyncSessionLocal`, `get_db()` dependency, `init_db()` / `close_d
 | `career_support.py` | Tags |
 | `career_metrics.py` | Métricas agregadas de búsqueda |
 | `career_methodologies.py` | Metodologías operativas |
-| `job_discovery.py` | Búsqueda multi-proveedor |
 | `bedrock.py` | Agent Bedrock (streaming) |
 | `bedrock_tasks.py` | Tareas del agente |
 | `notifications.py` | Notificaciones in-app |
@@ -156,7 +154,6 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 | `auth_service.py` | Hash bcrypt, JWT access/refresh |
 | `bedrock/` | Harness local: loop Converse, tools, memoria, presupuesto |
 | `bedrock_service.py` | Fachada + CRUD tools del agente |
-| `job_discovery/` | Adaptadores: Adzuna (Indeed), Greenhouse, Lever, LinkedIn, Remotive, RemoteOK, GetOnBoard |
 | `task_scheduler.py` | Bucle in-process de tareas programadas de agentes |
 | `portal_*.py` | Analítica: ingesta, sesionización, bots, geografía, canales, dispositivo, límites de tasa y métricas |
 | `contact_message_service.py` | Mensajes del formulario de contacto |
@@ -176,7 +173,7 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 
 ### `src/schemas/`
 
-Pydantic v2 por dominio: `user`, `career_identity`, `career_search`, `career_digital`, `bedrock`, `job_discovery`, `public`, etc.
+Pydantic v2 por dominio: `user`, `career_identity`, `career_search`, `career_digital`, `bedrock`, `public`, etc.
 
 ### `src/models/`
 
@@ -193,7 +190,6 @@ graph LR
         SR[Búsqueda]
         DG[Digital]
         MT[Métricas]
-        JD[Job Discovery]
     end
 
     subgraph Agent["Agent Bedrock"]
@@ -322,7 +318,7 @@ Estructura en `cjhirashi-career-api/tests/`:
 
 | Carpeta | Alcance |
 |---------|---------|
-| `unit/` | Services, middleware, bedrock, job_discovery |
+| `unit/` | Services, middleware, bedrock |
 | `integration/` | Auth routes, flujos HTTP |
 | `conftest.py` | Fixtures async, DB test |
 

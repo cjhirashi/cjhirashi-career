@@ -15,7 +15,6 @@ flowchart TB
     App --> Support[career_support]
     App --> Metrics[career_metrics]
     App --> Methods[career_methodologies]
-    App --> Jobs[job_discovery]
     App --> Bedrock[bedrock /bedrock]
     App --> Tasks[bedrock_tasks]
     App --> PDF[pdf_templates + styles]
@@ -93,12 +92,7 @@ Solo lectura: métricas semanales de búsqueda y overview agregado (funnel, coun
 
 CRUD `/career/operational-methodologies` (protocolos Markdown de cómo operar el dominio).
 
-### `job_discovery.py` — `/career/job-discoveries`
-
-No es CRUD genérico. Preview-then-save:
-
-| Método | Path | Efecto |
-|--------|------|--------|
+--------|------|--------|
 | GET | `/providers` | Estado de adaptadores |
 | POST | `/run` | Búsqueda multi-proveedor (no persiste vacantes) |
 | POST | `/import-url` | Importa una URL a preview |

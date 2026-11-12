@@ -8,7 +8,6 @@ import {
   BarChart3,
   FolderOpen,
   LineChart,
-  Search,
   Workflow,
   FileText,
   FileType,
@@ -250,13 +249,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
                   <div className="mt-1 space-y-0.5 mb-1">
                     {domain.key === SEARCH_METRICS_DOMAIN_KEY && (
                       <>
-                        <SidebarSubLink
-                          to="/job-discovery"
-                          label="Descubrir vacantes"
-                          icon={Search}
-                          active={isActive('/job-discovery')}
-                          onClick={closeMobileDrawer}
-                        />
                         <SidebarSubLink
                           to="/search-metrics"
                           label="Métricas de Búsqueda"

@@ -13,14 +13,12 @@ flowchart TB
     Routes --> GH[github_service]
     Routes --> IDs[id_generator]
     BedrockS --> Harness[bedrock/]
-    Routes --> JD[job_discovery/]
     Routes --> TaskSched[task_scheduler]
     TaskSched --> Harness
     PDF --> Render[pdf_template_render]
     PDF --> CSS[pdf_template_css]
     Harness --> AWS[AWS Bedrock]
     Storage --> MinIO[(MinIO)]
-    JD --> Boards[Adzuna / Getonboard / …]
 ```
 
 ---
@@ -30,7 +28,6 @@ flowchart TB
 | Paquete | README |
 |---------|--------|
 | `bedrock/` | [bedrock/README.md](bedrock/README.md) — harness Converse: guía en 3 niveles (paquete → módulo → función) con recibe/entrega, ejemplo y diagrama |
-| `job_discovery/` | [job_discovery/README.md](job_discovery/README.md) — adaptadores de vacantes y preview-then-save |
 
 ---
 

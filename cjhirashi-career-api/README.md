@@ -1,6 +1,6 @@
 # API REST — cjhirashi-career
 
-API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional (≈48 recursos bajo `/career`), Agent Bedrock (harness local), PDF, archivos (MinIO), analítica del portafolio, integraciones (GitHub, descubrimiento de vacantes) y endpoints públicos para el Portal. 419 operaciones HTTP, 69 modelos y 51 migraciones Alembic. El harness de agentes y Qdrant se retirarán de la API con la spec 009 (ADR-029; en curso, aún no aplicado).
+API central del ecosistema cjhirashi-career. Orquesta autenticación JWT, CRUD de carrera profesional (≈48 recursos bajo `/career`), Agent Bedrock (harness local), PDF, archivos (MinIO), analítica del portafolio, integraciones (GitHub) y endpoints públicos para el Portal. 419 operaciones HTTP, 69 modelos y 51 migraciones Alembic. El harness de agentes y Qdrant se retirarán de la API con la spec 009 (ADR-029; en curso, aún no aplicado).
 
 **URL base (Docker interno):** `http://cjhirashi-career-api:8000`  
 **URL base (local):** `http://localhost:8000`  
@@ -61,7 +61,6 @@ Cada dominio tiene su README detallado en [`docs/sections/`](docs/sections/READM
 | Carrera — Soporte | `/career/tags` | [career-support](docs/sections/career-support/README.md) |
 | Carrera — Métricas | `/career/metrics` | [career-metrics](docs/sections/career-metrics/README.md) |
 | Carrera — Metodologías | `/career/operational-methodologies` | [career-methodologies](docs/sections/career-methodologies/README.md) |
-| Job Discovery | `/career/job-discoveries` | [job-discovery](docs/sections/job-discovery/README.md) |
 | Agent Bedrock | `/bedrock` | bedrock (retirado, ADR-033) |
 | Tareas del agente | `/agent-tasks` | [bedrock-tasks](docs/sections/bedrock-tasks/README.md) |
 | Plantillas PDF | `/pdf-templates` | [pdf-templates](docs/sections/pdf-templates/README.md) |
@@ -127,7 +126,6 @@ Cada paquete Python describe **qué hace cada módulo** (no el contrato HTTP):
 | `routes/` | [src/routes/README.md](src/routes/README.md) |
 | `services/` | [src/services/README.md](src/services/README.md) |
 | `services/bedrock/` | src/services/bedrock/README.md (retirado, ADR-033) |
-| `services/job_discovery/` | [src/services/job_discovery/README.md](src/services/job_discovery/README.md) |
 | `models/` | [src/models/README.md](src/models/README.md) |
 | `schemas/` | [src/schemas/README.md](src/schemas/README.md) |
 | `repositories/` | [src/repositories/README.md](src/repositories/README.md) |

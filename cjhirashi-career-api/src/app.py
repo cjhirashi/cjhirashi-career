@@ -20,7 +20,7 @@ import sys
 from config import settings
 from database import init_db, close_db
 from routes import auth_enhanced
-from routes import career_identity, career_search, career_digital, career_support, career_metrics, career_methodologies, job_discovery
+from routes import career_identity, career_search, career_digital, career_support, career_metrics, career_methodologies
 from routes import bedrock_tasks
 from routes import admin_contact_messages
 from routes import pdf_templates, pdf_template_styles
@@ -256,7 +256,6 @@ async def root():
 app.include_router(auth_enhanced.router)
 app.include_router(career_identity.router)
 app.include_router(career_search.router)
-app.include_router(job_discovery.router)
 app.include_router(career_digital.router)
 app.include_router(career_support.router)
 app.include_router(career_metrics.router)

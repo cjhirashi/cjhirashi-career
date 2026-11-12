@@ -7,7 +7,7 @@ SPA privada (puerto host 8002) con la que Carlos gestiona su carrera, los agente
 ## Qué incluye
 
 - **Panel y métricas**: dashboard, métricas de búsqueda (`/search-metrics`) y tablero de analítica del portafolio (`/metrics`, ver abajo).
-- **Carrera**: vista genérica por recurso (`/career/:resourceKey/:recordSlug?`: identidad, competencias, evidencia, vacantes, aplicaciones, contactos, entrevistas, CVs, cartas…), descubrimiento de vacantes (`/job-discovery`) y archivos (`/files`).
+- **Carrera**: vista genérica por recurso (`/career/:resourceKey/:recordSlug?`: identidad, competencias, evidencia, vacantes, aplicaciones, contactos, entrevistas, CVs, cartas…) y archivos (`/files`).
 - **Tareas** (`/tasks`): lista, kanban, calendario y Gantt; subtareas con turno y tareas programadas para agentes.
 - **Agentes**: chat con el orquestador y chat contextual por sección, catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas de uso y plantillas y estilos de PDF (`/agent/*`).
 - **Configuración**: perfiles de agentes, secciones del Admin, prompts globales y registro de errores (`/settings/*`).

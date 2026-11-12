@@ -1086,21 +1086,6 @@ export const targetCompaniesConfig: ResourceConfig = {
     { name: 'priority', label: 'Prioridad', type: 'creatable-select' },
     { name: 'status', label: 'Estado', type: 'creatable-select' },
     { name: 'notes', label: 'Notas', type: 'textarea', fullWidth: true },
-    {
-      name: 'career_board_provider',
-      label: 'Board de empleos',
-      type: 'select',
-      options: [
-        { value: 'greenhouse', label: 'Greenhouse' },
-        { value: 'lever', label: 'Lever' },
-      ],
-    },
-    {
-      name: 'career_board_token',
-      label: 'Token / slug del board',
-      type: 'text',
-      helpText: 'Ej. stripe en boards.greenhouse.io/stripe o jobs.lever.co/stripe',
-    },
     { name: 'industry_sector', label: 'Sector / vertical', type: 'creatable-select' },
     { name: 'company_culture', label: 'Cultura de la empresa', type: 'textarea', fullWidth: true },
     { name: 'funding_stage', label: 'Etapa de financiamiento', type: 'creatable-select' },

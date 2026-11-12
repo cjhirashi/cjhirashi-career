@@ -35,7 +35,6 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **CORS** — Restricción de orígenes del navegador; la API admite solo los de `CORS_ORIGINS`.
 
-**Descubrimiento de vacantes** — Búsqueda por adaptadores (Adzuna/Indeed, Greenhouse, Lever, LinkedIn por URL oficial, Remotive, RemoteOK, GetOnBoard) que devuelve una vista previa con referencias `L1, L2…`; solo se guarda en `vacancies` lo que se autoriza (ADR-011).
 
 **Docker Compose** — Orquestación de los 6 contenedores del sistema (`docker-compose.yml`).
 

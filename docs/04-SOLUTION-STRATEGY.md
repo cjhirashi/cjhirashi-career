@@ -129,7 +129,7 @@ Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a Post
 | 1. Dos canales | ADR-014 (módulos) y ADR-023 (retiro del MCP) |
 | 2. SPA del Admin | ADR-020, ADR-021, ADR-024, ADR-028 |
 | 3. PostgreSQL centralizado | ADR-018 |
-| 4. API orquestadora | ADR-011 (descubrimiento de vacantes), ADR-015 y ADR-016 |
+| 4. API orquestadora | ADR-011 (descubrimiento de vacantes, retirado por el ADR-034), ADR-015 y ADR-016 |
 | 5. Bedrock como capacidad | ADR-008, ADR-009 (deprecado), ADR-010, ADR-012, ADR-013, ADR-017, ADR-019, ADR-022, ADR-025, ADR-026, ADR-027 |
 | 6. Harness fuera de la API | ADR-029 |
 

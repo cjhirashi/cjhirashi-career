@@ -2,10 +2,6 @@ import { axiosInstance } from './client'
 import {
   CareerEntity,
   GitHubRepo,
-  JobDiscoveryRunResponse,
-  JobDiscoverySaveResponse,
-  JobListing,
-  JobProviderStatus,
   SearchOverview,
   WeeklySearchMetrics,
 } from '@/types/career'
@@ -122,39 +118,6 @@ export const careerApi = {
 
   searchOverview: async (): Promise<SearchOverview> => {
     const response = await axiosInstance.get<SearchOverview>('/career/metrics/search-overview')
-    return response.data
-  },
-
-  listJobProviders: async (): Promise<JobProviderStatus[]> => {
-    const response = await axiosInstance.get<JobProviderStatus[]>('/career/job-discoveries/providers')
-    return response.data
-  },
-
-  runJobDiscovery: async (payload: {
-    query?: string
-    location?: string
-    providers?: string[]
-    target_role_id?: string
-    include_company_boards?: boolean
-    remote?: boolean
-  }): Promise<JobDiscoveryRunResponse> => {
-    const response = await axiosInstance.post<JobDiscoveryRunResponse>('/career/job-discoveries/run', payload)
-    return response.data
-  },
-
-  importJobUrl: async (url: string): Promise<JobListing> => {
-    const response = await axiosInstance.post<JobListing>('/career/job-discoveries/import-url', { url })
-    return response.data
-  },
-
-  saveJobListings: async (
-    listings: JobListing[],
-    targetRoleId?: string
-  ): Promise<JobDiscoverySaveResponse> => {
-    const response = await axiosInstance.post<JobDiscoverySaveResponse>('/career/job-discoveries/save', {
-      listings,
-      target_role_id: targetRoleId,
-    })
     return response.data
   },
 

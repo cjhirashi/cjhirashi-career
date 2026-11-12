@@ -10,7 +10,6 @@ const STATIC_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/metrics': 'Métricas',
   '/search-metrics': 'Métricas de Búsqueda',
-  '/job-discovery': 'Descubrir vacantes',
   '/files': 'Archivos',
   '/tasks': 'Tareas',
   '/profile': 'Perfil',

@@ -13,7 +13,6 @@ flowchart TB
     Conf --> Integ[integration/]
     Conf --> Fix[fixtures/]
     Unit --> Auth[test_auth / middleware / config]
-    Unit --> JD[test_job_discovery]
     Unit --> Bedrock[unit/bedrock/]
     Integ --> AuthR[test_auth_routes]
     Conf --> DB[(SQLite :memory:)]

@@ -17,7 +17,6 @@ flowchart TB
         Support[career-support]
         Metrics[career-metrics]
         Methods[career-methodologies]
-        Jobs[job-discovery]
     end
     subgraph Agente
         Bedrock[bedrock]
@@ -57,7 +56,6 @@ flowchart TB
 | [career-support](career-support/README.md) | Etiquetas transversales | 1 recurso CRUD |
 | [career-metrics](career-metrics/README.md) | Métricas semanales y overview de búsqueda | 2 endpoints read-only |
 | [career-methodologies](career-methodologies/README.md) | Metodologías operativas | 1 recurso CRUD |
-| [job-discovery](job-discovery/README.md) | Búsqueda multi-proveedor de vacantes | Preview → save |
 
 ---
 

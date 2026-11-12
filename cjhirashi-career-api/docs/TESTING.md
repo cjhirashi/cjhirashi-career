@@ -9,7 +9,7 @@ Estrategia y ejecución de las pruebas de la API. Estado medido el 2026-11-05: *
 ```
 tests/
 ├── conftest.py     # fixtures compartidas
-├── unit/           # servicios, middleware, Bedrock (unit/bedrock/), descubrimiento de vacantes, migraciones, analítica del portafolio
+├── unit/           # servicios, middleware, Bedrock (unit/bedrock/), migraciones, analítica del portafolio
 ├── integration/    # rutas de autenticación y flujos HTTP completos
 └── fixtures/       # datos de apoyo
 ```

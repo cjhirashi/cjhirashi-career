@@ -31,7 +31,6 @@ Todas las lee la API (`cjhirashi-career-api/src/config.py`) salvo las de Postgre
 | CORS | `CORS_ORIGINS` | Lista separada por comas, sin espacios; la plantilla trae solo `localhost` |
 | Aplicación | `APP_NAME`, `APP_VERSION`, `DEBUG`, `UPLOADS_DIR`, `MAX_UPLOAD_SIZE_MB` | `DEBUG=true` baja el nivel de logs a DEBUG; no lo dejes activo en producción. `LOG_LEVEL` aparece en `.env.example` pero la API no lo lee |
 | MinIO | `MINIO_ENDPOINT` (`minio:9000`, nombre del servicio, no `localhost`), `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_BUCKET`, `MINIO_PUBLIC_URL` | Un valor `localhost` filtrado desde el entorno del host deja sin almacenamiento de archivos a la API (el resto sigue sirviendo) |
-| Descubrimiento de vacantes | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY`, `ADZUNA_COUNTRY`, `JOB_DISCOVERY_TIMEOUT_SECONDS`, `JOB_DISCOVERY_MAX_RESULTS` | Claves gratuitas de Adzuna; los demás adaptadores no requieren clave |
 | Agentes: herramientas | `GITHUB_TOKEN`, `BRAVE_SEARCH_API_KEY` | Lectura de repositorios y consulta web del agente |
 | Portal | `PUBLIC_PORTAL_USER_ID`, `PORTAL_SITE_KEY` | Usuario dueño del portafolio público y clave del sitio para la analítica |
 

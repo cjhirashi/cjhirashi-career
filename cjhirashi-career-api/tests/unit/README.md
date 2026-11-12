@@ -14,7 +14,7 @@ Prueban módulos aislados (servicios, middleware, modelos, esquemas, migraciones
 | `test_portal_*` | Analítica del portafolio: modelos, ingesta, sesionización, bots, canales, geografía, dispositivo, metas, motor de métricas, rutas, migración y concurrencia del recálculo diario |
 | `test_contact_messages` | Mensajes del formulario de contacto |
 | `test_error_report*` | Registro de errores (huella, deduplicación, límite de tasa) |
-| `test_job_discovery`, `test_github_service`, `test_web_search_service` | Adaptadores de vacantes y herramientas externas del agente |
+| `test_github_service`, `test_web_search_service` | Herramientas externas |
 | `test_pdf_generation` | Generación de PDF con WeasyPrint |
 | `test_task_scheduler`, `test_system_readiness` | Scheduler de tareas de agentes y comprobación de preparación |
 | `bedrock/` | Harness Bedrock: [bedrock/README.md](bedrock/README.md) |

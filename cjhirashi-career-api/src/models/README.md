@@ -70,8 +70,8 @@ flowchart TB
 | `networking_contact.py` | Red profesional |
 | `contact_interaction.py` | Log de comunicación con un contacto |
 | `networking_activity.py` | Actividades give/share/talk |
-| `target_company.py` | Empresas objetivo + boards Greenhouse/Lever |
-| `vacancy.py` | Vacantes trackeadas (incluye las de job discovery) |
+| `target_company.py` | Empresas objetivo |
+| `vacancy.py` | Vacantes trackeadas |
 | `cv_version.py` | CV versionado (Markdown `content`) |
 | `cover_letter_version.py` | Cartas versionadas |
 | `application.py` | Postulaciones a una vacante |

@@ -5,7 +5,7 @@
 **VISTA DE TIEMPO DE EJECUCIÓN** (arc42, sección 6)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, asistencia de Bedrock, descubrimiento de vacantes, tarea programada, plan con subtareas) y el flujo de analítica del portafolio.
+**Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, asistencia de Bedrock, tarea programada, plan con subtareas) y el flujo de analítica del portafolio.
 
 > Las rutas se muestran como las ve la API. Desde el navegador llevan el prefijo `/api/` (la API las recibe sin él): `GET /api/public/home` llega a la API como `GET /public/home`.
 
@@ -110,29 +110,6 @@ sequenceDiagram
 2. El agente (L1 orquestador, L2 por área, L3 por tarea: ADR-012) usa herramientas con el alcance del usuario; puede consultar la memoria del agente.
 3. **Toda escritura del agente** queda en `audit_logs` con el estado completo antes y después, para poder recuperar un borrado erróneo; si el registro falla, la herramienta falla en lugar de escribir sin rastro.
 4. El uso y el costo de cada ronda se guardan en `bedrock_usage_logs` y `bedrock_usage_round_logs`, con un presupuesto diario configurable.
-
-## Escenario 5 — Descubrimiento de vacantes
-
-Carlos o Agent Bedrock buscan vacantes. `POST /career/job-discoveries/run` no escribe `vacancies`; asigna refs `L1, L2…`. Indeed se resuelve vía Adzuna; LinkedIn solo devuelve URLs oficiales de búsqueda. El agente presenta el preview y **espera autorización**. Solo entonces `save_job_listings(refs=…)` (o `POST /save` con las marcadas en Admin) inserta `vacancies` con `evaluation=pending_review` para seguimiento. Ver [ADR-011](./09-DECISIONS/011-job-discovery-adapters.md).
-
-```mermaid
-sequenceDiagram
-    participant Carlos
-    participant Bedrock as Agent_Bedrock
-    participant API as API_REST
-    participant Adapters as Adaptadores
-    participant DB as PostgreSQL
-
-    Carlos->>Bedrock: Busca vacantes de X
-    Bedrock->>API: POST /career/job-discoveries/run
-    API->>Adapters: gather GetOnBoard Indeed LinkedIn
-    Adapters-->>API: JobListing preview
-    API-->>Bedrock: listings con refs L1 L2
-    Bedrock-->>Carlos: Lista para autorizar
-    Carlos->>Bedrock: Guarda L1 y L3
-    Bedrock->>API: save_job_listings refs L1 L3
-    API->>DB: INSERT vacancies pending_review
-```
 
 ## Escenario 6 — Tarea programada de un agente
 
@@ -242,7 +219,6 @@ La actividad de los agentes se mide aparte: `bedrock_usage_logs` (costos), `audi
 | 2 — Apertura de sesión | Admin | `last_login`, tokens | No | No |
 | 3 — Edición manual | Admin | Sí | No | No |
 | 4 — Asistencia de Bedrock | Admin (API) | Sí, si el agente escribe | Sí (`audit_logs`) | Uso y costo |
-| 5 — Descubrimiento de vacantes | Admin / agente | Sí, al autorizar el guardado | Sí si lo guarda el agente | No |
 | 6 — Tarea programada | Sin interfaz (scheduler de la API) | Sí, si el agente escribe | Sí | Uso y costo |
 | 7 — Plan con subtareas | Admin / scheduler | Sí | Sí si el agente escribe | Uso y costo |
 

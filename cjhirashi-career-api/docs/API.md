@@ -100,19 +100,6 @@ Patrón por cada resource key (37 recursos):
 
 ---
 
-## Job Discovery — `/career/job-discoveries`
-
-→ [sections/job-discovery/README.md](sections/job-discovery/README.md)
-
-| Método | Path |
-|--------|------|
-| GET | `/career/job-discoveries/providers` |
-| POST | `/career/job-discoveries/run` |
-| POST | `/career/job-discoveries/import-url` |
-| POST | `/career/job-discoveries/save` |
-
----
-
 ## Agent Bedrock — `/bedrock`
 
 → sections/bedrock/README.md (retirado, ADR-033)

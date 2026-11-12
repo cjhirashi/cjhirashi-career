@@ -215,10 +215,6 @@ describe('Sidebar', () => {
       const vacanciesLink = screen.getByRole('link', { name: /Vacantes/ })
       expect(vacanciesLink).toHaveAttribute('href', '/career/vacancies')
       expect(vacanciesLink.querySelector('svg')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'Descubrir vacantes' })).toHaveAttribute(
-        'href',
-        '/job-discovery'
-      )
     })
 
     it('shows a record-count badge after the name of table subsections, not singletons', async () => {

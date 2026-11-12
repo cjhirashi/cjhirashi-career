@@ -18,7 +18,6 @@ flowchart TB
     Repo --> Models[14 modelos Búsqueda]
     Models --> PG[(PostgreSQL)]
     PDF --> Gen[WeasyPrint in-process]
-    Discovery[job-discovery save] --> Vac[vacancies]
     Vac --> Models
 ```
 
@@ -117,7 +116,7 @@ Spec 007. La columna `process_stage` de `vacancies` (reemplaza a `application_st
 | `hired`, `rejected`, `withdrawn`, `no_response` | `closed` (Cerrada) |
 
 - **Catálogo y mapeo:** `src/services/vacancy_stage.py` (`PROCESS_STAGES`, `STAGE_TO_STATUS`). El CHECK `ck_vacancies_process_stage`, los schemas y el repositorio salen de ahí. El canon de los tests es `contracts/process-stage-catalog.json` de la spec 007.
-- **Valor por defecto:** una vacante sin etapa queda `not_applied` (también las que guarda el job discovery). La columna es NOT NULL.
+- **Valor por defecto:** una vacante sin etapa queda `not_applied`. La columna es NOT NULL.
 - **Campos de solo lectura:** `vacancy_status` y `process_stage_updated_at` se devuelven en las respuestas, pero se descartan si llegan en un POST/PUT (REST y tools de Bedrock).
 - **Fecha de la etapa:** `process_stage_updated_at` se fija al crear la vacante y cada vez que la etapa cambia a un valor distinto. Un update que omite la etapa o reenvía la misma no la mueve. Se puede saltar o retroceder etapas: no se valida la transición.
 - **Filtro por estado:** `filters={"vacancy_status": ["pending", ...]}` en `GET /career/vacancies` y `/count` se expande a las etapas del mapeo; se combina (AND) con un filtro `process_stage`. Un estado inválido no devuelve filas.
@@ -166,17 +165,6 @@ Spec 008. `vacancies` guarda cuatro textos largos opcionales sobre la empresa y 
 
 Perfil L2 **`agent_search_operations`** — pipeline de vacantes, aplicaciones y entrevistas. Discovery: L3 **`agent_vacancy_search`**. Redacción: L3 **`agent_cv_writing`** (`cv-versions`) y **`agent_cover_letter_writing`** (`cover-letter-versions`). PDF: L3 **`agent_pdf_render`**.
 
-Tools de job discovery (también expuestas vía `/career/job-discoveries`):
-
-- `list_job_providers`, `run_job_discovery`, `import_job_url`, `save_job_listings`
-
-Reglas del agente:
-- `run_job_discovery` solo hace **preview** (refs L1, L2…)
-- `save_job_listings` requiere autorización explícita del usuario
-- No inventar vacantes ni usar `create_career_record` para ofertas descubiertas
-
-Ver [job-discovery](../job-discovery/README.md).
-
 ---
 
 ## Métricas
@@ -207,4 +195,3 @@ curl -s -X POST "http://localhost:8000/career/cv-versions/cvv-3/pdf?template_id=
 
 ---
 
-Ver también: [job-discovery](../job-discovery/README.md), [pdf-templates](../pdf-templates/README.md)

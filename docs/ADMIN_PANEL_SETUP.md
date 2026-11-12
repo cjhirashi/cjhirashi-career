@@ -66,7 +66,7 @@ src/
 
 ## Pantallas
 
-Rutas definidas en `src/App.tsx`: `/dashboard`, `/metrics`, `/metrics/settings`, `/search-metrics`, `/job-discovery`, `/files`, `/tasks`, `/career/:resourceKey/:recordSlug?` (recursos de carrera), `/agent/*` (chat, catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas, plantillas y estilos de PDF), `/settings/*` (agentes, secciones, prompts, errores), `/profile`, `/change-password` y `/login`. Descripción por área en [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md).
+Rutas definidas en `src/App.tsx`: `/dashboard`, `/metrics`, `/metrics/settings`, `/search-metrics`, `/files`, `/tasks`, `/career/:resourceKey/:recordSlug?` (recursos de carrera), `/agent/*` (chat, catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas, plantillas y estilos de PDF), `/settings/*` (agentes, secciones, prompts, errores), `/profile`, `/change-password` y `/login`. Descripción por área en [05-BUILDING-BLOCK-VIEW.md](./05-BUILDING-BLOCK-VIEW.md).
 
 ## Pruebas
 

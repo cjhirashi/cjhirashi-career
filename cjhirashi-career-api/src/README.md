@@ -41,7 +41,7 @@ Punto de entrada de uvicorn (`uvicorn app:app`).
 
 `Settings` (pydantic-settings) leído de `.env`. Singleton `settings`.
 
-Agrupa: `DATABASE_URL`, JWT (`SECRET_KEY`, expiración), CORS, MinIO, Bedrock (región, modelos, presupuesto), Adzuna, PDF generator, rate limit y paginación.
+Agrupa: `DATABASE_URL`, JWT (`SECRET_KEY`, expiración), CORS, MinIO, Bedrock (región, modelos, presupuesto), PDF generator, rate limit y paginación.
 
 ### `database.py` — SQLAlchemy async
 

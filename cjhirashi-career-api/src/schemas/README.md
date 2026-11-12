@@ -69,10 +69,6 @@ Solo response: `SearchMetricsWeekResponse`, `SearchOverviewResponse`, `FunnelSta
 
 CRUD de `OperationalMethodology` (`title`, `section`, `content` Markdown, `agent_profile_ids`).
 
-### `job_discovery.py`
-
-`JobDiscoveryRunRequest/Response`, `ImportUrlRequest`, `SaveListingsRequest/Response`, `JobListingSchema`, estado de proveedores y listings saltados.
-
 ### `bedrock.py`
 
 Contrato del harness: `BedrockChatRequest` (SSE), modelos, presupuesto, instrucciones, perfiles, tools custom, memoria, conversaciones, audit log.

@@ -36,7 +36,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | Carrera — Tags | [sections/career-support/README.md](sections/career-support/README.md) |
 | Carrera — Métricas | [sections/career-metrics/README.md](sections/career-metrics/README.md) |
 | Carrera — Metodologías | [sections/career-methodologies/README.md](sections/career-methodologies/README.md) |
-| Job Discovery | [sections/job-discovery/README.md](sections/job-discovery/README.md) |
 | Agent Bedrock | sections/bedrock/README.md (retirado, ADR-033) |
 | Tareas del agente | [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md) |
 | Plantillas PDF | [sections/pdf-templates/README.md](sections/pdf-templates/README.md) |
@@ -71,7 +70,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `career_support` | `/career/tags` | JWT |
 | `career_metrics` | `/career/metrics` | JWT |
 | `career_methodologies` | `/career/operational-methodologies` | JWT |
-| `job_discovery` | `/career/job-discoveries` | JWT |
 | `bedrock` | `/bedrock` | JWT |
 | `bedrock_tasks` | `/agent-tasks` | JWT |
 | `pdf_templates` | `/pdf-templates` | JWT |
@@ -99,7 +97,6 @@ READMEs de implementación (función de cada módulo Python), distintos de los d
 | Routes | [../src/routes/README.md](../src/routes/README.md) |
 | Services | [../src/services/README.md](../src/services/README.md) |
 | Bedrock harness | ../src/services/bedrock/README.md (retirado, ADR-033) |
-| Job discovery | [../src/services/job_discovery/README.md](../src/services/job_discovery/README.md) |
 | Models | [../src/models/README.md](../src/models/README.md) |
 | Schemas | [../src/schemas/README.md](../src/schemas/README.md) |
 | Repositories | [../src/repositories/README.md](../src/repositories/README.md) |

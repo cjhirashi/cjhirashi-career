@@ -49,7 +49,7 @@ SPA React 18 + Vite + TypeScript (Tailwind, React Query, Zustand, React Router, 
 | Área | Rutas | Contenido |
 |---|---|---|
 | Panel y métricas | `/dashboard`, `/metrics`, `/metrics/settings`, `/search-metrics` | KPIs de búsqueda; analítica del portafolio con comparación, filtros, metas, embudos y anotaciones |
-| Carrera | `/career/:resourceKey/:recordSlug?`, `/job-discovery`, `/files` | Vista genérica de cada recurso de carrera (`config/careerResources.ts`), descubrimiento de vacantes y archivos |
+| Carrera | `/career/:resourceKey/:recordSlug?`, `/files` | Vista genérica de cada recurso de carrera (`config/careerResources.ts`) y archivos |
 | Tareas | `/tasks` | Lista, kanban, calendario y Gantt |
 | Agentes | `/agent/chat`, `/agent/catalog`, `/agent/instructions`, `/agent/tools`, `/agent/memory`, `/agent/tasks`, `/agent/audit-log`, `/agent/metrics`, `/agent/pdf-templates`, `/agent/pdf-template-styles` | Chat, catálogo y configuración de agentes, memoria, tareas programadas, auditoría y plantillas de PDF |
 | Configuración | `/settings/agents`, `/settings/sections`, `/settings/agent-prompts`, `/settings/error-reports` | Perfiles de agentes, secciones del Admin, prompts globales y registro de errores |
@@ -69,7 +69,7 @@ Capas: `routes/` → `services/` → `repositories/` → `models/` (la lógica d
 |---|---|---|
 | Autenticación y usuarios | `auth_enhanced` | `auth_service` (JWT, bcrypt) |
 | Carrera (CRUD genérico `/career/{recurso}`) | `career_identity`, `career_search`, `career_digital`, `career_support`, `career_methodologies`, `career_common` | `career_repository` (base común), `vacancy_stage`, `methodology_scope`, `section_catalog` |
-| Métricas y descubrimiento | `career_metrics`, `job_discovery` | `services/job_discovery/` (adaptadores Adzuna, Greenhouse, Lever, LinkedIn, Remotive, RemoteOK, GetOnBoard) |
+| Métricas | `career_metrics` | Agregaciones de la búsqueda de empleo |
 | Agentes | `bedrock`, `bedrock_tasks`, `notifications` | `services/bedrock/` (bucle, perfiles, herramientas, memoria, costos, imágenes), `task_scheduler`, `web_search_service`, `github_service` |
 | Archivos y PDF | `files`, `pdf_templates`, `pdf_template_styles` | `storage_service`, `pdf_service`, `pdf_template_render` |
 | Portal y analítica | `public`, `events`, `portal_metrics`, `portal_analytics`, `admin_contact_messages` | `portal_ingest`, `portal_metrics`, `portal_bots`, `portal_geo`, `portal_channels`, `portal_device`, `portal_ratelimit`, `contact_message_service` |
@@ -95,7 +95,6 @@ Una instancia (`postgres_db`) con la base `career_db`: 69 modelos SQLAlchemy y 5
 | Dependencia | Uso | Credenciales |
 |---|---|---|
 | AWS Bedrock | Chat de agentes, embeddings e imágenes (Stability) | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
-| Adzuna, Greenhouse, Lever, LinkedIn (URL oficial), Remotive y otras | Descubrimiento de vacantes | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` (el resto, API públicas) |
 | GitHub | Lectura de repositorios por el agente | `GITHUB_TOKEN` |
 | Brave Search | Consulta web del agente | `BRAVE_SEARCH_API_KEY` |
 
