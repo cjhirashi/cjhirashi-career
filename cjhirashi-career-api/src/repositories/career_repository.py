@@ -45,7 +45,7 @@ class CareerRepository(Generic[ModelType]):
         self.model = model
         # The router-prefix form of the resource (e.g. "operational-methodologies",
         # hyphenated - matches the frontend's CAREER_RESOURCES keys and what
-        # Agent Bedrock's tools use), not `model.__tablename__` (underscored).
+        # external agents use), not `model.__tablename__` (underscored).
         # Only set by `build_crud_router`.
         self.resource_key = resource_key
         # Computed once per model (not per request): every real column name
@@ -253,7 +253,7 @@ class CareerRepository(Generic[ModelType]):
         data.pop("user_id", None)
         virtual = self._pop_virtual_fields(data)
         if self.resource_key == "vacancies":
-            # Mismas reglas para REST y tools de Bedrock (spec 007): valida la etapa,
+            # Mismas reglas para REST (spec 007): valida la etapa,
             # descarta campos de sólo lectura y fija process_stage_updated_at.
             data = prepare_vacancy_write(data)
         if self.resource_key == "agent-tasks":

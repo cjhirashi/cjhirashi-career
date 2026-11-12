@@ -1,7 +1,7 @@
 """Camino de LECTURA / gestión del registro de fallas (ADR-018).
 
 Fuente única usada por la ruta REST (`routes/error_reports.py`) y por la tool de
-Bedrock `error_report_settings` (`services/bedrock/tools.py`). El camino de
+El camino de
 ESCRITURA (captura de fallas) vive en `services/error_reporting.py`.
 """
 from __future__ import annotations

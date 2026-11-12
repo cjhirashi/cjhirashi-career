@@ -310,25 +310,6 @@ class TestSettingsConfiguration:
         assert "docx" in settings.ALLOWED_EXTENSIONS
         assert len(settings.ALLOWED_EXTENSIONS) > 0
 
-    def test_bedrock_settings_optional(self):
-        """Verificar que Bedrock settings son opcionales."""
-        class TestSettings(BaseSettings):
-            DATABASE_URL: str = Field(..., description="PostgreSQL connection string")
-            SECRET_KEY: str = Field(..., min_length=32, description="JWT secret key")
-            BEDROCK_REGION: str = "us-east-1"
-            BEDROCK_MODEL_ID: str = "claude-3-sonnet-20240229"
-            class Config:
-                env_file = None
-
-        settings = TestSettings(
-            DATABASE_URL="postgresql://localhost/db",
-            SECRET_KEY="a" * 32
-        )
-
-        # Deben tener valores por defecto
-        assert settings.BEDROCK_REGION == "us-east-1"
-        assert settings.BEDROCK_MODEL_ID == "claude-3-sonnet-20240229"
-
     def test_rate_limiting_settings_valid(self):
         """Verificar que rate limiting settings son válidos."""
         from config import Settings

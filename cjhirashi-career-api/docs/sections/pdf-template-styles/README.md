@@ -30,7 +30,6 @@ flowchart TB
 | Rutas | `src/routes/pdf_template_styles.py` |
 | Schemas | `src/schemas/pdf_template.py` (`PdfTemplateStyle*`) |
 | Modelo | `src/models/pdf_template_style.py` |
-| Tool | `src/services/bedrock/tools.py` → `pdf_style` |
 
 Usa `CareerRepository` con `resource_key="pdf-template-styles"` y **`vectorize=False`**. IDs prefijados `pds-N`.
 
@@ -79,7 +78,6 @@ Usa `CareerRepository` con `resource_key="pdf-template-styles"` y **`vectorize=F
 |------------|------------------|
 | Admin Panel | UI CRUD en `/agent/pdf-template-styles` |
 | Plantillas | FK `style_id` en `pdf_output_templates` |
-| Agent Bedrock | Tool `pdf_style` (independiente de `pdf_template`) |
 | Render PDF | `resolve_template_css()` combina CSS del estilo + HTML de la plantilla |
 
 ---
@@ -91,4 +89,4 @@ curl -s "http://localhost:8000/pdf-template-styles" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Ver también: [pdf-templates](../pdf-templates/README.md), [bedrock](../bedrock/README.md)
+Ver también: [pdf-templates](../pdf-templates/README.md)

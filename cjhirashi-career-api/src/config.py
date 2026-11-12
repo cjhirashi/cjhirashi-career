@@ -2,7 +2,7 @@
 cjhirashi-career API - Application Configuration.
 
 Carga variables de entorno vía pydantic-settings y expone un singleton
-`settings` usado en toda la aplicación (BD, JWT, Bedrock, MinIO, etc.).
+`settings` usado en toda la aplicación (BD, JWT, MinIO, etc.).
 """
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator
@@ -92,11 +92,6 @@ class Settings(BaseSettings):
     # GitHub — PAT de solo lectura para el L3 agent_github
     # -------------------------------------------------------------------------
     GITHUB_TOKEN: str = ""
-
-    # -------------------------------------------------------------------------
-    # Consulta web — Brave Search opcional; si vacío se usa DuckDuckGo
-    # -------------------------------------------------------------------------
-    BRAVE_SEARCH_API_KEY: str = ""
 
     # -------------------------------------------------------------------------
     # Portal público — usuario único cuyos datos sirve /public/*

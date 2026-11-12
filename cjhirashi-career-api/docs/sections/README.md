@@ -18,8 +18,7 @@ flowchart TB
         Metrics[career-metrics]
         Methods[career-methodologies]
     end
-    subgraph Agente
-        Bedrock[bedrock]
+    subgraph Doc["Tareas y PDF"]
         Tasks[bedrock-tasks]
         PDF[pdf-templates]
         Styles[pdf-template-styles]
@@ -63,8 +62,7 @@ flowchart TB
 
 | Sección | Descripción |
 |---------|-------------|
-| [bedrock](bedrock/README.md) | Chat SSE, modelos, memoria, tools, auditoría, presupuesto |
-| [bedrock-tasks](bedrock-tasks/README.md) | Tareas programables del agente |
+| [bedrock-tasks](bedrock-tasks/README.md) | Tablero de tareas de Carlos |
 | [pdf-templates](pdf-templates/README.md) | Plantillas HTML → tabla `pdf_output_templates` |
 | [pdf-template-styles](pdf-template-styles/README.md) | Estilos CSS → tabla `pdf_template_styles` |
 
@@ -94,7 +92,7 @@ Cada documento de sección sigue esta estructura:
 2. **Archivos fuente** — routes, schemas, services, models
 3. **Endpoints** — método, path, auth, request/response
 4. **Flujos** — secuencias típicas de uso
-5. **Relaciones** — con otras secciones (Bedrock tools, Portal, etc.)
+5. **Relaciones** — con otras secciones (Portal, etc.)
 6. **Ejemplos curl** — peticiones representativas
 
 ---

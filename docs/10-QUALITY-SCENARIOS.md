@@ -48,7 +48,7 @@ Cada escenario tiene **Estímulo**, **Medida**, **Estado** (✅ cumple · ⚠️
 | S3 | Restricción de orígenes (CORS) | Un conjunto de orígenes por entorno | ✅ cumple | `CORS_ORIGINS` por variable de entorno; la plantilla trae solo localhost |
 | S4 | OWASP Top 10 | Sin vulnerabilidades conocidas sin mitigar | ❌ pendiente | Sin auditoría formal |
 | S5 | Gestión de secretos | Nada versionado en texto plano | ✅ cumple | `.env` fuera de git; `docker-compose.yml` solo usa `${VARIABLE}` |
-| S6 | Acceso de agentes acotado | El rol `agent` no alcanza rutas fuera de su lista | ✅ cumple | `middleware/auth.py` responde 403 fuera de `/career/*`, `POST /bedrock/chat` y `POST /files` |
+| S6 | Acceso de agentes acotado | El rol `agent` no alcanza rutas fuera de su lista | ✅ cumple | `middleware/auth.py` responde 403 fuera de `/career/*` y `POST /files` |
 | S7 | Alta de cuentas controlada | Solo el administrador crea usuarios | ❌ pendiente | `POST /auth/register` es público (comprobado el 2026-11-05): ver R15 y `cjhirashi-career-api/docs/SECURITY.md` |
 
 ## Escalabilidad

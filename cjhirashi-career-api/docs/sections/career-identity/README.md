@@ -16,7 +16,6 @@ flowchart TB
     Factory --> Repo[CareerRepository]
     Repo --> Models[13 modelos Identidad]
     Models --> PG[(PostgreSQL)]
-    Bedrock[tools Bedrock] --> Factory
 ```
 
 ---
@@ -71,15 +70,6 @@ AchievementCreate / AchievementUpdate / AchievementResponse
 
 ---
 
-## Agente Bedrock
-
-El perfil **`identity`** (`agent_profiles.py`) tiene acceso a todos estos resource keys. Tools disponibles:
-
-- `list_career_record`, `get_career_record`, `create_career_record`, `update_career_record`, `delete_career_record`
-- `count_career_records`, `describe_resource_schema`
-
-El chat contextual en secciones de Identidad del Admin Panel enruta automáticamente a este perfil según `page_context.resource_key`.
-
 ---
 
 ## Portal público
@@ -125,4 +115,4 @@ curl -s -X POST http://localhost:8000/career/competencies \
 - **`identity`** suele ser un registro único por usuario (el Admin lo trata como singleton): tagline, bio y UVP — no sustituye a `personal-profile`.
 - IDs devueltos siempre en formato prefijado (`ach-17`, `cmp-42`)
 
-Ver también: [career-search](../career-search/README.md), [bedrock](../bedrock/README.md)
+Ver también: [career-search](../career-search/README.md)

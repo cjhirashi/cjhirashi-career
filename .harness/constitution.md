@@ -38,15 +38,13 @@ patron_interno:    por-capas            # detectado; no hexagonal
 patron_interno_adr: ADR-001
 servicios:
   cjhirashi-career-api:       { stack: python/fastapi,        tipo: sistema-de-registro }
-  cjhirashi-career-ai:        { stack: python/fastapi-async,  tipo: microservicio-IA (AWS Bedrock) }
   cjhirashi-career-admin:     { stack: react/vite (SPA),      tipo: panel de administración }
   cjhirashi-career-portfolio: { stack: react/vite (SPA),      tipo: portal público read-only }
   # cjhirashi-career-mcp retirado 2026-09-04 — ADR-023
-infraestructura: [ postgres-compartida (Alembic en api; BD propia career_ai_db del harness), minio ]
-topologia_agentes: multi-perfil-bedrock   # perfiles agent-N, delegación entre perfiles, niveles L1/L2/L3 (ADR 012/013)
+infraestructura: [ postgres-compartida (Alembic en api), minio ]
+topologia_agentes: agentes-externos-rol-agent   # clientes externos por la API REST (ADR-032, ADR-033)
 sustratos_integracion:
-  - rest-http            # FastAPI en api/ai; consumido por los frontends
-  - bedrock-llm          # servicio ai contra AWS Bedrock Converse API (implementación Bedrock del provider)
+  - rest-http            # FastAPI en api; consumido por los frontends
 capas_transversales: [ observabilidad (prometheus + logging/tracing), auth-jwt ]
 rutas:
   arnes: .harness/
@@ -71,16 +69,11 @@ rutas:
   Alembic sobre `career_db`.
 - La dev DB tiene cambios aplicados por `ALTER TABLE` directo → **no asumir** que
   `alembic upgrade head` = estado real del schema. Verificar contra la DB.
-- `cjhirashi-career-ai` usa su propia base `career_ai_db` (mismo contenedor, usuario propio sin
-  permisos sobre `career_db`) con Alembic propio y **sesión async** (`+asyncpg` en
-  `AI_DATABASE_URL`); accede a los datos de carrera solo por la API REST.
 
 ## Artículo 5 · Seguridad
 
 - Secretos fuera del repo (`.env` gitignored; ver `docs/ENVIRONMENT-SECURITY.md`).
 - Auth por **JWT**; los endpoints de negocio exigen `get_current_user`.
-- Llamadas a Bedrock con **coste**: se pide autorización explícita al humano y se
-  registra el coste antes de ejecutarlas en una prueba.
 
 ## Artículo 6 · Contratos y errores
 
@@ -134,7 +127,6 @@ sincroniza (Fase 2 `plan.md §Impacto en documentación` → tareas `[doc]` → 
 |---|---|---|
 | arc42 | `docs/01`–`docs/12` | estructura, componentes, decisiones, riesgos, calidad |
 | ADRs (índice + decisiones) | `docs/09-DECISIONS/` | una decisión arquitectónica del **producto** |
-| Sistema Bedrock | `docs/BEDROCK-SYSTEM.md` | comportamiento del subsistema de agentes / perfiles |
 | Setup del panel | `docs/ADMIN_PANEL_SETUP.md` | arranque / configuración del panel admin |
 | Entorno y seguridad | `docs/ENVIRONMENT-SECURITY.md` | variables de entorno, secretos, políticas |
 | Plan de implementación | `docs/IMPLEMENTATION_PLAN.md` | roadmap / fases del producto |
@@ -164,12 +156,6 @@ que el contenido es correcto.
 
 ## Hazards conocidos del código (contexto duro — verificar si reaparecen)
 
-- **Reportes "FASE X 100%" sin arranque real.** `cjhirashi-career-ai` estuvo
-  "completo" sin poder arrancar. → Art. 3: verificación real obligatoria.
-- **`main.py` de `ai` silenciando `ImportError` de routers** y arrancando "sano" sin
-  endpoints de negocio. → confirmar que los routers cargan.
-- **Stubs falsos en `ai/src/models/`** que sombreaban los modelos reales
-  (`from models import *` con `Base` desconectado). → confirmar modelos reales.
 - **Secuencias PG desincronizadas** de IDs congelados → 500 al crear grupos/secciones.
 - **`DetachedInstanceError`** por cache de proceso con filas ORM vivas fuera de sesión.
 - **dev DB no trackea Alembic del todo** (Art. 4).
@@ -182,3 +168,5 @@ que el contenido es correcto.
 | 2026-09-04 | 1, 2, 6 | Retiro del MCP Server: 5→4 servicios; fuera el sustrato `mcp` y la regla de JSON Schema por tool | ADR-023 |
 | 2026-09-10 | 8 | Especialista `experto-ux-ui`: revisión de UX/UI obligatoria en features de frontend antes de `verified` | ADR-003 |
 | 2026-10-13 | 2, 4 | Harness de agentes fuera de la API: `ai` con BD propia `career_ai_db` y Alembic propio; fuera `qdrant` (infraestructura y sustrato `qdrant-vector`) | ADR-029 |
+| 2026-11-11 | 2, 4, 5 | Retiro del subsistema Bedrock, del catálogo de agentes y de Qdrant; los agentes son externos por la API (rol `agent`); fuera el servicio `ai` y su base `career_ai_db` | ADR-033 |
+| 2026-11-12 | 2 | Retiro del descubrimiento de vacantes (adaptadores de portales de empleo) | ADR-034 |

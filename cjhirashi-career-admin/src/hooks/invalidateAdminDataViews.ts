@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query'
  * Query-key prefixes for every Admin Panel view that reads a table
  * (career CRUD, PDF styles/templates, files, agent tasks, …).
  *
- * After Agent Bedrock writes, the open screen must refetch immediately —
+ * After an external agent writes, the open screen must refetch immediately —
  * `staleTime` on the root QueryClient would otherwise keep showing the
  * snapshot from when the user opened the record.
  */

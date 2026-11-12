@@ -117,10 +117,10 @@ Spec 007. La columna `process_stage` de `vacancies` (reemplaza a `application_st
 
 - **Catálogo y mapeo:** `src/services/vacancy_stage.py` (`PROCESS_STAGES`, `STAGE_TO_STATUS`). El CHECK `ck_vacancies_process_stage`, los schemas y el repositorio salen de ahí. El canon de los tests es `contracts/process-stage-catalog.json` de la spec 007.
 - **Valor por defecto:** una vacante sin etapa queda `not_applied`. La columna es NOT NULL.
-- **Campos de solo lectura:** `vacancy_status` y `process_stage_updated_at` se devuelven en las respuestas, pero se descartan si llegan en un POST/PUT (REST y tools de Bedrock).
+- **Campos de solo lectura:** `vacancy_status` y `process_stage_updated_at` se devuelven en las respuestas, pero se descartan si llegan en un POST/PUT (REST).
 - **Fecha de la etapa:** `process_stage_updated_at` se fija al crear la vacante y cada vez que la etapa cambia a un valor distinto. Un update que omite la etapa o reenvía la misma no la mueve. Se puede saltar o retroceder etapas: no se valida la transición.
 - **Filtro por estado:** `filters={"vacancy_status": ["pending", ...]}` en `GET /career/vacancies` y `/count` se expande a las etapas del mapeo; se combina (AND) con un filtro `process_stage`. Un estado inválido no devuelve filas.
-- **Errores:** una etapa fuera de catálogo, o `process_stage: null` en un PUT, responde 422 con el formato de validación vigente del API (`{"detail": "Error de validación", "errors": [...]}`), no Problem Details RFC 9457 (D-14; deuda preexistente de todo el API). Desde las tools de Bedrock el error llega como `ValueError`.
+- **Errores:** una etapa fuera de catálogo, o `process_stage: null` en un PUT, responde 422 con el formato de validación vigente del API (`{"detail": "Error de validación", "errors": [...]}`), no Problem Details RFC 9457 (D-14; deuda preexistente de todo el API).
 - **Base de conocimiento (D-13):** `process_stage` se indexa; `process_stage_updated_at` no entra al texto indexado.
 - **Migración:** `c7e1a4d92b60` (renombra `application_status`, NULL a `not_applied`, rellena la fecha, añade el CHECK). Falla antes de tocar nada si hay valores fuera del catálogo.
 
@@ -138,7 +138,6 @@ Spec 008. `vacancies` guarda cuatro textos largos opcionales sobre la empresa y 
 | `work_culture` | Cultura laboral |
 
 - **Reglas (REST, schemas `VacancyBase`/`VacancyUpdate`):** se recortan los espacios de los bordes (el contenido interno se conserva); vacío o solo espacios pasa a `NULL`; el tope es 10 000 caracteres medidos tras el recorte. Superarlo responde 422 con `{"detail", "errors"}` y no cambia la fila. `null` explícito en un PUT borra el campo; omitirlo lo deja intacto. Las respuestas siempre incluyen las cuatro claves (valor o `null`).
-- **Tools de Bedrock (D-07):** `create/update_career_record` no pasan por Pydantic, así que **no** aplican el recorte, el vacío a `NULL` ni el tope. La spec 009 mueve esa escritura a REST.
 - **Base de conocimiento (RF-006, transitorio):** los cuatro campos están en `_KB_EXCLUDED_COLUMNS["vacancies"]` y no se indexan. Es temporal: se retira con la spec 009, que decide su indexado.
 - **Migración:** `d8f2b5a13c97` (idempotente; el downgrade elimina las columnas y su contenido).
 
@@ -160,10 +159,6 @@ Spec 008. `vacancies` guarda cuatro textos largos opcionales sobre la empresa y 
 4. Retorna `StreamingResponse` (`application/pdf`)
 
 ---
-
-## Agente Bedrock
-
-Perfil L2 **`agent_search_operations`** — pipeline de vacantes, aplicaciones y entrevistas. Discovery: L3 **`agent_vacancy_search`**. Redacción: L3 **`agent_cv_writing`** (`cv-versions`) y **`agent_cover_letter_writing`** (`cover-letter-versions`). PDF: L3 **`agent_pdf_render`**.
 
 ---
 

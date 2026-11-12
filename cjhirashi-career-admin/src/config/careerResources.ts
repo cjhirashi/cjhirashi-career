@@ -2006,9 +2006,7 @@ export const operationalMethodologiesConfig: ResourceConfig = {
 // validated with the user - do not reshuffle keys between groups.
 
 // 'methodologies' isn't a CAREER_DOMAINS entry - operational-methodologies
-// lives under the "Agente IA" sidebar section instead (see Sidebar.tsx),
-// since it's the agent's own knowledge base, not a career-domain resource
-// Carlos browses the same way as the other 29.
+// is not a career-domain resource Carlos browses the same way as the other 29.
 export type CareerDomainKey = 'identity' | 'search' | 'digital' | 'networking' | 'support'
 
 export interface CareerDomainGroup {

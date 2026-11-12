@@ -59,15 +59,6 @@ flowchart TB
 
 ---
 
-## Agente Bedrock
-
-Perfil L2 **`agent_digital_presence`** — CRUD de publicaciones, perfiles sociales y portal. Imágenes: L3 `agent_visual_design`.
-
-- CRUD en `publications`, perfiles sociales, portal
-- `generate_image`, `attach_image_to_record` (vía `agent_visual_design`)
-
-El chat contextual en secciones de Presencia Digital enruta a este perfil.
-
 ---
 
 ## Portal público

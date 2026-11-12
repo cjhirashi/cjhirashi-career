@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-28
+Aceptado — 2026-08-28 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 Reemplaza parcialmente a [ADR-017](./017-l2-agent-settings.md) (que creó `agent_settings` como L2 único de metaconfiguración). No cambia las reglas de jerarquía de [ADR-012](./012-bedrock-three-level-agents.md) (L1 delega a L2/L3; L2 delega solo a L3; delegación solo hacia abajo). Convive con [ADR-018](./018-error-reports-registry.md) (registro `error_reports`) y [ADR-021](./021-admin-sections-synthetic-pk.md) (PK `sec-N`).
 

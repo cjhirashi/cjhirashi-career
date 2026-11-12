@@ -1,7 +1,7 @@
 """Registro centralizado de fallas del sistema (ADR-018).
 
 Cada fila es una falla detectada en cualquier parte del sistema (handler global
-de la API, bloque ``except`` del código, scheduler in-process, loop de Bedrock,
+de la API, bloque ``except`` del código, scheduler in-process,
 o los SPA de Admin/Portfolio). El atributo ``resolved`` arranca en
 ``False`` — pendiente de revisión — y pasa a ``True`` cuando la falla se corrige.
 

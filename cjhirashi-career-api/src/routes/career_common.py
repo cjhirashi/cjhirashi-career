@@ -29,7 +29,7 @@ from repositories.career_repository import CareerRepository
 # ============================================================================
 # resource_key -> SQLAlchemy model, populated automatically below as each
 # `build_crud_router(...)` call registers itself - never maintained by hand.
-# This is what lets Agent Bedrock's tools (services/bedrock_service.py)
+# This is what lets external agents
 # operate any of the ~30 career-domain resources generically, the same way
 # CareerResourceView.tsx's CAREER_RESOURCES does on the frontend.
 RESOURCE_REGISTRY: Dict[str, Type[Base]] = {}

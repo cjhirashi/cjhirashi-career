@@ -138,7 +138,7 @@ La dependency `get_current_user` (`middleware/auth.py`) decodifica el token, val
 
 ## Aislamiento de datos
 
-Todas las rutas de carrera, Bedrock, archivos y LinkedIn usan `Depends(get_current_user)`. El `user_id` del token es la **única** fuente de verdad para filtrar filas — nunca se acepta `user_id` en el body del cliente.
+Todas las rutas de carrera, archivos y LinkedIn usan `Depends(get_current_user)`. El `user_id` del token es la **única** fuente de verdad para filtrar filas — nunca se acepta `user_id` en el body del cliente.
 
 ---
 
@@ -166,6 +166,5 @@ curl -s -X POST http://localhost:8000/auth/refresh \
 
 - **Todas las secciones protegidas** dependen de este módulo
 - **Portal público** (`/public/*`) no usa JWT; filtra por `PUBLIC_PORTAL_USER_ID`
-- **Bedrock** opera con el mismo scope JWT del Admin Panel
 
 Ver también: [SECURITY.md](../../SECURITY.md), [infrastructure](../infrastructure/README.md)

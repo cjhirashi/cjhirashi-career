@@ -30,7 +30,7 @@ Plataforma de gestión de carrera profesional. **Monorepo de microservicios**:
 | `cjhirashi-career-admin` | React · **Vite** SPA · TS · React Query · Vitest | Panel de administración | 8002 → 8000 |
 | `cjhirashi-career-portfolio` | React · **Vite** SPA · TS · Vitest | Portal público read-only | 8003 → 8000 |
 
-Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`; `ai` tendrá su BD `career_ai_db`) y **MinIO** (objetos). Qdrant se retiró el 2026-11-11 (ADR-032). Routing externo por **Caddy** vía
+Infra: **PostgreSQL** (`postgres_db`; Alembic en `api`) y **MinIO** (objetos). Routing externo por **Caddy** vía
 `caddy.json` (contrato con el repo `cjhirashi-srv`; vive solo en local, no se versiona).
 
 > El **MCP Server** (`cjhirashi-career-mcp`, host `mcp.cjhirashi.com`) se retiró el
@@ -46,12 +46,11 @@ componentes. Detalle: `.harness/constitution.md` Art. 2 + `docs/05-BUILDING-BLOC
 | Servicio | Tests | Arranque local |
 |---|---|---|
 | `api` | `cd cjhirashi-career-api && venv_test/bin/python -m pytest -q` | `uvicorn app:app --app-dir src --port 8000` |
-| `ai` | `cd cjhirashi-career-ai && ./venv_test/bin/python -m pytest -q` | `python -m uvicorn main:app --app-dir src --port 8010` |
 | `admin` | `cd cjhirashi-career-admin && npx vitest run` · `npm run type-check` | `npm run dev` (:3000) |
 | `portfolio` | `cd cjhirashi-career-portfolio && npx vitest run` | `npm run dev` |
 
 Vía compose: `docker compose up -d --build <servicio>` → `GET /health`.
-Los venv de test de `api`/`ai` pueden no existir en limpio — el gate hace `SKIP` con
+El venv de test de `api` puede no existir en limpio — el gate hace `SKIP` con
 guía para recrearlos.
 
 ## Convenciones
@@ -73,8 +72,7 @@ Tabla completa (con "se actualiza cuando cambia…"): `.harness/constitution.md`
 
 ## Hazards conocidos
 
-`ai` ha arrancado "sano" silenciando `ImportError` de routers; verifica arranque real,
-no imports. La dev DB no trackea Alembic del todo. Lista completa: fin de
+Verifica arranque real, no imports. La dev DB no trackea Alembic del todo. Lista completa: fin de
 `.harness/constitution.md`.
 
 ## Bindings de herramienta — `.claude/agents/`
@@ -88,7 +86,7 @@ manual de cada rol está en `.harness/method.md §8`; estos archivos son stubs.
   frontends (`admin`, `portfolio`). Toda feature de interfaz pasa por él antes de
   `verified` (Constitución Art. 8).
 - Sin especialistas por stack: el patrón por capas + los base cubren. Si un
-  subproyecto (`api`/`ai`/`admin`/`portfolio`) entra en desarrollo intenso y
+  subproyecto (`api`/`admin`/`portfolio`) entra en desarrollo intenso y
   justifica su propio especialista, se añade **vía un `ADR-`**.
 
 Ver `.claude/agents/README.md`.

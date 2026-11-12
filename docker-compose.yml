@@ -122,7 +122,6 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
-      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
       # Public portal (unauthenticated /public/* routes)
       PUBLIC_PORTAL_USER_ID: ${PUBLIC_PORTAL_USER_ID}
     depends_on:

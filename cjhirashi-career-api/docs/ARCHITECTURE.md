@@ -1,12 +1,10 @@
 # API REST — Guía de arquitectura
 
-> **Estado (2026-11-10, [ADR-032](../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
-
 **Ubicación:** `cjhirashi-career-api/docs/ARCHITECTURE.md`
 
 **Última actualización:** 2026-11-10
 
-Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones Bedrock y MinIO.
+Arquitectura en capas de la API REST de cjhirashi-career: FastAPI + SQLAlchemy 2.0 async + PostgreSQL, con integraciones MinIO y GitHub.
 
 ---
 
@@ -33,13 +31,12 @@ La API es el **único escritor** de PostgreSQL en el ecosistema. Centraliza:
 
 - Autenticación JWT (access + refresh)
 - CRUD de ≈48 recursos de carrera profesional bajo `/career`
-- Agent Bedrock (Harness local Converse API)
 - Archivos (MinIO), plantillas PDF
 - Endpoints públicos read-only para el Portal
 
-**Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic · boto3 (Bedrock)
+**Stack:** FastAPI 0.104 · SQLAlchemy 2.0 async · asyncpg · Pydantic v2 · Alembic
 
-**Estado:** en producción — 21 routers registrados en `src/app.py`, 419 operaciones HTTP, 69 modelos ORM y 53 migraciones Alembic. El harness de agentes sigue en el código sin operar (ADR-032); Qdrant se retiró el 2026-11-11.
+**Estado:** en producción — 18 routers registrados en `src/app.py`, 372 operaciones HTTP, 58 tablas y 56 migraciones Alembic. Los agentes de IA son externos (ADR-032); el subsistema Bedrock y Qdrant se retiraron el 2026-11-11 (ADR-033) y el descubrimiento de vacantes el 2026-11-12 (ADR-034).
 
 ---
 
@@ -54,7 +51,7 @@ graph TD
     end
 
     subgraph API["cjhirashi-career-api :8000"]
-        Routes[Routes — HTTP/SSE]
+        Routes[Routes — HTTP]
         Services[Services — lógica de negocio]
         Repos[Repositories — acceso a datos]
         Models[Models — SQLAlchemy ORM]
@@ -63,7 +60,6 @@ graph TD
     subgraph External["Servicios externos"]
         PG[(PostgreSQL)]
         MinIO[(MinIO)]
-        AWS[AWS Bedrock]
         GH[GitHub API]
     end
 
@@ -75,16 +71,15 @@ graph TD
     Repos --> Models
     Models --> PG
     Services --> MinIO
-    Services --> AWS
     Services --> GH
 ```
 
 | Capa | Responsabilidad | Ejemplos |
 |------|-----------------|----------|
-| **Routes** | HTTP, validación Pydantic, auth deps, SSE | `routes/bedrock.py`, `routes/career_identity.py` |
-| **Services** | Reglas de negocio, integraciones externas | `bedrock/agent_loop.py` |
+| **Routes** | HTTP, validación Pydantic, auth deps | `routes/career_identity.py` |
+| **Services** | Reglas de negocio, integraciones externas | `pdf_service.py` |
 | **Repositories** | Queries SQLAlchemy, aislamiento por user | `career_repository.py`, `user_repository.py` |
-| **Models** | Esquema ORM, relaciones | `models/vacancy.py`, `models/bedrock_conversation.py` |
+| **Models** | Esquema ORM, relaciones | `models/vacancy.py`, `models/bedrock_task.py` |
 
 ---
 
@@ -97,9 +92,9 @@ Admin (8002) / Portal (8003)
 
 | Cliente | Auth | Endpoints típicos |
 |---------|------|-------------------|
-| Admin Panel | JWT | `/auth`, `/career/*`, `/bedrock`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications`, `/settings`, `/admin` |
+| Admin Panel | JWT | `/auth`, `/career/*`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications`, `/settings`, `/admin` |
 | Portal Público | Ninguna | `/public/*`, `/events/*` |
-| Agente externo | JWT de rol `agent` | `/career/*`, `POST /bedrock/chat`, `POST /files` (el resto, 403) |
+| Agente externo | JWT de rol `agent` | `/career/*`, `POST /files` (el resto, 403) |
 
 ---
 
@@ -114,7 +109,7 @@ Admin (8002) / Portal (8003)
 
 ### `src/config.py`
 
-`pydantic_settings.BaseSettings` — JWT, PostgreSQL, Bedrock, MinIO, CORS y portal público.
+`pydantic_settings.BaseSettings` — JWT, PostgreSQL, MinIO, CORS y portal público.
 
 ### `src/database.py`
 
@@ -132,10 +127,8 @@ Engine async, `AsyncSessionLocal`, `get_db()` dependency, `init_db()` / `close_d
 | `career_support.py` | Tags |
 | `career_metrics.py` | Métricas agregadas de búsqueda |
 | `career_methodologies.py` | Metodologías operativas |
-| `bedrock.py` | Agent Bedrock (streaming) |
-| `bedrock_tasks.py` | Tareas del agente |
+| `bedrock_tasks.py` | Tablero de tareas (`/agent-tasks`) |
 | `notifications.py` | Notificaciones in-app |
-| `admin_sections.py` | Secciones configurables del Admin |
 | `admin_contact_messages.py` | Mensajes del formulario de contacto |
 | `pdf_templates.py` | Plantillas HTML (`pdf_template`) |
 | `pdf_template_styles.py` | Estilos CSS (`pdf_style`) |
@@ -152,9 +145,6 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 | Paquete / módulo | Rol |
 |------------------|-----|
 | `auth_service.py` | Hash bcrypt, JWT access/refresh |
-| `bedrock/` | Harness local: loop Converse, tools, memoria, presupuesto |
-| `bedrock_service.py` | Fachada + CRUD tools del agente |
-| `task_scheduler.py` | Bucle in-process de tareas programadas de agentes |
 | `portal_*.py` | Analítica: ingesta, sesionización, bots, geografía, canales, dispositivo, límites de tasa y métricas |
 | `contact_message_service.py` | Mensajes del formulario de contacto |
 | `error_report_service.py`, `error_reporting.py` | Registro y deduplicación de errores |
@@ -173,7 +163,7 @@ Documentación por sección: [sections/README.md](./sections/README.md)
 
 ### `src/schemas/`
 
-Pydantic v2 por dominio: `user`, `career_identity`, `career_search`, `career_digital`, `bedrock`, `public`, etc.
+Pydantic v2 por dominio: `user`, `career_identity`, `career_search`, `career_digital`, `public`, etc.
 
 ### `src/models/`
 
@@ -192,19 +182,11 @@ graph LR
         MT[Métricas]
     end
 
-    subgraph Agent["Agent Bedrock"]
-        Chat[Chat SSE]
-        Tools[Tools CRUD]
-        Mem[Memoria PG]
-    end
-
     subgraph Integrations["Integraciones"]
         Files[MinIO]
         PDF[PDF Templates]
     end
 
-    Career --> Agent
-    Agent --> Career
     Integrations --> Career
 ```
 
@@ -243,32 +225,7 @@ sequenceDiagram
     M-->>R: User (usr-N)
     R->>Repo: create_for_user(user_id, data)
     Repo->>DB: INSERT + ID prefijado
-    Repo->>Q: upsert embedding (si vectorize)
     Repo-->>C: 201 EntityResponse
-```
-
-### Chat Bedrock (SSE)
-
-```mermaid
-sequenceDiagram
-    participant A as Admin Panel
-    participant R as /bedrock/chat
-    participant L as agent_loop
-    participant AWS as bedrock-runtime
-    participant T as tools.py
-    participant DB as PostgreSQL
-
-    A->>R: POST message + session_id
-    R->>L: chat_stream()
-    loop hasta stop_reason != tool_use
-        L->>AWS: Converse + tools
-        AWS-->>L: tool_use requests
-        L->>T: execute_tool()
-        T->>DB: CRUD
-        T-->>L: tool results
-    end
-    L->>DB: guardar historial + usage
-    L-->>A: SSE done {reply, affected_resources}
 ```
 
 ---
@@ -278,8 +235,7 @@ sequenceDiagram
 | Servicio | Uso en API | Config |
 |----------|------------|--------|
 | PostgreSQL | Persistencia única | `DATABASE_URL` |
-| MinIO | Archivos, imágenes IA | `MINIO_*` |
-| AWS Bedrock | Converse e imágenes (Stability) | `AWS_*`, `BEDROCK_*` |
+| MinIO | Archivos | `MINIO_*` |
 | GitHub API | Repos públicos | Sin key (API pública) |
 
 ---
@@ -292,7 +248,7 @@ sequenceDiagram
 
 **Dependency Inversion:** routes dependen de `Depends(get_db)`, `Depends(get_current_user)`, servicios inyectables.
 
-**DRY:** un repositorio y un registry (`RESOURCE_REGISTRY`) para ≈48 recursos; Bedrock tools reutilizan el mismo CRUD que el Admin.
+**DRY:** un repositorio y un registry (`RESOURCE_REGISTRY`) para ≈48 recursos; los agentes externos usan el mismo CRUD que el Admin.
 
 **Aislamiento multi-tenant:** `user_id` siempre del JWT, nunca del request body.
 
@@ -303,12 +259,11 @@ sequenceDiagram
 | Nivel | Comportamiento |
 |-------|----------------|
 | Route | `HTTPException` (401, 404, 422, 502, 503) |
-| Service | `BedrockError`, `ValueError` → convertidos en route |
+| Service | `ValueError` → convertido en route |
 | App global | `RequestValidationError` → 422 `{"detail": "Error de validación", ...}` con la lista de errores |
 | App global | `Exception` no capturada → 500 + log y registro en `error_reports` |
 | App global | Los 5xx y los 4xx relevantes (salvo 401 y 404) se registran en `error_reports` con huella |
 
-Bedrock chat usa SSE event `type: error` además de códigos HTTP en fallos previos al stream.
 
 ---
 
@@ -318,7 +273,7 @@ Estructura en `cjhirashi-career-api/tests/`:
 
 | Carpeta | Alcance |
 |---------|---------|
-| `unit/` | Services, middleware, bedrock |
+| `unit/` | Services, middleware |
 | `integration/` | Auth routes, flujos HTTP |
 | `conftest.py` | Fixtures async, DB test |
 
@@ -333,7 +288,6 @@ Ver [TESTING.md](./TESTING.md).
 - Async end-to-end
 - Connection pool (`pool_size=10`, `max_overflow=20`)
 - Paginación en listados CRUD
-- Presupuesto diario Bedrock por usuario
 
 **Limitación:** el scheduler de tareas corre in-process con un solo worker; con varias réplicas duplicaría ejecuciones (se resuelve al mover el harness, ADR-029).
 

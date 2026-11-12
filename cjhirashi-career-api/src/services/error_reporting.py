@@ -88,7 +88,7 @@ def report_error(
         message: Texto del error.
         source: Dónde se generó, p. ej. ``"api:POST /career/vacancies"``,
             ``"service:pdf_service.generate_pdf"``, ``"scheduler:task_scheduler"``,
-            ``"bedrock:tool.create_career_record"``, ``"mcp:cv_generator"``.
+            ``"mcp:cv_generator"``.
         error_type: Nombre de la clase de excepción (se deduce de ``exc``).
         exc: Excepción original; de ella se extrae el traceback.
         context: Datos extra serializables (request_path, status_code, task_id…).

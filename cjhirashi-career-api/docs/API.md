@@ -1,7 +1,5 @@
 # API REST — Referencia de endpoints
 
-> **Estado (2026-11-10, [ADR-032](../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
-
 Referencia rápida de todos los endpoints. Para detalle por dominio, ver los README de [sections/](sections/README.md).
 
 **Base URL local:** `http://localhost:8000`  
@@ -100,49 +98,11 @@ Patrón por cada resource key (37 recursos):
 
 ---
 
-## Agent Bedrock — `/bedrock`
-
-→ sections/bedrock/README.md (retirado, ADR-033)
-
-| Método | Path |
-|--------|------|
-| POST | `/bedrock/chat` (SSE) |
-| GET | `/bedrock/model` |
-| POST | `/bedrock/model` |
-| GET | `/bedrock/usage-metrics` |
-| GET | `/bedrock/budget` |
-| GET | `/bedrock/instructions` |
-| PUT | `/bedrock/instructions` |
-| GET | `/bedrock/agent-profiles` |
-| PUT | `/bedrock/agent-profiles/{profile_id}/prompt` |
-| GET | `/bedrock/agent-profiles/catalog` |
-| GET | `/bedrock/agent-profiles/{profile_id}/catalog` |
-| PUT | `/bedrock/agent-profiles/{profile_id}/methodologies` |
-| GET | `/bedrock/agent-profiles/{profile_id}/memory` |
-| POST | `/bedrock/agent-profiles/{profile_id}/memory/notes` |
-| DELETE | `/bedrock/agent-profiles/{profile_id}/memory/notes/{note_id}` |
-| GET | `/bedrock/tools` |
-| POST | `/bedrock/tools` |
-| PUT | `/bedrock/tools/{tool_id}/enabled` |
-| DELETE | `/bedrock/tools/{tool_id}` |
-| GET | `/bedrock/knowledge/search` |
-| GET | `/bedrock/memory/events` |
-| GET | `/bedrock/memory/records` |
-| POST | `/bedrock/memory/manual` |
-| GET | `/bedrock/conversations` |
-| GET | `/bedrock/conversations/{session_id}/messages` |
-| PUT | `/bedrock/conversations/{session_id}` |
-| DELETE | `/bedrock/conversations/{session_id}` |
-| GET | `/bedrock/audit-log` |
-| POST | `/bedrock/audit-log/{audit_id}/restore` |
-
----
-
-## Tareas del agente — `/agent-tasks`
+## Tareas — `/agent-tasks`
 
 → [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md)
 
-CRUD estándar + `POST /{id}/run` (ejecución inmediata de agente). Scheduler in-process a `scheduled_at`.
+CRUD estándar del tablero de tareas de Carlos (lista, kanban, calendario y Gantt). El prefijo se conserva por compatibilidad con el Admin; ya no hay ejecución de agentes.
 
 ---
 
@@ -247,7 +207,7 @@ Mensajes del formulario de contacto: `/career/contact-messages` (JWT del dueño)
 | GET | `/system/readiness` | Ninguna | Comprueba dependencias que `/health` no ve (hoy, MinIO) |
 | GET | `/health` | Ninguna | Estado de la API |
 
-Además, bajo `/bedrock`: `PUT /bedrock/global-rules` (reglas globales del agente), `PUT /bedrock/agent-profiles/{id}/delegation`, `.../photo` y `.../sections` (destinos de delegación, foto y secciones que gestiona cada perfil); bajo `/agent-tasks`: `GET /agent-tasks/distinct/{campo}`; bajo `/files`: `GET /files/count`.
+Además, bajo `/agent-tasks`: `GET /agent-tasks/distinct/{campo}`; bajo `/files`: `GET /files/count`.
 
 ---
 
@@ -264,7 +224,7 @@ Además, bajo `/bedrock`: `PUT /bedrock/global-rules` (reglas globales del agent
 | 404 | Recurso no encontrado |
 | 429 | Límite de tasa excedido (contacto, analítica, ingesta de errores) |
 | 422 | Error de validación Pydantic |
-| 502 | Error servicio externo (Bedrock) |
+| 502 | Error de un servicio externo |
 | 503 | Servicio no configurado |
 
 ---

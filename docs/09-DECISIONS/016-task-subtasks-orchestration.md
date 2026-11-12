@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-26
+Aceptado — 2026-08-26 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 ## Contexto
 

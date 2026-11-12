@@ -1,11 +1,9 @@
 # Vista de tiempo de ejecución - cjhirashi-career
 
-> **Estado (2026-11-10, [ADR-032](09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
-
 **VISTA DE TIEMPO DE EJECUCIÓN** (arc42, sección 6)
 
 **Última actualización**: 2026-11-05
-**Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, asistencia de Bedrock, tarea programada, plan con subtareas) y el flujo de analítica del portafolio.
+**Resumen**: 7 escenarios de flujo (portal público, sesión del Admin, edición manual, tareas) y el flujo de analítica del portafolio.
 
 > Las rutas se muestran como las ve la API. Desde el navegador llevan el prefijo `/api/` (la API las recibe sin él): `GET /api/public/home` llega a la API como `GET /public/home`.
 
@@ -82,109 +80,8 @@ sequenceDiagram
 **Pasos:**
 1. El Admin envía el cambio al CRUD genérico `/career/{recurso}` (IDs prefijados, p. ej. `comp-12`).
 2. La API valida el esquema y limita todo al `user_id` del token.
-3. La escritura no dispara ningún indexado: Qdrant y la base de conocimiento se retiraron el 2026-11-11.
-4. Las ediciones manuales no generan `audit_logs`: ese registro es del agente (Escenario 4).
-
-## Escenario 4 — Carlos usa Agent Bedrock
-
-```mermaid
-sequenceDiagram
-    participant C as Carlos
-    participant A as Admin
-    participant API as API REST (harness Bedrock)
-    participant AWS as AWS Bedrock
-    participant DB as PostgreSQL
-
-    C->>A: Escribe en el chat de agentes
-    A->>API: POST /bedrock/chat (respuesta por streaming)
-    API->>AWS: Converse con el perfil y las herramientas del agente
-    AWS-->>API: Respuesta / llamadas a herramientas
-    API->>DB: Lee o escribe vía las herramientas CRUD (acotado al user_id)
-    API->>DB: INSERT audit_logs (valores antes y después, motivo "Agent Bedrock")
-    API-->>A: Respuesta
-    A-->>C: Muestra el resultado
-```
-
-**Pasos:**
-1. El Admin llama a `POST /bedrock/chat` con la sesión autenticada; el bucle del agente corre dentro de la API (hasta que `cjhirashi-career-ai` lo reemplace, ADR-029).
-2. El agente (L1 orquestador, L2 por área, L3 por tarea: ADR-012) usa herramientas con el alcance del usuario; puede consultar la memoria del agente.
-3. **Toda escritura del agente** queda en `audit_logs` con el estado completo antes y después, para poder recuperar un borrado erróneo; si el registro falla, la herramienta falla en lugar de escribir sin rastro.
-4. El uso y el costo de cada ronda se guardan en `bedrock_usage_logs` y `bedrock_usage_round_logs`, con un presupuesto diario configurable.
-
-## Escenario 6 — Tarea programada de un agente
-
-Carlos crea una tarea en `/tasks`, la asigna a un agente del catálogo y pone `scheduled_at`. El Admin puede cerrarse. Un loop asyncio en la API (`task_scheduler`, mismo patrón que LinkedIn) reclama la fila y corre el harness Bedrock con el `user_id` dueño — sin JWT ni SPA. Ver [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md).
-
-```mermaid
-sequenceDiagram
-    participant Carlos
-    participant Admin as Admin_Panel
-    participant API as API_REST
-    participant Sched as task_scheduler
-    participant Bedrock as Harness_Bedrock
-    participant DB as PostgreSQL
-
-    Carlos->>Admin: Crea tarea assignee=agent scheduled_at
-    Admin->>API: POST /agent-tasks
-    API->>DB: INSERT bedrock_tasks pending
-    Note over Carlos,Admin: Carlos cierra el Admin
-    loop cada 30s
-        Sched->>DB: SELECT due agent tasks
-        DB-->>Sched: filas vencidas
-        Sched->>DB: status=in_progress
-        Sched->>Bedrock: run_single_turn_sync(user_id, profile)
-        Bedrock->>API: tools CRUD / dominio
-        API->>DB: escrituras + audit_logs
-        Bedrock-->>Sched: reply
-        Sched->>DB: status=done execution_result
-    end
-    Carlos->>Admin: GET /tasks (cuando vuelva)
-    Admin->>API: GET /agent-tasks
-    API-->>Admin: resultado
-```
-
-**Pasos:**
-1. Carlos asigna la tarea a un agente y una hora (Ciudad de México en la UI; UTC en PostgreSQL).
-2. El scheduler de la API, no el navegador, espera `scheduled_at`.
-3. Al vencer, invoca el mismo harness que el chat: L1/L2 con historial `scheduled-task-{id}`; L3 sin historial de usuario.
-4. Si Bedrock o el presupuesto fallan, la tarea queda `failed` con `error_message`. "Ejecutar ahora" (`POST /agent-tasks/{id}/run`) usa el mismo runner.
-
-## Escenario 7 — Plan con subtareas y turno
-
-Carlos crea un padre (responsable general) y subtareas con distintos responsables. Las bloqueantes se ejecutan en `sort_order`; al completar una, el scheduler pasa el turno: agente con `execute_on_turn` corre el harness; usuario recibe un aviso en `user_notifications`. Ver [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md).
-
-```mermaid
-sequenceDiagram
-    participant Carlos
-    participant Admin as Admin_Panel
-    participant API as API_REST
-    participant Sched as task_scheduler
-    participant Bedrock as Harness_Bedrock
-    participant DB as PostgreSQL
-
-    Carlos->>Admin: Padre + subtareas (blocking / on_turn)
-    Admin->>API: POST /agent-tasks (subtasks)
-    API->>DB: INSERT padre e hijas
-    Sched->>DB: primera subtarea desbloqueada
-    alt assignee=agent execute_on_turn
-        Sched->>Bedrock: run_single_turn_sync
-        Bedrock-->>Sched: reply
-        Sched->>DB: hija done; resume padre
-    else assignee=user
-        Sched->>DB: INSERT user_notifications
-        Admin->>API: GET /notifications
-        API-->>Carlos: Campana /tasks?task=id
-        Carlos->>Admin: Marca status=done en Vista
-        Admin->>API: PUT /agent-tasks/id
-    end
-    Sched->>DB: desbloquea la siguiente hija
-```
-
-**Pasos:**
-1. El padre no se ejecuta como agente mientras tenga hijas: orquesta.
-2. Una hija está bloqueada si una hermana anterior `is_blocking` no está `done`/`cancelled`.
-3. Agente: `scheduled_at` **o** `execute_on_turn` al quedar libre.
-4. Usuario: notificación `task_turn`; en Vista solo se edita el estado.
+3. La escritura no dispara ningún indexado.
+4. Las ediciones manuales no generan `audit_logs`: `audit_logs` conserva el historial de escrituras de agentes anteriores al 2026-11-11 y ya no recibe filas.
 
 ## Analítica del portafolio: de la visita al tablero
 
@@ -209,8 +106,6 @@ sequenceDiagram
 - **Metas, embudos y anotaciones** (`/career/portal-goals`, `portal-funnels`, `portal-annotations`) se configuran en `/metrics/settings`.
 - **Privacidad**: el id del visitante es seudónimo y `POST /events/forget` borra sus datos.
 
-La actividad de los agentes se mide aparte: `bedrock_usage_logs` (costos), `audit_logs` (escrituras) y la pantalla de métricas del agente.
-
 ## Comparación de escenarios
 
 | Escenario | Canal | Escribe en PostgreSQL | Auditoría | Métrica |
@@ -218,9 +113,6 @@ La actividad de los agentes se mide aparte: `bedrock_usage_logs` (costos), `audi
 | 1 — Portal (lectura) | Portal | Solo analítica y mensajes de contacto | No | `portal_*` |
 | 2 — Apertura de sesión | Admin | `last_login`, tokens | No | No |
 | 3 — Edición manual | Admin | Sí | No | No |
-| 4 — Asistencia de Bedrock | Admin (API) | Sí, si el agente escribe | Sí (`audit_logs`) | Uso y costo |
-| 6 — Tarea programada | Sin interfaz (scheduler de la API) | Sí, si el agente escribe | Sí | Uso y costo |
-| 7 — Plan con subtareas | Admin / scheduler | Sí | Sí si el agente escribe | Uso y costo |
 
 ---
 

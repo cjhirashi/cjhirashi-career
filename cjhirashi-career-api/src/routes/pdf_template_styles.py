@@ -2,7 +2,7 @@
 CRUD de estilos CSS reutilizables para plantillas PDF.
 
 El agente agent_pdf_design escribe las mismas filas con la tool
-`pdf_style` (action=list|get|create|update en services/bedrock/tools.py).
+`pdf_style`.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession

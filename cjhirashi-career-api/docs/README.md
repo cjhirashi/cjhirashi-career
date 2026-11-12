@@ -12,11 +12,10 @@ flowchart TB
     Sections --> Auth[auth]
     Sections --> Infra[infrastructure]
     Sections --> Career[career-*]
-    Sections --> Agent[bedrock / bedrock-tasks]
+    Sections --> Agent[bedrock-tasks]
     Sections --> Integ[files / pdf / public]
     Index --> Guides[API / ARCHITECTURE / DATABASE / SECURITY / SETUP]
     Career --> Src[src/routes + models]
-    Agent --> Harness[src/services/bedrock]
 ```
 
 ---
@@ -36,8 +35,7 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | Carrera — Tags | [sections/career-support/README.md](sections/career-support/README.md) |
 | Carrera — Métricas | [sections/career-metrics/README.md](sections/career-metrics/README.md) |
 | Carrera — Metodologías | [sections/career-methodologies/README.md](sections/career-methodologies/README.md) |
-| Agent Bedrock | sections/bedrock/README.md (retirado, ADR-033) |
-| Tareas del agente | [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md) |
+| Tareas | [sections/bedrock-tasks/README.md](sections/bedrock-tasks/README.md) |
 | Plantillas PDF | [sections/pdf-templates/README.md](sections/pdf-templates/README.md) |
 | Estilos PDF | [sections/pdf-template-styles/README.md](sections/pdf-template-styles/README.md) |
 | Archivos (MinIO) | [sections/files/README.md](sections/files/README.md) |
@@ -70,7 +68,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `career_support` | `/career/tags` | JWT |
 | `career_metrics` | `/career/metrics` | JWT |
 | `career_methodologies` | `/career/operational-methodologies` | JWT |
-| `bedrock` | `/bedrock` | JWT |
 | `bedrock_tasks` | `/agent-tasks` | JWT |
 | `pdf_templates` | `/pdf-templates` | JWT |
 | `pdf_template_styles` | `/pdf-template-styles` | JWT |
@@ -78,7 +75,6 @@ Cada dominio tiene un README detallado con endpoints, schemas, flujos y ejemplos
 | `public` | `/public` | Ninguna |
 | `events` | `/events` | Ninguna (ingesta y borrado de analítica del visitante) |
 | `portal_metrics`, `portal_analytics` | `/career/portal-*` | JWT |
-| `admin_sections` | `/admin` | JWT |
 | `admin_contact_messages` | `/career/contact-messages` | JWT |
 | `notifications` | `/notifications` | JWT |
 | `error_reports` | `/settings/error-reports`, `/system/error-report` | JWT |
@@ -96,7 +92,6 @@ READMEs de implementación (función de cada módulo Python), distintos de los d
 | `src/` | [../src/README.md](../src/README.md) |
 | Routes | [../src/routes/README.md](../src/routes/README.md) |
 | Services | [../src/services/README.md](../src/services/README.md) |
-| Bedrock harness | ../src/services/bedrock/README.md (retirado, ADR-033) |
 | Models | [../src/models/README.md](../src/models/README.md) |
 | Schemas | [../src/schemas/README.md](../src/schemas/README.md) |
 | Repositories | [../src/repositories/README.md](../src/repositories/README.md) |
@@ -109,9 +104,9 @@ READMEs de implementación (función de cada módulo Python), distintos de los d
 
 | Cliente | Puerto host | Endpoints típicos |
 |---------|-------------|-------------------|
-| Admin Panel | 8002 (`/api/`) | `/auth`, `/career/*`, `/bedrock`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications` |
+| Admin Panel | 8002 (`/api/`) | `/auth`, `/career/*`, `/agent-tasks`, `/files`, `/pdf-*`, `/notifications` |
 | Portal Público | 8003 (`/api/`) | `/public/*`, `/events/*` |
-| Agente externo (token `agent`) | vía `/api/` | `/career/*`, `POST /bedrock/chat`, `POST /files` |
+| Agente externo (token `agent`) | vía `/api/` | `/career/*`, `POST /files` |
 
 ---
 

@@ -13,7 +13,6 @@ flowchart TB
     Conf --> Integ[integration/]
     Conf --> Fix[fixtures/]
     Unit --> Auth[test_auth / middleware / config]
-    Unit --> Bedrock[unit/bedrock/]
     Integ --> AuthR[test_auth_routes]
     Conf --> DB[(SQLite :memory:)]
     Conf --> App[app.py override get_db]
@@ -37,7 +36,6 @@ flowchart TB
 | Carpeta | README |
 |---------|--------|
 | `unit/` | [unit/README.md](unit/README.md) — aislamiento, mocks, sin red |
-| `unit/bedrock/` | [unit/bedrock/README.md](unit/bedrock/README.md) — harness Converse |
 | `integration/` | [integration/README.md](integration/README.md) — rutas HTTP + BD de test |
 | `fixtures/` | [fixtures/README.md](fixtures/README.md) — paquete reservado (fixtures viven en conftest) |
 

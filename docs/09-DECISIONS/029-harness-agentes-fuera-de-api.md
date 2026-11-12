@@ -4,7 +4,7 @@
 
 ## Estado
 
-Aceptado — 2026-10-13 (aprobado por el usuario en el Gate 2 de la feature 009, junto con
+Aceptado — 2026-10-13 (aprobado por el usuario en el Gate 2 de la feature 009, junto con **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 la enmienda de la Constitución Art. 2 y 4). Revisa parcialmente el ADR-025 y las
 specs 001–005.
 

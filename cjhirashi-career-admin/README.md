@@ -8,10 +8,10 @@ SPA privada (puerto host 8002) con la que Carlos gestiona su carrera, los agente
 
 - **Panel y métricas**: dashboard, métricas de búsqueda (`/search-metrics`) y tablero de analítica del portafolio (`/metrics`, ver abajo).
 - **Carrera**: vista genérica por recurso (`/career/:resourceKey/:recordSlug?`: identidad, competencias, evidencia, vacantes, aplicaciones, contactos, entrevistas, CVs, cartas…) y archivos (`/files`).
-- **Tareas** (`/tasks`): lista, kanban, calendario y Gantt; subtareas con turno y tareas programadas para agentes.
-- **Agentes**: chat con el orquestador y chat contextual por sección, catálogo, instrucciones, herramientas, memoria, tareas, auditoría, métricas de uso y plantillas y estilos de PDF (`/agent/*`).
-- **Configuración**: perfiles de agentes, secciones del Admin, prompts globales y registro de errores (`/settings/*`).
-- **Notificaciones**: campana con turnos de tareas y mensajes de contacto del portal.
+- **Tareas** (`/tasks`): lista, kanban, calendario y Gantt.
+- **Plantillas y estilos de PDF** (`/agent/pdf-templates`, `/agent/pdf-template-styles`): las rutas conservan el prefijo `/agent` por compatibilidad.
+- **Configuración**: registro de errores (`/settings/error-reports`).
+- **Notificaciones**: campana con los mensajes de contacto del portal.
 
 ## Stack
 
@@ -21,13 +21,13 @@ React 18, TypeScript 5, Vite 5, Tailwind CSS (tema claro/oscuro con tokens semá
 
 ```
 src/
-├── pages/        # una página por pantalla (Dashboard, Metrics, PortalSettings, Files, Tasks, Agent*, …)
+├── pages/        # una página por pantalla (Dashboard, Metrics, PortalSettings, Files, Tasks, AgentPdf*, …)
 ├── components/   # Layout, Sidebar, Navbar, campana, selectores temáticos; section/ (plantilla de tabla),
-│                 # career/ (formularios y vistas de recursos; career/portal/ = tablero), bedrock/ (chat), tasks/
-├── hooks/        # useAuth, useCareerResource, useBedrockChat, usePortalAnalytics (un hook por endpoint), …
+│                 # career/ (formularios y vistas de recursos; career/portal/ = tablero), tasks/
+├── hooks/        # useAuth, useCareerResource, usePortalAnalytics (un hook por endpoint), …
 ├── api/          # client.ts (Axios con interceptores JWT) y un módulo por dominio
-├── stores/       # authStore, bedrockChatStore, preferencias
-├── config/       # careerResources.ts (catálogo de recursos), perfiles y secciones de chat
+├── stores/       # authStore, preferencias
+├── config/       # careerResources.ts (catálogo de recursos)
 ├── types/ utils/ # tipos y utilidades
 └── tests/        # pruebas transversales; el resto conviven con el código
 ```
@@ -56,7 +56,7 @@ npm run type-check && npm run lint
 - **Docker**: desde la raíz del repo, `docker compose up -d --build admin` (imagen Node 20 que sirve `dist/` con `serve` en el 8000; host 8002).
 - **API**: todas las llamadas van a `VITE_API_BASE_URL` (`/api`); la API (`cjhirashi-career-api:8000`) recibe las rutas sin ese prefijo. No hay prefijo `/api/v1`.
 - **Autenticación**: `POST /auth/login` → tokens de acceso (7 días) y refresco (30); el interceptor de Axios añade `Authorization: Bearer` y renueva con `/auth/refresh` ante un 401.
-- **Guía completa**: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md). Chat de agentes: [`docs/BEDROCK-CHAT.md`](docs/BEDROCK-CHAT.md).
+- **Guía completa**: [`docs/ADMIN_PANEL_SETUP.md`](../docs/ADMIN_PANEL_SETUP.md).
 
 ## Calidad
 

@@ -16,7 +16,7 @@ Identifica **quién interactúa con el sistema y con el proyecto**, qué necesit
 |---|---|---|---|
 | **Carlos Jiménez Hirashi** (gestor de carrera, único administrador) | Admin Panel, con login | Registrar y mantener toda su carrera en un solo lugar y delegar redacción o análisis a los agentes cuando quiera | Un panel rápido y confiable; que no se pierda nada entre la gestión manual y la asistida; visibilidad real del tráfico del portal, la actividad de los agentes y los errores |
 | **Visitantes** (reclutadores, colegas, público) | Portal público (`cjhirashi.com`), sin cuenta | Conocer el perfil profesional (Sobre mí, Proyectos, Blog) y poder escribirle por el formulario de contacto | Contenido siempre actualizado, carga rápida y privacidad: pueden borrar sus datos de analítica en `/privacy` |
-| **Agentes de IA** (Agent Bedrock dentro del Admin; agentes externos con token `agent`) | API REST: Bedrock vía `/bedrock/*`; los externos, `/career/*`, `POST /bedrock/chat` y `POST /files` | Un contrato de API estable para leer y escribir el contexto de carrera (los externos también suben diagramas o imágenes) | Respuestas predecibles; que su actividad quede auditada y medible en el Admin |
+| **Agentes de IA** (externos, con token `agent`) | API REST: `/career/*` y `POST /files` | Un contrato de API estable para leer y escribir el contexto de carrera (los externos también suben diagramas o imágenes) | Respuestas predecibles; que su actividad quede auditada y medible en el Admin |
 
 ## Equipo de desarrollo
 
@@ -33,7 +33,7 @@ El repo se trabaja con un arnés SDD Anchored (`.harness/method.md §8`). Roles 
 
 | Stakeholder | Qué necesita | Qué espera |
 |---|---|---|
-| **CI** (GitHub Actions) | Pruebas del subsistema Bedrock de la API (Python 3.11) y build del Admin (Node 20) | Que los cambios pasen la compuerta antes de integrarse |
+| **CI** (GitHub Actions) | Pruebas unitarias de la API (Python 3.11) y build del Admin (Node 20) | Que los cambios pasen la compuerta antes de integrarse |
 
 ## Matriz de prioridades
 

@@ -191,7 +191,7 @@ run_node_tests() {  # $1 = subproyecto
   rm -f /tmp/gate_$$.log
 }
 
-for s in cjhirashi-career-api cjhirashi-career-ai; do
+for s in cjhirashi-career-api; do
   if [ "$MODE" = "full" ] || touched "$s"; then run_py_tests "$s"; else skip "$s · sin cambios — SKIP"; fi
 done
 for s in cjhirashi-career-admin cjhirashi-career-portfolio; do

@@ -49,7 +49,7 @@ La API recibe las rutas sin el prefijo `/api`; por eso `VITE_API_BASE_URL=/api` 
 ```
 src/
 ├── pages/        # una por pantalla (Dashboard, Metrics, Files, Tasks, Agent*, Settings*, …)
-├── components/   # compartidos; section/ (plantilla de tabla), career/, bedrock/, tasks/
+├── components/   # compartidos; section/ (plantilla de tabla), career/, tasks/
 ├── hooks/        # React Query y lógica de pantalla
 ├── api/          # cliente Axios tipado + un módulo por dominio
 ├── stores/       # Zustand (sesión, chat, preferencias)

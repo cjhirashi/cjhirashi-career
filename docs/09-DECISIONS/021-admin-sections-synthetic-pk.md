@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-27
+Aceptado — 2026-08-27 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 Complementa a [ADR-017](./017-l2-agent-settings.md) (L2 `agent_settings`, dueño de la pantalla
 "Secciones del Admin") y a [ADR-020](./020-admin-section-templates.md) (plantilla compartida de

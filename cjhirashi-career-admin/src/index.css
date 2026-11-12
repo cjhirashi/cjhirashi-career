@@ -533,9 +533,9 @@
     margin-bottom: 0;
   }
 
-  /* Tighter spacing variant for chat bubbles (Agent Bedrock) - the default
+  /* Tighter spacing variant for compact markdown blocks - the default
      .markdown-body's mb-3/mt-4 paragraph and heading margins read fine in a
-     full-width record view but leave too much air inside a narrow bubble. */
+     full-width record view but leave too much air inside a narrow block. */
   .markdown-body-compact p {
     @apply mb-1.5 leading-snug;
   }
@@ -556,26 +556,6 @@
 
   .markdown-body-compact .markdown-table-scroll {
     margin-bottom: 0.375rem;
-  }
-
-  /* Three-dot "typing" indicator - Agent Bedrock's chat while a reply streams in. */
-  .typing-dot {
-    @apply inline-block w-1.5 h-1.5 rounded-full;
-    background-color: var(--text-secondary);
-    animation: typing-bounce 1s infinite ease-in-out;
-  }
-
-  @keyframes typing-bounce {
-    0%,
-    60%,
-    100% {
-      opacity: 0.3;
-      transform: translateY(0);
-    }
-    30% {
-      opacity: 1;
-      transform: translateY(-2px);
-    }
   }
 
   .input-field {

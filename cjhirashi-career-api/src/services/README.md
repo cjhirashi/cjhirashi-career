@@ -1,23 +1,18 @@
 # Paquete `services/`
 
-Lógica de negocio e integraciones externas. Las rutas no hablan con AWS, ni MinIO directamente: pasan por estos módulos.
+Lógica de negocio e integraciones externas. Las rutas no hablan con MinIO ni con GitHub directamente: pasan por estos módulos.
 
 ## Arquitectura
 
 ```mermaid
 flowchart TB
     Routes[routes/] --> AuthS[auth_service]
-    Routes --> BedrockS[bedrock_service]
     Routes --> Storage[storage_service]
     Routes --> PDF[pdf_service]
     Routes --> GH[github_service]
     Routes --> IDs[id_generator]
-    BedrockS --> Harness[bedrock/]
-    Routes --> TaskSched[task_scheduler]
-    TaskSched --> Harness
     PDF --> Render[pdf_template_render]
     PDF --> CSS[pdf_template_css]
-    Harness --> AWS[AWS Bedrock]
     Storage --> MinIO[(MinIO)]
 ```
 
@@ -27,7 +22,6 @@ flowchart TB
 
 | Paquete | README |
 |---------|--------|
-| `bedrock/` | [bedrock/README.md](bedrock/README.md) — harness Converse: guía en 3 niveles (paquete → módulo → función) con recibe/entrega, ejemplo y diagrama |
 
 ---
 
@@ -57,16 +51,6 @@ flowchart TB
 | `extract_user_id_from_token` | `sub` del payload |
 
 Usado por `middleware.auth` y `routes.auth_enhanced`.
-
-### `bedrock_service.py` — Fachada del agente
-
-El loop de chat vive en `services/bedrock/` ([guía por módulo](bedrock/README.md)). Este módulo conserva:
-
-- Tools CRUD de carrera (`_execute_tool` + `RESOURCE_REGISTRY`).
-- Bitácora / restore de deletes.
-- Conversaciones PG usadas por el harness.
-
-`BedrockError` se traduce a HTTP 502/503 en las rutas.
 
 ### `id_generator.py` — IDs prefijados
 
@@ -98,31 +82,9 @@ Sustitución `{{variable}}` en HTML de plantillas antes de WeasyPrint.
 
 `resolve_template_css`: lee `PdfTemplateStyle` por `style_id` de la plantilla (activo).
 
-### `methodology_scope.py`
-
-`applies_to_agent(agent_profile_ids, caller_id)`: lista vacía = todos; `agent_methodologies` ve todas. Usado al armar el catálogo del system prompt.
-
-`list_assigned_methodologies(db, user_id, caller_id)`: títulos vigentes asignados al agente (Admin → Agentes). Se inyecta cada turno en `compose_system_prompt` para que una metodología nueva asignada se asuma sin cambiar código.
-
-`set_agent_methodologies(db, user_id, profile_id, ids)`: asigna desde el catálogo de agentes (Admin). Vacío = compartida; al quitar el último dueño se aparca en `agent_methodologies`.
-
-**spec 004 (ADR-027) — L2 por sección:** `applies_to_caller(agent_profile_ids, section_ids, caller_id, caller_section_ids)` reemplaza a `applies_to_agent`: un **L2** ve una metodología si alguna de sus secciones está en `section_ids`; un **L1/L3** si su id está en `agent_profile_ids`; compartida si ambos vacíos. `applies_to_agent` queda como shim. `strip_l2_from_agent_ids` lo usa la migración `b3d4e5f6a7c8`.
-
-### `section_catalog.py` (spec 004)
-
-`derived_tools_for_agent(db, profile_id)`: unión de `admin_sections.tools_for_section` sobre `sections_for_agent` — el set de herramientas de un L2 (derivado, no editable). `section_methodology_ids` / `set_section_methodologies(db, user_id, section_id, ids)`: liga/desliga metodologías a una sección (`operational_methodologies.section_ids`) + reindex best-effort. `update_section(..., views=...)` ya persistía los textos de sidebar por vista; la tool `admin_section_settings` los expone desde spec 004.
-
 ### `github_service.py`
 
-Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`) para el Admin. Con `GITHUB_TOKEN`, el L3 `agent_github` lee repos (incl. privados), archivos y `search/code`. `GitHubError` en 404, 401 o rate limit. No escribe (issues/PRs/push).
-
-### `web_search_service.py`
-
-Consulta web del L3 `agent_web_search`: `search` (Brave si hay `BRAVE_SEARCH_API_KEY`, si no DuckDuckGo HTML) y `fetch` de URLs públicas con bloqueo SSRF. No toca PostgreSQL.
-
-### `task_scheduler.py`
-
-Task asyncio en el mismo lifespan. Cada 30 s reclama `bedrock_tasks` con `assignee_type=agent`, `status=pending` y `scheduled_at <= now`, e invoca `run_single_turn_sync` (ADR-015). `POST /agent-tasks/{id}/run` usa el mismo runner.
+Lista repos públicos de un username (`GET api.github.com/users/{u}/repos`) para el Admin. 
 
 ### `__init__.py`
 

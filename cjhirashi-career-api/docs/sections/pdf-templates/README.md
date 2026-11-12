@@ -37,7 +37,6 @@ flowchart TB
 | CSS resuelto | `src/services/pdf_template_css.py` |
 | Render | `src/services/pdf_template_render.py` |
 | PDF | `src/services/pdf_service.py` |
-| Tool | `src/services/bedrock/tools.py` → `pdf_template` |
 
 Usa `CareerRepository` con `resource_key="pdf-output-templates"` y **`vectorize=False`**.
 
@@ -115,7 +114,6 @@ El HTML no debe incluir CSS. El estilo se referencia con `style_id`.
 |------------|---------------------|
 | Admin Panel | UI CRUD en `/agent/pdf-templates` |
 | `POST /career/cv-versions/{id}/pdf` | PDF de CV desde markdown + template |
-| Agent Bedrock | Tool `pdf_template` + `generate_pdf` |
 
 ---
 
@@ -126,4 +124,4 @@ curl -s "http://localhost:8000/pdf-templates?document_type=cv" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Ver también: [pdf-template-styles](../pdf-template-styles/README.md), [bedrock](../bedrock/README.md)
+Ver también: [pdf-template-styles](../pdf-template-styles/README.md)

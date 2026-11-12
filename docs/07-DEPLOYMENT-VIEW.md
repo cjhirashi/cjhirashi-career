@@ -27,8 +27,6 @@ graph TB
     Portal -->|/api/| API
     API --> PG
     API --> S3
-    API --> Q
-    API --> AWS["AWS Bedrock (externo)"]
 ```
 
 ## Contenedores y puertos

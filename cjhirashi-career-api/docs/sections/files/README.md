@@ -16,7 +16,6 @@ flowchart TB
     Route --> Model[FileUpload]
     Model --> PG[(PostgreSQL)]
     Storage --> MinIO[(MinIO public/ private/)]
-    Chat[bedrock attachments] --> Route
     Portal[URLs públicas] --> MinIO
 ```
 
@@ -106,8 +105,7 @@ El bucket se crea en startup (`storage_service.ensure_bucket()` en `app.py`).
 
 | Consumidor | Uso |
 |------------|-----|
-| Admin Panel | Gestor de archivos, adjuntos en chat |
-| Bedrock | `attachments` en chat; `generate_image` sube a MinIO |
+| Admin Panel | Gestor de archivos |
 | LinkedIn | Imagen adjunta en posts |
 | Portal | URLs públicas de imágenes de proyectos/publicaciones |
 
@@ -128,4 +126,3 @@ curl -s "http://localhost:8000/files?category=images&limit=20" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Ver también: [bedrock](../bedrock/README.md)

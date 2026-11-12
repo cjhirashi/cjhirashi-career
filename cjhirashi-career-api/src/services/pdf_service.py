@@ -1,7 +1,7 @@
 """
 PDF generation — WeasyPrint in-process, isolated in a process pool.
 
-Same public API the routes and Bedrock tools already call:
+Same public API the routes already call:
 `generate_markdown_document` / `generate_html_template_pdf` → PDF bytes.
 """
 import asyncio

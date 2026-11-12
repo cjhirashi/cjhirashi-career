@@ -113,7 +113,7 @@ Retorna `PublicProjectDetail` con tech stack, URLs, imágenes y tres campos mark
 |---------|----------------|
 | Escritura | Imposible vía `/public/*` |
 | Aislamiento | Solo `PUBLIC_PORTAL_USER_ID` |
-| Datos sensibles | Vacantes, aplicaciones, Bedrock — **no expuestos** |
+| Datos sensibles | Vacantes y aplicaciones — **no expuestos** |
 | CORS | Portal en `CORS_ORIGINS` |
 
 Ver [SECURITY.md](../../SECURITY.md).

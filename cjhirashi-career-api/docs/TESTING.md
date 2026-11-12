@@ -9,7 +9,7 @@ Estrategia y ejecución de las pruebas de la API. Estado medido el 2026-11-05: *
 ```
 tests/
 ├── conftest.py     # fixtures compartidas
-├── unit/           # servicios, middleware, Bedrock (unit/bedrock/), migraciones, analítica del portafolio
+├── unit/           # servicios, middleware, migraciones, analítica del portafolio
 ├── integration/    # rutas de autenticación y flujos HTTP completos
 └── fixtures/       # datos de apoyo
 ```
@@ -21,11 +21,10 @@ Los marcadores (`--strict-markers`) son `unit`, `integration`, `slow`, `asyncio`
 ```bash
 cd cjhirashi-career-api
 venv_test/bin/python -m pytest -q                       # suite completa con cobertura
-venv_test/bin/python -m pytest tests/unit/bedrock -q    # un subconjunto (CI corre este)
 venv_test/bin/python -m pytest tests/unit/test_auth.py -k login -q
 ```
 
-Los `venv*` pueden no existir en un clon limpio: `python -m venv venv_test && venv_test/bin/pip install -r requirements.txt pytest pytest-asyncio httpx aiosqlite`. El CI (`.github/workflows/ci.yml`) corre `tests/unit/bedrock` con Python 3.11 y SQLite en memoria.
+Los `venv*` pueden no existir en un clon limpio: `python -m venv venv_test && venv_test/bin/pip install -r requirements.txt pytest pytest-asyncio httpx aiosqlite`. El CI (`.github/workflows/ci.yml`) corre `tests/unit` con Python 3.11 y SQLite en memoria.
 
 ### Base de datos de pruebas
 
@@ -45,7 +44,7 @@ export TEST_DATABASE_URL=postgresql+asyncpg://postgres:test@127.0.0.1:55432/post
 
 1. Elige la capa: `unit/` si prueba un servicio o módulo aislado; `integration/` si recorre la ruta HTTP.
 2. Anota el requisito (`@pytest.mark.requisito("RF-NNN")`) y escribe primero la prueba en rojo.
-3. Sin red ni servicios externos: AWS Bedrock, MinIO y los proveedores de vacantes se simulan.
+3. Sin red ni servicios externos: MinIO y GitHub se simulan.
 4. Las pruebas son `async` (`asyncio_mode = auto`); no necesitan decorador.
 
 ## Cobertura

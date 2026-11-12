@@ -104,28 +104,28 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 
 | # | Decisión | Estado |
 |---|---|---|
-| 008 | [Bedrock Harness local (Converse API)](./008-bedrock-harness-local.md) | ✅ Aceptado (revisado parcialmente) |
+| 008 | [Bedrock Harness local (Converse API)](./008-bedrock-harness-local.md) | ⛔ Retirado por ADR-033 |
 | 009 | [Multi-agente — dos chats y delegación](./009-bedrock-multi-agent-profiles.md) | ⛔ Deprecado |
-| 010 | [Agentes agent_pdf_design y agent_visual_design](./010-bedrock-visual-pdf-agents.md) | ✅ Aceptado |
+| 010 | [Agentes agent_pdf_design y agent_visual_design](./010-bedrock-visual-pdf-agents.md) | ⛔ Retirado por ADR-033 |
 | 011 | [Descubrimiento de vacantes por adaptadores (sin scraping)](./011-job-discovery-adapters.md) | ⛔ Retirado por ADR-034 |
-| 012 | [Jerarquía de agentes en 3 niveles](./012-bedrock-three-level-agents.md) | ✅ Aceptado |
-| 013 | [L3 consulta web y L3 GitHub (solo lectura)](./013-l3-web-and-github-agents.md) | ✅ Aceptado |
+| 012 | [Jerarquía de agentes en 3 niveles](./012-bedrock-three-level-agents.md) | ⛔ Retirado por ADR-033 |
+| 013 | [L3 consulta web y L3 GitHub (solo lectura)](./013-l3-web-and-github-agents.md) | ⛔ Retirado por ADR-033 |
 | 014 | [Cuatro módulos de aplicación](./014-four-application-modules.md) | ✅ Aceptado (revisado parcialmente) |
-| 015 | [Tareas de primer nivel y ejecución autónoma de agentes](./015-scheduled-agent-tasks.md) | ✅ Aceptado |
-| 016 | [Subtareas, orquestación por turno y notificaciones al usuario](./016-task-subtasks-orchestration.md) | ✅ Aceptado |
-| 017 | [L2 `agent_settings` — Configuración (catálogo de agentes, secciones del Admin, prompts globales)](./017-l2-agent-settings.md) | ✅ Aceptado |
+| 015 | [Tareas de primer nivel y ejecución autónoma de agentes](./015-scheduled-agent-tasks.md) | ⛔ Retirado por ADR-033 |
+| 016 | [Subtareas, orquestación por turno y notificaciones al usuario](./016-task-subtasks-orchestration.md) | ⛔ Retirado por ADR-033 |
+| 017 | [L2 `agent_settings` — Configuración (catálogo de agentes, secciones del Admin, prompts globales)](./017-l2-agent-settings.md) | ⛔ Retirado por ADR-033 |
 | 018 | [Registro centralizado de fallas del sistema (`error_reports`)](./018-error-reports-registry.md) | ✅ Aceptado |
-| 019 | [Prompt caching de Bedrock + proyección de campos y truncado por campo](./019-bedrock-prompt-caching.md) | ✅ Aceptado |
-| 020 | [Plantilla compartida para las secciones de tabla del Admin](./020-admin-section-templates.md) | ✅ Aceptado |
-| 021 | [PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible)](./021-admin-sections-synthetic-pk.md) | ✅ Aceptado |
-| 022 | [División del L2 `agent_settings` — Configuración vs. Incidencias/Bitácora](./022-l2-split-configuration-vs-incidents.md) | ✅ Aceptado |
+| 019 | [Prompt caching de Bedrock + proyección de campos y truncado por campo](./019-bedrock-prompt-caching.md) | ⛔ Retirado por ADR-033 |
+| 020 | [Plantilla compartida para las secciones de tabla del Admin](./020-admin-section-templates.md) | ⛔ Retirado por ADR-033 |
+| 021 | [PK sintético `sec-N` para las secciones del Admin (`system_name` como nombre legible)](./021-admin-sections-synthetic-pk.md) | ⛔ Retirado por ADR-033 |
+| 022 | [División del L2 `agent_settings` — Configuración vs. Incidencias/Bitácora](./022-l2-split-configuration-vs-incidents.md) | ⛔ Retirado por ADR-033 |
 | 023 | [Retirar el MCP Server del alcance activo](./023-retirar-mcp-server.md) | ✅ Aceptado |
-| 024 | [El sidebar contextual del Admin lo gobierna la sección](./024-sidebar-contextual-por-seccion.md) | ✅ Aceptado |
-| 025 | [Migrar la generación de imágenes de Titan a Stability Stable Image Core](./025-migrar-generacion-imagenes-a-stability.md) | ✅ Aceptado (revisado parcialmente) |
-| 026 | [Configuración de agentes desde la App (metodologías y herramientas)](./026-configuracion-agentes-app.md) | ✅ Aceptado (parcialmente superado) |
-| 027 | [Herramientas y metodologías por sección (agentes L2)](./027-herramientas-metodologias-por-seccion.md) | ✅ Aceptado |
+| 024 | [El sidebar contextual del Admin lo gobierna la sección](./024-sidebar-contextual-por-seccion.md) | ⛔ Retirado por ADR-033 |
+| 025 | [Migrar la generación de imágenes de Titan a Stability Stable Image Core](./025-migrar-generacion-imagenes-a-stability.md) | ⛔ Retirado por ADR-033 |
+| 026 | [Configuración de agentes desde la App (metodologías y herramientas)](./026-configuracion-agentes-app.md) | ⛔ Retirado por ADR-033 |
+| 027 | [Herramientas y metodologías por sección (agentes L2)](./027-herramientas-metodologias-por-seccion.md) | ⛔ Retirado por ADR-033 |
 | 028 | [Contraste de los tokens semánticos de texto del Admin (tema claro)](./028-contraste-tokens-semanticos-admin.md) | ✅ Aceptado |
-| 029 | [Harness de agentes fuera de la API (`cjhirashi-career-ai`) y sin indexación](./029-harness-agentes-fuera-de-api.md) | ✅ Aceptado |
+| 029 | [Harness de agentes fuera de la API (`cjhirashi-career-ai`) y sin indexación](./029-harness-agentes-fuera-de-api.md) | ⛔ Retirado por ADR-033 |
 | 030 | [Documentación de proyectos en 3 campos markdown](./030-proyectos-tres-campos-markdown.md) | ✅ Aceptado |
 | 031 | [Embeber HTML e imágenes de Synapse en las fichas](./031-embeber-html-de-synapse-en-fichas.md) | ✅ Aceptado |
 | 032 | [Agentes externos por la API; el subsistema Bedrock queda fuera de operación](./032-agentes-externos-y-bedrock-fuera-de-operacion.md) | ✅ Aceptado |
@@ -134,7 +134,7 @@ Copiar el siguiente contenido como `ADR-XXX-título-descriptivo.md` dentro de es
 
 **Revisiones cruzadas vigentes**: ADR-009 deprecado por ADR-012; ADR-014 revisado parcialmente por ADR-023 (MCP retirado) y por ADR-029 (harness fuera de la API); ADR-008 y ADR-025 revisados parcialmente por ADR-029; ADR-026 parcialmente superado por ADR-027 para los agentes L2.
 
-**Estado de ADR-029**: aplazado por el ADR-032 (2026-11-10): la separación del harness no se despliega; el subsistema Bedrock está fuera de operación y los agentes de IA son externos.
+**Estado de ADR-029**: sin efecto; el ADR-033 (2026-11-11) retiró el subsistema Bedrock y los agentes de IA son externos.
 
 ## 🆕 Cómo Crear un Nuevo ADR
 

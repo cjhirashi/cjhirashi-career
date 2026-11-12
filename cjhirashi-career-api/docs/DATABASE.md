@@ -1,12 +1,10 @@
 # API REST — Esquema de base de datos
 
-> **Estado (2026-11-10, [ADR-032](../../docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
-
 **Ubicación:** `api/docs/DATABASE.md`
 
 **Última actualización:** 2026-11-05
 
-Esquema PostgreSQL de cjhirashi-career: gestión de carrera, Agent Bedrock, integraciones y analítica.
+Esquema PostgreSQL de cjhirashi-career: gestión de carrera, tareas, integraciones y analítica.
 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1.svg?logo=postgresql&logoColor=white)
 ![ORM](https://img.shields.io/badge/ORM-SQLAlchemy%202.0%20async-red.svg)
@@ -24,7 +22,7 @@ Esquema PostgreSQL de cjhirashi-career: gestión de carrera, Agent Bedrock, inte
 - [Dominio: carrera — búsqueda](#dominio-carrera--búsqueda)
 - [Dominio: carrera — presencia digital](#dominio-carrera--presencia-digital)
 - [Dominio: soporte y metodologías](#dominio-soporte-y-metodologías)
-- [Dominio: Agent Bedrock](#dominio-agent-bedrock)
+- [Dominio: tareas y plantillas PDF](#dominio-tareas-y-plantillas-pdf)
 - [Dominio: archivos y analítica](#dominio-archivos-y-analítica)
 - [Vistas SQL](#vistas-sql)
 - [Migraciones Alembic](#migraciones-alembic)
@@ -62,7 +60,6 @@ Todas las tablas de carrera y usuarios usan **VARCHAR(20)** como PK con formato 
 | `cmp` | competencies | `cmp-42` |
 | `cvv` | cv_versions | `cvv-3` |
 | `pdt` | pdf_output_templates | `pdt-1` |
-| `bco` | bedrock_conversations | `bco-12` |
 | … | (ver `TABLE_PREFIXES` en código) | |
 
 **FK `user_id`:** VARCHAR(20) referenciando `users(id)` con `ON DELETE CASCADE` en tablas de carrera y telemetría.
@@ -78,7 +75,6 @@ erDiagram
     users ||--o{ achievements : owns
     users ||--o{ vacancies : owns
     users ||--o{ projects : owns
-    users ||--o{ bedrock_conversations : owns
     users ||--o{ file_uploads : owns
     users ||--o{ refresh_tokens : has
 
@@ -86,7 +82,6 @@ erDiagram
     applications ||--o{ application_interactions : has
     applications ||--o{ interviews : has
 
-    bedrock_conversations ||--o{ bedrock_conversation_messages : contains
 ```
 
 Todas las entidades de carrera cuelgan de `users` con aislamiento estricto por `user_id`.
@@ -221,25 +216,14 @@ reconstruir. Los visitantes `legacy=true` salen de eventos v1 y no tienen origen
 
 ---
 
-## Dominio: Agent Bedrock
-
-Documentación API: sections/bedrock/README.md (retirado, ADR-033)
+## Dominio: tareas y plantillas PDF
 
 | Tabla | Modelo | Propósito |
 |-------|--------|-----------|
-| `bedrock_settings` | `BedrockSettings` | Modelo activo, presupuesto, límites runtime |
-| `bedrock_conversations` | `BedrockConversation` | Sesiones de chat (`session_type` + `agent_profile_id` por especialista) |
-| `bedrock_conversation_messages` | `BedrockConversationMessage` | Historial user/assistant |
-| `bedrock_usage_logs` | `BedrockUsageLog` | Tokens y costo por turno |
-| `bedrock_usage_round_logs` | `BedrockUsageRoundLog` | Tokens por ronda Converse dentro de un turno |
-| `bedrock_agent_profile_prompts` | `BedrockAgentProfilePrompt` | Suffix de prompt por perfil (override PG) |
-| `bedrock_custom_tools` | `BedrockCustomTool` | Servidores MCP remotos registrados |
-| `bedrock_tasks` | `BedrockTask` | Tablero de tareas (usuario o agente; scheduler autónomo) |
+| `bedrock_tasks` | `BedrockTask` | Tablero de tareas de Carlos (lista, kanban, calendario, Gantt). El nombre se conserva del subsistema retirado; ya no hay ejecución de agentes |
 | `pdf_output_templates` | `PdfOutputTemplate` | Plantillas HTML para PDF |
 
-Migración harness local: `a1b2c3d4e5f6_bedrock_local_harness.py`
-
----
+El subsistema Bedrock (conversaciones, uso, perfiles, herramientas) se retiró el 2026-11-11 con la migración `8d4f2a6c1e93` ([ADR-033](../../docs/09-DECISIONS/033-retiro-del-subsistema-bedrock.md)).
 
 ---
 
@@ -275,14 +259,16 @@ Definida en migraciones o scripts SQL; agrega métricas semanales de búsqueda.
 | `ca159800797a` | Consolidación contenido CV |
 | `7e2f1a9c4b3d` | Syllabus y document_url en certifications |
 | `9c4d7e1f2a8b` | Status en certifications |
-| `a1b2c3d4e5f6` | Bedrock harness local (tablas + columnas) |
+| `a1b2c3d4e5f6` | Bedrock harness local (tablas retiradas en `8d4f2a6c1e93`) |
 | `b7c8d9e0f1a2` | Job discovery + company boards (columnas retiradas en `9e5a3b7d2c04`) |
-| `c2d3e4f5a6b7` | Bedrock agent profile prompts |
+| `c2d3e4f5a6b7` | Bedrock agent profile prompts (retiradas en `8d4f2a6c1e93`) |
 | `d1e2f3a4b5c6` | IDs prefijados + campo notes |
 | `e3f4a5b6c7d8` | Fix user_id en tablas telemetría |
 | `c3d4e5f6a7b8` | Rename agent profile ids |
 | `d4e5f6a7b8c9` | Ficha `personal_profile` (datos personales singleton) |
-| `e5f6a7b8c9d0` | `agent_profile_ids` en `operational_methodologies` |
+| `e5f6a7b8c9d0` | `agent_profile_ids` en `operational_methodologies` (columna retirada en `8d4f2a6c1e93`) |
+| `8d4f2a6c1e93` | Retiro del subsistema Bedrock y del catálogo de agentes |
+| `9e5a3b7d2c04` | Retiro del descubrimiento de vacantes (columnas de board) |
 
 ```bash
 cd cjhirashi-career-api/
@@ -307,19 +293,6 @@ SELECT u.id, u.username, COUNT(v.id) AS vacancies
 FROM users u
 LEFT JOIN vacancies v ON v.user_id = u.id
 GROUP BY u.id, u.username;
-
--- Gasto Bedrock hoy (UTC)
-SELECT SUM(estimated_cost_usd) AS spent_usd
-FROM bedrock_usage_logs
-WHERE user_id = 'usr-1'
-  AND created_at >= date_trunc('day', NOW() AT TIME ZONE 'UTC');
-
--- Conversaciones recientes
-SELECT session_id, title, session_type, agent_profile_id, updated_at
-FROM bedrock_conversations
-WHERE user_id = 'usr-1'
-ORDER BY updated_at DESC
-LIMIT 10;
 
 -- Secuencia de IDs (ej. achievements)
 SELECT nextval('ach_id_seq');
@@ -353,7 +326,7 @@ Ajustar usuario/BD según `.env` del proyecto (`POSTGRES_USER`, `POSTGRES_DB`).
 | digital (6 tablas) | [career-digital](./sections/career-digital/README.md) |
 | tags | [career-support](./sections/career-support/README.md) |
 | operational_methodologies | [career-methodologies](./sections/career-methodologies/README.md) |
-| bedrock_* , pdf_output_templates | bedrock (retirado, ADR-033), [pdf-templates](./sections/pdf-templates/README.md) |
+| pdf_output_templates | [pdf-templates](./sections/pdf-templates/README.md) |
 | bedrock_tasks | [bedrock-tasks](./sections/bedrock-tasks/README.md) |
 | file_uploads | [files](./sections/files/README.md) |
 | portal + projects (lectura) | [public](./sections/public/README.md) |

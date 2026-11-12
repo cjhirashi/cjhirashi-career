@@ -14,23 +14,14 @@ const STATIC_TITLES: Record<string, string> = {
   '/tasks': 'Tareas',
   '/profile': 'Perfil',
   '/change-password': 'Cambiar contraseña',
-  '/agent/chat': 'Chat General',
-  '/agent/metrics': 'Costo y Uso',
-  '/agent/memory': 'Memoria',
-  '/agent/instructions': 'Instrucciones',
-  '/agent/tools': 'Herramientas',
-  '/agent/audit-log': 'Bitácora',
-  '/settings/agent-prompts': 'Prompts Globales',
   '/login': 'Iniciar sesión',
 }
 
 // Prefix titles - for routes with an optional trailing param
-// (/settings/agents/:profileId?, /career/:resourceKey/:recordSlug?, etc).
+// (/career/:resourceKey/:recordSlug?, etc).
 const PREFIX_TITLES: [string, string][] = [
   ['/agent/pdf-template-styles', 'Estilos PDF'],
   ['/agent/pdf-templates', 'Plantillas PDF'],
-  ['/settings/agents', 'Catálogo de Agentes'],
-  ['/settings/sections', 'Secciones del Admin'],
 ]
 
 const resolveSectionTitle = (pathname: string): string => {

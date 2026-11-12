@@ -17,7 +17,7 @@
 |---|---|---|
 | 1 | **Portafolio profesional** | Presencia pública curada y siempre al día: un proyecto, logro o publicación nuevo aparece en el portal sin mantenimiento web adicional. |
 | 2 | **Gestión centralizada de carrera** | Una sola fuente de verdad para identidad, competencias, evidencia, vacantes, contactos y entrevistas, en lugar de documentos y hojas sueltas. |
-| 3 | **Operación asistida por agentes de IA** | Que agentes (Agent Bedrock dentro del Admin y agentes externos con token `agent`) lean el contexto de carrera y registren actualizaciones sin que Carlos esté frente al panel. |
+| 3 | **Operación asistida por agentes de IA** | Que agentes (agentes externos con token `agent`) lean el contexto de carrera y registren actualizaciones sin que Carlos esté frente al panel. |
 
 ## Objetivos técnicos (en orden de prioridad)
 
@@ -30,7 +30,7 @@ Ante un conflicto entre dos objetivos, gana el de menor número.
 | 3 | **Observabilidad** | El Admin muestra el tráfico del portal (analítica), la actividad de los agentes (uso, costos, tareas, auditoría) y los errores registrados. |
 | 4 | **Escalabilidad horizontal de la API** | Objetivo de diseño: la API es el único punto de convergencia y no guarda estado en memoria que impida replicarla. Hoy corre una sola instancia. |
 | 5 | **Aislamiento entre lo privado y lo publicable** | Los datos de gestión no curados (p. ej. una vacante en negociación) nunca llegan al canal público; el portal solo lee lo publicable. |
-| 6 | **Control de acceso proporcional** | Sin autenticación para la lectura pública (con límites de tasa), JWT completo para el Admin y un rol `agent` acotado a `/career/*`, el chat de Bedrock y la subida de archivos. |
+| 6 | **Control de acceso proporcional** | Sin autenticación para la lectura pública (con límites de tasa), JWT completo para el Admin y un rol `agent` acotado a `/career/*` y a la subida de archivos. |
 
 ## Restricciones
 

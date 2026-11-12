@@ -15,7 +15,7 @@ flowchart LR
     RespSchema --> JSON[Response JSON]
     Schema --> Auth[user.py]
     Schema --> Career[career_*.py]
-    Schema --> Agent[bedrock.py / bedrock_task.py]
+    Schema --> Agent[bedrock_task.py]
     Schema --> Other[files / public / pdf]
 ```
 
@@ -67,15 +67,11 @@ Solo response: `SearchMetricsWeekResponse`, `SearchOverviewResponse`, `FunnelSta
 
 ### `career_methodologies.py`
 
-CRUD de `OperationalMethodology` (`title`, `section`, `content` Markdown, `agent_profile_ids`).
-
-### `bedrock.py`
-
-Contrato del harness: `BedrockChatRequest` (SSE), modelos, presupuesto, instrucciones, perfiles, tools custom, memoria, conversaciones, audit log.
+CRUD de `OperationalMethodology` (`title`, `section`, `content` Markdown).
 
 ### `bedrock_task.py`
 
-CRUD de tareas del agente (`title`, status, notas).
+CRUD de tareas (`title`, status, notas).
 
 ### `pdf_template.py`
 
@@ -95,7 +91,6 @@ Formas ya “aplanadas” para el Portal: cards de proyecto, detalle, blog, CTAs
 
 | Módulo | Contenido |
 |---|---|
-| `admin_sections.py` | Catálogo de secciones del Admin y su actualización |
 | `contact_message.py` | Entrada del formulario público (con campo señuelo `website`) y respuesta al Admin |
 | `error_reports.py` | Reportes de falla: ingesta, lista, resumen y resolución (ADR-018) |
 | `user_notification.py` | Avisos in-app |

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-27
+Aceptado — 2026-08-27 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 Extiende el catálogo de [ADR-012](./012-bedrock-three-level-agents.md) sin cambiar las reglas de jerarquía (L1 delega a L2/L3; L2 delega solo a L3; delegación solo hacia abajo).
 

@@ -15,7 +15,6 @@ flowchart TB
     App --> Support[career_support]
     App --> Metrics[career_metrics]
     App --> Methods[career_methodologies]
-    App --> Bedrock[bedrock /bedrock]
     App --> Tasks[bedrock_tasks]
     App --> PDF[pdf_templates + styles]
     App --> Files[files /files]
@@ -39,7 +38,7 @@ Genera list / count / get / create / update / delete para un `(model, schemas)`:
 
 - JWT obligatorio (`get_current_user`).
 - Aislamiento por `user_id` del token vía `CareerRepository` (nunca del body).
-- Registra el recurso en `RESOURCE_REGISTRY` para que las tools de Bedrock operen el mismo CRUD.
+- Registra el recurso en `RESOURCE_REGISTRY` para que los agentes externos operen el mismo CRUD.
 
 Prefijos de ID (`ach-17`, `vac-5`) los asigna `id_generator` al insertar.
 
@@ -100,15 +99,11 @@ CRUD `/career/operational-methodologies` (protocolos Markdown de cómo operar el
 
 ---
 
-## Agente y documentos
-
-### `bedrock.py` — `/bedrock`
-
-Chat SSE (`POST /chat`), modelo activo, presupuesto, instrucciones, **catálogo de agentes**, tools MCP, memoria, conversaciones, auditoría. Delega el loop a `services.bedrock.chat_stream`. Ver [services/bedrock/README.md](../services/bedrock/README.md).
+## Tareas y documentos
 
 ### `bedrock_tasks.py` — `/agent-tasks`
 
-CRUD de `BedrockTask` con `build_crud_router` más `POST /{id}/run`. Registrar el módulo mete `agent-tasks` en `RESOURCE_REGISTRY`. El scheduler (`task_scheduler`) ejecuta filas de agente a `scheduled_at` sin JWT.
+CRUD de `BedrockTask` con `build_crud_router` (tablero de tareas de Carlos). Registrar el módulo mete `agent-tasks` en `RESOURCE_REGISTRY`.
 
 ### `pdf_templates.py` — `/pdf-templates`
 
@@ -145,10 +140,6 @@ CRUD sin `POST` (`build_crud_router(create_schema=None)`) de los mensajes del fo
 ### `public.py` — `/public`
 
 Sin auth para el Portal: lectura de home, about, contact, projects, blog, y `POST /contact-message` (formulario de contacto: honeypot, límite 3/h por IP y correo, guarda en `contact_messages` y avisa al dueño; `services/contact_message_service.py`). Transforma Markdown de una línea por ítem a `List[str]` para que el SPA no conozca esa convención.
-
-### `admin_sections.py` — `/admin`
-
-`GET /sections`, `GET /sections/{id}` y `PUT /sections/{id}`: catálogo de secciones del Admin (tipo, agente de dominio, vistas) y edición de su dominio e instrucciones (ADR-017, ADR-021).
 
 ### `notifications.py` — `/notifications`
 

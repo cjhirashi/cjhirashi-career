@@ -9,7 +9,6 @@ flowchart TB
     AuthR[routes/auth_enhanced] --> UserRepo[user_repository.py]
     UserRepo --> BaseRepo[base_repository.py]
     CRUD[build_crud_router] --> CareerRepo[career_repository.py]
-    Tools[bedrock tools] --> CareerRepo
     CareerRepo --> Models[models/ carrera]
     UserRepo --> User[models.User]
     Models --> PG[(PostgreSQL)]

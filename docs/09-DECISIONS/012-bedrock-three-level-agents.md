@@ -4,7 +4,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-25
+Aceptado — 2026-08-25 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 Reemplaza [ADR-009](./009-bedrock-multi-agent-profiles.md) (delegación binaria: solo el orquestador, solo en chat general).
 

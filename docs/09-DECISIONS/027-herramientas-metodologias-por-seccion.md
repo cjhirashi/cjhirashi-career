@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-09-08. Revisa parcialmente **ADR-026** (D-1 y el modelo de
+Aceptado — 2026-09-08. Revisa parcialmente **ADR-026** (D-1 y el modelo de **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 metodologías por `agent_profile_ids`) **sólo para los agentes L2**.
 
 ## Contexto

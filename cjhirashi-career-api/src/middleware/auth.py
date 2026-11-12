@@ -81,7 +81,7 @@ async def get_current_user(
         )
 
     # Dedicated agents must never become general-purpose API users. Their
-    # approved surface is career data, Bedrock chat, uploading a new public
+    # approved surface is career data, uploading a new public
     # file (e.g. an agent-generated diagram), and the unauthenticated
     # /public portal (the latter is handled without this dependency).
     # File upload is intentionally the *only* /files operation allowed -

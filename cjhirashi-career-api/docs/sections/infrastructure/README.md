@@ -16,7 +16,7 @@ flowchart TB
     Routes --> Schemas[schemas/]
 ```
 
-Registro de routers en `src/app.py`. No hay prefijo global `/api/v1` — los paths son directos (`/auth`, `/career`, `/bedrock`, etc.).
+Registro de routers en `src/app.py`. No hay prefijo global `/api/v1` — los paths son directos (`/auth`, `/career`, `/files`, etc.).
 
 ---
 
@@ -72,7 +72,7 @@ RESOURCE_REGISTRY["career/foo"] = ModelClass  # key = prefix sin slash inicial
 ```
 
 Este registro alimenta:
-- **Agent Bedrock tools** (`list_career_record`, `get_career_record`, etc.)
+- **Agentes externos** (rol `agent`, por REST)
 - **Admin Panel** (`CAREER_RESOURCES` en frontend)
 
 **37 resource keys** registrados en total (ver secciones career-*).
@@ -93,7 +93,6 @@ Operaciones centrales:
 | `delete_for_user` | Soft/hard delete según modelo |
 
 Side effects en writes:
-- Entrada en `audit_logs` cuando Bedrock modifica datos
 
 ---
 
@@ -111,7 +110,7 @@ Formato: `{prefijo}-{secuencia}` — ej. `ach-17`, `vac-5`, `usr-1`.
 | `pdt` | pdf_output_templates |
 | … | (uno por tabla de carrera) |
 
-`normalize_prefixed_id()` convierte IDs numéricos legacy a formato prefijado en tools Bedrock.
+`normalize_prefixed_id()` convierte IDs numéricos legacy a formato prefijado.
 
 ---
 
@@ -127,7 +126,6 @@ Variables clave:
 | `JWT_SECRET_KEY` | Firma de tokens |
 | `CORS_ORIGINS` | Admin, Portal |
 | `PUBLIC_PORTAL_USER_ID` | Usuario cuyos datos sirve `/public/*` |
-| `BEDROCK_*` | Harness local, modelos, presupuesto |
 | `MINIO_*` | Almacenamiento de archivos |
 
 ---
@@ -170,10 +168,8 @@ Las rutas lanzan `HTTPException` con códigos específicos (404, 400, 502, 503).
 ```mermaid
 graph LR
     Auth[middleware/auth] --> Career[career_common]
-    Auth --> Bedrock[bedrock]
     Auth --> Files[files]
     Career --> Repo[CareerRepository]
-    Bedrock --> Repo
     Public[public] --> Models[models directo]
 ```
 

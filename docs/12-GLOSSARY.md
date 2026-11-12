@@ -1,7 +1,5 @@
 # Glosario - cjhirashi-career
 
-> **Estado (2026-11-10, [ADR-032](09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** los agentes de IA son externos y entran por la API con el rol `agent`; el subsistema de agentes con AWS Bedrock está fuera de operación. Donde este documento describe agentes internos, léase como referencia de diseño.
-
 **GLOSARIO DEL PROYECTO** (arc42, sección 12)
 
 **Última actualización**: 2026-11-05
@@ -14,9 +12,8 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **ADR (Architecture Decision Record)** — Registro corto e inmutable de una decisión de arquitectura del producto, en `docs/09-DECISIONS/`. Las decisiones del arnés van en `.harness/decisions/`.
 
-**Agent Bedrock** — Asistente de IA sobre AWS Bedrock que opera con el alcance del usuario que lo invoca. No es un canal. Hoy vive en la API; pasará a `cjhirashi-career-ai` (ADR-029).
 
-**Agente externo** — Cliente de IA que usa un token de un usuario con `access_role = agent`. Solo alcanza `/career/*`, `POST /bedrock/chat` y `POST /files`.
+**Agente externo** — Cliente de IA que usa un token de un usuario con `access_role = agent`. Solo alcanza `/career/*` y `POST /files`.
 
 **Aislamiento por usuario** — Todo endpoint de carrera filtra por el `user_id` del token.
 
@@ -46,7 +43,6 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **Gate (de spec)** — Punto de aprobación del usuario en el flujo SDD (Gate 1 al aprobar el spec, Gate 2 el plan…).
 
-**Harness (de agentes)** — El bucle que conversa con el modelo, ejecuta herramientas y gestiona memoria, perfiles y tareas. Hoy en la API (`services/bedrock/`); destino: `cjhirashi-career-ai`.
 
 **Health check** — Prueba que Docker ejecuta para decidir si un contenedor está sano (`GET /health` en la API).
 
@@ -64,7 +60,6 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **PDF (WeasyPrint)** — Render de CVs y cartas desde plantillas HTML, dentro de la API.
 
-**Perfil de agente** — Configuración de un agente (nivel L1 orquestador, L2 por área o L3 por tarea, prompts, herramientas, metodologías, modelo). Se gestiona en el catálogo de agentes del Admin.
 
 **Portal público** — SPA pública (`cjhirashi.com`, puerto host 8003): solo lectura, contacto y analítica.
 
@@ -73,13 +68,11 @@ Términos en orden alfabético. Los del MCP Server (retirado el 2026-09-04, [ADR
 
 **Rol `agent`** — Valor de `access_role` de las cuentas de agente; ver *Agente externo*.
 
-**Secreto** — Variable de entorno sensible (`SECRET_KEY`, credenciales de AWS y MinIO); vive en `.env`, nunca versionado.
+**Secreto** — Variable de entorno sensible (`SECRET_KEY`, credenciales de MinIO); vive en `.env`, nunca versionado.
 
-**Sección (del Admin)** — Entrada de navegación configurable (`admin_sections_l1/l2/l3`) con PK sintético `sec-N` (ADR-021); gobierna el sidebar contextual (ADR-024).
 
 **Spec** — Especificación viva de una feature en `.harness/specs/NNN-slug/` (`spec.md`, `plan.md`, `tasks.md`) con su `estado` (`draft`, `approved`, `implemented`, `verified`).
 
-**Streaming** — Respuesta HTTP progresiva del chat de agentes (`POST /bedrock/chat`); no hay WebSocket.
 
 **Subtarea / plan orquestado** — Tarea padre con hijas que se ejecutan por turno; las bloqueantes siguen el `sort_order` (ADR-016).
 

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado — 2026-09-04
+Aceptado — 2026-09-04 **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 Enmienda [ADR-020](./020-admin-section-templates.md) y
 [ADR-021](./021-admin-sections-synthetic-pk.md) en lo relativo al override editable

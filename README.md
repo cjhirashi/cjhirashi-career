@@ -9,7 +9,7 @@
 
 **cjhirashi-career** es la plataforma personal integrada de Carlos Jiménez Hirashi: un portafolio público profesional y un panel de administración privado para gestionar la carrera, ambos sobre una API central y una única fuente de verdad (PostgreSQL).
 
-> Estado a **2026-11-11**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. Los agentes de IA son **externos** y entran por la API con el rol `agent`; el subsistema de agentes con AWS Bedrock está fuera de operación y la separación del harness (spec 009) se aplazó ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
+> Estado a **2026-11-12**: los tres módulos de aplicación (`admin`, `portfolio`, `api`) corren en producción. Los agentes de IA son **externos** y entran por la API con el rol `agent` ([ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)); el subsistema Bedrock y Qdrant se retiraron el 2026-11-11 ([ADR-033](docs/09-DECISIONS/033-retiro-del-subsistema-bedrock.md)) y el descubrimiento de vacantes el 2026-11-12 ([ADR-034](docs/09-DECISIONS/034-retiro-del-descubrimiento-de-vacantes.md)). El MCP Server (Canal 3) se retiró el 2026-09-04 ([ADR-023](docs/09-DECISIONS/023-retirar-mcp-server.md)).
 
 ---
 
@@ -27,9 +27,9 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 ## Arquitectura
 
 - **3 módulos de aplicación**: `cjhirashi-career-admin`, `cjhirashi-career-portfolio` y `cjhirashi-career-api`. La generación de PDF (WeasyPrint) es una capacidad de la API, no un módulo ni un contenedor aparte. Los agentes de IA son externos: se conectan a la API con un token de rol `agent` (solo `/career/*` y la subida de archivos).
-- **Infraestructura**: PostgreSQL 15 (`postgres_db`) y MinIO (`minio_storage`). Qdrant se retiró el 2026-11-11 (ver ADR-032).
+- **Infraestructura**: PostgreSQL 15 (`postgres_db`) y MinIO (`minio_storage`).
 - **Stack**: React 18 + Vite + TypeScript (admin y portfolio, Node 20), FastAPI + SQLAlchemy 2 + Alembic (API, Python 3.11), WeasyPrint.
-- **Datos**: 69 modelos SQLAlchemy y 53 migraciones Alembic (head `6b2d8f4a1c57`). La API expone 419 operaciones HTTP (282 rutas), de las que 319 cuelgan de `/career`.
+- **Datos**: 58 tablas y 56 migraciones Alembic (head `9e5a3b7d2c04`). La API expone 372 operaciones HTTP (241 rutas), de las que 315 cuelgan de `/career`.
 
 ## Qué hace cada módulo
 
@@ -43,11 +43,10 @@ Orquestación: `docker-compose.yml`, con la red Docker externa `net-cjhirashi-ca
 
 | Spec | Estado | Tema |
 |---|---|---|
-| 001 a 004, 007 | verified | Sidebar contextual, imágenes del agente Visual, configuración de agentes, herramientas y metodologías, vacantes por etapa |
-| 005 | draft | Metodologías: esquema mínimo y vínculo con secciones |
+| 001 a 004, 007 | verified | Sidebar contextual, imágenes y configuración de agentes, herramientas y metodologías (001 a 004 quedaron sin efecto al retirarse el subsistema Bedrock, ADR-033), vacantes por etapa |
 | 006 | approved | Tablas y frontends del checklist de carrera |
 | 008, 011 | implemented | Descripción de empresa y puesto en vacantes; formulario de contacto al Admin |
-| 009 | deferred | Harness de agentes fuera de la API (aplazada por [ADR-032](docs/09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md); el subsistema Bedrock se retiró en el [ADR-033](docs/09-DECISIONS/033-retiro-del-subsistema-bedrock.md)) |
+| 009 | superseded | Harness de agentes fuera de la API: sin efecto tras el retiro del subsistema Bedrock ([ADR-033](docs/09-DECISIONS/033-retiro-del-subsistema-bedrock.md)) |
 | 010 | implemented | Analítica profesional del portafolio |
 
 La fuente de verdad del estado de cada spec es el `estado:` de su `spec.md` en `.harness/specs/`.

@@ -4,7 +4,7 @@
 
 ## Estado
 
-Aceptado — 2026-08-23. Revisado parcialmente por [ADR-029](./029-harness-agentes-fuera-de-api.md): el harness sale de la API, la memoria pasa a Postgres y se retira Qdrant (en ejecución, etapa 3 pendiente)
+Aceptado — 2026-08-23. Revisado parcialmente por [ADR-029](./029-harness-agentes-fuera-de-api.md): el harness sale de la API, la memoria pasa a Postgres y se retira Qdrant (en ejecución, etapa 3 pendiente) **Retirado por el [ADR-033](./033-retiro-del-subsistema-bedrock.md) (2026-11-11).**
 
 ## Contexto
 

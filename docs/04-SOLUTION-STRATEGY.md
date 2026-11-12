@@ -1,7 +1,5 @@
 # Estrategia de solución - cjhirashi-career
 
-> **Estado (2026-11-10, [ADR-032](09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)):** el subsistema de agentes con AWS Bedrock está **fuera de operación**. Los agentes de IA son externos y entran por la API con el rol `agent`. Este documento se conserva como referencia del diseño y no describe el comportamiento operativo actual.
-
 **ESTRATEGIA DE SOLUCIÓN** (arc42, sección 4)
 
 **Última actualización**: 2026-11-10
@@ -40,27 +38,19 @@
 
 ### 4. API REST como orquestador único
 
-**Decisión**: la API concentra el CRUD de negocio, los endpoints de gestión, las métricas, los archivos, el PDF y Agent Bedrock; todo dato que necesita un canal pasa por ella.
+**Decisión**: la API concentra el CRUD de negocio, los endpoints de gestión, las métricas, los archivos y el PDF; todo dato que necesita un canal pasa por ella.
 
 **Motivación**: evita duplicar la lógica de acceso a datos y garantiza que las reglas de negocio (por ejemplo, qué es publicable) se apliquen igual desde cualquier origen.
 
 **Consecuencia**: la API concentra la carga de todos los canales; es el componente con mayor prioridad de escalabilidad.
 
-### 5. Agent Bedrock como capacidad, no como canal
+### 5. Agentes de IA externos, sin subsistema propio
 
-**Decisión**: Agent Bedrock es una capacidad del Admin Panel (harness local sobre la API de Converse: [ADR-008](./09-DECISIONS/008-bedrock-harness-local.md); jerarquía de tres niveles L1/L2/L3: [ADR-012](./09-DECISIONS/012-bedrock-three-level-agents.md); tareas programadas y subtareas: [ADR-015](./09-DECISIONS/015-scheduled-agent-tasks.md), [ADR-016](./09-DECISIONS/016-task-subtasks-orchestration.md)), sin puerto propio ni exposición a Internet.
+**Decisión**: los agentes de IA son clientes externos de la API REST con un rol `agent` acotado a `/career/*` y a la subida de archivos ([ADR-032](./09-DECISIONS/032-agentes-externos-y-bedrock-fuera-de-operacion.md)). El harness interno de AWS Bedrock, el catálogo de agentes, Qdrant y la base de conocimiento se retiraron el 2026-11-11 ([ADR-033](./09-DECISIONS/033-retiro-del-subsistema-bedrock.md)).
 
-**Motivación**: Bedrock asiste al usuario humano dentro de su flujo; convertirlo en canal duplicaría la superficie de autenticación.
+**Motivación**: el harness acoplaba la API a un proveedor concreto y la indexación gastaba embeddings sin consumidor real; un agente externo ya cubre el caso con el mismo contrato.
 
-**Consecuencia**: opera con el contexto de autorización de quien lo invoca (o, en tareas programadas, con el del usuario propietario de la tarea).
-
-### 6. Harness de agentes fuera de la API y sin indexación (en ejecución)
-
-**Decisión**: el harness completo pasa a `cjhirashi-career-ai` (base propia `career_ai_db`, proveedor de modelos intercambiable, acceso a los datos solo por la API REST). La memoria del agente pasa a Postgres con búsqueda de texto completo; se retiran la base de conocimiento, la indexación en cada escritura y **Qdrant** ([ADR-029](./09-DECISIONS/029-harness-agentes-fuera-de-api.md), spec 009).
-
-**Motivación**: la indexación gastaba embeddings sin consumidor real y el harness acoplaba la API a un proveedor concreto.
-
-**Estado**: la decisión está aprobada pero **no ejecutada**: el corte es en tres etapas reversibles (harness arriba con datos copiados, Admin apuntando a `/ai/`, retirada de la API) y la spec 009 va en la etapa 1. Qdrant y la base de conocimiento se retiraron de la API el 2026-11-11 (ADR-032); el resto del subsistema Bedrock sigue en el código sin operar.
+**Consecuencia**: la API no depende de ningún proveedor de modelos; quien opera el agente decide el modelo.
 
 ## Organización en capas
 
@@ -72,7 +62,7 @@ graph TB
     end
 
     subgraph Capa2["Capa 2 — API (punto de convergencia único)"]
-        API["API REST<br/>(Bedrock, PDF WeasyPrint,<br/>archivos, analítica)"]
+        API["API REST<br/>(PDF WeasyPrint,<br/>archivos, analítica)"]
     end
 
     subgraph Capa3["Capa 3 — Persistencia"]
@@ -80,23 +70,17 @@ graph TB
         S3["MinIO<br/>archivos"]
     end
 
-    AWS["AWS Bedrock"]
-
     Portal --> API
     Admin --> API
     API --> DB
     API --> S3
-    API --> Q
-    API --> AWS
 ```
 
 | Capa | Módulos | Criterio |
 |---|---|---|
 | **1. Canales** | Portal público, Admin Panel | Cada uno responde a una audiencia y no depende del otro |
-| **2. API** | `cjhirashi-career-api` (incluye Bedrock y PDF) | Concentra las reglas de negocio; solo alcanzable desde fuera por los canales de la capa 1 (`/api/`) |
+| **2. API** | `cjhirashi-career-api` (incluye el PDF) | Concentra las reglas de negocio; solo alcanzable desde fuera por los canales de la capa 1 (`/api/`) |
 | **3. Persistencia** | PostgreSQL, MinIO | La API es la única con acceso de lectura/escritura |
-
-`cjhirashi-career-ai` (harness, sin desplegar) se sumará como componente de la capa 2 cuando termine la etapa 1 de la spec 009.
 
 ## Alternativas descartadas
 
@@ -104,7 +88,6 @@ graph TB
 |---|---|---|
 | Dos canales independientes | Un único frontend multipropósito | Acoplaría disponibilidad y autenticación de audiencias opuestas y complicaría el aislamiento de lo publicable |
 | PostgreSQL también para observabilidad | Almacén de series de tiempo o eventos dedicado | El volumen no justifica un segundo motor para un solo administrador |
-| Bedrock sin exposición propia | Microservicio de agentes público | Superficie de red adicional sin necesidad; el acceso externo se resuelve con el token `agent` |
 | MCP Server como tercer canal | Token `agent` sobre la API | El MCP no llegó a implementar herramientas de carrera y no tuvo tráfico (ADR-023) |
 
 ## Matriz de comunicación
@@ -114,11 +97,10 @@ graph TB
 | Visitante | Portal | HTTPS | Ninguna |
 | Carlos | Admin Panel | HTTPS | Login (JWT) |
 | Portal | API (`/public/*`, contacto, ingesta de analítica) | REST JSON | Ninguna; límites de tasa |
-| Admin | API | REST JSON (CRUD, PDF, chat y tareas de Bedrock) | JWT del administrador |
-| Agente externo | API (`/career/*`, `POST /bedrock/chat`, `POST /files`) | REST JSON | JWT de rol `agent` |
+| Admin | API | REST JSON (CRUD, PDF y tareas) | JWT del administrador |
+| Agente externo | API (`/career/*`, `POST /files`) | REST JSON | JWT de rol `agent` |
 | API | PostgreSQL | SQL (SQLAlchemy async / asyncpg) | Credenciales de servicio, red Docker interna |
 | API | MinIO | S3 | Credenciales de servicio |
-| API | AWS Bedrock | HTTPS (boto3) | Credenciales AWS por variable de entorno |
 
 Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a PostgreSQL o MinIO que no sea desde la API.
 
@@ -130,7 +112,7 @@ Conexiones deliberadamente ausentes: Portal ↔ Admin, y cualquier acceso a Post
 | 2. SPA del Admin | ADR-020, ADR-021, ADR-024, ADR-028 |
 | 3. PostgreSQL centralizado | ADR-018 |
 | 4. API orquestadora | ADR-011 (descubrimiento de vacantes, retirado por el ADR-034), ADR-015 y ADR-016 |
-| 5. Bedrock como capacidad | ADR-008, ADR-009 (deprecado), ADR-010, ADR-012, ADR-013, ADR-017, ADR-019, ADR-022, ADR-025, ADR-026, ADR-027 |
+| 5. Agentes externos | ADR-023, ADR-032, ADR-033 |
 | 6. Harness fuera de la API | ADR-029 |
 
 ---
